@@ -1,0 +1,103 @@
+# Kafka - OpenTelemetry
+
+## Searches
+
+### Log Searches
+
+- **Broker Shutdown Events**: from Dashboard: Kafka - OpenTelemetry/Kafka - Logs 
+- **Broker Shutdown Events**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Logs 
+- **Brokers Added/Started Events**: from Dashboard: Kafka - OpenTelemetry/Kafka - Logs 
+- **Brokers Added/Started Events**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Logs 
+- **Error Over Time**: from Dashboard: Kafka - OpenTelemetry/Kafka - Logs 
+- **Error Over Time**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Logs 
+- **Events by  Severity**: from Dashboard: Kafka - OpenTelemetry/Kafka - Logs 
+- **Events by  Severity**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Logs 
+- **Last 10 Errors**: from Dashboard: Kafka - OpenTelemetry/Kafka - Logs 
+- **Last 10 Errors**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Logs 
+- **Log Reduce**: from Dashboard: Kafka - OpenTelemetry/Kafka - Logs 
+- **Log Reduce**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Logs 
+- **Top 10 Errors**: from Dashboard: Kafka - OpenTelemetry/Kafka - Logs 
+- **Top 10 Errors**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Logs
+
+### Metric Searches
+
+- **Brokers**: from Dashboard: Kafka - OpenTelemetry/Kafka - Overview 
+- **Brokers**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Overview 
+- **Clusters**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Overview 
+- **Clusters**: from Dashboard: Kafka - OpenTelemetry/Kafka - Overview 
+- **Consumer Group Lag by Topic**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics 
+- **Consumer Group Lag by Topic**: from Dashboard: Kafka - OpenTelemetry/Kafka - Metrics 
+- **Consumer Groups**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics 
+- **Consumer Groups**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Overview 
+- **Consumer Groups**: from Dashboard: Kafka - OpenTelemetry/Kafka - Overview 
+- **Consumer Groups**: from Dashboard: Kafka - OpenTelemetry/Kafka - Metrics 
+- **Member Count by Consumer Groups**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics 
+- **Member Count by Consumer Groups**: from Dashboard: Kafka - OpenTelemetry/Kafka - Metrics 
+- **Number of Brokers**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics 
+- **Number of Brokers**: from Dashboard: Kafka - OpenTelemetry/Kafka - Metrics 
+- **Number of Topics**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Overview 
+- **Number of Topics**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics 
+- **Number of Topics**: from Dashboard: Kafka - OpenTelemetry/Kafka - Metrics 
+- **Number of Topics**: from Dashboard: Kafka - OpenTelemetry/Kafka - Overview 
+- **Partition Count - Outlier**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Overview 
+- **Partition Count - Outlier**: from Dashboard: Kafka - OpenTelemetry/Kafka - Overview 
+- **Partitions**: from Dashboard: Kafka - OpenTelemetry/Kafka - Overview 
+- **Partitions**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Overview 
+- **Partitions by Topics**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics 
+- **Partitions by Topics**: from Dashboard: Kafka - OpenTelemetry/Kafka - Metrics 
+- **Synchronized Partition Replicas by Topic**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics 
+- **Synchronized Partition Replicas by Topic**: from Dashboard: Kafka - OpenTelemetry/Kafka - Metrics 
+- **Unsync Partition Replica Count**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics 
+- **Unsync Partition Replica Count**: from Dashboard: Kafka - OpenTelemetry/Kafka - Metrics 
+- **Unsync Partition Replica Count - Outlier**: from Dashboard: Kafka - OpenTelemetry/Kafka - Overview 
+- **Unsync Partition Replica Count - Outlier**: from Dashboard: Installed Apps/Kafka - OpenTelemetry/Kafka - Overview
+
+## Search Table
+
+|app\_topic|search\_name|type|origin|search|
+|:--|:--|:--|:--|:--|
+|Kafka - OpenTelemetry|Broker Shutdown Events|Logs|Installed Apps/Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} "Shutdown completed" "SocketServer brokerId"<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("DEBUG", "INFO", "ERROR", "TRACE", "FATAL")<br />\| count by date\_time, msg<br />\| fields - \_count|
+|Kafka - OpenTelemetry|Broker Shutdown Events|Logs|Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} "Shutdown completed" "SocketServer brokerId"<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("DEBUG", "INFO", "ERROR", "TRACE", "FATAL")<br />\| count by date\_time, msg<br />\| fields - \_count|
+|Kafka - OpenTelemetry|Brokers|Metrics|Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.brokers messaging.cluster.name={{messaging.cluster.name}} \| sum<br /> |
+|Kafka - OpenTelemetry|Brokers|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.brokers messaging.cluster.name={{messaging.cluster.name}} \| sum<br /> |
+|Kafka - OpenTelemetry|Brokers Added/Started Events|Logs|Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} started "KafkaServer id" <br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("DEBUG", "INFO", "ERROR", "TRACE", "FATAL")<br />\| count by date\_time, msg<br />\| fields - \_count|
+|Kafka - OpenTelemetry|Brokers Added/Started Events|Logs|Installed Apps/Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} started "KafkaServer id" <br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("DEBUG", "INFO", "ERROR", "TRACE", "FATAL")<br />\| count by date\_time, msg<br />\| fields - \_count|
+|Kafka - OpenTelemetry|Clusters|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.topic.partitions messaging.cluster.name={{messaging.cluster.name}} \| count by messaging.cluster.name \| count <br /> |
+|Kafka - OpenTelemetry|Clusters|Metrics|Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.topic.partitions messaging.cluster.name={{messaging.cluster.name}} \| count by messaging.cluster.name \| count <br /> |
+|Kafka - OpenTelemetry|Consumer Group Lag by Topic|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics|metric= kafka.consumer\_group.lag\_sum deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| sum by group, topic,  messaging.cluster.name |
+|Kafka - OpenTelemetry|Consumer Group Lag by Topic|Metrics|Kafka - OpenTelemetry/Kafka - Metrics|metric= kafka.consumer\_group.lag\_sum deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| sum by group, topic,  messaging.cluster.name |
+|Kafka - OpenTelemetry|Consumer Groups|Metrics|Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka  metric=kafka.consumer\_group.members deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| count by group \| count <br /> |
+|Kafka - OpenTelemetry|Consumer Groups|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.consumer\_group.members messaging.cluster.name={{messaging.cluster.name}} \| count by group \| count <br /> |
+|Kafka - OpenTelemetry|Consumer Groups|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka  metric=kafka.consumer\_group.members deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| count by group \| count <br /> |
+|Kafka - OpenTelemetry|Consumer Groups|Metrics|Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.consumer\_group.members messaging.cluster.name={{messaging.cluster.name}} \| count by group \| count <br /> |
+|Kafka - OpenTelemetry|Error Over Time|Logs|Installed Apps/Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("ERROR", "FATAL")<br />\| timeslice 1h<br />\| count as count by \_timeslice|
+|Kafka - OpenTelemetry|Error Over Time|Logs|Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("ERROR", "FATAL")<br />\| timeslice 1h<br />\| count as count by \_timeslice|
+|Kafka - OpenTelemetry|Events by  Severity|Logs|Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("DEBUG", "INFO", "ERROR", "TRACE", "FATAL")<br />\| count by severity|
+|Kafka - OpenTelemetry|Events by  Severity|Logs|Installed Apps/Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("DEBUG", "INFO", "ERROR", "TRACE", "FATAL")<br />\| count by severity|
+|Kafka - OpenTelemetry|Last 10 Errors|Logs|Installed Apps/Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("ERROR", "FATAL")<br />\| count by date\_time, severity, msg<br />\| sort by date\_time<br />\| limit 10|
+|Kafka - OpenTelemetry|Last 10 Errors|Logs|Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("ERROR", "FATAL")<br />\| count by date\_time, severity, msg<br />\| sort by date\_time<br />\| limit 10|
+|Kafka - OpenTelemetry|Log Reduce|Logs|Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| logreduce by msg|
+|Kafka - OpenTelemetry|Log Reduce|Logs|Installed Apps/Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| logreduce by msg|
+|Kafka - OpenTelemetry|Member Count by Consumer Groups|Metrics|Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka  metric=kafka.consumer\_group.members deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| sum by group,  messaging.cluster.name<br /> |
+|Kafka - OpenTelemetry|Member Count by Consumer Groups|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka  metric=kafka.consumer\_group.members deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| sum by group,  messaging.cluster.name<br /> |
+|Kafka - OpenTelemetry|Number of Brokers|Metrics|Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka  metric=kafka.brokers deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| sum<br /> |
+|Kafka - OpenTelemetry|Number of Brokers|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka  metric=kafka.brokers deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| sum<br /> |
+|Kafka - OpenTelemetry|Number of Topics|Metrics|Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.topic.partitions messaging.cluster.name={{messaging.cluster.name}} \| count by topic \| count <br /> |
+|Kafka - OpenTelemetry|Number of Topics|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.topic.partitions messaging.cluster.name={{messaging.cluster.name}} \| count by topic \| count <br /> |
+|Kafka - OpenTelemetry|Number of Topics|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka  metric=kafka.topic.partitions deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| count by topic \| count <br /> |
+|Kafka - OpenTelemetry|Number of Topics|Metrics|Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka  metric=kafka.topic.partitions deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| count by topic \| count <br /> |
+|Kafka - OpenTelemetry|Partition Count - Outlier|Metrics|Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.topic.partitions messaging.cluster.name={{messaging.cluster.name}} \| quantize using sum \| sum by messaging.cluster.name \| outlier window=5m|
+|Kafka - OpenTelemetry|Partition Count - Outlier|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.topic.partitions messaging.cluster.name={{messaging.cluster.name}} \| quantize using sum \| sum by messaging.cluster.name \| outlier window=5m|
+|Kafka - OpenTelemetry|Partitions|Metrics|Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.topic.partitions messaging.cluster.name={{messaging.cluster.name}} \| sum <br /> |
+|Kafka - OpenTelemetry|Partitions|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka  metric=kafka.topic.partitions messaging.cluster.name={{messaging.cluster.name}} \| sum <br /> |
+|Kafka - OpenTelemetry|Partitions by Topics|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka  metric=kafka.topic.partitions deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| sum by messaging.cluster.name,topic|
+|Kafka - OpenTelemetry|Partitions by Topics|Metrics|Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka  metric=kafka.topic.partitions deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| sum by messaging.cluster.name,topic|
+|Kafka - OpenTelemetry|Synchronized Partition Replicas by Topic|Metrics|Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka metric=kafka.partition.replicas\_in\_sync deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}  \| count by topic, partition|
+|Kafka - OpenTelemetry|Synchronized Partition Replicas by Topic|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka metric=kafka.partition.replicas\_in\_sync deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}  \| count by topic, partition|
+|Kafka - OpenTelemetry|Top 10 Errors|Logs|Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} (FATAL or ERROR)<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("ERROR", "FATAL")<br />\| count as count by date\_time, severity, msg<br />\| sort by count<br />\| limit 10 |
+|Kafka - OpenTelemetry|Top 10 Errors|Logs|Installed Apps/Kafka - OpenTelemetry/Kafka - Logs|sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} (FATAL or ERROR)<br />\| json auto maxdepth 1 nodrop<br />\| if (isEmpty(log), \_raw, log) as kafka\_log\_message<br />\| parse field=kafka\_log\_message "[\*] \* \*" as date\_time,severity,msg<br />\| where severity in ("ERROR", "FATAL")<br />\| count as count by date\_time, severity, msg<br />\| sort by count<br />\| limit 10 |
+|Kafka - OpenTelemetry|Unsync Partition Replica Count|Metrics|Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka metric=kafka.partition.replicas deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| quantize using sum \| sum by messaging.cluster.name |
+|Kafka - OpenTelemetry|Unsync Partition Replica Count|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Metrics|sumo.datasource=kafka metric=kafka.partition.replicas deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \| quantize using sum \| sum by messaging.cluster.name |
+|Kafka - OpenTelemetry|Unsync Partition Replica Count - Outlier|Metrics|Installed Apps/Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka metric=kafka.partition.replicas messaging.cluster.name={{messaging.cluster.name}} \| quantize using sum \| sum by messaging.cluster.name |
+|Kafka - OpenTelemetry|Unsync Partition Replica Count - Outlier|Metrics|Kafka - OpenTelemetry/Kafka - Overview|sumo.datasource=kafka metric=kafka.partition.replicas messaging.cluster.name={{messaging.cluster.name}} \| quantize using sum \| sum by messaging.cluster.name |
+
