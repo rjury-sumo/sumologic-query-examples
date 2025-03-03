@@ -50,7 +50,7 @@ For example.
 ```
 
 # Search Topic Index With Search Count
-- [1Password](./tree/main/examples/1Password): 70
+- [1Password](../../../tree/main/examples/1Password): 70
 - [Abnormal Security](./tree/main/examples/Abnormal%20Security): 23
 - [Acquia](./tree/main/examples/Acquia): 174
 - [Active Directory 2012+ - OpenTelemetry](./tree/main/examples/Active%20Directory%202012%2B%20-%20OpenTelemetry): 15
