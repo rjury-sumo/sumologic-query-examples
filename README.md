@@ -51,7 +51,7 @@ For example.
 There are two parsers information files exported from the db file (see script: extract_parsers.ps1)
 
 - [parsers.json](./parsers.json): is a json format export of all parsers
-- [parsers.md](./parsers.md): is a md file format showing all parsers found.
+- [parsers](./parsers): a single md file per app with all parsers found and use cases associated (the search names).
 
 ## Search Topic Index With Search Count
 - [1Password](../../tree/main/examples/1Password): 70
