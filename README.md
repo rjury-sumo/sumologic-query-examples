@@ -7,8 +7,8 @@ This export includes two datasets:
 
 Given that searches existed in a similar format in old and new apps you will often find duplicates within a specific file / topic with multiple origin path names.
 
-## Examples folder
-These are all merged together in the ./examples folder with one md file per high level app name.
+## Search Examples folder By App Name
+Extracted seaches from each exported app's dashbaords and saved searches are exported in md format to the ./examples folder with one md file per high level app name.
 
 Some of the exported searches come from 'saved searches' items in the app folder but most come from panels in dashboards. 
 
@@ -17,8 +17,7 @@ In each app md file you can see:
 - a list of all searches found
 - a markdown table of each search with details such as search type and origionating file
 
-
-## final_searches_db.json
+### final_searches_db.json
 This is a single json file for programmatic analysis of exported searches. Every search that was exported can be found here grouped by high level app name.
 
 For example.
@@ -48,8 +47,13 @@ For example.
     ....
 }
 ```
+## Parsers Index
+There are two parsers information files exported from the db file (see script: extract_parsers.ps1)
 
-# Search Topic Index With Search Count
+- [parsers.json](./parsers.json): is a json format export of all parsers
+- [parsers.md](./parsers.md): is a md file format showing all parsers found.
+
+## Search Topic Index With Search Count
 - [1Password](../../tree/main/examples/1Password): 70
 - [Abnormal Security](../../tree/main/examples/Abnormal%20Security): 23
 - [Acquia](../../tree/main/examples/Acquia): 174
