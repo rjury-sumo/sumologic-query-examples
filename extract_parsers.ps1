@@ -40,8 +40,21 @@ foreach ($key in $parsers_hash.Keys) {
 $parsers  = $parsers | sort-object -Property app,parser
 $parsers | ConvertTo-Json -Depth 10 | Out-File -FilePath ./parsers.json -Encoding utf8
 
-$md = "# Parsers Index`n`n"
+$mdp = @{}
+
 foreach ($p in $parsers) {
-    $md += "## App: $($p.app)`n### Parser:`n" + '```' + "`n$($p.parser)"+ '```' +"`n### Use Cases:`n$($p.use_cases)`n`n"
-}    
-$md | out-file -FilePath ./parsers.md -Encoding utf8
+    $app = $p.app
+    if ($mdp.ContainsKey($app)) {
+        # append to existing app
+        $mdp[$app] += "`n`n## Parser:`n" + '```' + "`n$($p.parser)"+ '```' +"`n### Use Cases:`n$($p.use_cases)`n`n"
+    } else {
+        # create new app
+        $md = "# Parsers For $($p.app)`n`n"
+        $md += "## Parser:`n" + '```' + "`n$($p.parser)"+ '```' +"`n### Use Cases:`n$($p.use_cases)`n`n"
+        $mdp[$app] = $md
+    }
+}   
+
+foreach ($app in $mdp.Keys) {
+    $mdp[$app] | out-file -FilePath ."/parsers/$($app.md)" -Encoding utf8
+}
