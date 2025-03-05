@@ -5,7 +5,7 @@
 | json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
 | parse regex field=mesg " \[(?<log_level>[a-z]+)\] " nodrop 
 | parse regex field=mesg " \[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\] " nodrop 
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Error Log Levels, Log Level - One Day Time Comparison, Messages by Log Level - Over Time, Number of Requests by Client - One Day Time Comparison, Responses Over Time, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Visitor Locations
 
@@ -17,7 +17,7 @@
 | parse regex field=mesg " \[(?<log_level>[a-z]+)\] " nodrop 
 | parse regex field=mesg " \[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\] " nodrop 
 | parse regex field=mesg " \[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\] (?<reason>[a-zA-Z].*)" nodrop 
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Error Log Levels, Log Level - One Day Time Comparison, Log Reduce, Messages by Log Level - Over Time, Number of Requests by Client - One Day Time Comparison, Responses Over Time, Top 10 Messages, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Visitor Locations
 
@@ -29,7 +29,7 @@
 | parse regex field=mesg " \[(?<log_level>[a-z]+)\] " nodrop 
 | parse regex field=mesg " \[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\] " nodrop 
 | parse regex field=mesg "\[client (?<src_ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" nodrop
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Error Log Levels, Number of Requests by Client - One Day Time Comparison, Responses Over Time, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Visitor Locations
 
@@ -42,7 +42,7 @@
 | parse regex field=mesg " \[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\] " nodrop 
 | parse regex field=mesg "\[client (?<src_ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" nodrop
 | parse regex field=mesg "\[client (?<src_ip>[a-f0-1:]*)\] " nodrop 
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Error Log Levels, Responses Over Time, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Visitor Locations
 
@@ -85,7 +85,7 @@
 | parse regex field=mesg "(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$|, referer.+$)" nodrop 
 | parse regex field=mesg "(?<reason>Premature end of script headers): (?<file>.+?)(?:$|, referer.+$)" nodrop 
 | parse regex field=mesg "(?<reason>client sent HTTP/1.1 request without hostname) \(.+?\): (?<url>.+?)(?:$|, referer.+$)" nodrop 
-```
+ `n```
 ### Use Cases:
 Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons
 
@@ -128,7 +128,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$|, referer.+$)" nodrop 
 | parse regex field=mesg "(?<reason>Premature end of script headers): (?<file>.+?)(?:$|, referer.+$)" nodrop 
 | parse regex field=mesg "(?<reason>client sent HTTP/1.1 request without hostname) \(.+?\): (?<url>.+?)(?:$|, referer.+$)" nodrop 
-```
+ `n```
 ### Use Cases:
 Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors
 
@@ -175,7 +175,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$|, referer.+$)" nodrop 
 | parse regex field=mesg "(?<reason>Premature end of script headers): (?<file>.+?)(?:$|, referer.+$)" nodrop 
 | parse regex field=mesg "(?<reason>client sent HTTP/1.1 request without hostname) \(.+?\): (?<url>.+?)(?:$|, referer.+$)" nodrop 
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Error Log Levels, Log Level - One Day Time Comparison, Messages by Log Level - Over Time, Number of Requests by Client - One Day Time Comparison, Responses Over Time, Top 10 Messages, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Visitor Locations
 
@@ -218,7 +218,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$|, referer.+$)" nodrop 
 | parse regex field=mesg "(?<reason>Premature end of script headers): (?<file>.+?)(?:$|, referer.+$)" nodrop 
 | parse regex field=mesg "(?<reason>client sent HTTP/1.1 request without hostname) \(.+?\): (?<url>.+?)(?:$|, referer.+$)" nodrop 
-```
+ `n```
 ### Use Cases:
 Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time
 
@@ -230,7 +230,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "^(?<src_ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" nodrop
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)" nodrop
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)\s\"(?<referrer>.*?)\"\s\"(?<user_agent>.+?)\".*" nodrop
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Browsers and Operating Systems, Bytes Served, Bytes Served - Outlier, Client Errors, Client Locations - 4xx Errors, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Desktop OS Versions, Error Log Levels, Error Responses by Server, Highly Malicious Threats, HTTP Methods, Log Level - One Day Time Comparison, Log Reduce, Media Types Served, Messages by Log Level - Over Time, Non 200 Response Status Codes, Number of Hits by Server - One Day Time Comparison, Number of Requests by Client - One Day Time Comparison, Number of Visitors, Popular Mobile Device Versions, Responses Over Time, Server Errors, Server Errors Over Time, Threat Count, Threat Locations, Threats by Actors, Threats by Malicious Confidence, Threats by Source, Top 10 Bots Observed, Top 10 Errors from Error Log Files, Top 10 Messages, Top 10 Search Terms from Popular Search Engines, Top 10 Threats, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing 4xx Errors, Top 5 Clients Causing 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Top 5 Highly Malicious URLs, Top 5 Referrers, Top 5 Urls, Top 5 URLs Causing 4xx Responses, Top 5 URLs Causing 5xx Responses, Traffic Distribution by Server, Traffic Volume and Bytes Served, Unique Visitors, United States, Visitor Locations, Visitor Locations - One Day Time Comparison, Visitor Platforms, Visitor Platforms Over Time, Visits by Country Over Time, Visits by US Regions Over Time, Worldwide
 
@@ -243,7 +243,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)" nodrop
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)\s\"(?<referrer>.*?)\"\s\"(?<user_agent>.+?)\".*" nodrop
 | json field=raw "labels[*].name" as label_name 
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Bytes Served - Outlier, Client Errors, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Error Log Levels, Highly Malicious Threats, Log Level - One Day Time Comparison, Log Reduce, Messages by Log Level - Over Time, Number of Requests by Client - One Day Time Comparison, Number of Visitors, Responses Over Time, Server Errors, Threat Count, Threat Locations, Threats by Actors, Threats by Malicious Confidence, Threats by Source, Top 10 Messages, Top 10 Threats, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Top 5 Highly Malicious URLs, Visitor Locations
 
@@ -256,7 +256,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)" nodrop
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)\s\"(?<referrer>.*?)\"\s\"(?<user_agent>.+?)\".*" nodrop
 | parse regex field=mesg " (?:\d+)/(?<microseconds>\d+)$"
-```
+ `n```
 ### Use Cases:
 Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time
 
@@ -269,7 +269,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)" nodrop
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)\s\"(?<referrer>.*?)\"\s\"(?<user_agent>.+?)\".*" nodrop
 | parse regex field=mesg " (?<seconds>\d+)/(?<microseconds>\d+)$" 
-```
+ `n```
 ### Use Cases:
 Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests
 
@@ -285,7 +285,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "\((?<device>iPad).+? CPU OS (?<version>.+?) like Mac"  nodrop 
 | parse regex field=mesg " (?<device>Android) (?<version>[\d\.]+)" nodrop 
 | parse regex field=mesg "(?<device>SAMSUNG).+?(?<version>(?:GT-\w+|SGH-\w+|SPH-\w+|SCH-\w+))" nodrop
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Browsers and Operating Systems, Bytes Served - Outlier, Client Errors, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Error Log Levels, Highly Malicious Threats, Log Level - One Day Time Comparison, Log Reduce, Messages by Log Level - Over Time, Number of Hits by Server - One Day Time Comparison, Number of Requests by Client - One Day Time Comparison, Number of Visitors, Popular Mobile Device Versions, Responses Over Time, Server Errors, Threat Count, Threat Locations, Threats by Actors, Threats by Malicious Confidence, Threats by Source, Top 10 Messages, Top 10 Threats, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Top 5 Highly Malicious URLs, Traffic Distribution by Server, Traffic Volume and Bytes Served, Visitor Locations, Visitor Locations - One Day Time Comparison, Visitor Platforms
 
@@ -298,7 +298,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)" nodrop
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)\s\"(?<referrer>.*?)\"\s\"(?<user_agent>.+?)\".*" nodrop
 | parse regex field=referrer "(?:\?|&)(?:p|q|wd|searchfor)=(?<search_term>[^=]+?)(?:&|$)" nodrop 
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Browsers and Operating Systems, Bytes Served - Outlier, Client Errors, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Desktop OS Versions, Error Log Levels, Highly Malicious Threats, Log Level - One Day Time Comparison, Log Reduce, Media Types Served, Messages by Log Level - Over Time, Number of Hits by Server - One Day Time Comparison, Number of Requests by Client - One Day Time Comparison, Number of Visitors, Popular Mobile Device Versions, Responses Over Time, Server Errors, Threat Count, Threat Locations, Threats by Actors, Threats by Malicious Confidence, Threats by Source, Top 10 Messages, Top 10 Search Terms from Popular Search Engines, Top 10 Threats, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Top 5 Highly Malicious URLs, Top 5 Urls, Traffic Distribution by Server, Traffic Volume and Bytes Served, Unique Visitors, United States, Visitor Locations, Visitor Locations - One Day Time Comparison, Visitor Platforms, Visitor Platforms Over Time, Visits by Country Over Time, Visits by US Regions Over Time, Worldwide
 
@@ -312,7 +312,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)\s\"(?<referrer>.*?)\"\s\"(?<user_agent>.+?)\".*" nodrop
 | parse regex field=url "^/[^\?]+?\.(?<type>[a-zA-Z]{2,4})$" nodrop
 | parse regex field=url "/\S+?(?<email_prefix>(?:%40|@)[^.]+?)\.\w+" nodrop 
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Browsers and Operating Systems, Bytes Served - Outlier, Client Errors, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Desktop OS Versions, Error Log Levels, Highly Malicious Threats, Log Level - One Day Time Comparison, Log Reduce, Media Types Served, Messages by Log Level - Over Time, Number of Hits by Server - One Day Time Comparison, Number of Requests by Client - One Day Time Comparison, Number of Visitors, Popular Mobile Device Versions, Responses Over Time, Server Errors, Threat Count, Threat Locations, Threats by Actors, Threats by Malicious Confidence, Threats by Source, Top 10 Messages, Top 10 Threats, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Top 5 Highly Malicious URLs, Top 5 Urls, Traffic Distribution by Server, Traffic Volume and Bytes Served, Unique Visitors, United States, Visitor Locations, Visitor Locations - One Day Time Comparison, Visitor Platforms, Visitor Platforms Over Time, Visits by Country Over Time, Visits by US Regions Over Time, Worldwide
 
@@ -349,7 +349,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=user_agent "(?<bot_name>Sosospider?)\W" nodrop 
 | parse regex field=user_agent "(?<bot_name>Baidu?)spider" nodrop
 | parse regex field=user_agent "(?<bot_name>Exabot?)\W" nodrop
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Browsers and Operating Systems, Bytes Served, Bytes Served - Outlier, Client Errors, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Desktop OS Versions, Error Log Levels, Highly Malicious Threats, HTTP Methods, Log Level - One Day Time Comparison, Log Reduce, Media Types Served, Messages by Log Level - Over Time, Number of Hits by Server - One Day Time Comparison, Number of Requests by Client - One Day Time Comparison, Number of Visitors, Popular Mobile Device Versions, Responses Over Time, Server Errors, Threat Count, Threat Locations, Threats by Actors, Threats by Malicious Confidence, Threats by Source, Top 10 Bots Observed, Top 10 Messages, Top 10 Search Terms from Popular Search Engines, Top 10 Threats, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Top 5 Highly Malicious URLs, Top 5 Referrers, Top 5 Urls, Traffic Distribution by Server, Traffic Volume and Bytes Served, Unique Visitors, United States, Visitor Locations, Visitor Locations - One Day Time Comparison, Visitor Platforms, Visitor Platforms Over Time, Visits by Country Over Time, Visits by US Regions Over Time, Worldwide
 
@@ -364,7 +364,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=user_agent "(?<os>Mac OS) (?<version>[^;\)]+?)(?:;|\))" nodrop 
 | parse regex field=user_agent "(?<os>Windows)(?: NT | )(?<version>[\d.]+)" nodrop 
 | parse regex field=user_agent "(?<os>Linux) (?<version>\S+?)(?:\)|;)" nodrop 
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Browsers and Operating Systems, Bytes Served - Outlier, Client Errors, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Desktop OS Versions, Error Log Levels, Highly Malicious Threats, Log Level - One Day Time Comparison, Log Reduce, Messages by Log Level - Over Time, Number of Hits by Server - One Day Time Comparison, Number of Requests by Client - One Day Time Comparison, Number of Visitors, Popular Mobile Device Versions, Responses Over Time, Server Errors, Threat Count, Threat Locations, Threats by Actors, Threats by Malicious Confidence, Threats by Source, Top 10 Messages, Top 10 Threats, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Top 5 Highly Malicious URLs, Traffic Distribution by Server, Traffic Volume and Bytes Served, Visitor Locations, Visitor Locations - One Day Time Comparison, Visitor Platforms
 
@@ -380,7 +380,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg " \[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\] (?<error_mesg>.*)" nodrop 
 | parse regex field=mesg " \[pid (?<process_id>[0-9]+)\] (?<error_mesg>[a-zA-Z].*)" nodrop 
 | parse regex field=mesg " \[pid (?<process_id>[0-9]+):tid (?<thread_id>[0-9]+)\] (?<error_mesg>[a-zA-Z].*)" nodrop 
-```
+ `n```
 ### Use Cases:
 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Critical Error Messages, Responses Over Time, Top 5 Critical Messages, Visitor Locations
 
@@ -393,7 +393,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "\[[^]]*]\s\[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\] " nodrop
 | parse field=mesg "[error] *" as error_mesg nodrop
 | parse field=mesg "[client *] *" as src_ip, error_mesg nodrop
-```
+ `n```
 ### Use Cases:
 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Critical Error Messages, Responses Over Time, Visitor Locations
 
@@ -404,7 +404,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
 | parse regex field=mesg "^\[[^]]*]\s\[(?<log_level>[a-z]+)\]" nodrop
 | parse regex field=mesg "\[[^]]*]\s\[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\] " nodrop
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Browsers and Operating Systems, Bytes Served, Bytes Served - Outlier, Client Errors, Client Locations - 4xx Errors, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Desktop OS Versions, Error Log Levels, Error Responses by Server, Highly Malicious Threats, HTTP Methods, Log Level - One Day Time Comparison, Log Reduce, Media Types Served, Messages by Log Level - Over Time, Non 200 Response Status Codes, Number of Hits by Server - One Day Time Comparison, Number of Requests by Client - One Day Time Comparison, Number of Visitors, Popular Mobile Device Versions, Responses Over Time, Server Errors, Server Errors Over Time, Threat Count, Threat Locations, Threats by Actors, Threats by Malicious Confidence, Threats by Source, Top 10 Bots Observed, Top 10 Errors from Error Log Files, Top 10 Messages, Top 10 Search Terms from Popular Search Engines, Top 10 Threats, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing 4xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Top 5 Highly Malicious URLs, Top 5 Referrers, Top 5 Urls, Top 5 URLs Causing 4xx Responses, Traffic Distribution by Server, Traffic Volume and Bytes Served, Unique Visitors, United States, Visitor Locations, Visitor Locations - One Day Time Comparison, Visitor Platforms, Visitor Platforms Over Time, Visits by Country Over Time, Visits by US Regions Over Time, Worldwide
 
@@ -417,7 +417,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex field=mesg "\[[^]]*]\s\[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\] " nodrop
 | parse field=mesg "[error] *" as error_mesg nodrop
 | parse field=mesg "[client *] *" as src_ip, error_mesg nodrop
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Browsers and Operating Systems, Bytes Served, Bytes Served - Outlier, Client Errors, Client Locations - 4xx Errors, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Desktop OS Versions, Error Log Levels, Highly Malicious Threats, HTTP Methods, Log Level - One Day Time Comparison, Log Reduce, Media Types Served, Messages by Log Level - Over Time, Non 200 Response Status Codes, Number of Hits by Server - One Day Time Comparison, Number of Requests by Client - One Day Time Comparison, Number of Visitors, Popular Mobile Device Versions, Responses Over Time, Server Errors, Server Errors Over Time, Threat Count, Threat Locations, Threats by Actors, Threats by Malicious Confidence, Threats by Source, Top 10 Bots Observed, Top 10 Errors from Error Log Files, Top 10 Messages, Top 10 Search Terms from Popular Search Engines, Top 10 Threats, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing 4xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Top 5 Highly Malicious URLs, Top 5 Referrers, Top 5 Urls, Traffic Distribution by Server, Traffic Volume and Bytes Served, Unique Visitors, United States, Visitor Locations, Visitor Locations - One Day Time Comparison, Visitor Platforms, Visitor Platforms Over Time, Visits by Country Over Time, Visits by US Regions Over Time, Worldwide
 
@@ -428,7 +428,7 @@ Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx r
 | parse regex "^(?<src_ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" nodrop
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)" nodrop
 | parse regex field=mesg "(?<method>[A-Z]+)\s(?<url>\S+)\sHTTP\/[\d\.]+[\\n]*\"\s(?<status_code>\d+)\s(?<size>[\d-]+)\s\"(?<referrer>.*?)\"\s\"(?<user_agent>.+?)\".*" nodrop
-```
+ `n```
 ### Use Cases:
 4xx Status Codes by Server, 5xx Status Codes by Server, Apache - All HTTP Response codes with their count, Apache - Client Errors (4xx response codes) per day, Apache - Critical log messages, Apache - HTTP status code summary over time, Apache - Log Level counts, Apache - Malicious URL requests, Apache - Robots, Apache - Server start and stop events, Apache - Server stops and starts over time, Apache - Slowest URLs by average time, Apache - Time taken to serve requests, Apache - Top 404 referrers, Apache - Top browsers, Apache - Top clients, Apache - Top clients causing errors responses, Apache - Top error reasons, Apache - Top files causing errors, Apache - Top Referrers causing errors, Apache - Top URLs by bytes served, Apache - Traffic volume and bytes served per day, Browsers and Operating Systems, Bytes Served - Outlier, Client Errors, Client Locations with Critical Errors, Critical Error Messages, Critical Errors, Desktop OS Versions, Error Log Levels, Highly Malicious Threats, Log Level - One Day Time Comparison, Log Reduce, Messages by Log Level - Over Time, Number of Hits by Server - One Day Time Comparison, Number of Requests by Client - One Day Time Comparison, Number of Visitors, Popular Mobile Device Versions, Responses Over Time, Server Errors, Threat Count, Threat Locations, Threats by Actors, Threats by Malicious Confidence, Threats by Source, Top 10 Messages, Top 10 Threats, Top 10 URLs with 4xx Errors, Top 10 URLs with 5xx Errors, Top 5 Clients Causing Errors, Top 5 Critical Messages, Top 5 Highly Malicious URLs, Traffic Distribution by Server, Traffic Volume and Bytes Served, Unique Visitors, United States, Visitor Locations, Visitor Locations - One Day Time Comparison, Visitor Platforms, Visitor Platforms Over Time, Visits by Country Over Time, Visits by US Regions Over Time, Worldwide
 

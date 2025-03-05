@@ -5,7 +5,7 @@
 | json "message.data.logName" as log_name
 | json "message.data.resource.labels" as labels
 | json field=labels "function_name", "project_id", "region" as function_name, project_id, region
-```
+ `n```
 ### Use Cases:
 Audit Events Over Time, Audit Logs - Actions Performed, Execution Status, Function Statistics by Project, Google Cloud Function - Failures, Google Cloud Function - Operations, Google Cloud Function - Statistics by Project, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project, Recent Error Audit Events, Recent Failures, Top 10 Functions by Average Latency (ms), Top 10 Functions by Executions, Unauthorized Audit Events
 
@@ -19,7 +19,7 @@ Audit Events Over Time, Audit Logs - Actions Performed, Execution Status, Functi
 | parse regex field=permissions "\"permission\":\"(?<actionstring>[a-zA-Z\\.]+)" multi
 | parse regex field=actionstring "(?<action>\w+)$" multi
 | json "message.data.operation","message.data.operation.last" as operation,islast nodrop
-```
+ `n```
 ### Use Cases:
 Audit Events Over Time, Google Cloud Function - Failures, Google Cloud Function - Operations, Google Cloud Function - Statistics by Project, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project, Recent Error Audit Events, Unauthorized Audit Events
 
@@ -30,7 +30,7 @@ Audit Events Over Time, Google Cloud Function - Failures, Google Cloud Function 
 | json "message.data.logName" as log_name
 | json "message.data.resource.labels", "message.data.severity", "message.data.timestamp", "message.data.textPayload" as labels, severity, timestamp, text
 | json field=labels "function_name", "project_id", "region" as function_name, project_id, region
-```
+ `n```
 ### Use Cases:
 Audit Events Over Time, Audit Logs - Actions Performed, Google Cloud Function - Failures, Google Cloud Function - Operations, Google Cloud Function - Statistics by Project, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project, Recent Error Audit Events, Recent Failures, Unauthorized Audit Events
 
@@ -47,7 +47,7 @@ Audit Events Over Time, Audit Logs - Actions Performed, Google Cloud Function - 
 | parse regex field=permissions "\"permission\":\"(?<actionstring>[a-zA-Z\\.]+)" multi
 | parse regex field=actionstring "(?<action>\w+)$" multi
 | parse regex field=permissions "\"granted\":(?<granted>[a-z]+)" multi nodrop
-```
+ `n```
 ### Use Cases:
 Audit Events Over Time, Audit Logs - Actions Performed, Google Cloud Function - Failures, Google Cloud Function - Operations, Google Cloud Function - Statistics by Project, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project, Recent Error Audit Events, Unauthorized Audit Events
 
@@ -64,7 +64,7 @@ Audit Events Over Time, Audit Logs - Actions Performed, Google Cloud Function - 
 | parse regex field=permissions "\"permission\":\"(?<actionstring>[a-zA-Z\\.]+)" multi
 | parse regex field=actionstring "(?<action>\w+)$" multi
 | json "message.data.protoPayload.status.code", "message.data.protoPayload.status.message" as errCode,errMsg
-```
+ `n```
 ### Use Cases:
 Google Cloud Function - Failures, Google Cloud Function - Operations, Google Cloud Function - Statistics by Project, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project, Recent Error Audit Events
 
@@ -78,7 +78,7 @@ Google Cloud Function - Failures, Google Cloud Function - Operations, Google Clo
 | json field=payload "authenticationInfo.principalEmail", "authorizationInfo[*]" as user, permissions
 | parse regex field=permissions "\"granted\":(?<granted>[a-z]+)" multi nodrop
 | parse regex field=permissions "\"permission\":\"(?<action>[a-zA-Z\\.]+)" multi
-```
+ `n```
 ### Use Cases:
 Google Cloud Function - Failures, Google Cloud Function - Operations, Google Cloud Function - Statistics by Project, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project, Recent Error Audit Events, Unauthorized Audit Events
 
@@ -90,7 +90,7 @@ Google Cloud Function - Failures, Google Cloud Function - Operations, Google Clo
 | parse regex "\"textPayload\":\"Function execution took (?<latency>[0-9]+) ms[^\"]*status"
 | json "message.data.resource.labels" as labels
 | json field=labels "function_name", "project_id", "region" as function_name, project_id, region
-```
+ `n```
 ### Use Cases:
 Audit Events Over Time, Audit Logs - Actions Performed, Execution Status, Google Cloud Function - Failures, Google Cloud Function - Operations, Google Cloud Function - Statistics by Project, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project, Recent Error Audit Events, Recent Failures, Top 10 Functions by Average Latency (ms), Unauthorized Audit Events
 
@@ -102,7 +102,7 @@ Audit Events Over Time, Audit Logs - Actions Performed, Execution Status, Google
 | parse regex "\"textPayload\":\"Function execution took (?<latency>[0-9]+) ms[^\"]*status[^\"]*: ?(?<status>[^\"]+)\""
 | json "message.data.resource.labels" as labels
 | json field=labels "function_name", "project_id", "region" as function_name, project_id, region
-```
+ `n```
 ### Use Cases:
 Audit Events Over Time, Audit Logs - Actions Performed, Execution Status, Function Statistics by Project, Google Cloud Function - Failures, Google Cloud Function - Operations, Google Cloud Function - Statistics by Project, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project, Recent Error Audit Events, Recent Failures, Top 10 Functions by Average Latency (ms), Top 10 Functions by Error Status, Top 10 Functions by Executions, Unauthorized Audit Events
 
@@ -114,7 +114,7 @@ Audit Events Over Time, Audit Logs - Actions Performed, Execution Status, Functi
 | parse regex "\"textPayload\":\"Function execution took[^\"]*status[^\"]*: ?(?<status>[^\"]+)\""
 | json "message.data.resource.labels" as labels
 | json field=labels "function_name", "project_id", "region" as function_name, project_id, region
-```
+ `n```
 ### Use Cases:
 Audit Events Over Time, Audit Logs - Actions Performed, Execution Status, Google Cloud Function - Failures, Google Cloud Function - Operations, Google Cloud Function - Statistics by Project, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project, Recent Error Audit Events, Recent Failures, Unauthorized Audit Events
 
@@ -125,7 +125,7 @@ Audit Events Over Time, Audit Logs - Actions Performed, Execution Status, Google
 | parse regex "\"logName\":\"(?<log_name>[^\"]+)\""
 | json "message.data.resource.labels", "message.data.severity", "message.data.timestamp", "message.data.textPayload" as labels, severity, timestamp, text
 | json field=labels "function_name", "project_id", "region" as function, project, region
-```
+ `n```
 ### Use Cases:
 Google Cloud Function - Failures, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project
 
@@ -138,7 +138,7 @@ Google Cloud Function - Failures, Google Cloud Functions - Failures, Google Clou
 | json field=labels "function_name", "project_id", "region" as function, project, region
 | json field=payload "authenticationInfo.principalEmail", "authorizationInfo[*]" as user, permissions
 | parse regex field=permissions "\"granted\":(?<granted>(.*(?=,))),\"permission\":\"(?<action>(.*?(?=\")))" multi
-```
+ `n```
 ### Use Cases:
 Google Cloud Function - Failures, Google Cloud Function - Operations, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project
 
@@ -151,7 +151,7 @@ Google Cloud Function - Failures, Google Cloud Function - Operations, Google Clo
 | json field=labels "function_name", "project_id", "region" as function, project, region
 | json field=payload "authenticationInfo.principalEmail", "authorizationInfo[*]" as user, permissions
 | parse regex field=permissions "\"permission\":\"(?<action>[a-zA-Z\.]+)\",\"granted\":(?<granted>[a-z]+)}" multi
-```
+ `n```
 ### Use Cases:
 Google Cloud Functions - Failures, Google Cloud Functions - Operations
 
@@ -163,7 +163,7 @@ Google Cloud Functions - Failures, Google Cloud Functions - Operations
 | parse regex "\"textPayload\":\"Function execution took (?<latency>[0-9]+) ms[^\"]*status[^\"]*: ?(?<status>[^\"]+)\""
 | json "message.data.resource.labels" as labels
 | json field=labels "function_name", "project_id", "region" as function, project, region
-```
+ `n```
 ### Use Cases:
 Google Cloud Function - Failures, Google Cloud Function - Operations, Google Cloud Function - Statistics by Project, Google Cloud Functions - Failures, Google Cloud Functions - Operations, Google Cloud Functions - Statistics by Project
 

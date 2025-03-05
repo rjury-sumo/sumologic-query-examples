@@ -46,11 +46,11 @@ foreach ($p in $parsers) {
     $app = $p.app
     if ($mdp.ContainsKey($app)) {
         # append to existing app
-        $mdp[$app] += "`n`n## Parser:`n" + '```' + "`n$($p.parser)"+ '```' +"`n### Use Cases:`n$($p.use_cases)`n`n"
+        $mdp[$app] += "`n`n## Parser:`n" + '```' + "`n$($p.parser)"+ ' `n```' +"`n### Use Cases:`n$($p.use_cases)`n`n"
     } else {
         # create new app
         $md = "# Parsers For $($p.app)`n`n"
-        $md += "## Parser:`n" + '```' + "`n$($p.parser)"+ '```' +"`n### Use Cases:`n$($p.use_cases)`n`n"
+        $md += "## Parser:`n" + '```' + "`n$($p.parser)"+ ' `n```' +"`n### Use Cases:`n$($p.use_cases)`n`n"
         $mdp[$app] = $md
     }
 }   

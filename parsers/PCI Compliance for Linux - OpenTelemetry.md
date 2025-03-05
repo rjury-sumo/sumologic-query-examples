@@ -6,7 +6,7 @@
 | parse regex "\s+(?<process>\w*): pam_unix\(sudo:auth\): conversation failed" nodrop
 | parse "pam_unix(*:auth): authentication failure;" as process nodrop
 | parse "ruser=* rhost=* user=*" as src_user, src_host, dest_user nodrop
-```
+ `n```
 ### Use Cases:
 Active Services Over Time, Default Login (root user) - Failure, Default Login (root user) - Success, Excessive Failed Access Attempts, Failed Logins, Failed sudo, Recent sudo Attempts, Running Services (Daemons), Stopped Services, Successful Logins, sudo Attempts, sudo Attempts Over Time, System Stopped, System Time Change Attempt, Top 10 sudo by Host, Top 10 sudo by User, Unique Services, Unique Services Running, User Account Created, User Account Deleted
 
@@ -21,7 +21,7 @@ Active Services Over Time, Default Login (root user) - Failure, Default Login (r
 | parse regex "\s+(?<process>\w*): pam_unix\(sudo:auth\): conversation failed" nodrop
 | parse "pam_unix(*:auth): authentication failure;" as process nodrop
 | parse "ruser=* rhost=* user=*" as src_user, src_host, dest_user nodrop
-```
+ `n```
 ### Use Cases:
 Active Services Over Time, Default Login (root user) - Failure, Default Login (root user) - Success, Excessive Failed Access Attempts, Failed Logins, Failed sudo, Recent sudo Attempts, Running Services (Daemons), Stopped Services, Successful Logins, System Stopped, System Time Change Attempt, Top 10 sudo by Host, Unique Services, Unique Services Running, User Account Created, User Account Deleted
 
@@ -37,7 +37,7 @@ Active Services Over Time, Default Login (root user) - Failure, Default Login (r
 | parse regex "session (?<action>\w*) for user (?<dest_user>\S*)" nodrop
 | parse "rhost=* " as src_host nodrop
 | parse "Accepted * for * from * port * *" as type, dest_user, src_host, src_port, protocol nodrop
-```
+ `n```
 ### Use Cases:
 Active Services Over Time, Default Login (root user) - Failure, Default Login (root user) - Success, Excessive Failed Access Attempts, Failed Logins, Running Services (Daemons), Stopped Services, Successful Logins, System Stopped, System Time Change Attempt, Unique Services, Unique Services Running, User Account Created, User Account Deleted
 
@@ -52,7 +52,7 @@ Active Services Over Time, Default Login (root user) - Failure, Default Login (r
 | parse regex "\s+(?<process>\w*): pam_unix\(sudo:auth\): conversation failed" nodrop
 | parse "pam_unix(*:auth): authentication failure;" as process nodrop
 | parse "ruser=* rhost=* user=*" as src_user, src_host, dest_user nodrop
-```
+ `n```
 ### Use Cases:
 Active Services Over Time, Default Login (root user) - Failure, Default Login (root user) - Success, Excessive Failed Access Attempts, Failed Logins, Failed sudo, Running Services (Daemons), Stopped Services, Successful Logins, System Stopped, System Time Change Attempt, Top 10 sudo by Host, Unique Services, Unique Services Running, User Account Created, User Account Deleted
 
@@ -65,7 +65,7 @@ Active Services Over Time, Default Login (root user) - Failure, Default Login (r
 | parse regex "\s+(?<process>\w*): pam_unix\(sudo:auth\): conversation failed" nodrop
 | parse "pam_unix(*:auth): authentication failure;" as process nodrop
 | parse "ruser=* rhost=* user=*" as src_user, src_host, dest_user nodrop
-```
+ `n```
 ### Use Cases:
 Active Services Over Time, Default Login (root user) - Failure, Default Login (root user) - Success, Excessive Failed Access Attempts, Failed Logins, Running Services (Daemons), Stopped Services, Successful Logins, System Stopped, System Time Change Attempt, Top 10 sudo by Host, Unique Services, Unique Services Running, User Account Created, User Account Deleted
 
@@ -86,7 +86,7 @@ Active Services Over Time, Default Login (root user) - Failure, Default Login (r
 | parse "Failed publickey for * from * port * *" as dest_user, src_host, src_port, protocol nodrop
 | parse "Failed password for * from * port * *" as dest_user, src_host, src_port, protocol nodrop
 | parse "Failed password for invalid user * from * port * *" as dest_user, src_host, src_port, protocol nodrop
-```
+ `n```
 ### Use Cases:
 Active Services Over Time, Default Login (root user) - Failure, Excessive Failed Access Attempts, Failed Logins, Running Services (Daemons), Stopped Services, Successful Logins, System Stopped, System Time Change Attempt, Unique Services, Unique Services Running, User Account Created, User Account Deleted
 
@@ -97,7 +97,7 @@ Active Services Over Time, Default Login (root user) - Failure, Excessive Failed
 | parse regex "\S*\s+\d+\s+\d+:\d+:\d+\s+(?<_sourceHost>\S*)\s+" nodrop
 | parse regex "\S*\s+\d+\s+\d+:\d+:\d+\s+(?<dest_host>\S*)\s+(?<service>\w*)\[\d+\]:\s+ntpd (?<state>[^\(]*)" nodrop
 | parse regex "\S*\s+\d+\s+\d+:\d+:\d+\s+(?<dest_host>\S*)\s+(?<service>\w*):\s+\[[\s\S]*\] (?<state>[\s\S]*)$" nodrop
-```
+ `n```
 ### Use Cases:
 Excessive Failed Access Attempts, Running Services (Daemons), Stopped Services, System Time Change Attempt, Unique Services, Unique Services Running, User Account Created
 
@@ -109,7 +109,7 @@ Excessive Failed Access Attempts, Running Services (Daemons), Stopped Services, 
 | parse regex "\S*\s+\d+\s+\d+:\d+:\d+\s(?<dest_host>\S*)\s(?<message>.+)$" nodrop
 | extract "sudo:\s+(?<src_user>[^ ]+?)\s:.+?USER=(?<dest_user>[^ ]+?)\s+" nodrop
 | parse "synchronized to *," as src_host nodrop 
-```
+ `n```
 ### Use Cases:
 Excessive Failed Access Attempts, Running Services (Daemons), System Time Change Attempt, Unique Services, Unique Services Running
 
@@ -122,7 +122,7 @@ Excessive Failed Access Attempts, Running Services (Daemons), System Time Change
 | parse field=msg "delete user '*'" as dest_user nodrop
 | parse "account=*, group=*, gid=" as dest_user, dest_group nodrop
 | parse "account=*, uid=" as dest_user nodrop 
-```
+ `n```
 ### Use Cases:
 Excessive Failed Access Attempts, Running Services (Daemons), Stopped Services, System Stopped, System Time Change Attempt, Unique Services, Unique Services Running, User Account Created, User Account Deleted
 
@@ -137,7 +137,7 @@ Excessive Failed Access Attempts, Running Services (Daemons), Stopped Services, 
 | parse field=msg ", shell=*\"" as shell nodrop
 | parse field=msg "account=*, uid=*, gid=*, home=*, shell=*" as dest_user, UID, GID, home, shell nodrop
 | parse field=msg "account=*, uid=" as dest_user nodrop
-```
+ `n```
 ### Use Cases:
 Excessive Failed Access Attempts, Running Services (Daemons), System Time Change Attempt, Unique Services, Unique Services Running, User Account Created
 
@@ -146,7 +146,7 @@ Excessive Failed Access Attempts, Running Services (Daemons), System Time Change
 ## Parser:
 ```
 | parse regex "\S*\s+\d+\s+\d+:\d+:\d+\s+(?<dest_host>\S*)\s+" nodrop
-```
+ `n```
 ### Use Cases:
 Excessive Failed Access Attempts, Running Services (Daemons), Stopped Services, System Stopped, System Time Change Attempt, Unique Services, Unique Services Running, User Account Created
 
@@ -156,7 +156,7 @@ Excessive Failed Access Attempts, Running Services (Daemons), Stopped Services, 
 ```
 | parse regex "\S*\s+\d+\s+\d+:\d+:\d+\s+(?<dest_host>\S*)\s+(?<process>\w*)(?:\[\d+\]:|:)\s*(?<message>.+)$" nodrop
 | parse regex "(?<service>\w*)\[\d+\]:\s+" 
-```
+ `n```
 ### Use Cases:
 Active Services Over Time, Excessive Failed Access Attempts, Running Services (Daemons), Stopped Services, System Stopped, System Time Change Attempt, Unique Services, Unique Services Running, User Account Created, User Account Deleted
 

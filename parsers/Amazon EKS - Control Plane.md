@@ -4,7 +4,7 @@
 ```
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | json field=log "level" as level
-```
+ `n```
 ### Use Cases:
 Error Logs, Failure Rate, Failures by Reason and Namespace, Most Active Users, Requests by Audit Policy, Requests by Stage, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -21,7 +21,7 @@ Error Logs, Failure Rate, Failures by Reason and Namespace, Most Active Users, R
 | json field=log "responseStatus.reason" as reason
 | json field=log "objectRef.namespace" as namespace
 | json field=log "user.username" as username
-```
+ `n```
 ### Use Cases:
 Error Logs, Failures by Reason and Namespace, Most Active Users, Severity Breakdown, Severity Over Time, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -32,7 +32,7 @@ Error Logs, Failures by Reason and Namespace, Most Active Users, Severity Breakd
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | json field=log "responseStatus.code", "verb", "requestURI", "objectRef.resource", "sourceIPs", "objectRef.namespace", "user.username" as status_code, method, url, k8_resource, ip , namespace, username
 | json field=log  "responseStatus.reason" as reason nodrop
-```
+ `n```
 ### Use Cases:
 Error Logs, Failure Rate, Failures by Reason and Namespace, Most Active Users, Requests by Stage, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -42,7 +42,7 @@ Error Logs, Failure Rate, Failures by Reason and Namespace, Most Active Users, R
 ```
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | json field=log "responseStatus.code", "verb", "requestURI", "objectRef.resource", "sourceIPs", "responseStatus.reason", "objectRef.namespace", "user.username"   as status_code, method, url, k8_resource, ip, reason, namespace, username
-```
+ `n```
 ### Use Cases:
 Error Logs, Most Active Users, Severity Breakdown, Severity Over Time, Top URLS with Non-200, Top Users by Failures
 
@@ -52,7 +52,7 @@ Error Logs, Most Active Users, Severity Breakdown, Severity Over Time, Top URLS 
 ```
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | json field=log "responseStatus.code", "verb", "requestURI", "objectRef.resource", "sourceIPs", "responseStatus.reason", "objectRef.namespace", "user.username" as status_code, method, url, k8_resource, ip, reason, namespace, username
-```
+ `n```
 ### Use Cases:
 Error Logs, Failure Rate, Failures by Reason and Namespace, Most Active Users, Non-200 Total Count, Requests by Audit Policy, Requests by Stage, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -62,7 +62,7 @@ Error Logs, Failure Rate, Failures by Reason and Namespace, Most Active Users, N
 ```
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | json field=log "stage" as stage
-```
+ `n```
 ### Use Cases:
 Error Logs, Failures by Reason and Namespace, Most Active Users, Requests by Stage, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -73,7 +73,7 @@ Error Logs, Failures by Reason and Namespace, Most Active Users, Requests by Sta
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | parse field=log "Created job *" as job
 | parse field=log "* *       " as code,time
-```
+ `n```
 ### Use Cases:
 Access Granted by Users, Error Logs, Error Messages Count, Errors, Failure Rate, Failures by Reason and Namespace, Job Creations, Job Deletions, Logs, Most Active Users, Non-200 Total Count, Pods Created, Requests by Audit Policy, Requests by Stage, Scale Operations, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -84,7 +84,7 @@ Access Granted by Users, Error Logs, Error Messages Count, Errors, Failure Rate,
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | parse field=log "Created pod: *" as pod
 | parse field=log "* *       " as code,time
-```
+ `n```
 ### Use Cases:
 Access Granted by Users, Error Logs, Errors, Failure Rate, Failures by Reason and Namespace, Logs, Most Active Users, Non-200 Total Count, Pods Created, Requests by Audit Policy, Requests by Stage, Scale Operations, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -94,7 +94,7 @@ Access Granted by Users, Error Logs, Errors, Failure Rate, Failures by Reason an
 ```
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | parse field=log "Deleted job *" as job_name
-```
+ `n```
 ### Use Cases:
 Access Granted by Users, Error Logs, Error Messages Count, Errors, Failure Rate, Failures by Reason and Namespace, Job Deletions, Logs, Most Active Users, Non-200 Total Count, Pods Created, Requests by Audit Policy, Requests by Stage, Scale Operations, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -105,7 +105,7 @@ Access Granted by Users, Error Logs, Error Messages Count, Errors, Failure Rate,
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | parse field=log "Deleted pod: *" as pod
 | parse field=log "* *       " as code,time
-```
+ `n```
 ### Use Cases:
 Access Granted by Users, Error Logs, Error Messages Count, Errors, Failure Rate, Failures by Reason and Namespace, Job Creations, Job Deletions, Logs, Most Active Users, Non-200 Total Count, Pods Created, Pods Deleted, Requests by Audit Policy, Requests by Stage, Scale Operations, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -116,7 +116,7 @@ Access Granted by Users, Error Logs, Error Messages Count, Errors, Failure Rate,
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | parse field=log "msg=\"*\"" as err_msg
 | parse field=log "time=\"*\"" as message_time
-```
+ `n```
 ### Use Cases:
 Error Logs, Errors, Failure Rate, Failures by Reason and Namespace, Logs, Most Active Users, Non-200 Total Count, Requests by Audit Policy, Requests by Stage, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -127,7 +127,7 @@ Error Logs, Errors, Failure Rate, Failures by Reason and Namespace, Logs, Most A
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | parse field=log "msg=\"*\"" as err_msg
 | parse field=log "username=\"*\"" as username
-```
+ `n```
 ### Use Cases:
 Access Granted by Users, Error Logs, Errors, Failure Rate, Failures by Reason and Namespace, Logs, Most Active Users, Non-200 Total Count, Requests by Audit Policy, Requests by Stage, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -139,7 +139,7 @@ Access Granted by Users, Error Logs, Errors, Failure Rate, Failures by Reason an
 | parse field=log "msg=\"*\"" as message
 | parse field=log "username=\"*\"" as username
 | parse field=log "time=\"*\"" as message_time
-```
+ `n```
 ### Use Cases:
 Error Logs, Failure Rate, Failures by Reason and Namespace, Logs, Most Active Users, Non-200 Total Count, Requests by Audit Policy, Requests by Stage, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -149,7 +149,7 @@ Error Logs, Failure Rate, Failures by Reason and Namespace, Logs, Most Active Us
 ```
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | parse regex field=log "^(?<severity>.)(?:[0-9])"
-```
+ `n```
 ### Use Cases:
 Access Granted by Users, Error Logs, Error Messages Count, Errors, Failure Rate, Failures by Reason and Namespace, Logs, Most Active Users, Non-200 Total Count, Pods Created, Requests by Audit Policy, Requests by Stage, Scale Operations, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -160,7 +160,7 @@ Access Granted by Users, Error Logs, Error Messages Count, Errors, Failure Rate,
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | parse regex field=log "^(?<severity>.)(?:[0-9])"
 | parse field=log "Scaled * replica set * to *" as direction,replica_set,scaled_to
-```
+ `n```
 ### Use Cases:
 Access Granted by Users, Error Logs, Errors, Failure Rate, Failures by Reason and Namespace, Logs, Most Active Users, Non-200 Total Count, Requests by Audit Policy, Requests by Stage, Scale Operations, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -170,7 +170,7 @@ Access Granted by Users, Error Logs, Errors, Failure Rate, Failures by Reason an
 ```
 | json "message" nodrop | if (!isblank(message), message, _raw) as log
 | parse regex field=log "^^(?<severity>.)(?:[0-9])(?:.*\])\s(?<log_msg>.*)"
-```
+ `n```
 ### Use Cases:
 Access Granted by Users, Error Logs, Error Messages, Error Messages Count, Errors, Failure Rate, Failures by Reason and Namespace, Job Creations, Job Deletions, Logs, Most Active Users, Non-200 Total Count, Pods Created, Pods Deleted, Requests by Audit Policy, Requests by Stage, Scale Operations, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 
@@ -180,7 +180,7 @@ Access Granted by Users, Error Logs, Error Messages, Error Messages Count, Error
 ```
 | json field=_raw "message.responseStatus.code", "message.verb", "message.requestURI", "message.objectRef.resource", "message.sourceIPs",  "message.objectRef.namespace", "message.user.username"   as status_code, method, url, k8_resource, ip, namespace, username
 | json field=_raw  "message.responseStatus.reason" as reason nodrop
-```
+ `n```
 ### Use Cases:
 Error Logs, Failures by Reason and Namespace, Most Active Users, Severity Breakdown, Severity Over Time, Status Code Trend, Top 10 URLS with Problem Status Codes, Top Failure Reasons, Top URLS with Non-200, Top Users by Failures
 

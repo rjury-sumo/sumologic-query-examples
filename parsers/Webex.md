@@ -17,7 +17,7 @@
 | parse "\"actorOrgName\": \"*\"" as actor_org_name nodrop
 | parse "\"actorUserAgent\": \"*\"" as actor_user_agent nodrop
 | parse "\"actorIp\": \"*\"" as actor_ip nodrop
-```
+ `n```
 ### Use Cases:
 Account Assigned to External User Events, Authorization Code Related Events Over Time, Authorization Events Over Time, Change in MFA Over Time, Devices Created, Devices Deleted, Devices Rebooted, Events by Admin, Events by Category, Events by Category Over Time, Events by User Agent, Events from High Risk Countries, External Admin Addition Events, Geo Location of Events, Groups Created, Login Events Over Time, Recent Activity on Allow List, Recent Activity on Deny List, Recent Authorization Code Events, Recent Authorization Events, Recent Deactivated Users, Recent Events, Recent Login Events, Recent Reactivated Users, Recent Revoked Accounts by Admin, Remote Access Related Events Over Time, Total Audit Events, Users Created, Users Deleted, Users Updated
 
@@ -41,7 +41,7 @@ Account Assigned to External User Events, Authorization Code Related Events Over
 | parse "\"actorUserAgent\": \"*\"" as actor_user_agent nodrop
 | parse "\"actorIp\": \"*\"" as actor_ip nodrop
 | parse "domainName\": [*]" as domain_name nodrop
-```
+ `n```
 ### Use Cases:
 Account Assigned to External User Events, Authorization Code Related Events Over Time, Authorization Events Over Time, Change in MFA Over Time, Devices Created, Devices Deleted, Devices Rebooted, Events by Admin, Events by Category, Events by Category Over Time, Events by User Agent, Events from High Risk Countries, External Admin Addition Events, Geo Location of Events, Groups Created, Login Events Over Time, Recent Activity on Allow List, Recent Activity on Deny List, Recent Authorization Code Events, Recent Authorization Events, Recent Events, Recent Login Events, Recent Revoked Accounts by Admin, Total Audit Events, Users Created, Users Deleted, Users Updated
 
@@ -67,7 +67,7 @@ Account Assigned to External User Events, Authorization Code Related Events Over
 | parse "domainName\": [*]" as domain_name nodrop
 | parse "\"accountType\": \"*\"" as account_type nodrop
 | parse "\"webexSite\": \"*\"" as webex_site nodrop
-```
+ `n```
 ### Use Cases:
 Account Assigned to External User Events, Authorization Code Related Events Over Time, Change in MFA Over Time, Devices Created, Devices Deleted, Devices Rebooted, Events by Admin, Events by Category, Events by Category Over Time, Events by User Agent, Events from High Risk Countries, External Admin Addition Events, Geo Location of Events, Groups Created, Login Events Over Time, Recent Activity on Deny List, Recent Authorization Code Events, Recent Events, Recent Login Events, Recent Revoked Accounts by Admin, Total Audit Events, Users Created, Users Deleted, Users Updated
 
@@ -97,7 +97,7 @@ Account Assigned to External User Events, Authorization Code Related Events Over
 | parse "\"externalAdminOrgName\": \"*\"" as external_admin_org_name nodrop
 | parse "roleAdded\": [*]" as role_added nodrop
 | parse "roleRemoved\": [*]" as role_removed nodrop
-```
+ `n```
 ### Use Cases:
 Authorization Code Related Events Over Time, Devices Created, Devices Deleted, Devices Rebooted, Events by Admin, Events by Category, Events by Category Over Time, Events by User Agent, Events from High Risk Countries, External Admin Addition Events, Geo Location of Events, Groups Created, Login Events Over Time, Recent Activity on Deny List, Recent Events, Total Audit Events, Users Created, Users Deleted, Users Updated
 
@@ -128,7 +128,7 @@ Authorization Code Related Events Over Time, Devices Created, Devices Deleted, D
 | parse "roleAdded\": [*]" as role_added nodrop
 | parse "roleRemoved\": [*]" as role_removed nodrop
 | parse "\"targetEmail\": \"*\"" as target_email nodrop
-```
+ `n```
 ### Use Cases:
 Account Assigned to External User Events, Authorization Code Related Events Over Time, Change in MFA Over Time, Devices Created, Devices Deleted, Devices Rebooted, Events by Admin, Events by Category, Events by Category Over Time, Events by User Agent, Events from High Risk Countries, External Admin Addition Events, Geo Location of Events, Groups Created, Login Events Over Time, Recent Activity on Deny List, Recent Authorization Code Events, Recent Events, Recent Login Events, Total Audit Events, Users Created, Users Deleted, Users Updated
 

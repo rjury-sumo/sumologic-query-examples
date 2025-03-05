@@ -3,7 +3,7 @@
 ## Parser:
 ```
 | json "log" nodrop
-```
+ `n```
 ### Use Cases:
 AOF Events, AOF Rewrite Status, Background Saving Status, Log Reduce by Errors, Logs, Master <--> Replica Sync Events, Master Replica Sync Status, RDB Age, RDB Events, RDBMemory Usage on Creation
 
@@ -13,7 +13,7 @@ AOF Events, AOF Rewrite Status, Background Saving Status, Log Reduce by Errors, 
 ```
 | parse "Background AOF rewrite finished *\"" as status1 nodrop
 | parse "Background AOF rewrite finished *" as status2 nodrop
-```
+ `n```
 ### Use Cases:
 AOF Rewrite Status, Master <--> Replica Sync Events, RDB Events
 
@@ -23,7 +23,7 @@ AOF Rewrite Status, Master <--> Replica Sync Events, RDB Events
 ```
 | parse "Background saving terminated with *\"" as status1 nodrop
 | parse "Background saving terminated with *" as status2 nodrop 
-```
+ `n```
 ### Use Cases:
 AOF Events, AOF Rewrite Status, Background Saving Status, Master <--> Replica Sync Events, RDB Events, RDBMemory Usage on Creation
 
@@ -33,7 +33,7 @@ AOF Events, AOF Rewrite Status, Background Saving Status, Master <--> Replica Sy
 ```
 | parse "MASTER <-> REPLICA sync: *\"" as sync_event1 nodrop
 | parse "MASTER <-> REPLICA sync: *" as sync_event2 nodrop
-```
+ `n```
 ### Use Cases:
 Master <--> Replica Sync Events
 
@@ -43,7 +43,7 @@ Master <--> Replica Sync Events
 ```
 | parse "MASTER <-> REPLICA sync: Finished with *\"" as status1 nodrop
 | parse "MASTER <-> REPLICA sync: Finished with *" as status2 nodrop 
-```
+ `n```
 ### Use Cases:
 AOF Events, AOF Rewrite Status, Background Saving Status, Logs, Master <--> Replica Sync Events, Master Replica Sync Status, RDB Age, RDB Events, RDBMemory Usage on Creation
 
@@ -52,7 +52,7 @@ AOF Events, AOF Rewrite Status, Background Saving Status, Logs, Master <--> Repl
 ## Parser:
 ```
 | parse "RDB age * seconds" as age
-```
+ `n```
 ### Use Cases:
 AOF Events, AOF Rewrite Status, Background Saving Status, Logs, Master <--> Replica Sync Events, RDB Age, RDB Events, RDBMemory Usage on Creation
 
@@ -61,7 +61,7 @@ AOF Events, AOF Rewrite Status, Background Saving Status, Logs, Master <--> Repl
 ## Parser:
 ```
 | parse regex "RDB memory usage when created (?<size>.*? .*?)"
-```
+ `n```
 ### Use Cases:
 AOF Rewrite Status, Master <--> Replica Sync Events, RDB Events, RDBMemory Usage on Creation
 

@@ -7,7 +7,7 @@
 | extract "sourceTranslatedAddress=(?<src_ip>.*?)(?: \w+=|$)" nodrop
 | extract "outcome=(?<successful>.*?)(?:\s|$)" nodrop
 | extract "cat=(?<operation>.*?)(?:\s|$)" nodrop
-```
+ `n```
 ### Use Cases:
 Authentication Forecast, Authentication Outlier, Authentication Over Time, Authentication Services, CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events, CW-007 Detection Summary Events, CW-008 Login Audit Events, Dectection Summary by Type, Detection Summary by Severity, Detection Type by Severity, Engine by Severity, Events Forecast, Events Outlier, Failed Authentications, Host Domain by Severity, Host Domains by Severity, Severity Over Time, Top 50 Files by Severity, Top 50 Hosts by Severity, Top 50 Messages by Severity, Top 50 Usernames by Severity, Top 50 Written Files by Severity
 
@@ -21,7 +21,7 @@ Authentication Forecast, Authentication Outlier, Authentication Over Time, Authe
 | extract "outcome=(?<successful>.*?)(?:\s|$)" nodrop
 | extract "cn3=(?<offset>.*?)(?:\s|$)" nodrop
 | extract "cat=(?<operation>.*?)(?:\s|$)" nodrop
-| extract "deviceCustomDate1=(?<login_time>.*?)(?: \w+=|$```
+| extract "deviceCustomDate1=(?<login_time>.*?)(?: \w+=|$ `n```
 ### Use Cases:
 CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events, CW-007 Detection Summary Events, CW-008 Login Audit Events
 
@@ -36,7 +36,7 @@ CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Eve
 | extract "cn3=(?<offset>.*?)(?:\s|$)" nodrop
 | extract "cat=(?<operation>.*?)(?:\s|$)" nodrop
 | extract "deviceCustomDate1=(?<login_time>.*?)(?: \w+=|$)" nodrop
-```
+ `n```
 ### Use Cases:
 Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events, CW-007 Detection Summary Events, CW-008 Login Audit Events
 
@@ -51,7 +51,7 @@ Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-00
 | extract "cn3=(?<offset>.*?)(?:\s|$)" nodrop
 | extract "cat=(?<operation>.*?)(?:\s|$)" nodrop
 | extract "deviceCustomDate1=(?<login_time>.*?)(?: \w+=|$)" nodrop 
-```
+ `n```
 ### Use Cases:
 Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events, CW-007 Detection Summary Events, CW-008 Login Audit Events, Failed Authentications
 
@@ -61,7 +61,7 @@ Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-00
 ```
 | parse "CEF:0|CrowdStrike|FalconHost|1.0|DetectionSummaryEvent|*|*|" as detect_type,sev
 | parse "cs6=* " as FalconLink nodrop
-```
+ `n```
 ### Use Cases:
 CW-001 Detection Types
 
@@ -70,7 +70,7 @@ CW-001 Detection Types
 ## Parser:
 ```
 | parse "CEF:0|CrowdStrike|FalconHost|1.0|DetectionSummaryEvent|*|*|" as detect_type,sev 
-```
+ `n```
 ### Use Cases:
 Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events, CW-007 Detection Summary Events, CW-008 Login Audit Events, Dectection Summary by Type, Detection Summary by Severity, Detection Type by Severity, Engine by Severity, Events Forecast, Events Outlier, Failed Authentications, Host Domain by Severity, Host Domains by Severity, Severity Over Time, Top 50 Files by Severity, Top 50 Hosts by Severity, Top 50 Messages by Severity, Top 50 Usernames by Severity, Top 50 Written Files by Severity
 
@@ -81,7 +81,7 @@ Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-00
 | parse "CEF:0|CrowdStrike|FalconHost|1.0|DetectionSummaryEvent|*|*|" as detect_type,sev 
 | extract "cs6=(?<FalconHostLink>.*?)(?:\s|$)" nodrop
 | extract "externalID=(?<sensorid>.*?)(?:\s|$)" nodrop
-```
+ `n```
 ### Use Cases:
 Authentication Forecast, Authentication Outlier, Authentication Over Time, Authentication Services, CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events, CW-007 Detection Summary Events, CW-008 Login Audit Events, Dectection Summary by Type, Detection Summary by Severity, Detection Type by Severity, Engine by Severity, Events Forecast, Events Outlier, Failed Authentications, Host Domain by Severity, Host Domains by Severity, Severity Over Time, Top 50 Files by Severity, Top 50 Hosts by Severity, Top 50 Messages by Severity, Top 50 Severity with Falcon links, Top 50 Usernames by Severity, Top 50 Written Files by Severity
 
@@ -102,7 +102,7 @@ Authentication Forecast, Authentication Outlier, Authentication Over Time, Authe
 | extract "spid=(?<spid>.*?)(?:\s|$)" nodrop
 | extract "sntdom=(?<host_domain>.*?)(?:\s|$)" nodrop
 | extract "deviceCustomDate1=(?<doc_written_time>.*?)(?: \w+=|$)" nodrop
-| extract "externalID=(?<sensorid>.*?)(?:\s|$```
+| extract "externalID=(?<sensorid>.*?)(?:\s|$ `n```
 ### Use Cases:
 CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events
 
@@ -124,7 +124,7 @@ CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Eve
 | extract "spid=(?<spid>.*?)(?:\s|$)" nodrop
 | extract "sntdom=(?<host_domain>.*?)(?:\s|$)" nodrop
 | extract "fileHash=(?<filehash>.*?)(?:\s|$)" nodrop
-| extract "externalID=(?<sensorid>.*?)(?:\s|$```
+| extract "externalID=(?<sensorid>.*?)(?:\s|$ `n```
 ### Use Cases:
 CW-001 Detection Types, CW-002 AV Scan Results Events
 
@@ -147,7 +147,7 @@ CW-001 Detection Types, CW-002 AV Scan Results Events
 | extract "sntdom=(?<host_domain>.*?)(?:\s|$)" nodrop
 | extract "fileHash=(?<filehash>.*?)(?:\s|$)" nodrop
 | extract "externalID=(?<sensorid>.*?)(?:\s|$)" nodrop
-```
+ `n```
 ### Use Cases:
 Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events, CW-007 Detection Summary Events, CW-008 Login Audit Events, Engine by Severity, Events Forecast, Events Outlier, Failed Authentications, Host Domain by Severity, Severity Over Time, Top 50 Files by Severity, Top 50 Hosts by Severity, Top 50 Usernames by Severity
 
@@ -168,7 +168,7 @@ Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-00
 | extract "spid=(?<spid>.*?)(?:\s|$)" nodrop
 | extract "sntdom=(?<host_domain>.*?)(?:\s|$)" nodrop
 | extract "deviceCustomDate1=(?<exe_written_time>.*?)(?: \w+=|$)" nodrop
-| extract "externalID=(?<sensorid>.*?)(?:\s|$```
+| extract "externalID=(?<sensorid>.*?)(?:\s|$ `n```
 ### Use Cases:
 CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events
 
@@ -190,7 +190,7 @@ CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Eve
 | extract "sntdom=(?<host_domain>.*?)(?:\s|$)" nodrop
 | extract "deviceCustomDate1=(?<exe_written_time>.*?)(?: \w+=|$)" nodrop
 | extract "externalID=(?<sensorid>.*?)(?:\s|$)" nodrop
-```
+ `n```
 ### Use Cases:
 Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events, CW-007 Detection Summary Events, CW-008 Login Audit Events, Engine by Severity, Events Forecast, Events Outlier, Failed Authentications, Host Domain by Severity, Host Domains by Severity, Severity Over Time, Top 50 Files by Severity, Top 50 Hosts by Severity, Top 50 Messages by Severity, Top 50 Usernames by Severity, Top 50 Written Files by Severity
 
@@ -208,7 +208,7 @@ Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-00
 | extract "cn3=(?<offset>.*?)(?:\s|$)" nodrop
 | extract "spid=(?<spid>.*?)(?:\s|$)" nodrop
 | extract "sntdom=(?<host_domain>.*?)(?:\s|$)" nodrop
-| extract "externalID=(?<sensorid>.*?)(?:\s|$```
+| extract "externalID=(?<sensorid>.*?)(?:\s|$ `n```
 ### Use Cases:
 CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events
 
@@ -228,7 +228,7 @@ CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Eve
 | extract "spid=(?<spid>.*?)(?:\s|$)" nodrop
 | extract "sntdom=(?<host_domain>.*?)(?:\s|$)" nodrop
 | extract "fileHash=(?<filehash>.*?)(?:\s|$)" nodrop
-| extract "externalID=(?<sensorid>.*?)(?:\s|$```
+| extract "externalID=(?<sensorid>.*?)(?:\s|$ `n```
 ### Use Cases:
 CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events, CW-007 Detection Summary Events
 
@@ -249,7 +249,7 @@ CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Eve
 | extract "sntdom=(?<host_domain>.*?)(?:\s|$)" nodrop
 | extract "fileHash=(?<filehash>.*?)(?:\s|$)" nodrop
 | extract "externalID=(?<sensorid>.*?)(?:\s|$)" nodrop
-```
+ `n```
 ### Use Cases:
 Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events, CW-007 Detection Summary Events, CW-008 Login Audit Events, Engine by Severity, Events Forecast, Events Outlier, Failed Authentications, Host Domain by Severity, Severity Over Time, Top 50 Files by Severity, Top 50 Hosts by Severity, Top 50 Messages by Severity, Top 50 Usernames by Severity
 
@@ -271,7 +271,7 @@ Authentication Forecast, Authentication Outlier, Authentication Over Time, CW-00
 | extract "spid=(?<spid>.*?)(?:\s|$)" nodrop
 | extract "sntdom=(?<host_domain>.*?)(?:\s|$)" nodrop
 | extract "dpt=(?<dst_port>.*?)(?:\s|$)" nodrop
-| extract "externalID=(?<sensorid>.*?)(?:\s|$```
+| extract "externalID=(?<sensorid>.*?)(?:\s|$ `n```
 ### Use Cases:
 CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events
 
@@ -281,7 +281,7 @@ CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Eve
 ```
 | parse "CEF:0|CrowdStrike|FalconHost|1.0|DetectionSummaryEvent|*|*|" as detect_type,sev 
 | extract field=detect_type "(?<detect_type>.*?) In A" nodrop
-```
+ `n```
 ### Use Cases:
 Authentication Forecast, Authentication Outlier, Authentication Over Time, Authentication Services, CW-001 Detection Types, CW-002 AV Scan Results Events, CW-003 Network Access Events, CW-004 Executable Written Events, CW-005 Document Access Events, CW-006 DNS Request Events, CW-007 Detection Summary Events, CW-008 Login Audit Events, Dectection Summary by Type, Detection Summary by Severity, Detection Type by Severity, Engine by Severity, Events Forecast, Events Outlier, Failed Authentications, Host Domain by Severity, Host Domains by Severity, Severity by Detection Type, Severity Over Time, Top 50 Files by Severity, Top 50 Hosts by Severity, Top 50 Messages by Severity, Top 50 Severity with Falcon links, Top 50 Usernames by Severity, Top 50 Written Files by Severity
 

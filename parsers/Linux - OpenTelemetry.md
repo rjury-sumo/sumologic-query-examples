@@ -8,7 +8,7 @@
 | parse "change user '*' GID from '*' to '*'" as dest_user,src_gid, dest_gid nodrop
 | parse "name=*, UID=*, GID=*, home=*, shell=*" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop
 | parse "account=*, uid=*, gid=*, home=*, shell=*," as dest_user,dest_uid,dest_gid,home_dir,shell nodrop
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -17,7 +17,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 ## Parser:
 ```
 | parse regex "\d+\s+\d+:\d+:\d+\s(?<dest_hostname>\S*)\s(?<process_name>\w*)(?:\[\d+\]|):\s+"
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -29,7 +29,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 | parse regex  "\d+\s+\d+:\d+:\d+\s(?<dest_hostname>\S+)\s(?<process_name>\S*)\[\d+\]:\s+(?<message>.*)$" nodrop
 | parse "session * for user * by *(uid=*)" as (action,dest_user,src_user,src_user_id) nodrop
 | parse regex "session (?<action>\w*) for user (?<dest_user>\S*)" nodrop
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -42,7 +42,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 | parse "session * for user * by *(uid=*)" as (action,dest_user,src_user,src_user_id) nodrop
 | parse regex "session (?<action>\w*) for user (?<dest_user>\S*)" nodrop
 | parse "Accepted keyboard-interactive/pam for * from * port * *" as (dest_user,src_hostname,src_port,protocol)
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -69,7 +69,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 | parse "Failed publickey for * from * port * *" as dest_user, src_host, src_port, protocol nodrop
 | parse "Failed password for * from * port * *" as dest_user, src_host, src_port, protocol nodrop
 | parse "Failed password for invalid user * from * port * *" as dest_user, src_host, src_port, protocol nodrop
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -78,7 +78,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 ## Parser:
 ```
 | parse regex "\d+\s+\d+:\d+:\d+\s(?<dest_hostname>\S+)\s(?<process_name>\w*)(?:\[\d+\]|):\s+"
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -87,7 +87,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 ## Parser:
 ```
 | parse regex "\d+\s+\d+:\d+:\d+\s(?<dest_hostname>\S+)\s(?<process_name>\w*)(?:\[\d+\]|):\s+" 
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -100,7 +100,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 | parse "account added to group - account=*, group=*, gid=*," as dest_user,dest_group,dest_gid nodrop
 | parse "account=*, uid=*, gid=*, old gid=*," as dest_user,dest_uid, dest_gid,src_gid nodrop
 | parse "change user '*' GID from '*' to '*'" as dest_user,src_gid, dest_gid
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -111,7 +111,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 | parse regex "\d+\s+\d+:\d+:\d+\s(?<dest_hostname>\S+)\s(?<process_name>\w*)(?:\[|:)" nodrop
 | parse "name=*, UID=*, GID=*, home=*, shell=*" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop
 | parse "account=*, uid=*, gid=*, home=*, shell=*," as dest_user,dest_uid,dest_gid,home_dir,shell nodrop 
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -137,7 +137,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 | parse "Failed publickey for * from * port * *" as dest_user, src_host, src_port, protocol nodrop
 | parse "Failed password for * from * port * *" as dest_user, src_host, src_port, protocol nodrop
 | parse "Failed password for invalid user * from * port * *" as dest_user, src_host, src_port, protocol nodrop
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -162,7 +162,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 | parse "Failed publickey for * from * port * *" as dest_user, src_host, src_port, protocol nodrop
 | parse "Failed password for * from * port * *" as dest_user, src_host, src_port, protocol nodrop
 | parse "Failed password for invalid user * from * port * *" as dest_user, src_host, src_port, protocol nodrop
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -171,7 +171,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 ## Parser:
 ```
 | parse regex "\d+\s+\d+:\d+:\d+\s(?<dest_hostname>\S+)\s(?<process_name>\w+)(?:\[\d+\]|):\s+" 
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -186,7 +186,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 | parse regex "\s+(?<process>\w*): pam_unix\(sudo:auth\): conversation failed" nodrop
 | parse "pam_unix(*:auth): authentication failure;" as process nodrop
 | parse "ruser=* rhost=* user=*" as src_user, src_host, dest_user nodrop
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -200,7 +200,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 | parse regex "\s+(?<process>\w*): pam_unix\(sudo:auth\): conversation failed" nodrop
 | parse "pam_unix(*:auth): authentication failure;" as process nodrop
 | parse "ruser=* rhost=* user=*" as src_user, src_host, dest_user nodrop
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -214,7 +214,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 | parse regex "\s+\d+:\d+:\d+\s+(?<action>Erased)\:\s+(?:\d+\:)?(?<pkg_name>\S*)" nodrop
 | parse regex "\S*\s+\d+\s+\d+:\d+:\d+\s+(?<action>\w*):\s(?<pkg_name>[^ ]*)\s" nodrop
 | parse regex "<(?<action>[a-zA-Z]*)>\s+[^\(\)]*\(\d+\)(?<pkg_name>[^\(]*)\(" nodrop
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 
@@ -223,7 +223,7 @@ Event Count by Host and Service, Event Count per Host by Hour, Existing User Ass
 ## Parser:
 ```
 | parse regex "^(?<StartTime>\S*\s+\d+\s+\d+:\d+:\d+)\s(?<dest_hostname>\S*)\s(?<process_name>\w*)(?:\[\d+\]|):\s+" nodrop
-```
+ `n```
 ### Use Cases:
 Event Count by Host and Service, Event Count per Host by Hour, Existing User Assignments, Failed Logins per Host by Hour, Failed SU Attempts, Logins by Hour, Logins by Outcome, New User Assignments, Package Operations, Reporting Hosts, Reporting Hosts by Hour, Sudo Attempts, System Starts, Top 30 Failed Logins, Top 30 Failed Remote Logins, Top 30 Successful Remote Logins, Top 30 Successful User Logins, Total Event Distribution, User Assignments
 

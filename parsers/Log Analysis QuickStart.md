@@ -2,7 +2,7 @@
 
 ## Parser:
 ```
-| parse regex "(?<email_address>[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[a-zA-Z]{2,4})" | count by email_address |```
+| parse regex "(?<email_address>[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[a-zA-Z]{2,4})" | count by email_address | `n```
 ### Use Cases:
 Frequent Email Addresses, Frequent IP Addresses, Geo Location of All Users, Observed IP Addresses by Type, Sessions
 
@@ -11,7 +11,7 @@ Frequent Email Addresses, Frequent IP Addresses, Geo Location of All Users, Obse
 ## Parser:
 ```
 | parse regex "(?<ip_address>\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))(?:[^0-9])" multi
-```
+ `n```
 ### Use Cases:
 Frequent Email Addresses, Frequent IP Addresses, Geo Location of All Users, Observed IP Addresses by Type, Sessions
 
@@ -20,7 +20,7 @@ Frequent Email Addresses, Frequent IP Addresses, Geo Location of All Users, Obse
 ## Parser:
 ```
 | parse regex "(?<ip_address>\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" | count as count by ip_address
-```
+ `n```
 ### Use Cases:
 Frequent Email Addresses, Frequent IP Addresses, Geo Location of All Users, Observed IP Addresses by Type, Sessions
 
@@ -28,7 +28,7 @@ Frequent Email Addresses, Frequent IP Addresses, Geo Location of All Users, Obse
 
 ## Parser:
 ```
-| parse regex "(?<IP>\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" | count by IP | sort by _count |```
+| parse regex "(?<IP>\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" | count by IP | sort by _count | `n```
 ### Use Cases:
 Frequent Email Addresses, Frequent IP Addresses, Geo Location of All Users, Observed IP Addresses by Type, Sessions
 
@@ -37,7 +37,7 @@ Frequent Email Addresses, Frequent IP Addresses, Geo Location of All Users, Obse
 ## Parser:
 ```
 | parse regex "session_?(?:id)?[\s:-=]?(?<session_id>[^\s]+)" 
-```
+ `n```
 ### Use Cases:
 Frequent Email Addresses, Frequent IP Addresses, Geo Location of All Users, Observed IP Addresses by Type, Sessions
 

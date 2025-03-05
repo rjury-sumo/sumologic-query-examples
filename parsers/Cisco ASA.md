@@ -3,7 +3,7 @@
 ## Parser:
 ```
 | parse " %*:" as error
-```
+ `n```
 ### Use Cases:
 All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served, Bandwidth Served in MBytes, Count by Severity Code, Count of ASA Logs by LogLevel, Denied And Dropped Connections, Denied Connections by Location, Detected Attacks, Hosts by Bandwidth usage, Inbound connections, Most frequent IPS messages, Most Severe Messages, Outbound connections, Outbound Connections Over Time, Outbound Connections To High Risk Countries, Outbound Destinations, Parameterized Search, Protocol Distribution Over Time, Top Denied Destinations, Top Denied Sources, Top Denying ACLs, Top Hosts by Number of Flows, Top Internal destinations, Top Sources with outbound connections, Total Denied Sources
 
@@ -12,7 +12,7 @@ All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served
 ## Parser:
 ```
 | parse "Built * * connection" as direction, protocol
-```
+ `n```
 ### Use Cases:
 All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served, Bandwidth Served in MBytes, Denied And Dropped Connections, Denied Connections by Location, Detected Attacks, Hosts by Bandwidth usage, Inbound connections, Most frequent IPS messages, Most Severe Messages, Outbound connections, Outbound Connections Over Time, Outbound Connections To High Risk Countries, Outbound Destinations, Protocol Distribution Over Time, Top Denied Destinations, Top Denied Sources, Top Denying ACLs, Top Hosts by Number of Flows, Top Internal destinations, Top Sources with outbound connections, Total Denied Sources
 
@@ -21,7 +21,7 @@ All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served
 ## Parser:
 ```
 | parse regex "(?: to | dst | dest | -> ).*?(?<dest_host>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" 
-```
+ `n```
 ### Use Cases:
 All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served, Bandwidth Served in MBytes, Count by Severity Code, Count of ASA Logs by LogLevel, Denied And Dropped Connections, Denied Connections by Location, Detected Attacks, Hosts by Bandwidth usage, Inbound connections, Most frequent IPS messages, Most Severe Messages, Outbound connections, Outbound Connections Over Time, Outbound Connections To High Risk Countries, Outbound Destinations, Parameterized Search, Protocol Distribution Over Time, Top Denied Destinations, Top Denied Sources, Top Denying ACLs, Top Hosts by Number of Flows, Top Internal destinations, Top Sources with outbound connections, Total Denied Sources
 
@@ -30,7 +30,7 @@ All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served
 ## Parser:
 ```
 | parse regex "(?:src|from) .*?(?<src_host>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
-```
+ `n```
 ### Use Cases:
 All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served, Bandwidth Served in MBytes, Count by Severity Code, Count of ASA Logs by LogLevel, Denied And Dropped Connections, Denied Connections by Location, Detected Attacks, Hosts by Bandwidth usage, Inbound connections, Most frequent IPS messages, Most Severe Messages, Outbound connections, Outbound Connections Over Time, Outbound Connections To High Risk Countries, Outbound Destinations, Parameterized Search, Protocol Distribution Over Time, Top Denied Destinations, Top Denied Sources, Top Denying ACLs, Top Hosts by Number of Flows, Top Internal destinations, Top Sources with outbound connections, Total Denied Sources
 
@@ -41,7 +41,7 @@ All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served
 | parse regex "(?<action>access-list) (?<acl_id>\S+?) (?<access_decision>\w+) \w+ " nodrop 
 | parse regex " (?<protocol>\w+) (?<action>Connection denied by outbound list) (?<acl_id>\S+?) src " nodrop
 | parse regex "(?<action>ICMP packet type .+? denied by outbound list) (?<acl_id>\S+?) src "
-```
+ `n```
 ### Use Cases:
 All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served, Bandwidth Served in MBytes, Denied And Dropped Connections, Denied Connections by Location, Detected Attacks, Hosts by Bandwidth usage, Inbound connections, Most frequent IPS messages, Most Severe Messages, Outbound connections, Outbound Connections Over Time, Outbound Connections To High Risk Countries, Outbound Destinations, Protocol Distribution Over Time, Top Denied Destinations, Top Denied Sources, Top Denying ACLs, Top Hosts by Number of Flows, Top Internal destinations, Top Sources with outbound connections, Total Denied Sources
 
@@ -51,7 +51,7 @@ All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served
 ```
 | parse regex "%[A-Z]{3}-(?<severity>\d)-(?<msg_code>\d{6}): (?<action>\S+)\s" nodrop 
 | parse regex " bytes (?<bytes>\d+)" 
-```
+ `n```
 ### Use Cases:
 All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served, Bandwidth Served in MBytes, Count by Severity Code, Count of ASA Logs by LogLevel, Denied And Dropped Connections, Denied Connections by Location, Detected Attacks, Hosts by Bandwidth usage, Inbound connections, Most frequent IPS messages, Most Severe Messages, Outbound connections, Outbound Connections Over Time, Outbound Connections To High Risk Countries, Outbound Destinations, Parameterized Search, Protocol Distribution Over Time, Top Denied Destinations, Top Denied Sources, Top Denying ACLs, Top Hosts by Number of Flows, Top Internal destinations, Top Sources with outbound connections, Total Denied Sources
 
@@ -60,7 +60,7 @@ All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served
 ## Parser:
 ```
 | parse regex "%[A-Z]{3}-(?<severity>\d)-(?<msg_code>\d{6}):(?<action>.+?)(?:$| from | by |\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})" nodrop 
-```
+ `n```
 ### Use Cases:
 All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served, Bandwidth Served in MBytes, Denied And Dropped Connections, Denied Connections by Location, Detected Attacks, Hosts by Bandwidth usage, Inbound connections, Most frequent IPS messages, Most Severe Messages, Outbound connections, Outbound Connections Over Time, Outbound Connections To High Risk Countries, Outbound Destinations, Protocol Distribution Over Time, Top Denied Destinations, Top Denied Sources, Top Denying ACLs, Top Hosts by Number of Flows, Top Internal destinations, Top Sources with outbound connections, Total Denied Sources
 
@@ -101,7 +101,7 @@ All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served
 | parse regex "%[A-Z]{3}-\d-\d{6}: (?<user>.+?)@(?<src_host>.+?) (?<action>Accessed URL) (?<dest_host>.+?):(?<url>.+)$" nodrop 
 | parse regex "(?<action>\w+ local-host) (?<src_interface>.+?):(?<src_host>.+?)$" nodrop 
 | parse regex "(?<action>\w+ local-host) (?<src_interface>.+?):(?<src_host>.+?) duration (?<duration>.+)$" nodrop 
-| parse regex "%[A-Z]{3}-(?<severity>\d)-(?<msg_code>\d{6})[:]{0,1} IPS:(?<ips_num>\d+) (?<action>.+?) from (?<src_host>.+?) to (?<dest_host>.+?) on interface (?<src_interface>.+?)(?:\s|$```
+| parse regex "%[A-Z]{3}-(?<severity>\d)-(?<msg_code>\d{6})[:]{0,1} IPS:(?<ips_num>\d+) (?<action>.+?) from (?<src_host>.+?) to (?<dest_host>.+?) on interface (?<src_interface>.+?)(?:\s|$ `n```
 ### Use Cases:
 All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served, Bandwidth Served in MBytes, Denied And Dropped Connections, Denied Connections by Location, Detected Attacks, Hosts by Bandwidth usage, Inbound connections, Most frequent IPS messages, Most Severe Messages, Outbound connections, Outbound Connections Over Time, Outbound Connections To High Risk Countries, Outbound Destinations, Protocol Distribution Over Time, Top Denied Destinations, Top Denied Sources, Top Denying ACLs, Top Hosts by Number of Flows, Top Internal destinations, Top Sources with outbound connections, Total Denied Sources
 
@@ -143,7 +143,7 @@ All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served
 | parse regex "(?<action>\w+ local-host) (?<src_interface>.+?):(?<src_host>.+?)$" nodrop 
 | parse regex "(?<action>\w+ local-host) (?<src_interface>.+?):(?<src_host>.+?) duration (?<duration>.+)$" nodrop 
 | parse regex "%[A-Z]{3}-(?<severity>\d)-(?<msg_code>\d{6})[:]{0,1} IPS:(?<ips_num>\d+) (?<action>.+?) from (?<src_host>.+?) to (?<dest_host>.+?) on interface (?<src_interface>.+?)(?:\s|$)" nodrop
-```
+ `n```
 ### Use Cases:
 All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served, Bandwidth Served in MBytes, Denied And Dropped Connections, Denied Connections by Location, Detected Attacks, Hosts by Bandwidth usage, Inbound connections, Most frequent IPS messages, Most Severe Messages, Outbound connections, Outbound Connections Over Time, Outbound Connections To High Risk Countries, Outbound Destinations, Protocol Distribution Over Time, Top Denied Destinations, Top Denied Sources, Top Denying ACLs, Top Hosts by Number of Flows, Top Internal destinations, Top Sources with outbound connections, Total Denied Sources
 
@@ -152,7 +152,7 @@ All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served
 ## Parser:
 ```
 | parse regex "to .*?(?<dest_host>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
-```
+ `n```
 ### Use Cases:
 All Daily NAT assignment messages, All NAT assignment messages, Bandwidth Served, Bandwidth Served in MBytes, Count by Severity Code, Count of ASA Logs by LogLevel, Denied And Dropped Connections, Denied Connections by Location, Detected Attacks, Hosts by Bandwidth usage, Inbound connections, Most frequent IPS messages, Most Severe Messages, Outbound connections, Outbound Connections Over Time, Outbound Connections To High Risk Countries, Outbound Destinations, Parameterized Search, Protocol Distribution Over Time, Top Denied Destinations, Top Denied Sources, Top Denying ACLs, Top Hosts by Number of Flows, Top Internal destinations, Top Sources with outbound connections, Total Denied Sources
 

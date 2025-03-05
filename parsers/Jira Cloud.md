@@ -3,7 +3,7 @@
 ## Parser:
 ```
 | json field=_raw "webhookEvent" as event_name
-```
+ `n```
 ### Use Cases:
 Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Events, Issues by Component, Issues by Priority and Project, Issues by Project, Issues by Type, Issues by Type Over Time, Issues Closed, Issues Closed by assignee, Issues Closed by Priority, Issues Closed by Project, Issues Created, Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues In Progress, Issues In Progress by assignee, Issues In Progress by Priority, Issues In Progress by Project, Issues Reopened, Issues Reopened - One Month Comparison, Issues Reopened by assignee, Issues Reopened by Priority, Issues Reopened by Project, Recent Issue Changes Over Time, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues
 
@@ -12,7 +12,7 @@ Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Ev
 ## Parser:
 ```
 | json field=_raw "webhookEvent" as event_type
-```
+ `n```
 ### Use Cases:
 Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Events, Issues by Component, Issues by Priority and Project, Issues by Project, Issues by Type, Issues by Type Over Time, Issues Closed, Issues Closed by assignee, Issues Closed by Priority, Issues Closed by Project, Issues Created, Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues In Progress, Issues In Progress by assignee, Issues In Progress by Priority, Issues In Progress by Project, Issues Reopened, Issues Reopened - One Month Comparison, Issues Reopened by assignee, Issues Reopened by Priority, Issues Reopened by Project, Recent Issue Changes Over Time, Sprint Closed, Sprint Created, Sprint Events - One Week Comparison, Sprint Started, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues, User Events
 
@@ -22,7 +22,7 @@ Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Ev
 ```
 | json field=_raw "webhookEvent" as event_type
 | json   "user.name", "timestamp"  as  user_name, timestamp 
-```
+ `n```
 ### Use Cases:
 Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Events, Issues by Component, Issues by Priority and Project, Issues by Project, Issues by Type, Issues by Type Over Time, Issues Closed, Issues Closed by assignee, Issues Closed by Priority, Issues Closed by Project, Issues Created, Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues In Progress, Issues In Progress by assignee, Issues In Progress by Priority, Issues In Progress by Project, Issues Reopened, Issues Reopened - One Month Comparison, Issues Reopened by assignee, Issues Reopened by Priority, Issues Reopened by Project, Recent Issue Changes Over Time, Sprint Closed, Sprint Created, Sprint Events - One Week Comparison, Sprint Started, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues, User Events, User Events - One Week Comparison, Users Created, Users Deleted, Users Updated
 
@@ -32,7 +32,7 @@ Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Ev
 ```
 | json field=_raw "webhookEvent" as event_type
 | json  "timestamp"  as timestamp
-```
+ `n```
 ### Use Cases:
 Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Events, Issues by Component, Issues by Priority and Project, Issues by Project, Issues by Type, Issues by Type Over Time, Issues Closed, Issues Closed by assignee, Issues Closed by Priority, Issues Closed by Project, Issues Created, Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues In Progress, Issues In Progress by assignee, Issues In Progress by Priority, Issues In Progress by Project, Issues Reopened, Issues Reopened - One Month Comparison, Issues Reopened by assignee, Issues Reopened by Priority, Issues Reopened by Project, Recent Issue Changes Over Time, Sprint Closed, Sprint Created, Sprint Events - One Week Comparison, Sprint Started, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues, User Events, User Events - One Week Comparison
 
@@ -42,7 +42,7 @@ Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Ev
 ```
 | json field=_raw "webhookEvent" as event_type
 | json  "user.accountId", "user.displayName", "user.active", "timestamp"  as account_id, user_name, is_active, timestamp
-```
+ `n```
 ### Use Cases:
 Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Events, Issues by Component, Issues by Priority and Project, Issues by Project, Issues by Type, Issues by Type Over Time, Issues Closed, Issues Closed by assignee, Issues Closed by Priority, Issues Closed by Project, Issues Created, Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues In Progress, Issues In Progress by assignee, Issues In Progress by Priority, Issues In Progress by Project, Issues Reopened, Issues Reopened - One Month Comparison, Issues Reopened by assignee, Issues Reopened by Priority, Issues Reopened by Project, Recent Issue Changes Over Time, Sprint Closed, Sprint Created, Sprint Events - One Week Comparison, Sprint Started, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues, User Events, User Events - One Week Comparison, Users Created, Users Updated
 
@@ -60,7 +60,7 @@ Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Ev
 | json field=change_log "items[1].fromString" as from_String
 | json field=change_log "items[1].fieldId" as fieldId
 | json field=change_log "items[1].fieldtype" as fieldType
-```
+ `n```
 ### Use Cases:
 Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues Reopened, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues
 
@@ -73,7 +73,7 @@ Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Is
 | parse regex field=components "\"name\":\"(?<component>[\S]+?)\"" multi nodrop
 | json field=change_log "items" as changes
 | parse regex field=jira_self "https:\/\/(?<base_url>.*?)\/" 
-```
+ `n```
 ### Use Cases:
 Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Issues by Component, Issues by Priority and Project, Issues by Project, Issues by Type, Issues by Type Over Time, Issues Closed, Issues Closed by assignee, Issues Closed by Priority, Issues Closed by Project, Issues Created, Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues In Progress, Issues In Progress by assignee, Issues In Progress by Priority, Issues In Progress by Project, Issues Reopened, Issues Reopened - One Month Comparison, Issues Reopened by assignee, Issues Reopened by Priority, Issues Reopened by Project, Recent Issue Changes Over Time, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues
 
@@ -90,7 +90,7 @@ Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Is
 | json field=change_log "items[1].fromString" as from_String
 | json field=change_log "items[1].fieldId" as fieldId
 | json field=change_log "items[1].fieldtype" as fieldType
-```
+ `n```
 ### Use Cases:
 Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Issues by Component, Issues by Priority and Project, Issues by Project, Issues by Type, Issues by Type Over Time, Issues Closed, Issues Closed by assignee, Issues Closed by Priority, Issues Closed by Project, Issues Created, Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues In Progress, Issues In Progress by assignee, Issues In Progress by Priority, Issues In Progress by Project, Issues Reopened, Issues Reopened - One Month Comparison, Issues Reopened by assignee, Issues Reopened by Priority, Issues Reopened by Project, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues
 
@@ -103,7 +103,7 @@ Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Is
 | parse regex field=components "\"name\":\"(?<component>[\S]+?)\"" multi nodrop
 | json field=change_log "items" as changes  
 | parse regex field=jira_self "https:\/\/(?<base_url>.*?)\/" 
-```
+ `n```
 ### Use Cases:
 Issues Created Vs Closed
 
@@ -116,7 +116,7 @@ Issues Created Vs Closed
 | parse regex field=components "\"name\":\"(?<component>[\S]+?)\"" multi nodrop
 | json field=change_log "items" as changes nodrop
 | parse regex field=jira_self "https:\/\/(?<base_url>.*?)\/" 
-```
+ `n```
 ### Use Cases:
 Issues Created Vs Closed, Top 10 Issue Assignee, Top 10 Issue creator, Unassigned Issues
 
@@ -134,7 +134,7 @@ Issues Created Vs Closed, Top 10 Issue Assignee, Top 10 Issue creator, Unassigne
 | json field=change_log "items[1].fromString" as from_String
 | json field=change_log "items[1].fieldId" as fieldId
 | json field=change_log "items[1].fieldtype" as fieldType
-```
+ `n```
 ### Use Cases:
 Issues Created Vs Closed, Issues Reopened, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues
 
@@ -148,7 +148,7 @@ Issues Created Vs Closed, Issues Reopened, Top 10 Issue Assignee, Top 10 Issue c
 | json field=change_log "items" as changes
 | parse regex field=jira_self "https:\/\/(?<base_url>.*?)\/" 
 | json field=change_log "items[0].field", "items[0].from", "items[0].to" as change_field, change_from,  change_to
-```
+ `n```
 ### Use Cases:
 Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues Reopened, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues
 
@@ -157,7 +157,7 @@ Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues Reope
 ## Parser:
 ```
 | json field=_raw "webhookEvent", "sprint.name", "sprint.state", "sprint.originBoardId" as event_name, sprint_name, sprint_state, sprinit_originBoardID nodrop
-```
+ `n```
 ### Use Cases:
 Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Events, Issues by Component, Issues by Priority and Project, Issues by Project, Issues by Type, Issues by Type Over Time, Issues Closed, Issues Closed by assignee, Issues Closed by Priority, Issues Closed by Project, Issues Created, Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues In Progress, Issues In Progress by assignee, Issues In Progress by Priority, Issues In Progress by Project, Issues Reopened, Issues Reopened - One Month Comparison, Issues Reopened by assignee, Issues Reopened by Priority, Issues Reopened by Project, Recent Issue Changes Over Time, Sprint Closed, Sprint Created, Sprint Started, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues
 
@@ -166,7 +166,7 @@ Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Ev
 ## Parser:
 ```
 | json field=_raw "webhookEvent", "sprint.name", "sprint.state", "sprint.startDate", "sprint.endDate", "sprint.goal", "sprint.originBoardId" as event_name, sprint_name, sprint_state, sprint_startDate, sprint_endDate, sprint_goal, sprinit_originBoardID nodrop
-```
+ `n```
 ### Use Cases:
 Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Events, Issues by Component, Issues by Priority and Project, Issues by Project, Issues by Type, Issues by Type Over Time, Issues Closed, Issues Closed by assignee, Issues Closed by Priority, Issues Closed by Project, Issues Created, Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues In Progress, Issues In Progress by assignee, Issues In Progress by Priority, Issues In Progress by Project, Issues Reopened, Issues Reopened - One Month Comparison, Issues Reopened by assignee, Issues Reopened by Priority, Issues Reopened by Project, Recent Issue Changes Over Time, Sprint Closed, Sprint Created, Sprint Events - One Week Comparison, Sprint Started, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues
 
@@ -175,7 +175,7 @@ Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Ev
 ## Parser:
 ```
 | json field=_raw "webhookEvent", "sprint.name", "sprint.state", "sprint.startDate", "sprint.endDate", "sprint.goal", "sprint.originBoardId", "sprint.completeDate" as event_name, sprint_name, sprint_state, sprint_startDate, sprint_endDate, sprint_goal, sprinit_originBoardID, sprint_completeDate nodrop
-```
+ `n```
 ### Use Cases:
 Avg Time Taken to close Issues by User, Avg. Time to Close Issues by Project, Events, Issues by Component, Issues by Priority and Project, Issues by Project, Issues by Type, Issues by Type Over Time, Issues Closed, Issues Closed by assignee, Issues Closed by Priority, Issues Closed by Project, Issues Created, Issues Created Vs Closed, Issues Escalated to the Highest Priority, Issues In Progress, Issues In Progress by assignee, Issues In Progress by Priority, Issues In Progress by Project, Issues Reopened, Issues Reopened - One Month Comparison, Issues Reopened by assignee, Issues Reopened by Priority, Issues Reopened by Project, Recent Issue Changes Over Time, Sprint Closed, Sprint Started, Top 10 Issue Assignee, Top 10 Issue creator, Top 10 Issues that took the longest to close, Unassigned Issues
 
