@@ -4,7 +4,8 @@
 ```
 | extract field=comments "(?<comment_info>\{.*?\})" multi
 | json field=comment_info "createdByDisplayName" as analyst
- `n```
+ 
+```
 ### Use Cases:
 Geo Locations of Alerts, Top 10 Analysts, Top 10 Users Associated with Alerts
 
@@ -15,7 +16,8 @@ Geo Locations of Alerts, Top 10 Analysts, Top 10 Users Associated with Alerts
 | extract field=evidence_info "(?<evidence_detail>\{.*?\})" multi
 | json field=evidence_detail "$['@odata.type']" as data_type
 | json field=evidence_detail "ipAddress" as ip
- `n```
+ 
+```
 ### Use Cases:
 Alerts from Risky Countries, Geo Locations of Alerts, Top 10 Analysts, Top 10 Users Associated with Alerts
 
@@ -27,7 +29,8 @@ Alerts from Risky Countries, Geo Locations of Alerts, Top 10 Analysts, Top 10 Us
 | json field=evidence_detail "$['@odata.type']" as data_type
 | json field=evidence_detail "verdict" as verdict
 | json field=evidence_detail "ipAddress" as ip
- `n```
+ 
+```
 ### Use Cases:
 Alerts from Risky Countries, Geo Locations of Alerts, Top 10 Analysts, Top 10 Attacked Device, Top 10 Country with Suspicious or Malicious IP Verdict, Top 10 Users Associated with Alerts
 
@@ -44,7 +47,8 @@ Alerts from Risky Countries, Geo Locations of Alerts, Top 10 Analysts, Top 10 At
 | json field = user_account "accountName" as user_account_name
 | json field = user_account "displayName" as user_display_name
 | json field = user_account "domainName"  as domain_name
- `n```
+ 
+```
 ### Use Cases:
 Top 10 Users Associated with Alerts
 
@@ -62,7 +66,8 @@ Top 10 Users Associated with Alerts
 | json field = user_account "accountName" as user_account_name
 | json field = user_account "displayName" as user_display_name
 | json field = user_account "domainName"  as domain_name
- `n```
+ 
+```
 ### Use Cases:
 Alerts from Risky Countries, Geo Locations of Alerts, Top 10 Analysts, Top 10 Attacked Device, Top 10 Country with Suspicious or Malicious IP Verdict, Top 10 User Account with Compromised Role, Top 10 Users Associated with Alerts
 
@@ -79,7 +84,8 @@ Alerts from Risky Countries, Geo Locations of Alerts, Top 10 Analysts, Top 10 At
 | json field=evidence_detail "osPlatform" as os 
 | json field=evidence_detail "deviceDnsName" as dns_name
 | json field=evidence_detail "azureAdDeviceId" as azure_id
- `n```
+ 
+```
 ### Use Cases:
 Alerts from Risky Countries, Geo Locations of Alerts, Top 10 Analysts, Top 10 Attacked Device, Top 10 Users Associated with Alerts
 

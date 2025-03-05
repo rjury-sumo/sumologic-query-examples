@@ -2,7 +2,8 @@
 
 ## Parser:
 ```
-|  split log delim='|' extract 5 as Threat | count by Threat | sort by _count | `n```
+|  split log delim='|' extract 5 as Threat | count by Threat | sort by _count | 
+```
 ### Use Cases:
 Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Attacks, Top 10 Protocols, Top 10 Threats, Top Application Protocols
 
@@ -10,7 +11,8 @@ Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Attacks, Top 10 Pro
 
 ## Parser:
 ```
-| keyvalue regex "\s(.*?): (.*?)," keys "Classification" as Classification | count by Classification | sort by _count | `n```
+| keyvalue regex "\s(.*?): (.*?)," keys "Classification" as Classification | count by Classification | sort by _count | 
+```
 ### Use Cases:
 Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Attacks, Top 10 Protocols, Top Application Protocols
 
@@ -18,7 +20,8 @@ Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Attacks, Top 10 Pro
 
 ## Parser:
 ```
-| keyvalue regex "\s(.*?): (.*?)," keys "Message" as message| `n```
+| keyvalue regex "\s(.*?): (.*?)," keys "Message" as message| 
+```
 ### Use Cases:
 Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Attacks, Top 10 Protocols, Top Application Protocols
 
@@ -26,7 +29,8 @@ Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Attacks, Top 10 Pro
 
 ## Parser:
 ```
-| keyvalue regex "=(.*?) " "app" | count by app | sort by _count | `n```
+| keyvalue regex "=(.*?) " "app" | count by app | sort by _count | 
+```
 ### Use Cases:
 Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Apps, Top 10 Attacks, Top 10 Protocols, Top 10 Threats, Top Application Protocols
 
@@ -34,7 +38,8 @@ Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Apps, Top 10 Attack
 
 ## Parser:
 ```
-| parse regex "ApplicationProtocol: (?<ApplicationProtocol>\w{1,25})" | count by ApplicationProtocol | `n```
+| parse regex "ApplicationProtocol: (?<ApplicationProtocol>\w{1,25})" | count by ApplicationProtocol | 
+```
 ### Use Cases:
 Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Attacks, Top 10 Protocols, Top Application Protocols
 
@@ -42,7 +47,8 @@ Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Attacks, Top 10 Pro
 
 ## Parser:
 ```
-| parse regex "Protocol: (?<Protocol>\w{1,10})" | count by Protocol | `n```
+| parse regex "Protocol: (?<Protocol>\w{1,10})" | count by Protocol | 
+```
 ### Use Cases:
 Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Attacks, Top 10 Protocols, Top Application Protocols
 
@@ -50,7 +56,8 @@ Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Attacks, Top 10 Pro
 
 ## Parser:
 ```
-| parse regex "Protocol: (?<Protocol>\w{1,3})" | count by Protocol | `n```
+| parse regex "Protocol: (?<Protocol>\w{1,3})" | count by Protocol | 
+```
 ### Use Cases:
 Top 10 Protocols
 
@@ -58,7 +65,8 @@ Top 10 Protocols
 
 ## Parser:
 ```
-| parse regex field=_raw "\\t(?<port>\d{1,3})\\t-" | count by port | `n```
+| parse regex field=_raw "\\t(?<port>\d{1,3})\\t-" | count by port | 
+```
 ### Use Cases:
 Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Apps, Top 10 Attacks, Top 10 Protocols, Top 10 Threats, Top 20 SMB Files, Top Application Protocols, Top ports used
 
@@ -67,7 +75,8 @@ Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Apps, Top 10 Attack
 ## Parser:
 ```
 | split log delim='	' extract 10 as smb_file
- `n```
+ 
+```
 ### Use Cases:
 Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Apps, Top 10 Attacks, Top 10 Protocols, Top 10 Threats, Top 20 SMB Files, Top Application Protocols
 
@@ -76,7 +85,8 @@ Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Apps, Top 10 Attack
 ## Parser:
 ```
 | split log delim='	' extract 10 as smb_file, 9 as smb_location
- `n```
+ 
+```
 ### Use Cases:
 Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Apps, Top 10 Attacks, Top 10 Protocols, Top 10 Threats, Top 20 SMB Files, Top Application Protocols
 
@@ -84,7 +94,8 @@ Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Apps, Top 10 Attack
 
 ## Parser:
 ```
-| split log delim='|' extract 5 as Threat | keyvalue regex "=(.*?) " "app" | `n```
+| split log delim='|' extract 5 as Threat | keyvalue regex "=(.*?) " "app" | 
+```
 ### Use Cases:
 Endace_Pivot_to_Vision, Top 10 Application Protocols, Top 10 Apps, Top 10 Attacks, Top 10 Protocols, Top 10 Threats, Top Application Protocols
 

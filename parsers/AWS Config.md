@@ -5,7 +5,8 @@
 | json "Message", "Type" 
 | json field=message "messageType","configurationItem" as messageType, single_message 
 | json field=single_message "resourceId", "resourceType", "awsAccountId" as ResourceId, ResourceType, awsAccountId
- `n```
+ 
+```
 ### Use Cases:
 Configuration Trend, Latest Resource Modifications, Most Frequently Modified Resource Types (with latest update)
 
@@ -16,7 +17,8 @@ Configuration Trend, Latest Resource Modifications, Most Frequently Modified Res
 | json "Message", "Type" 
 | json field=message "messageType","configurationItem" as messageType, single_message 
 | json field=single_message "resourceId", "resourceType", "awsRegion", "awsAccountId", "configurationItemStatus"
- `n```
+ 
+```
 ### Use Cases:
 Configuration Trend
 
@@ -27,7 +29,8 @@ Configuration Trend
 | json "Message", "Type" 
 | json field=message "messageType","configurationItem" as messageType, single_message 
 | json field=single_message "resourceId", "resourceType", "configurationItemStatus", "awsAccountId" as ResourceId, ResourceType, Status, AWSAccountID
- `n```
+ 
+```
 ### Use Cases:
 Configuration Trend, Latest Resource Modifications
 
@@ -38,7 +41,8 @@ Configuration Trend, Latest Resource Modifications
 | json "Message", "Type" 
 | json field=message "messageType","configurationItem" as messageType, single_message 
 | json field=single_message "resourceId", "resourceType", "configurationItemStatus", "tags.Name" as ResourceId, ResourceType, Status, Name nodrop
- `n```
+ 
+```
 ### Use Cases:
 Configuration Trend, Latest Resource Modifications, Most Frequently Modified Resource Types (with latest update), Most Frequently Modified Resources (with latest update), Relationships, ResourceNames Lookup Table Generator
 
@@ -49,7 +53,8 @@ Configuration Trend, Latest Resource Modifications, Most Frequently Modified Res
 | json field=_raw "Message", "Type" 
 | json field=message "messageType","configurationItem" as messageType, single_message 
 | json field=single_message "resourceId", "resourceType", "configurationItemStatus", "awsAccountId" as ResourceId, ResourceType, LastModifiedStatus, LastModifiedAccountID
- `n```
+ 
+```
 ### Use Cases:
 Configuration Trend, Latest Resource Modifications, Most Frequently Modified Resource Types (with latest update), Most Frequently Modified Resources (with latest update)
 
@@ -62,7 +67,8 @@ Configuration Trend, Latest Resource Modifications, Most Frequently Modified Res
 | json field=single_message "resourceId", "resourceType", "configurationItemStatus", "awsAccountId", "relationships" as ResourceId, ResourceType, Status, AWSAccountID, Relationships nodrop
 | parse regex field=relationships "(?<single_relationship>\{\"resourceId\"\:.*?\})((?=,\{\"resourceId\")|(?=\]\s*$))" multi
 | json field=single_relationship "resourceId", "name", "resourceType" as relatedResourceId, relationship, relatedResourceType
- `n```
+ 
+```
 ### Use Cases:
 Configuration Trend, Latest Resource Modifications, Most Frequently Modified Resource Types (with latest update), Most Frequently Modified Resources (with latest update), Relationships
 

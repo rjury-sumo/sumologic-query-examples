@@ -4,7 +4,8 @@
 ```
 | json "log" as _rawlog nodrop 
 | parse regex field=memcached_log_message "(?<pid>\d+): Client using the (?<protocol>\w+) protocol"
- `n```
+ 
+```
 ### Use Cases:
 Client Protocols, Commands Executed, Commands Executed by Command Type, Commands Executed by Type, Errors, Last 10 Errors, Log Reduce, Objects Stored
 
@@ -14,7 +15,8 @@ Client Protocols, Commands Executed, Commands Executed by Command Type, Commands
 ```
 | json "log" as _rawlog nodrop 
 | parse regex field=memcached_log_message "<(?<pid>\d+) (?<cmd>\w+)*"
- `n```
+ 
+```
 ### Use Cases:
 Client Protocols, Commands Executed, Commands Executed by Command Type, Commands Executed by Type, Errors, Last 10 Errors, Log Reduce, Objects Stored
 
@@ -24,7 +26,8 @@ Client Protocols, Commands Executed, Commands Executed by Command Type, Commands
 ```
 | json "log" as _rawlog nodrop 
 | parse regex field=memcached_log_message ">(?<pid>\d+) (?<cmd>\w+)"
- `n```
+ 
+```
 ### Use Cases:
 Client Protocols, Commands Executed, Commands Executed by Type, Errors, Last 10 Errors, Log Reduce, Objects Stored
 
@@ -34,7 +37,8 @@ Client Protocols, Commands Executed, Commands Executed by Type, Errors, Last 10 
 ```
 | json "log" as _rawlog nodrop 
 | parse regex field=memcached_log_message ">(?<pid>\d+) (?<msg>.+)"
- `n```
+ 
+```
 ### Use Cases:
 Client Protocols, Commands Executed, Commands Executed by Type, Errors, Last 10 Errors, Log Reduce, Objects Stored
 
@@ -44,7 +48,8 @@ Client Protocols, Commands Executed, Commands Executed by Type, Errors, Last 10 
 ```
 | json "log" as _rawlog nodrop 
 | parse regex field=memcached_log_message ">(?<pid>\d+) (?<msg>\w+)"
- `n```
+ 
+```
 ### Use Cases:
 Errors
 
@@ -55,7 +60,8 @@ Errors
 | json "log" as _rawlog nodrop 
 | parse regex field=memcached_log_message ">(?<pid>\d+) (?<msg>\w+)" nodrop
 | parse regex field=memcached_log_message "<(?<pid>\d+) (?<msg>\w+)"
- `n```
+ 
+```
 ### Use Cases:
 Errors, Log Reduce
 

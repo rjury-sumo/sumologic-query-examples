@@ -6,7 +6,8 @@
 | parse field=logstream "*/[*]*" as logstreamDate,version,logstreamID
 | parse field=loggroup "/aws/lambda/*" as functionName
 | parse field=message "*\t*\t*" as time,RequestId,errorObj
- `n```
+ 
+```
 ### Use Cases:
 Log - AWS Services Invoking Functions - Outlier, Log - Duration by Hour (Average) - Outlier, Log - Duration by Hour (Sum) - Outlier, Log - Error Breakdown by Function, Log - Error Count
 
@@ -19,7 +20,8 @@ Log - AWS Services Invoking Functions - Outlier, Log - Duration by Hour (Average
 | parse field=loggroup "/aws/lambda/*" as functionName
 | parse field=message "*\t*\t*" as time,RequestId,errorObj
 | json  field=errorObj "errorMessage"
- `n```
+ 
+```
 ### Use Cases:
 Log - AWS Services Invoking Functions - Outlier, Log - Duration by Hour (Average) - Outlier, Log - Duration by Hour (Sum) - Outlier, Log - Error Breakdown by Function, Log - Error Count, Log - Top Error Messages
 
@@ -31,7 +33,8 @@ Log - AWS Services Invoking Functions - Outlier, Log - Duration by Hour (Average
 | parse regex field=message "REPORT\s+RequestId:\s+(?<RequestId>[^\s]+)\s+Duration:\s+(?<Duration>[^\s]+)\s+ms\s+Billed Duration:\s+(?<BilledDuration>[^\s]+)\s+ms\s+Memory\s+Size:\s+(?<MemorySize>[^\s]+)\s+MB\s+Max\s+Memory\s+Used:\s+(?<MaxMemoryUsed>[^\s]+)\s+MB" 
 | parse field=logstream "*[*]*" as logstreamDate,version,logstreamID
 | parse field=loggroup "/aws/lambda/*" as functionName
- `n```
+ 
+```
 ### Use Cases:
 Log - AWS Services Invoking Functions - Outlier, Log - Duration by Hour (Average) - Outlier, Log - Duration by Hour (Sum) - Outlier, Log - Error Count
 
@@ -43,7 +46,8 @@ Log - AWS Services Invoking Functions - Outlier, Log - Duration by Hour (Average
 | parse regex field=message "REPORT\s+RequestId:\s+(?<RequestId>[^\s]+)\s+Duration:\s+(?<Duration>[^\s]+)\s+ms\s+Billed Duration:\s+(?<BilledDuration>[^\s]+)\s+ms\s+Memory\s+Size:\s+(?<MemorySize>[^\s]+)\s+MB\s+Max\s+Memory\s+Used:\s+(?<MaxMemoryUsed>[^\s]+)\s+MB" 
 | parse field=logstream "*/[*]*" as logstreamDate,version,logstreamID
 | parse field=loggroup "/aws/lambda/*" as functionName
- `n```
+ 
+```
 ### Use Cases:
 Log - AWS Services Invoking Functions - Outlier, Log - Duration by Hour (Average) - Outlier, Log - Duration by Hour (Sum) - Outlier, Log - Error Breakdown by Function, Log - Error Count, Log - Max Memory (MB) Used by Hour - Outlier, Log - Top Error Messages
 
@@ -61,7 +65,8 @@ Log - AWS Services Invoking Functions - Outlier, Log - Duration by Hour (Average
 | parse regex field=func_version "\w+:\w+:\S+:[\w-]+:\S+:\S+:(?<function_version>[\S]+:[\S ]+)$" | json field=_raw "userAgent" as user_agent
 | json field=_raw "userIdentity.invokedBy"as invoked_by nodrop
 | json field=_raw "userIdentity.userName"as user_name nodrop
- `n```
+ 
+```
 ### Use Cases:
 Log - AWS Services Invoking Functions - Outlier
 

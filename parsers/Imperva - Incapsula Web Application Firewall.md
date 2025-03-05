@@ -4,7 +4,8 @@
 ```
 | parse "cs10=[*] cs10Label" as adr_rule
 | parse "sourceServiceName=* " as site_name
- `n```
+ 
+```
 ### Use Cases:
 Blocked Countries Top Values, browser_type Top Values, client_app Top Values, Country Top Values, policy_type, Source IP Top Values, Threat Table based on Client IP, Top Applied ADR Rules, URL Top Values, user_agent Top Values
 
@@ -50,7 +51,8 @@ Blocked Countries Top Values, browser_type Top Values, client_app Top Values, Co
 | parse "filePermission=* " as attack_id nodrop
 | parse "fileType=* " as attack_type nodrop
 | parse "dproc=* cs6" as browser_type nodrop
- `n```
+ 
+```
 ### Use Cases:
 Blocked Countries Top Values, browser_type Top Values, client_app Top Values, Country Top Values, Geo Lookup, policy_type, Source IP Top Values, Threat Table based on Client IP, Top Applied ADR Rules, URL Top Values, User Agents Top Values, user_agent Top Values
 
@@ -96,7 +98,8 @@ Blocked Countries Top Values, browser_type Top Values, client_app Top Values, Co
 | parse "filePermission=* " as attack_id nodrop
 | parse "fileType=* " as attack_type nodrop
 | parse "dproc=* cs6" as browser_type nodrop
- `n```
+ 
+```
 ### Use Cases:
 Blocked Countries Top Values, browser_type Top Values, client_app Top Values, Country Top Values, Geo Lookup, policy_type, Source IP Top Values, Threat Table based on Client IP, Top Applied ADR Rules, URL Top Values, User Agents Top Values, user_agent Top Values
 
@@ -143,7 +146,8 @@ Blocked Countries Top Values, browser_type Top Values, client_app Top Values, Co
 | parse "fileType=* " as attack_type nodrop
 | parse "dproc=* cs6" as browser_type nodrop 
 | json field=raw "labels[*].name" as label_name 
- `n```
+ 
+```
 ### Use Cases:
 Threat Table based on Client IP
 
@@ -189,7 +193,8 @@ Threat Table based on Client IP
 | parse "filePermission=* " as attack_id nodrop
 | parse "fileType=* " as attack_type nodrop
 | parse "dproc=* cs6" as browser_type nodrop
- `n```
+ 
+```
 ### Use Cases:
 Blocked Countries Top Values, browser_type Top Values, client_app Top Values, Country Top Values, policy_type, Source IP Top Values, Threat Table based on Client IP, Top Applied ADR Rules, URL Top Values, user_agent Top Values
 
@@ -199,7 +204,8 @@ Blocked Countries Top Values, browser_type Top Values, client_app Top Values, Co
 ```
 | parse "SIEMintegration|1|1|*|" as policy_type 
 | parse "sourceServiceName=* " as site_name
- `n```
+ 
+```
 ### Use Cases:
 Blocked Countries Top Values, browser_type Top Values, client_app Top Values, policy_type, Source IP Top Values, Threat Table based on Client IP, URL Top Values, user_agent Top Values
 
@@ -213,7 +219,8 @@ Blocked Countries Top Values, browser_type Top Values, client_app Top Values, po
 | parse "dproc=* cs6" as browser_type
 | parse "ccode=* " as Country
 | parse "cicode=* " as City
- `n```
+ 
+```
 ### Use Cases:
 Blocked Countries Top Values, browser_type Top Values, Source IP Top Values, Threat Table based on Client IP, user_agent Top Values
 
@@ -227,7 +234,8 @@ Blocked Countries Top Values, browser_type Top Values, Source IP Top Values, Thr
 | parse "dproc=* cs6" as browser_type 
 | parse "ccode=* " as Country 
 | parse "cicode=* " as City
- `n```
+ 
+```
 ### Use Cases:
 Blocked Countries Top Values, Threat Table based on Client IP
 
@@ -272,7 +280,8 @@ Blocked Countries Top Values, Threat Table based on Client IP
 | parse "filePermission=* " as attack_id nodrop
 | parse "fileType=* " as attack_type nodrop
 | parse "dproc=* cs6" as browser_type nodrop
- `n```
+ 
+```
 ### Use Cases:
 Blocked Countries Top Values, browser_type Top Values, City Top Values, client_app Top Values, Country Top Values, Geo Lookup, policy_type, Source IP Top Values, Threat Table based on Client IP, Top Applied ADR Rules, URL Top Values, User Agents Top Values, user_agent Top Values
 
@@ -317,7 +326,8 @@ Blocked Countries Top Values, browser_type Top Values, City Top Values, client_a
 | parse "filePermission=* " as attack_id nodrop
 | parse "fileType=* " as attack_type nodrop
 | parse "dproc=* cs6" as browser_type nodrop 
- `n```
+ 
+```
 ### Use Cases:
 Blocked Countries Top Values, browser_type Top Values, client_app Top Values, Country Top Values, Geo Lookup, policy_type, Source IP Top Values, Threat Table based on Client IP, Top Applied ADR Rules, URL Top Values, user_agent Top Values
 

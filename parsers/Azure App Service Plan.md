@@ -3,7 +3,8 @@
 ## Parser:
 ```
 | JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop
- `n```
+ 
+```
 ### Use Cases:
 Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Recent Delete Operations, Top 10 operations that caused the most errors, Users / Applications by Operation type
 
@@ -12,7 +13,8 @@ Distribution  by Operation Type (Read, Write and Delete), Distribution by Operat
 ## Parser:
 ```
 | JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop
- `n```
+ 
+```
 ### Use Cases:
 Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Recent Delete Operations, Recent Write Operations, Top 10 operations that caused the most errors, Users / Applications by Operation type
 
@@ -21,7 +23,8 @@ Distribution  by Operation Type (Read, Write and Delete), Distribution by Operat
 ## Parser:
 ```
 | JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "properties.entity", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop
- `n```
+ 
+```
 ### Use Cases:
 Recent Delete Operations, Top 10 operations that caused the most errors
 
@@ -30,7 +33,8 @@ Recent Delete Operations, Top 10 operations that caused the most errors
 ## Parser:
 ```
 | json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid
- `n```
+ 
+```
 ### Use Cases:
 Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Recent Delete Operations, Top 10 operations that caused the most errors
 
@@ -39,7 +43,8 @@ Distribution  by Operation Type (Read, Write and Delete), Distribution by Operat
 ## Parser:
 ```
 | json "resultType", "operationName", "properties.statusMessage", "category"  as resultType, operationName, failureMessage, category
- `n```
+ 
+```
 ### Use Cases:
 Top 10 operations that caused the most errors
 

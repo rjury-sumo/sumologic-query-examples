@@ -5,7 +5,8 @@
 | json "log" as _rawlog nodrop
 | json "name" as event_name
 | json "bucket"
- `n```
+ 
+```
 ### Use Cases:
 Bucket Selected Events, Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, Last 100 Error Logs, Login Success on Management Portal, Node Down, Nodes Not Respond, User Events
 
@@ -17,7 +18,8 @@ Bucket Selected Events, Buckets Not Ready, Create/Delete Bucket Events, Error Qu
 | json "name" as event_name
 | json "remote.ip" as client_ip 
 | json "local.ip" as couchbase_server
- `n```
+ 
+```
 ### Use Cases:
 Add/Remove Node Events, Bucket Selected Events, Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, Last 100 Error Logs, Login Failure on Management Portal, Login Success on Management Portal, Node Down, Nodes Not Respond, Rebalance Events, User Events
 
@@ -30,7 +32,8 @@ Add/Remove Node Events, Bucket Selected Events, Buckets Not Ready, Create/Delete
 | json "remote.ip" as client_ip 
 | json "local.ip" as couchbase_server
 | json "real_userid.user" as user
- `n```
+ 
+```
 ### Use Cases:
 Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, Last 100 Error Logs, Login Success on Management Portal, Node Down, Nodes Not Respond, User Events
 
@@ -44,7 +47,8 @@ Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, Las
 | json "local.ip" as couchbase_server
 | json "timestamp" as time
 | json "description" as description
- `n```
+ 
+```
 ### Use Cases:
 Buckets Not Ready, Error Queries, Last 100 Error Logs, Node Down, Nodes Not Respond, User Events
 
@@ -56,7 +60,8 @@ Buckets Not Ready, Error Queries, Last 100 Error Logs, Node Down, Nodes Not Resp
 | json "name" as event_name
 | json "timestamp" as time
 | json "description" as description
- `n```
+ 
+```
 ### Use Cases:
 Add/Remove Node Events, Bucket Selected Events, Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, Last 100 Error Logs, Login Success on Management Portal, Node Down, Nodes Not Respond, Rebalance Events, User Events
 
@@ -70,7 +75,8 @@ Add/Remove Node Events, Bucket Selected Events, Buckets Not Ready, Create/Delete
 | json "description" as description
 | json "bucket_name" as bucket_name
 | json "real_userid.user" as action_by_user
- `n```
+ 
+```
 ### Use Cases:
 Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Last 100 Error Logs, Node Down, Nodes Not Respond, User Events
 
@@ -84,7 +90,8 @@ Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Last 100 Error Lo
 | json "description" as description
 | json "group_name" as group_name
 | json "real_userid.user" as action_by_user
- `n```
+ 
+```
 ### Use Cases:
 Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, Last 100 Error Logs, Node Down, Nodes Not Respond, User Events
 
@@ -96,7 +103,8 @@ Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, Las
 | json "name" as event_name
 | json "timestamp" as time
 | json "description" as description | json "hostname" as node_name
- `n```
+ 
+```
 ### Use Cases:
 Add/Remove Node Events, Bucket Selected Events, Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, Last 100 Error Logs, Login Success on Management Portal, Node Down, Nodes Not Respond, User Events
 
@@ -108,7 +116,8 @@ Add/Remove Node Events, Bucket Selected Events, Buckets Not Ready, Create/Delete
 | parse regex "_time=(?<time>\S+)"
 | parse regex "_msg=(?<msg>.+)"
 | parse regex field=msg "Keyspace\s\w+:(?<bucket>.+)\."
- `n```
+ 
+```
 ### Use Cases:
 Add/Remove Node Events, Average Latency of All HTTP Requests, Bucket Selected Events, Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, HTTP Method, HTTP Response Code, Last 10 Error Queries, Last 10 Logs for HTTP Access, Last 100 Error Logs, Login Failure on Management Portal, Login Success on Management Portal, Node Down, Nodes Not Respond, Rebalance Events, Top 10 client IP addresses, Top 10 User Agent Accessed, Top 10 Username Accessed, Top URLs with 4XX response codes, Top URLs with 5XX response codes, URLs Experiencing with 5XX Response Code, User Events
 
@@ -121,7 +130,8 @@ Add/Remove Node Events, Average Latency of All HTTP Requests, Bucket Selected Ev
 | parse regex "_msg=(?<msg>.+)"
 | parse regex field=msg "Keyspace\s\w+:(?<bucket>.+)\."
 | parse regex field=msg "Failed to perform (?<method>\w+)"
- `n```
+ 
+```
 ### Use Cases:
 Error Queries, Last 100 Error Logs, Node Down, Nodes Not Respond
 
@@ -131,7 +141,8 @@ Error Queries, Last 100 Error Logs, Node Down, Nodes Not Respond
 ```
 | json "log" as _rawlog nodrop
 | parse regex "(?<src_ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s+\-\s+(?<username>\S+)\s+\[(?<time>.+)\]\s+\"(?:(?<method>\w+)\s+(?<path>\S+)\sHTTP\/1.1)\"\s+(?<code>\d+)\s(?<bytes>\d+)\s(?<origin_url>\S+) \"(?<agent>.+)\"\s(?<latency>\d+)"
- `n```
+ 
+```
 ### Use Cases:
 Add/Remove Node Events, Average Latency of All HTTP Requests, Bucket Selected Events, Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, HTTP Method, HTTP Response Code, Last 10 Error Queries, Last 10 Logs for HTTP Access, Last 100 Error Logs, Login Failure on Management Portal, Login Success on Management Portal, Node Down, Nodes Not Respond, Rebalance Events, Top 10 client IP addresses, Top 10 User Agent Accessed, Top 10 Username Accessed, Top URLs with 4XX response codes, Top URLs with 5XX response codes, URLs Experiencing with 5XX Response Code, User Events
 
@@ -141,7 +152,8 @@ Add/Remove Node Events, Average Latency of All HTTP Requests, Bucket Selected Ev
 ```
 | json "log" as _rawlog nodrop
 | parse regex "(?<src_ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s+\-\s+(?<username>\S+)\s+\[(?<time>.+)\]\s+\"(?:(?<method>\w+)\s+(?<path>\S+)\sHTTP\/1.1)\"\s+(?<code>\d+)\s(?<bytes>\d+)\s(?<origin_url>\S+) \"(?<agent>.+)\"\s(?<latency>\d+)" |_raw as message
- `n```
+ 
+```
 ### Use Cases:
 Add/Remove Node Events, Average Latency of All HTTP Requests, Bucket Selected Events, Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, HTTP Response Code, Last 10 Logs for HTTP Access, Last 100 Error Logs, Login Failure on Management Portal, Login Success on Management Portal, Node Down, Nodes Not Respond, Rebalance Events, Top 10 client IP addresses, Top URLs with 5XX response codes, User Events
 
@@ -152,7 +164,8 @@ Add/Remove Node Events, Average Latency of All HTTP Requests, Bucket Selected Ev
 | json "log" as _rawlog nodrop
 | parse regex "\'\S+@(?<node>\S+)\'\:\s+\[(?<buckets>.+)\]," | parse regex field=buckets "\"(?<bucket>[^,]+)\"" multi
 | parse regex "ns_server:error,(?<time>\S+)," | _raw as msg
- `n```
+ 
+```
 ### Use Cases:
 Buckets Not Ready, Error Queries, Last 100 Error Logs, Node Down, Nodes Not Respond
 
@@ -162,7 +175,8 @@ Buckets Not Ready, Error Queries, Last 100 Error Logs, Node Down, Nodes Not Resp
 ```
 | json "log" as _rawlog nodrop
 | parse regex "ns_server:error,(?<time>\S+),"|_raw as msg  | count by time,msg | sort by time | limit 100| fields time,msg
- `n```
+ 
+```
 ### Use Cases:
 Add/Remove Node Events, Average Latency of All HTTP Requests, Bucket Selected Events, Buckets Not Ready, Create/Delete Bucket Events, Error Queries, Group Events, HTTP Method, HTTP Response Code, Last 10 Error Queries, Last 10 Logs for HTTP Access, Last 100 Error Logs, Login Failure on Management Portal, Login Success on Management Portal, Node Down, Nodes Not Respond, Rebalance Events, Top 10 client IP addresses, Top 10 User Agent Accessed, Top 10 Username Accessed, Top URLs with 4XX response codes, Top URLs with 5XX response codes, URLs Experiencing with 5XX Response Code, User Events
 
@@ -172,7 +186,8 @@ Add/Remove Node Events, Average Latency of All HTTP Requests, Bucket Selected Ev
 ```
 | json "log" as _rawlog nodrop
 | parse regex "ns_server:error,(?<time>\S+),"|_raw as msg | count by time,node,msg| sort by time | limit 100 | fields time,node,msg
- `n```
+ 
+```
 ### Use Cases:
 Node Down, Nodes Not Respond
 
@@ -182,7 +197,8 @@ Node Down, Nodes Not Respond
 ```
 | json "log" as _rawlog nodrop
 | parse regex "stats:error,(?<time>\S+),"
-| parse regex "Some nodes didn't respond: \[(?<temp_nodes>.+)\]" | parse regex field=temp_nodes "\'(?<node_temp>[^,]+)\'" multi | parse regex field=node_temp "@(?<node>.+)"| _raw as msg | count by time,node,msg|sort by time| limit 100| `n```
+| parse regex "Some nodes didn't respond: \[(?<temp_nodes>.+)\]" | parse regex field=temp_nodes "\'(?<node_temp>[^,]+)\'" multi | parse regex field=node_temp "@(?<node>.+)"| _raw as msg | count by time,node,msg|sort by time| limit 100| 
+```
 ### Use Cases:
 Nodes Not Respond
 
