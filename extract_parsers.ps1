@@ -56,6 +56,6 @@ foreach ($p in $parsers) {
 }   
 
 foreach ($app in $mdp.Keys) {
-    Write-Host "output parsers file: $app to ./parsers/$($app)"
-    $mdp[$app] | out-file -FilePath "./parsers/$($app)" -Encoding utf8
+    Write-Host "output parsers file: $app to ./parsers/$($app).md"
+    $mdp[$app] | out-file -FilePath "./parsers/$($app).md" -Encoding utf8
 }
