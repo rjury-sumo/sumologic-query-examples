@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "MariaDB - Server Latest Running State",
+  "search": {
+    "queryText": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster=* mysqld (\"ready for connections.\" or \"Shutdown complete\" or \"Terminated.\" or \"Normal shutdown\" or \"Shutting down\" or \"starting as process\")\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| if (ErrorMsg matches \"*ready for connections.*\", \"Up\",\"Unknown\") as server_status\n| if (ErrorMsg matches \"*Terminated.*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Normal shutdown*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutting down*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutdown complete*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*starting as process*\", \"Starting\",server_status) as server_status\n| if (isEmpty(pod),_sourceHost,pod) as host\n| timeslice 15m\n| withtime server_status | withtime _messagetime\n| most_recent(server_status_withtime) as server_status, most_recent(_messagetime_withtime) as m_time by host, db_cluster\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS Z\") as event_time\n| ((toMillis(now())-m_time)/(1000*60*60)) as since_hours | format(\"%.2f\", since_hours) as since_hours\n| concat (\"Since \", since_hours, \" hours\") as remark\n| fields - m_time \n| fields host, event_time, server_status, remark, db_cluster",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "Last 24 Hours"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

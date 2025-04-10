@@ -1,0 +1,502 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "AWS ELB - Application - Searches",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "4XX and 5XX Status Codes by Backend Instance and ELB",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| where (elb_status_code matches \"4*\") or (target_status_code matches \"4*\") or (elb_status_code matches \"5*\") or (target_status_code matches \"5*\") \n| if (elb_status_code matches \"4*\",1,0) as elb_flag4\n| if (target_status_code matches \"4*\",1,0) as be_flag4\n| if (elb_status_code matches \"5*\",1,0) as elb_flag5\n| if (target_status_code matches \"5*\",1,0) as be_flag5\n| sum(elb_flag4) as elb_4xx, sum(be_flag4) as backend_4xx, sum(elb_flag5) as elb_5xx, sum(be_flag5) as backend_5xx",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "ALB Parser 2.0",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-5m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Backend Instance and Load Balancer 4XX Status Codes by Client",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| where (elb_status_code matches \"4*\") or (target_status_code matches \"4*\") \n| timeslice 1m \n| if (elb_status_code matches \"4*\",1,0) as elb_flag\n| if (target_status_code matches \"4*\",1,0) as be_flag \n| sum(elb_flag) as load_balancer, sum(be_flag) as backend_instance by _timeslice,clientIP \n| fields _timeslice,clientIP,load_balancer, backend_instance | (load_balancer+backend_instance) as total_4xx | sort by total_4xx\n| limit 20",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Backend Instance and Load Balancer 4XX Status Codes by Domain",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| where (elb_status_code matches \"4*\") or (target_status_code matches \"4*\") \n| timeslice 1m \n| if (elb_status_code matches \"4*\",1,0) as elb_flag\n| if (target_status_code matches \"4*\",1,0) as be_flag \n| sum(elb_flag) as load_balancer, sum(be_flag) as backend_instance by _timeslice,domain \n| fields _timeslice,domain,load_balancer, backend_instance \n| (load_balancer+backend_instance) as total_4xx \n| sort by total_4xx\n| limit 20",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Backend Instance and Load Balancer 4XX Status Codes by Target Group",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| where (elb_status_code matches \"4*\") or (target_status_code matches \"4*\") \n| timeslice 1m \n| if (elb_status_code matches \"4*\",1,0) as elb_flag\n| if (target_status_code matches \"4*\",1,0) as be_flag \n| sum(elb_flag) as load_balancer, sum(be_flag) as backend_instance by _timeslice,target_group_arn \n| fields _timeslice,target_group_arn,load_balancer, backend_instance \n| (load_balancer+backend_instance) as total_4xx \n| sort by total_4xx\n| limit 20",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Backend Instance and Load Balancer 4XX Status Codes by URI",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| where (elb_status_code matches \"4*\") or (target_status_code matches \"4*\") \n| timeslice 1m \n| if (elb_status_code matches \"4*\",1,0) as elb_flag\n| if (target_status_code matches \"4*\",1,0) as be_flag \n| sum(elb_flag) as load_balancer, sum(be_flag) as backend_instance by _timeslice,uri \n| fields _timeslice,uri,load_balancer, backend_instance \n| (load_balancer+backend_instance) as total_4xx \n| sort by total_4xx\n| limit 20",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Backend Instance and Load Balancer 5XX Status Codes by Client",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| where (elb_status_code matches \"5*\") or (target_status_code matches \"5*\") \n| timeslice 1m \n| if (elb_status_code matches \"5*\",1,0) as elb_flag\n| if (target_status_code matches \"5*\",1,0) as be_flag \n| sum(elb_flag) as load_balancer, sum(be_flag) as backend_instance by _timeslice,clientIP \n| fields _timeslice,clientIP,load_balancer, backend_instance | (load_balancer+backend_instance) as total_5xx | sort by total_5xx\n| limit 20",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Backend Instance and Load Balancer 5XX Status Codes by Domain",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| where (elb_status_code matches \"5*\") or (target_status_code matches \"5*\") \n| timeslice 1m \n| if (elb_status_code matches \"5*\",1,0) as elb_flag\n| if (target_status_code matches \"5*\",1,0) as be_flag \n| sum(elb_flag) as load_balancer, sum(be_flag) as backend_instance by _timeslice,domain \n| fields _timeslice,domain,load_balancer, backend_instance | (load_balancer+backend_instance) as total_5xx \n| sort by total_5xx\n| limit 20",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Backend Instance and Load Balancer 5XX Status Codes by Target Group",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| where (elb_status_code matches \"5*\") or (target_status_code matches \"5*\") \n| timeslice 1m \n| if (elb_status_code matches \"5*\",1,0) as elb_flag\n| if (target_status_code matches \"5*\",1,0) as be_flag \n| sum(elb_flag) as load_balancer, sum(be_flag) as backend_instance by _timeslice,target_group_arn \n| fields _timeslice,target_group_arn,load_balancer, backend_instance \n| (load_balancer+backend_instance) as total_5xx \n| sort by total_5xx\n| limit 20",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Backend Instance and Load Balancer 5XX Status Codes by URI",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"arn:* \" as target_group_arn nodrop\n| fields - request\n| where (elb_status_code matches \"5*\") or (target_status_code matches \"5*\") \n| timeslice 1m \n| if (elb_status_code matches \"5*\",1,0) as elb_flag\n| if (target_status_code matches \"5*\",1,0) as be_flag \n| sum(elb_flag) as load_balancer, sum(be_flag) as backend_instance by _timeslice,uri \n| fields _timeslice,uri,load_balancer, backend_instance \n| (load_balancer+backend_instance) as total_5xx \n| sort by total_5xx\n| limit 20",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Browsers and Operating Systems",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| if (user_agent matches \"*Windows *\" OR user_agent matches \"*Win32*\" OR user_agent matches \"*Win64*\",\"Windows\",\"\") as OS \n| if (user_agent matches \"*Macintosh*\" OR user_agent matches \"*Darwin/*\" OR user_agent matches \"*Mac OS*\",\"MacOS\",OS) as OS \n| if (user_agent matches \"* CrOS *\",\"Chrome OS\",OS) as OS\n| if (user_agent matches \"*Linux*\",\"Linux\",OS) as OS \n| if (user_agent matches \"*iPad*\",\"iPad\",OS) as OS \n| if (user_agent matches \"*iPhone*\",\"iPhone\",OS) as OS \n|  if (user_agent matches \"*Android*\",\"Android\",OS) as OS \n| if (user_agent matches \"*Windows Phone*\",\"Windows Phone\",OS) as OS \n| if (OS == \"\",\"Other\",OS) as OS \n| if (user_agent matches \"Mozilla/*; rv:*)*\",\"Mozilla\",\"\") as Browser\n| if (user_agent matches \"*MSIE*\",\"Internet Explorer\",Browser) as Browser \n| if (user_agent matches \"*Firefox*\",\"Firefox\",Browser) as Browser \n| if (user_agent matches \"*Safari*\",\"Safari\",Browser) as Browser \n| if (OS==\"Android\" AND user_agent matches \"*WebKit*\",\"WebKit\",Browser) as Browser\n| if ((OS==\"iPhone\" OR OS==\"iPad\") AND (user_agent matches \"*Mobile/*\" OR user_agent matches \"*AppleWebKit*(KHTML*Gecko)*\"),\"Mobile Safari\",Browser) as Browser\n| if (browser == \"\" AND OS==\"MacOS\" AND user_agent matches \"Mozilla/* (Macintosh;*(KHTML, like Gecko)*\",\"Safari\",Browser) as Browser \n| if (user_agent matches \"*MobileSafari/*\",\"Mobile Safari\",Browser) as Browser\n| if (user_agent matches \"*Chrome*\",\"Chrome\",Browser) as Browser \n| if (user_agent matches \"Opera*\",\"Opera\",Browser) as Browser \n| if (user_agent matches \"Dolphin*\",\"Dolphin\",Browser) as Browser \n|  if (Browser == \"\",\"Other\",Browser) as Browser  \n| count by OS,browser\n| transpose row os column browser as *",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Failed Dispatch Monitoring",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where (request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice 1m\n| count as failures by _timeslice\n| outlier failures direction=+",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Failed Dispatches By Target Group",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where (request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice 1m\n| count by target_group_arn, _timeslice\n| transpose row _timeslice column target_group_arn",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Failed Dispatches Count",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * *\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, path\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where (request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Failed Dispatches by Backend",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where (request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice 1m\n| count by backendIP, _timeslice\n| transpose row _timeslice column backendIP",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Failed Dispatches by Client",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where (request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice 1m\n| count by clientIP, _timeslice\n| transpose row _timeslice column clientIP",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Latency by Domain",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend \n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where !(request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice by 1m\n| avg(request_processing_time) as a1, avg(target_processing_time) as a2,avg(response_processing_time) as a3 by _timeslice, domain \n| (a1+a2+a3) as total_process_time\n| fields _timeslice,domain,total_process_time \n| transpose row _timeslice column domain",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Latency by Load Balancer",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Parse all fields above, then aggregate\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where !(request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| avg(request_processing_time) as a1, avg(target_processing_time) as a2,avg(response_processing_time) as a3 by elb_server \n| (a1+a2+a3) as total_process_time",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Latency by Protocol",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * *\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, path\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where !(request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice by 1m\n| avg(request_processing_time) as a1, avg(target_processing_time) as a2,avg(response_processing_time) as a3 by _timeslice, type \n| (a1+a2+a3) as total_process_time\n| fields _timeslice,type,total_process_time \n| transpose row _timeslice column type",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Latency by Target Group",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend \n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where !(request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice by 1m\n| avg(request_processing_time) as a1, avg(target_processing_time) as a2,avg(response_processing_time) as a3 by _timeslice, target_group_arn \n| (a1+a2+a3) as total_process_time\n| fields _timeslice,target_group_arn,total_process_time \n| transpose row _timeslice column target_group_arn",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Latency by Top 20 Backend Instances",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where !(request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice by 1m\n| avg(request_processing_time) as a1, avg(target_processing_time) as a2,avg(response_processing_time) as a3 by _timeslice, backendIP | (a1+a2+a3) as total_process_time\n| fields _timeslice,backendIP,total_process_time\n| sort by total_process_time | limit 20",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Latency by Top 20 Clients",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where !(request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice by 1m\n| avg(request_processing_time) as a1, avg(target_processing_time) as a2,avg(response_processing_time) as a3 by _timeslice, clientIP | (a1+a2+a3) as total_process_time\n| fields _timeslice,clientIP,total_process_time \n| sort by total_process_time | limit 20",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Latency by Top 20 URI",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where !(request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice by 1m\n| avg(request_processing_time) as a1, avg(target_processing_time) as a2,avg(response_processing_time) as a3 by _timeslice, uri | (a1+a2+a3) as total_process_time\n| fields _timeslice,uri,total_process_time \n| sort by total_process_time | limit 20",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Requests and Data Volume",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| ((received_bytes/(1024))/(1024)) as mbytes1 \n| ((sent_bytes/(1024))/(1024)) as mbytes2 \n| sum(mbytes1) as data_received, sum(mbytes2) as data_sent",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Requests by Geolocation",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = clientIP\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Requests by Load Balancer Over Time",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| timeslice by 1m \n| count by _timeslice,elb_server\n| transpose row _timeslice column elb_server",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Requests by SSL Protocol and Cipher",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| count by ssl_protocol, ssl_cipher\n| transpose row ssl_protocol column ssl_cipher",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Requests by Target Group Over Time",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| timeslice by 1m \n| count by _timeslice,target_group_arn\n| transpose row _timeslice column target_group_arn",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Requests by Type Over Time",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| timeslice by 1m \n| count by _timeslice,type\n| transpose row _timeslice column type",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Target Group Utilization",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend \n| count by target_group_arn\n| sort _count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Total Process Time Latency 90th, 95 pct",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where !(request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice by 1m\n| pct(request_processing_time,90,95), pct(target_processing_time,90,95), pct(response_processing_time,90,95) by _timeslice\n| (_request_processing_time_pct_90+_target_processing_time_pct_90+_response_processing_time_pct_90) as total_process_time_pct_90\n| (_request_processing_time_pct_95+_target_processing_time_pct_95+_response_processing_time_pct_95) as total_process_time_pct_95\n| fields - _request_processing_time_pct_90, _target_processing_time_pct_90, _response_processing_time_pct_90, _request_processing_time_pct_95, _target_processing_time_pct_95, _response_processing_time_pct_95",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Total Requests and Data Volume",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| timeslice 1m\n| ((received_bytes/(1024))/(1024)) as mbytes1 | ((sent_bytes/(1024))/(1024)) as mbytes2 \n| count as clientIP, sum(mbytes1) as data_received, sum(mbytes2) as data_sent by _timeslice \n| sort _timeslice",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Total Requests by Load Balancer",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| count by elb_server\n| sort _count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    }
+  ]
+}

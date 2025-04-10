@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Policy Changes",
+  "search": {
+    "queryText": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security \"Policy Change\"\n| parse \"EventCode = *;\" as event_id nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop | parse \"CategoryString = \\\"*\\\";\" as CategoryString nodrop | parse regex \"Subcategory:\\s+(?<subcategory>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+?)\\r\" nodrop \n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+?)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r]+?)(?:\\r|\\\";)\" nodrop\n| where categoryString matches \"*Policy*Change*\" or msg_summary matches \"*policy*change*\"\n| count as num_changes, first(_messageTime) as last_change by src_domain, comp_name, categoryString, msg_summary\n| sort by last_change \n| formatDate(fromMillis(last_change), \"MM-dd-yyyy HH:mm:ss z\") as last_change",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-1d"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

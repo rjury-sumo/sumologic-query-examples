@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "MariaDB -  Slow Query Server Location",
+  "search": {
+    "queryText": "_sourceCategory = Labs/mariadb db_system=mariadb \"User@Host\" \"Query_time\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as mariadb_log_message\n| parse regex field=mariadb_log_message \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ \\s\\[(?<ip_addr>\\S*?)\\]\" nodrop\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\" nodrop // Pttrn1-vrtn1\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @\\s+\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" nodrop // Pttrn1-vrtn2\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" // Pttrn1-vrtn3\n| count by db_cluster, ip_addr, host_name\n| where !isEmpty(ip_addr)\n| lookup latitude, longitude, country_name, state, city, postal_code from geo://location on ip=ip_addr\n| where !isNull(latitude)",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

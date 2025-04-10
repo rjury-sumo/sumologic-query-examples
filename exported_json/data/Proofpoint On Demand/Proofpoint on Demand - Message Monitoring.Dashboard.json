@@ -1,0 +1,516 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Proofpoint on Demand - Message Monitoring",
+  "description": "This dashboard offers valuable insights into message traffic, such as the number of distinct sender and receiver domains, geo-locations of senders, and blocked messages. It also tracks trends in the actions taken on messages and provides a list of the top 10 senders and receivers. By leveraging this information, it gives a better understanding of the email traffic patterns and takes action to improvise email security posture.",
+  "title": "Proofpoint on Demand - Message Monitoring",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel1BFFD242AC64B84C",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panel2A8FD825849D294F",
+        "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":34}"
+      },
+      {
+        "key": "panel2C93435A9AE3394D",
+        "structure": "{\"height\":9,\"width\":4,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel5212C0E7B43D0941",
+        "structure": "{\"height\":17,\"width\":24,\"x\":0,\"y\":44}"
+      },
+      {
+        "key": "panel5C0A4D6B835D8843",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":34}"
+      },
+      {
+        "key": "panelB134EDEAB043B84F",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":24}"
+      },
+      {
+        "key": "panelBCB8C873B74BFB4F",
+        "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":24}"
+      },
+      {
+        "key": "panelE235127FBAF0B941",
+        "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":14}"
+      },
+      {
+        "key": "panelPANE-1F21FAF4ACABBA42",
+        "structure": "{\"height\":9,\"width\":4,\"x\":4,\"y\":5}"
+      },
+      {
+        "key": "panelPANE-40418AF4A5EE594C",
+        "structure": "{\"height\":5,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-7E3ECD6D9B835849",
+        "structure": "{\"height\":9,\"width\":16,\"x\":8,\"y\":5}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel2C93435A9AE3394D",
+      "title": "Unique Inbound Domains",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"noDataMessage\":\"0\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n// extracting individual emails from array of emails\n| extract field=receiver_email \"\\<(?<individual_receiver_email>[\\w\\s\\-@.]*)\\>\\\"?[,\\n\\]]\" multi\n| extract field=individual_receiver_email \".@(?<inbound_domain>[a-z0-9-.]*)\"\n| count_distinct (inbound_domain)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the count of unique inbound domains.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-1F21FAF4ACABBA42",
+      "title": "Unique Outbound Domains",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\",\"noDataMessage\":\"0\"},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"id\":-1,\"value\":null,\"from\":null,\"to\":null,\"color\":\"#bf2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n// extracting individual emails from array of emails\n| extract field=sender_email \"\\<(?<individual_sender_email>[\\w\\s\\-@.]*)\\>\\\"?[,\\n\\]]\" multi\n| extract field=individual_sender_email \"@(?<outbound_domain>[a-z0-9-.]*)\"\n| count_distinct(outbound_domain)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the count of unique outbound domains.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelB134EDEAB043B84F",
+      "title": "Actions of Messages Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"B\"],\"properties\":{\"type\":\"line\",\"color\":\"#bf2121\",\"displayType\":\"default\",\"lineDashType\":\"solid\",\"lineThickness\":2,\"markerSize\":7,\"markerType\":\"circle\"}}],\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| timeslice 1d\n| count_distinct(guid) as frequency by _timeslice,final_action\n| fillmissing timeslice, values all in final_action\n| transpose row _timeslice column final_action\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        },
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| timeslice 1d\n| count_distinct(guid) as total_messages by _timeslice\n| fillmissing timeslice",
+          "queryType": "Logs",
+          "queryKey": "B",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the distribution of final actions of messages over time.",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE235127FBAF0B941",
+      "title": "Geo Locations of Blocked Messages",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"map\",\"displayType\":\"default\",\"mode\":\"map\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where disposition matches (\"*reject*\") or disposition matches(\"*discard*\")\n| count_distinct(guid) as frequency by ip\n| where isValidIPv4(ip) or isValidIPv6(ip)\n| where !isNull(ip)\n| if(isValidIPv4(ip), if(!isPrivateIP(ip),true,false),true) as is_public\n| where is_public\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = ip",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the geo locations of blocked messages.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1BFFD242AC64B84C",
+      "title": "Geo Locations of Senders",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"map\",\"displayType\":\"default\",\"mode\":\"map\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| count_distinct(guid) as frequency by ip\n| where isValidIPv4(ip) or isValidIPv6(ip)\n| where !isNull(ip)\n| if(isValidIPv4(ip), if(!isPrivateIP(ip),true,false),true) as is_public\n| where is_public\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = ip",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the geo locations of senders.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2A8FD825849D294F",
+      "title": "Top 10 Receivers",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":10,\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| extract field=receiver_email \"\\<(?<individual_receiver_email>[\\w\\s\\-@.]*)\\>\\\"?[,\\n\\]]\" multi\n| extract field=individual_receiver_email \"(?<receiver_email>[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z0-9_-]+)\"\n| count_distinct(guid) as frequency by receiver_email\n| sort by frequency\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the list of top 10 receivers.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5C0A4D6B835D8843",
+      "title": "Top 10 Senders",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| extract field=sender_email \"\\<(?<individual_sender_email>[\\w\\s\\-@.]*)\\>\\\"?[,\\n\\]]\" multi\n| extract field=individual_sender_email \"(?<sender_email>[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z0-9_-]+)\"\n| count_distinct(guid) as frequency by sender_email\n| sort by frequency\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the list of top 10 senders.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5212C0E7B43D0941",
+      "title": "Recent Messages",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":10,\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| extract field=sender_email \"\\<(?<individual_sender_email>[\\w\\s\\-@.]*)\\>\\\"?[,\\n\\]]\" multi\n| extract field=receiver_email \"\\<(?<individual_receiver_email>[\\w\\s\\-@.]*)\\>\\\"?[,\\n\\]]\" multi\n| where !(subject=\"[]\")\n| json field=subject \"[0]\" as final_subject\n| json field=message_id \"[0]\" as final_msg_id\n| count_distinct(guid) by _messageTime,individual_sender_email,individual_receiver_email,disposition,time_stamp,final_subject,final_msg_id\n| formatDate(toLong(_messageTime), \"dd-MM-yyyy HH:mm:ss\") as time_stamp\n| top 100 individual_sender_email,individual_receiver_email,disposition,time_stamp,final_subject,final_msg_id by time_stamp",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the summary of recent messages.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelBCB8C873B74BFB4F",
+      "title": "Blocked Messages Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"B\"],\"properties\":{\"type\":\"line\",\"color\":\"#bf2121\",\"displayType\":\"default\",\"lineDashType\":\"solid\",\"lineThickness\":2,\"markerSize\":7,\"markerType\":\"circle\"}}],\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where disposition matches (\"*reject*\") or disposition matches(\"*discard*\")\n| timeslice 1d\n| count_distinct(guid) as frequency by _timeslice,disposition\n| fillmissing timeslice, values all in disposition\n| transpose row _timeslice column disposition\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        },
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where disposition matches (\"*reject*\") or disposition matches(\"*discard*\")\n| timeslice 1d\n| count_distinct(guid) as total_messages by _timeslice\n| fillmissing timeslice",
+          "queryType": "Logs",
+          "queryKey": "B",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the trend of discarded or rejected messages.",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-7E3ECD6D9B835849",
+      "title": "Message Traffic Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"overrides\":[{\"series\":[],\"queries\":[\"B\"],\"properties\":{\"type\":\"line\",\"axisYType\":\"secondary\",\"color\":\"#bf2121\",\"displayType\":\"default\",\"lineDashType\":\"solid\",\"lineThickness\":2,\"markerSize\":7,\"markerType\":\"circle\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| timeslice 1d\n| count_distinct(guid) as frequency by _timeslice,route_direction\n| fillmissing timeslice, values all in route_direction\n| transpose row _timeslice column route_direction",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        },
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| timeslice 1d\n| count_distinct(guid) as total_messages by _timeslice\n| fillmissing timeslice\n",
+          "queryType": "Logs",
+          "queryKey": "B",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the trend of the direction of messages(inbound, outbound).",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-40418AF4A5EE594C",
+      "title": "",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"showTitle\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Filters: \n\n###route_direction:\n\n        This refers to the direction or path that the email takes as it is sent from the sender to the recipient(s).\n\n###disposition:\n\n        This refers to the final outcome or status of an email message after it has been scanned and analyzed by the platform's security filters. Specifically, disposition indicates whether an email has been delivered, blocked, quarantined, or otherwise handled based on the platform's security policies.\n\n###action:\n\n        This refers to the ultimate decision or action taken by the platform's security filters in response to an email message.\n\n###is_encrypted:\n\n        This is a property that indicates whether an email message has been encrypted or not.\n\n###rule:\n\n        This refers to the security policy that ultimately triggered the final disposition or action taken by the platform's security filters in response to an email message.\n\n###module:\n\n        This refers to the specific security module or technology that was responsible for the final disposition or action taken by the platform's security filters in response to an email message.\n\n\n\n\n\n\n"
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "Labs/Security/ProofPoint",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Security/ProofPoint"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "action",
+      "displayName": "action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action nodrop\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| where !isEmpty(final_action)",
+        "field": "final_action"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "disposition",
+      "displayName": "disposition",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.disposition\" as disposition nodrop",
+        "field": "disposition"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "is_encrypted",
+      "displayName": "is_encrypted",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.isMsgEncrypted\" as is_encrypted nodrop\n|  if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted",
+        "field": "is_encrypted"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "module",
+      "displayName": "module",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module nodrop\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where !isEmpty(final_module)",
+        "field": "final_module"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "route_direction",
+      "displayName": "route_direction",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.routeDirection\" as route_direction nodrop",
+        "field": "route_direction"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "rule",
+      "displayName": "rule",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule nodrop\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| where !isEmpty(final_rule)",
+        "field": "final_rule"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

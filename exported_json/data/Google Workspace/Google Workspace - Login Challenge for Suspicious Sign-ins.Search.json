@@ -1,0 +1,38 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinitionV2",
+  "name": "Google Workspace - Login Challenge for Suspicious Sign-ins",
+  "search": {
+    "queryText": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  (\"login_challenge\" and \"login_challenge_status\") \"\\\"type\\\": \\\"login\\\"\" \n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop | json \"events[0].parameters\" as eventparameters nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_type\\\",\\\"value\\\":\\\"(?<loginType>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_challenge_status\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| where applicationName=\"login\" and eventType = \"login\" and eventName<>\"login_success\"\n| count by email, loginType, login_failure_type, ipAddress\n| fields -_count\n| sort by email asc",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [
+      {
+        "name": "GoogleWorkspaceAuditLogsSource",
+        "label": "GoogleWorkspaceAuditLogsSource",
+        "description": "Logs data source",
+        "dataType": "QUERY_FRAGMENT",
+        "value": "Labs/gsuite/apps",
+        "autoComplete": {
+          "autoCompleteType": "SKIP_AUTOCOMPLETE",
+          "autoCompleteKey": null,
+          "autoCompleteValues": [],
+          "lookupFileName": null,
+          "lookupLabelColumn": null,
+          "lookupValueColumn": null
+        }
+      }
+    ],
+    "parsingMode": "Manual",
+    "defaultTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1w"
+      },
+      "to": null
+    }
+  },
+  "searchSchedule": null,
+  "description": "Google: If we detect that an unauthorized person is attempting to access a user's account, we will present them with a Login Challenge that asks the person to verify their identity."
+}

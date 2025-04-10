@@ -1,0 +1,507 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Google Cloud IAM",
+  "description": "The Sumo Logic App for Google Cloud IAM gives you visibility into the activities in your Cloud IAM. The preconfigured dashboards allow you to monitor the IAM project activities, operations, role activities, and policy changes.",
+  "children": [
+    {
+      "type": "DashboardSyncDefinition",
+      "name": "Google Cloud IAM - Overview",
+      "description": "See the overview of your Google Cloud IAM including the operations, project, IAM role, and service account activities.",
+      "detailLevel": 0,
+      "properties": "{\"layoutType\":\"gridster\"}",
+      "panels": [
+        {
+          "name": "Messages by Project",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"iam_role\" or type = \"project\" or type = \"service_account\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"project_id\" as project\n\n| timeslice 1h\n| count as messages by _timeslice, project\n| transpose row _timeslice column project",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 1,
+          "width": 13,
+          "height": 7,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":6,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909989",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Recent Project Activity",
+          "viewerType": "table",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data\" as data\n| json field=data \"resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"project\" \n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json field=data \"resource.labels\", \"timestamp\", \"resource.labels.project_id\", \"protoPayload.authenticationInfo.principalEmail\", \"protoPayload.serviceData.policyDelta.bindingDeltas[*]\" as labels, timestamp, project, user, changes\n\n| parse regex field=changes \"\\\"role\\\":\\\"roles\\\\\\/(?<role>[a-zA-Z.]+)\\\",\\\"member\\\":\\\"(?<member>.*?)\\\",\\\"action\\\":\\\"(?<action>[A-Z]+)\\\"\" multi\n| count by action, role, member, timestamp, user\n| fields timestamp, user, action, role, member\n| sort by timestamp",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-3h"
+            },
+            "to": null
+          },
+          "x": 14,
+          "y": 1,
+          "width": 11,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909987",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Recent IAM Role Activity",
+          "viewerType": "table",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"iam_role\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\", \"message.data.timestamp\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload\" as labels, timestamp, project, payload\n| json field=payload \"authenticationInfo.principalEmail\", \"response.title\" as user, name\n| parse regex \"\\\"methodName\\\":\\\"[^\\\"]+\\.(?<method>[^\\\"]+)\\\"\"\n\n| count by user, method, name, timestamp, project\n| fields timestamp, user, method, project, name\n| sort by timestamp",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-3h"
+            },
+            "to": null
+          },
+          "x": 14,
+          "y": 6,
+          "width": 11,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909986",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Operations",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"project\" or type = \"iam_role\" or type = \"service_account\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"project_id\" as project\n| parse regex \"\\\"methodName\\\":\\\"[^\\\"]+\\.(?<method>[^\\\"]+)\\\"\"\n\n| timeslice 1h\n| count as changes by _timeslice, method\n| transpose row _timeslice column method",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 8,
+          "width": 13,
+          "height": 7,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"2\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"4\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"1\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909988",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Recent Service Account Activity",
+          "viewerType": "table",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"service_account\" \n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data\" as data\n| json field=data \"timestamp\", \"resource.labels\", \"resource.labels.project_id\", \"resource.labels.email_id\", \"protoPayload.authenticationInfo.principalEmail\" as timestamp, labels, project, service_account, user\n| parse regex \"\\\"methodName\\\":\\\"[^\\\"]+\\.(?<method>[^\\\"]+)\\\"\"\n\n| count by user, method, service_account, timestamp\n| fields timestamp, user, method, service_account\n| sort by timestamp",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-3h"
+            },
+            "to": null
+          },
+          "x": 14,
+          "y": 11,
+          "width": 11,
+          "height": 4,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909985",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "fieldName": "labels",
+          "label": "User Labels",
+          "defaultValue": null,
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "2909988",
+            "2909989",
+            "2909987",
+            "2909986",
+            "2909985"
+          ]
+        },
+        {
+          "fieldName": "project",
+          "label": "Project",
+          "defaultValue": null,
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "2909988",
+            "2909989",
+            "2909987",
+            "2909986",
+            "2909985"
+          ]
+        },
+        {
+          "fieldName": "role",
+          "label": "Role",
+          "defaultValue": null,
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "2909987"
+          ]
+        },
+        {
+          "fieldName": "user",
+          "label": "User",
+          "defaultValue": null,
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "2909987",
+            "2909986",
+            "2909985"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "DashboardSyncDefinition",
+      "name": "Google Cloud IAM - Role Activity",
+      "description": "See the details of IAM policy changes, user operations, role assignments, and role additions and removal.",
+      "detailLevel": 0,
+      "properties": "{\"layoutType\":\"gridster\"}",
+      "panels": [
+        {
+          "name": "IAM Policy Changes by Project",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"project\" | where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload.methodName\" as labels, method\n| where method = \"SetIamPolicy\"\n| json \"message.data.resource.labels.project_id\" as project\n\n| timeslice 1h\n| count as changes by _timeslice, project\n| transpose row _timeslice column project",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":4,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"1\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909990",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Role Existence ",
+          "viewerType": "pie",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"iam_role\" \n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\", \"message.data.timestamp\", \"message.data.resource.labels.project_id\" as labels, timestamp, project\n| parse regex \"\\\"methodName\\\":\\\"[^\\\"]+\\.(?<method>[^\\\"]+)\\\"\"\n\n| count as total by method \n| sort by total",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 13,
+          "y": 1,
+          "width": 7,
+          "height": 3,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":8,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909991",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "User Operations",
+          "viewerType": "table",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data\" as data\n| json field=data \"resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"project\" or type = \"iam_role\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json field=data \"resource.labels\", \"resource.labels.project_id\", \"protoPayload.methodName\", \"protoPayload.authenticationInfo.principalEmail\" as labels, project, method, user\n\n| count as operations by user\n| sort by operations",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 20,
+          "y": 1,
+          "width": 5,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909996",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Role Assignments",
+          "viewerType": "pie",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"project\" and log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload.serviceData.policyDelta.bindingDeltas[*]\" as labels, project, changes\n| parse regex field=changes \"\\\"action\\\":\\\"(?<action>[A-Z]+)\\\"\" multi\n| count as total by action\n| sort by total",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 13,
+          "y": 4,
+          "width": 7,
+          "height": 3,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909994",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Role Existence Over Time",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"iam_role\" and log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\", \"message.data.timestamp\", \"message.data.resource.labels.project_id\" as labels, timestamp, project\n| parse regex \"\\\"methodName\\\":\\\"[^\\\"]+\\.(?<method>[^\\\"]+)\\\"\"\n\n| timeslice 1h\n| count by _timeslice, method\n| transpose row _timeslice column method",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 7,
+          "width": 12,
+          "height": 4,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"8\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909992",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Role Assignments Over Time",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"project\" and log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n\n| timeslice 1h\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload.serviceData.policyDelta.bindingDeltas[*]\" as labels, project, changes\n| parse regex field=changes \"\\\"action\\\":\\\"(?<action>[A-Z]+)\\\"\" multi\n| count by _timeslice, action\n| transpose row _timeslice column action",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 13,
+          "y": 7,
+          "width": 12,
+          "height": 4,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"10\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"3\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909997",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Added Roles Over Time",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"project\" and log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n\n| timeslice 1h\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload.serviceData.policyDelta.bindingDeltas[*]\" as labels, project, changes\n| parse regex field=changes \"\\\"role\\\":\\\"roles\\\\\\/(?<role>[a-zA-Z.]+)\\\",\\\"member\\\":\\\".*\\\",\\\"action\\\":\\\"(?<action>[A-Z]+)\\\"\" multi\n| where action=\"ADD\"\n| count by _timeslice, role\n| transpose row _timeslice column role",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 11,
+          "width": 12,
+          "height": 4,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":7,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909995",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Removed Roles Over Time",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"project\" and log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n\n| timeslice 1h\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload.serviceData.policyDelta.bindingDeltas[*]\" as labels, project, changes\n| parse regex field=changes \"\\\"role\\\":\\\"roles\\\\\\/(?<role>[a-zA-Z.]+)\\\",\\\"member\\\":\\\".*\\\",\\\"action\\\":\\\"(?<action>[A-Z]+)\\\"\" multi\n| where action=\"REMOVE\"\n| count by _timeslice, role\n| transpose row _timeslice column role",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 13,
+          "y": 11,
+          "width": 12,
+          "height": 4,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":9,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2909993",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "fieldName": "labels",
+          "label": "User Labels",
+          "defaultValue": null,
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "2909991",
+            "2909994",
+            "2909990",
+            "2909992",
+            "2909995",
+            "2909996",
+            "2909997",
+            "2909993"
+          ]
+        },
+        {
+          "fieldName": "project",
+          "label": "Project",
+          "defaultValue": null,
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "2909991",
+            "2909994",
+            "2909990",
+            "2909992",
+            "2909995",
+            "2909996",
+            "2909997",
+            "2909993"
+          ]
+        },
+        {
+          "fieldName": "role",
+          "label": "Role",
+          "defaultValue": null,
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "2909995",
+            "2909993"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Google Cloud IAM Project Messages",
+      "search": {
+        "queryText": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data\" as data\n| json field=data \"resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"project\" | where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json field=data \"timestamp\", \"resource.labels.project_id\", \"protoPayload.authenticationInfo.principalEmail\", \"protoPayload.serviceData.policyDelta.bindingDeltas[*]\" as timestamp, project, user, changes\n\n| parse regex field=changes \"\\\"role\\\":\\\"roles\\\\\\/(?<role>[a-zA-Z.]+)\\\",\\\"member\\\":\\\"(?<member>.*?)\\\",\\\"action\\\":\\\"(?<action>[A-Z]+)\\\"\" multi\n| count by action, role, member, timestamp, user\n| sort by timestamp asc\n| 1 as operation\n| accum operation as total_operations by user\n| fields timestamp, user, action, role, member, total_operations\n| sort by timestamp",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Google Cloud IAM Role Messages",
+      "search": {
+        "queryText": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"iam_role\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.timestamp\", \"message.data.resource.labels.project_id\" as timestamp, project\n| json \"message.data.protoPayload\" as payload\n| json field=payload \"authenticationInfo.principalEmail\", \"response.title\" as user, name\n| parse regex \"\\\"methodName\\\":\\\"[^\\\"]+\\.(?<method>[^\\\"]+)\\\"\"\n\n| count by user, method, name, timestamp, project\n| sort by timestamp asc\n| 1 as operation\n| accum operation as total_operations by user\n| fields timestamp, user, method, project, name, total_operations\n| sort by timestamp",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Google Cloud IAM Service Account Messages",
+      "search": {
+        "queryText": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"service_account\" \n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data\" as data\n| json field=data \"timestamp\", \"resource.labels.project_id\", \"resource.labels.email_id\", \"protoPayload.authenticationInfo.principalEmail\" as timestamp, project, service_account, user\n| parse regex \"\\\"methodName\\\":\\\"[^\\\"]+\\.(?<method>[^\\\"]+)\\\"\"\n\n| count by user, method, service_account, timestamp\n| sort by timestamp asc\n| 1 as operation\n| accum operation as total_operations by user\n| fields timestamp, user, method, service_account, total_operations\n| sort by timestamp",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    }
+  ]
+}

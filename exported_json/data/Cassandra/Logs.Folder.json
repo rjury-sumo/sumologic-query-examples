@@ -1,0 +1,1684 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Logs",
+  "description": "This folder contains log based dashboards for Cassandra",
+  "children": [
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Cassandra - Cache Stats",
+      "description": "The Cassandra - Cache dashboard provides a good insight into cache stats",
+      "title": "Cassandra - Cache Stats",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panel0214D8E7B68BD844",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":6}"
+          },
+          {
+            "key": "panel376A46C0936E6A41",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":6}"
+          },
+          {
+            "key": "panel183DDA5B9D1FE947",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":12}"
+          },
+          {
+            "key": "panelFC5D24BBA787B842",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":18}"
+          },
+          {
+            "key": "panel01637F79A770E845",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":18}"
+          },
+          {
+            "key": "panel6956E6AFBA41794E",
+            "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panel5A9CD2BE8CF4884E",
+            "structure": "{\"height\":6,\"width\":4,\"x\":4,\"y\":0}"
+          },
+          {
+            "key": "panelB0AF606F9B621B48",
+            "structure": "{\"height\":6,\"width\":4,\"x\":12,\"y\":0}"
+          },
+          {
+            "key": "panel7A03446583307849",
+            "structure": "{\"height\":6,\"width\":4,\"x\":16,\"y\":0}"
+          },
+          {
+            "key": "panelA8FDCC1D9F345A47",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":12}"
+          },
+          {
+            "key": "panel7B306776BF729848",
+            "structure": "{\"height\":6,\"width\":4,\"x\":8,\"y\":0}"
+          },
+          {
+            "key": "panelE3E0701A9A005A47",
+            "structure": "{\"height\":6,\"width\":4,\"x\":20,\"y\":0}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panel0214D8E7B68BD844",
+          "title": "Cache Status",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Size\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false},\"axisY2\":{\"title\":\"Capacity\"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Dark\"},\"overrides\":[{\"series\":[\"size\"],\"queries\":[],\"properties\":{\"axisYType\":\"secondary\",\"type\":\"line\",\"name\":\"Size\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"Service Thread\" and message matches \"KeyCache*\"\n| parse regex field=message \"(?<cache_type>[A-Za-z]*Cache(?! Type)) *(?<size>[0-9]*) *(?<capacity>[0-9]*) *(?<keys_to_save>[^ ]*) *(?<provider>[A-Za-z_.$]*)\"\n| timeslice 1h\n|sum(size) as size, sum(capacity) as capacity by _timeslice\n| sort by _timeslice asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Receipt",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel376A46C0936E6A41",
+          "title": "Cache Init",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\" \",\"unit\":{\"value\":\"MB\",\"isCustom\":false}}},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[{\"series\":[\"cache_capacity_mb\"],\"queries\":[],\"properties\":{\"name\":\"Cache Capacity\"}}],\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" Initializing | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"main\" and source_file matches \"CacheService*\" and message matches \"Initializing*\"\n| parse field=message \"Initializing * cache with capacity of * MBs*\" as cache_type,cache_capacity_mb,cache_provider\n| timeslice 1h\n|sum(cache_capacity_mb) as cache_capacity_mb by _timeslice\n| sort by _timeslice asc\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel183DDA5B9D1FE947",
+          "title": "Cache Saving Schedule",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"main\" and source_file matches \"CacheService*\" and message matches \"Scheduling*\"\n| parse regex field=message \"Scheduling (?<cache_type>[^ ]*) cache save to every (?<save_interval>[0-9]*) seconds \\(going to save (?<keys_to_save>[^ ]*) keys\\).\"\n| count by _timeslice,cache_type,save_interval,keys_to_save\n| fields - _count\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelFC5D24BBA787B842",
+          "title": "Cache Read",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"axes\":{\"axisX\":{\"title\":\"\"},\"axisY\":{\"title\":\" \"}},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"AutoSavingCache*\" and message matches \"*reading saved cache*\"\n| parse regex field=message \"reading saved cache (?<cache_file>.*)\"\n| timeslice 1d\n| count by _timeslice, cache_file\n| transpose row _timeslice column cache_file\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel01637F79A770E845",
+          "title": "Cache Loading Details",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"AutoSavingCache*\" and message matches \"*Completed loading*\"\n| parse regex field=message \"Completed loading \\((?<load_duration_ms>[0-9]*) ms; (?<cache_items>[0-9]*) keys\\) KeyCache cache\"\n| timeslice 1m\n| count by _timeslice,load_duration_ms,cache_items | fields -_count\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel6956E6AFBA41794E",
+          "title": "Cache Init Capacity (MB)",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"MB\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" Initializing | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"main\" and source_file matches \"CacheService*\" and message matches \"Initializing*\"\n| parse field=message \"Initializing * cache with capacity of * MBs*\" as cache_type,cache_capacity_mb,cache_provider\n|sum(cache_capacity_mb) as cache_capacity_mb\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel5A9CD2BE8CF4884E",
+          "title": "Cache Items Save",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"Items\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" \"CompactionExecutor\" \"Saved\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"CompactionExecutor\" and source_file matches \"AutoSavingCache*\" and message matches \"*Saved KeyCache*\"\n| parse regex field=message \"Saved (?<cache_type>[^ ]*) \\((?<cache_items>[0-9]*) items\\) in (?<save_duration_ms>[0-9]*) ms\"\n| sum(cache_items) as cache_items\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelB0AF606F9B621B48",
+          "title": "Total Cache Size",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"Service Thread\" and message matches \"KeyCache*\"\n| parse regex field=message \"(?<cache_type>[A-Za-z]*Cache(?! Type)) *(?<size>[0-9]*) *(?<capacity>[0-9]*) *(?<keys_to_save>[^ ]*) *(?<provider>[A-Za-z_.$]*)\"\n|sum(size) as size",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel7A03446583307849",
+          "title": "Total Cache Capacity",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"Service Thread\" and message matches \"KeyCache*\"\n| parse regex field=message \"(?<cache_type>[A-Za-z]*Cache(?! Type)) *(?<size>[0-9]*) *(?<capacity>[0-9]*) *(?<keys_to_save>[^ ]*) *(?<provider>[A-Za-z_.$]*)\"\n| sum (capacity) as capacity",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelA8FDCC1D9F345A47",
+          "title": "Cache Saving Details",
+          "visualSettings": "{\"series\":{},\"axes\":{\"axisX\":{\"title\":\" \"},\"axisY\":{\"title\":\"items\",\"logarithmic\":false},\"axisY2\":{\"unit\":{\"value\":\"ms\",\"isCustom\":false},\"title\":\"Save Duration\"}},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Dark\"},\"overrides\":[{\"series\":[\"save_duration\"],\"queries\":[],\"properties\":{\"axisYType\":\"secondary\",\"lineDashType\":\"dash\",\"type\":\"line\",\"name\":\"Save Duration\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" \"CompactionExecutor\" \"Saved\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"CompactionExecutor\" and source_file matches \"AutoSavingCache*\" and message matches \"*Saved KeyCache*\"\n| parse regex field=message \"Saved (?<cache_type>[^ ]*) \\((?<cache_items>[0-9]*) items\\) in (?<save_duration_ms>[0-9]*) ms\"\n| timeslice 1h\n|sum(cache_items) as items, sum(save_duration_ms) as save_duration by _timeslice\n| sort by _timeslice asc\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel7B306776BF729848",
+          "title": "Cache Loading Items",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"Items\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"AutoSavingCache*\" and message matches \"*Completed loading*\"\n| parse regex field=message \"Completed loading \\((?<load_duration_ms>[0-9]*) ms; (?<cache_items>[0-9]*) keys\\) KeyCache cache\"\n| sum(cache_items) as cache_items\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelE3E0701A9A005A47",
+          "title": "Total Cache Read",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"AutoSavingCache*\" and message matches \"*reading saved cache*\"\n| parse regex field=message \"reading saved cache (?<cache_file>.*)\"\n| count by cache_file",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "db_cluster",
+          "displayName": "db_cluster",
+          "defaultValue": "",
+          "sourceDefinition": {
+            "variableSourceType": "MetadataVariableSourceDefinition",
+            "filter": "db_system=cassandra _sourceCategory = Labs/cassandra* ",
+            "key": "db_cluster"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": false,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Cassandra - Errors and Warnings",
+      "description": "This dashboard shows errors and warnings by Cassandra thread.",
+      "title": "Cassandra - Errors and Warnings",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-C9CF6B57B962CA41",
+            "structure": "{\"height\":5,\"width\":5,\"x\":5,\"y\":0}"
+          },
+          {
+            "key": "panel06A1315A96A6DB46",
+            "structure": "{\"height\":5,\"width\":5,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-9BF831968FDF294C",
+            "structure": "{\"height\":5,\"width\":7,\"x\":10,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-C30927D9B3139B46",
+            "structure": "{\"height\":5,\"width\":7,\"x\":17,\"y\":0}"
+          },
+          {
+            "key": "panel3440F8B692F0B844",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":5}"
+          },
+          {
+            "key": "panel4A471FECB13C994E",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":5}"
+          },
+          {
+            "key": "panel9C0018A3A7E67943",
+            "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":12}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-C9CF6B57B962CA41",
+          "title": "Warnings",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"Warnings\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#16943E\"},{\"from\":1,\"to\":null,\"color\":\"#dfbe2e\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra (\"WARN\") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where level matches \"*WARN*\"\n| count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel06A1315A96A6DB46",
+          "title": "Errors",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"Errors\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#dfbe2e\"},{\"from\":1,\"to\":null,\"color\":\"#bf2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra (\"ERROR\") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where level matches \"*ERROR*\"\n| count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-9BF831968FDF294C",
+          "title": "Error Logs by Thread",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\"},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Sequential 1\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra (\"ERROR\") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where level matches \"*ERROR*\"\n| count by thread_name",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-C30927D9B3139B46",
+          "title": "Warnings Logs by Thread",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\"},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Categorical Dark\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra (\"WARN\") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where level matches \"*WARN*\"\n| count by thread_name",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel3440F8B692F0B844",
+          "title": "Error Summary - Daily",
+          "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra (\"ERROR\") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where level matches \"*ERROR*\"\n| count by date, thread_name, source_file, message\n| fields - _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel4A471FECB13C994E",
+          "title": "Warnings Summary - Daily",
+          "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra (\"WARN\") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where level matches \"*WARN*\"\n| count by date, thread_name, source_file, message\n| fields - _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel9C0018A3A7E67943",
+          "title": "Log Reduce",
+          "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra (\"WARN\") or (\"ERROR\") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where level matches \"*WARN*\" OR level matches \"*ERROR*\"\n| logreduce field=message by db_cluster  | _count as count | sort by count\n| fields db_cluster, signature, count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "db_cluster",
+          "displayName": "db_cluster",
+          "defaultValue": "",
+          "sourceDefinition": {
+            "variableSourceType": "MetadataVariableSourceDefinition",
+            "filter": "db_system=cassandra _sourceCategory = Labs/cassandra* ",
+            "key": "db_cluster"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": false,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Cassandra - Gossip",
+      "description": "The Cassandra - Gossip dashboard provides a good insight into nodes status",
+      "title": "Cassandra - Gossip",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelF8F7E0EDB26E5944",
+            "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":4}"
+          },
+          {
+            "key": "panelFAA5E362A3A33948",
+            "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":4}"
+          },
+          {
+            "key": "panel72A80208B7205A4A",
+            "structure": "{\"height\":4,\"width\":6,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panel8CAAA8DAB4EAA949",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":16}"
+          },
+          {
+            "key": "panel4910E0D7BEBE8A4A",
+            "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":4}"
+          },
+          {
+            "key": "panelF0B6BA9CAB18E847",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":16}"
+          },
+          {
+            "key": "panel4FF062CEBC8E2B4F",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":22}"
+          },
+          {
+            "key": "panel425D22E78BB07944",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":10}"
+          },
+          {
+            "key": "panelD1F274D986FD2A46",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":22}"
+          },
+          {
+            "key": "panel6C978D8EA4975943",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":10}"
+          },
+          {
+            "key": "panel617167A98CBFF842",
+            "structure": "{\"height\":4,\"width\":6,\"x\":6,\"y\":0}"
+          },
+          {
+            "key": "panelD2F0542AA9F0EB4E",
+            "structure": "{\"height\":4,\"width\":6,\"x\":12,\"y\":0}"
+          },
+          {
+            "key": "panelB7344D7BAEC4784E",
+            "structure": "{\"height\":4,\"width\":6,\"x\":18,\"y\":0}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelF8F7E0EDB26E5944",
+          "title": "Node Up Events",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"InetAddress\" \"is now UP\"| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"InetAddress /(?<endpoint>[^ ]*) is now UP\"\n| timeslice 100s\n| withtime server_status | withtime _messagetime\n| most_recent(server_status_withtime) as server_status, most_recent(_messagetime_withtime) as m_time by endpoint\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS\", \"UTC\") as event_time\n| ((toMillis(now())-m_time)/(1000*60)) as since_mins | format(\"%.2f\", since_mins) as since_minutes\n| concat (\"Since \", since_minutes, \" minutes\") as Remark\n| fields - m_time, since_mins, since_minutes \n| fields endpoint, event_time, remark\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelFAA5E362A3A33948",
+          "title": "Node Down Events",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"InetAddress\" \"is now DOWN\"| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"InetAddress /(?<endpoint>[^ ]*) is now DOWN\"\n| timeslice 100s\n| withtime server_status | withtime _messagetime\n| most_recent(server_status_withtime) as server_status, most_recent(_messagetime_withtime) as m_time by endpoint\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS\", \"UTC\") as event_time\n| ((toMillis(now())-m_time)/(1000*60)) as since_mins | format(\"%.2f\", since_mins) as since_minutes\n| concat (\"Since \", since_minutes, \" minutes\") as Remark\n| fields - m_time, since_mins, since_minutes \n| fields endpoint, event_time, remark",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel72A80208B7205A4A",
+          "title": "Nodes Up",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":999999,\"color\":\"#75bf00\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{\"A_UP\":{\"visible\":true},\"A_DOWN\":{\"visible\":false},\"A_RESTARTED\":{\"visible\":false},\"A_JOINED\":{\"visible\":false},\"A_REMOVING\":{\"visible\":false},\"A_REMOVED\":{\"visible\":false}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| parse regex field=_raw \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| if (message matches \"InetAddress * is now UP\",1,0) as UP\n| timeslice 1d\n| sum(UP) as UP by _timeslice\n| sort by _timeslice asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel8CAAA8DAB4EAA949",
+          "title": "Handshake Failures by Endpoint",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"color\":{\"family\":\"Diverging 2\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra handshake db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Cannot handshake version with /(?<endpoint>.*)\"\n| count by endpoint\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel4910E0D7BEBE8A4A",
+          "title": "Node Join Events",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"is now part of the cluster\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Node /(?<endpoint>[^ ]*) is now part of the cluster\"\n| timeslice 1s\n| count by _timeslice, endpoint\n| fields - _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelF0B6BA9CAB18E847",
+          "title": "Silent Client Removed",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"color\":{\"family\":\"Diverging 2\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  FatClient | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"FatClient /(?<endpoint>[^ ]*) has been silent for 30000ms, removing from gossip\"\n| count by endpoint",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel4FF062CEBC8E2B4F",
+          "title": "Sleep Events",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"count\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Dark\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  Sleeping | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Sleeping for 30000ms to ensure /(?<endpoint>[^ ]*) does not change\"\n| timeslice 1d\n| count by _timeslice, endpoint\n| transpose row _timeslice column endpoint",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel425D22E78BB07944",
+          "title": "Pending Tasks",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\" \"}},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[{\"series\":[\"pending_tasks\"],\"queries\":[],\"properties\":{\"name\":\"Pending Tasks\"}}],\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"Gossip stage has\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Gossip stage has (?<pending_tasks>[0-9]+) pending tasks; skipping status check \\(no nodes will be marked down\\)\"\n| timeslice 1d\n| sum(pending_tasks) as pending_tasks by _timeslice\n\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelD1F274D986FD2A46",
+          "title": "Replication Endpoints Down Events",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"is down and will not receive data for re-replication of\"| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Endpoint /(?<target_endpoint>[^ ]*) is down and will not receive data for re-replication of /(?<source_endpoint>.*)\"\n| timeslice 1s\n| count by _timeslice, target_endpoint, source_endpoint\n| fields - _count\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel6C978D8EA4975943",
+          "title": "Node Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{\"A_DOWN\":{\"visible\":true},\"A_UP\":{\"visible\":true},\"A_RESTARTED\":{\"visible\":true}},\"overrides\":[],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| parse regex field=_raw \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| if (message matches \"InetAddress * is now UP\",1,0) as UP\n| if (message matches \"InetAddress * is now DOWN\",1,0) as DOWN\n| if (message matches \"Node * has restarted, now UP\",1,0) as RESTARTED\n| if (message matches \"Node * is now part of the cluster\",1,0) as JOINED\n| if (message matches \"Removing host: *\",1,0) as REMOVING\n| if (message matches \"Completing removal of *\",1,0) as REMOVED\n| timeslice 1d\n| sum(UP) as UP, sum(DOWN) as DOWN,  sum(RESTARTED) as RESTARTED, sum(JOINED) as JOINED, sum(REMOVING) as REMOVING,sum(REMOVED) as REMOVED by _timeslice\n| sort by _timeslice asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel617167A98CBFF842",
+          "title": "Nodes Down",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":1,\"color\":\"#75bf00\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":9999999,\"color\":\"#f36644\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| parse regex field=_raw \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| if (message matches \"InetAddress * is now UP\",1,0) as UP\n| if (message matches \"InetAddress * is now DOWN\",1,0) as DOWN\n| if (message matches \"Node * has restarted, now UP\",1,0) as RESTARTED\n| if (message matches \"Node * is now part of the cluster\",1,0) as JOINED\n| if (message matches \"Removing host: *\",1,0) as REMOVING\n| if (message matches \"Completing removal of *\",1,0) as REMOVED\n| timeslice 1d\n| sum(DOWN) as DOWN by _timeslice\n| sort by _timeslice asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelD2F0542AA9F0EB4E",
+          "title": "Nodes Joined",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":9999999999,\"color\":\"#75bf00\"},{\"from\":null,\"to\":null,\"color\":\"#f6c851\"},{\"from\":null,\"to\":null,\"color\":\"#f36644\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| parse regex field=_raw \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| if (message matches \"InetAddress * is now UP\",1,0) as UP\n| if (message matches \"InetAddress * is now DOWN\",1,0) as DOWN\n| if (message matches \"Node * has restarted, now UP\",1,0) as RESTARTED\n| if (message matches \"Node * is now part of the cluster\",1,0) as JOINED\n| if (message matches \"Removing host: *\",1,0) as REMOVING\n| if (message matches \"Completing removal of *\",1,0) as REMOVED\n| timeslice 1d\n| sum(JOINED) as JOINED by _timeslice\n| sort by _timeslice asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelB7344D7BAEC4784E",
+          "title": "Pending Tasks",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":true,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":9999999,\"color\":\"#75bf00\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"Gossip stage has\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Gossip stage has (?<pending_tasks>[0-9]+) pending tasks; skipping status check \\(no nodes will be marked down\\)\"\n| last(pending_tasks) \n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "db_cluster",
+          "displayName": "db_cluster",
+          "defaultValue": "",
+          "sourceDefinition": {
+            "variableSourceType": "MetadataVariableSourceDefinition",
+            "filter": "db_system=cassandra _sourceCategory = Labs/cassandra* ",
+            "key": "db_cluster"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Cassandra - Memtable",
+      "description": "The Cassandra - Memtable dashboard provides a good insight into the memtable write-back cache of data partitions",
+      "title": "Cassandra - Memtable",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panel0616F3B386E80843",
+            "structure": "{\"height\":7,\"width\":8,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panel61D1F10292516B4D",
+            "structure": "{\"height\":7,\"width\":16,\"x\":8,\"y\":1}"
+          },
+          {
+            "key": "panel206537A3A6195B44",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":8}"
+          },
+          {
+            "key": "panel1091A3A890ED484B",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":6}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panel0616F3B386E80843",
+          "title": "Flush Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  (\"Writing Memtable-\" or \"Completed flushing\")| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"ColumnFamilyStore*\" or source_file matches \"Memtable*\"\n| if (message matches \"Writing Memtable-*\",1,0) as Begin_Flush\n| if (message matches \"Completed flushing *\",1,0) as End_Flush\n| timeslice 1d\n| sum(Begin_Flush) as Begin_Flush, sum(End_Flush) as End_Flush by _timeslice\n| sort by _timeslice asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel61D1F10292516B4D",
+          "title": "Enqueue Flush",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"overrides\":[],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"Enqueuing flush of\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"ColumnFamilyStore*\"\n| parse regex field=message \"Enqueuing flush of Memtable-(?<table>[^@]*)@(?<hash_code>[0-9]*)\\((?<serialized_bytes>[0-9]*)/(?<live_bytes>[0-9]*) serialized/live bytes, (?<ops>[0-9]*) ops\\)\" nodrop\n| parse regex field=message \"Enqueuing flush of (?<table>[^:]*): (?<on_heap_bytes>[^:]*) \\((?<on_heap_limit>[0-9]*)%\\) on-heap, (?<off_heap_bytes>[^:]*) \\((?<off_heap_limit>[0-9]*)%\\) off-heap\"\n| if (isEmpty(pod),_sourceHost,pod) as host\n|count by host,table,hash_code,serialized_bytes,live_bytes,ops,on_heap_bytes,on_heap_limit,off_heap_bytes,off_heap_limit\n|fields host,table,hash_code,serialized_bytes,live_bytes,ops,on_heap_bytes,on_heap_limit,off_heap_bytes,off_heap_limit",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel206537A3A6195B44",
+          "title": "Largest CFS being Flushed",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"overrides\":[],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"Flushing largest CFS\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"ColumnFamilyStore*\"\n| parse regex field=message \"Flushing largest CFS\\(Keyspace='(?<keyspace>[^']*)', ColumnFamily='(?<table>[^']*)'\\) to free up room. Used total: (?<used_on_heap>\\d+\\.\\d+)/(?<used_off_heap>\\d+\\.\\d+), live: (?<live_on_heap>\\d+\\.\\d+)/(?<live_off_heap>\\d+\\.\\d+), flushing: (?<flushing_on_heap>\\d+\\.\\d+)/(?<flushing_off_heap>\\d+\\.\\d+), this: (?<this_on_heap>\\d+\\.\\d+)/(?<this_off_heap>\\d+\\.\\d+)\"\n| if (isEmpty(pod),_sourceHost,pod) as host\n|count by host,keyspace,table,used_on_heap,used_off_heap,live_on_heap,live_off_heap,flushing_on_heap,flushing_off_heap,this_on_heap,this_off_heap\n|fields host,keyspace,table,used_on_heap,used_off_heap,live_on_heap,live_off_heap,flushing_on_heap,flushing_off_heap,this_on_heap,this_off_heap",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel1091A3A890ED484B",
+          "title": "Memtable Status",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"data\"},\"axisY2\":{\"title\":\"ops\"}},\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[{\"series\":[\"ops\"],\"queries\":[],\"properties\":{\"axisYType\":\"secondary\",\"type\":\"column\",\"name\":\"ops\"}}],\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"StatusLogger\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \" - (?<keyspace>[^.]*)\\.(?<table>[^ ]*) +(?<ops>[0-9]*),(?<data>[0-9]*)\"\n|timeslice 1d\n|sum(ops) as ops, sum(data) as data by _timeslice\n| sort by _timeslice asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "db_cluster",
+          "displayName": "db_cluster",
+          "defaultValue": "",
+          "sourceDefinition": {
+            "variableSourceType": "MetadataVariableSourceDefinition",
+            "filter": "db_system=cassandra _sourceCategory = Labs/cassandra* ",
+            "key": "db_cluster"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": false,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Cassandra - Resource Usage Logs",
+      "description": "The Cassandra - Startup dashboard provides a good insight into Memory Size, Heap Size and Tables Init",
+      "title": "Cassandra - Resource Usage Logs",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panel61D1F10292516B4D",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":13}"
+          },
+          {
+            "key": "panelDAB38AE3BE11EB41",
+            "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":6}"
+          },
+          {
+            "key": "panel5F047357B3D7F84D",
+            "structure": "{\"height\":7,\"width\":16,\"x\":0,\"y\":20}"
+          },
+          {
+            "key": "panel20B0B2AD9E0C4846",
+            "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":27}"
+          },
+          {
+            "key": "panelCE8F227E94B98B40",
+            "structure": "{\"height\":7,\"width\":8,\"x\":16,\"y\":20}"
+          },
+          {
+            "key": "panel505BC08BB404D94B",
+            "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panel954BAE4AA9C1E846",
+            "structure": "{\"height\":6,\"width\":6,\"x\":6,\"y\":0}"
+          },
+          {
+            "key": "panelE130B2F98829FB4B",
+            "structure": "{\"height\":6,\"width\":6,\"x\":12,\"y\":0}"
+          },
+          {
+            "key": "panelFE05CB07A5C4DA4C",
+            "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":0}"
+          },
+          {
+            "key": "panel7E654CBE9146A94F",
+            "structure": "{\"height\":7,\"width\":6,\"x\":0,\"y\":13}"
+          },
+          {
+            "key": "panel97A0C5D79348C940",
+            "structure": "{\"height\":7,\"width\":6,\"x\":6,\"y\":13}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panel61D1F10292516B4D",
+          "title": "Heap Size",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"overrides\":[],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"Heap size\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Heap size: (?<heap_used>[0-9].*)/(?<total_heap>[0-9].*)\"\n| if (isEmpty(pod),_sourceHost,pod) as host\n|timeslice 1m\n|count by _timeslice,host,heap_used,total_heap\n|fields host,heap_used,total_heap",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelDAB38AE3BE11EB41",
+          "title": "Memory Size",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"overrides\":[],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"(?<memory_type>.*) memory: init = (?<memory_init>[0-9]*)\\([0-9]*K\\) used = (?<memory_used>[0-9]*)\\([0-9]*K\\) committed = (?<memory_committed>[0-9]*)\\([0-9]*K\\) max = (?<memory_max>[0-9-]*)\\([0-9-]*K\\)\"\n| if (isEmpty(pod),_sourceHost,pod) as host\n|timeslice 1m\n|count by _timeslice,host,memory_type,memory_init,memory_used,memory_committed,memory_max\n|fields host,memory_type,memory_init,memory_used,memory_committed,memory_max",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel5F047357B3D7F84D",
+          "title": "Table Init",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"overrides\":[],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"Initializing\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"ColumnFamilyStore.java\"\n| parse regex field=message \"Initializing (?<keyspace>[^.]*).(?<table>.*)\"\n| if (isEmpty(pod),_sourceHost,pod) as host\n|timeslice 1m\n|count by _timeslice,host,keyspace,table\n|fields host,keyspace,table",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel20B0B2AD9E0C4846",
+          "title": "Threadpool Status",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"overrides\":[],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"StatusLogger\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \" - (?<pool_name>[A-Za-z_]+) +(?<active>[0-9]+) +(?<pending>[0-9]+) +(?<completed>[0-9]+) +(?<blocked>[0-9]+) +(?<all_time_blocked>[0-9]+)\"\n| if (isEmpty(pod),_sourceHost,pod) as host\n|timeslice 1m\n|count by _timeslice,host,pool_name,active,pending,completed,blocked,all_time_blocked\n|fields host,pool_name,active,pending,completed,blocked,all_time_blocked",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelCE8F227E94B98B40",
+          "title": "Threadpool Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":true}},\"series\":{\"A_active\":{\"visible\":true},\"A_completed\":{\"visible\":true},\"A_blocked\":{\"visible\":true}},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"StatusLogger\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \" - (?<pool_name>[A-Za-z_]+) +(?<active>[0-9]+) +(?<pending>[0-9]+) +(?<completed>[0-9]+) +(?<blocked>[0-9]+) +(?<all_time_blocked>[0-9]+)\"\n|sum(active) as active,sum(completed) as completed ,sum (blocked) as blocked, sum(pending) as pending\n|fields active,pending,completed,blocked",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel505BC08BB404D94B",
+          "title": "Memory Init (GB)",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"GB\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"(?<memory_type>.*) memory: init = (?<memory_init>[0-9]*)\\([0-9]*K\\) used = (?<memory_used>[0-9]*)\\([0-9]*K\\) committed = (?<memory_committed>[0-9]*)\\([0-9]*K\\) max = (?<memory_max>[0-9-]*)\\([0-9-]*K\\)\"\n| sum(memory_init) as memory_init\n| memory_init/1024/1024/1024 as memory_init",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel954BAE4AA9C1E846",
+          "title": "Memory Used (GB)",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"GB\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"(?<memory_type>.*) memory: init = (?<memory_init>[0-9]*)\\([0-9]*K\\) used = (?<memory_used>[0-9]*)\\([0-9]*K\\) committed = (?<memory_committed>[0-9]*)\\([0-9]*K\\) max = (?<memory_max>[0-9-]*)\\([0-9-]*K\\)\"\n| sum(memory_used) as memory_used\n| memory_used/1024/1024/1024 as memory_used",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelE130B2F98829FB4B",
+          "title": "Memory Committed (GB)",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"GB\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"(?<memory_type>.*) memory: init = (?<memory_init>[0-9]*)\\([0-9]*K\\) used = (?<memory_used>[0-9]*)\\([0-9]*K\\) committed = (?<memory_committed>[0-9]*)\\([0-9]*K\\) max = (?<memory_max>[0-9-]*)\\([0-9-]*K\\)\"\n| sum(memory_committed) as memory_committed\n| memory_committed/1024/1024/1024 as memory_committed",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelFE05CB07A5C4DA4C",
+          "title": "Memory Max (GB)",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"GB\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"(?<memory_type>.*) memory: init = (?<memory_init>[0-9]*)\\([0-9]*K\\) used = (?<memory_used>[0-9]*)\\([0-9]*K\\) committed = (?<memory_committed>[0-9]*)\\([0-9]*K\\) max = (?<memory_max>[0-9-]*)\\([0-9-]*K\\)\"\n| sum(memory_max) as memory_max\n| memory_max/1024/1024/1024 as memory_max",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel7E654CBE9146A94F",
+          "title": "Heap Used",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"MB\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"Heap size\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Heap size: (?<heap_used>[0-9].*)MiB/(?<total_heap>[0-9].*)MiB\"\n| sum(heap_used) as heap_used\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel97A0C5D79348C940",
+          "title": "Total Heap",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"MB\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  \"Heap size\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Heap size: (?<heap_used>[0-9].*)MiB/(?<total_heap>[0-9].*)MiB\"\n| sum(total_heap) as total_heap\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "db_cluster",
+          "displayName": "db_cluster",
+          "defaultValue": "",
+          "sourceDefinition": {
+            "variableSourceType": "MetadataVariableSourceDefinition",
+            "filter": "db_system=cassandra _sourceCategory = Labs/cassandra* ",
+            "key": "db_cluster"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": false,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    }
+  ]
+}

@@ -1,0 +1,319 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Amazon CloudFront - Visitor Statistics",
+  "description": "See information about visitors like Geographical distribution, Browsers/Devices Used,Session duration and unique visits.",
+  "title": "Amazon CloudFront - Visitor Statistics",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel5ef88ffa8da69b43",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":5}"
+      },
+      {
+        "key": "panel6a59fa6ba0fa294a",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panelb128e3c3bcf13946",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panelbebc8c3f84a03849",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "paneld6cecc59b58d184b",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":5}"
+      },
+      {
+        "key": "panelf75df93bb45dbb43",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel5ef88ffa8da69b43",
+      "title": "Unique Visitors Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{AccessLogsdatasource}} | parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid \n| timeslice 5m\n|where method matches \"{{method}}\" AND user_agent matches \"{{user_agent}}\" AND edgeresult matches \"{{edgeresult}}\" AND uri_query matches \"{{uri_query}}\" AND edgeloc matches \"{{edgeloc}}\" AND c_ip matches \"{{c_ip}}\"\n|count_distinct(c_ip) as UniqueVisitors by _timeslice, _sourcecategory\n| transpose row _timeslice column _sourcecategory",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6a59fa6ba0fa294a",
+      "title": "Visitor Session Duration Distribution Histogram",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{AccessLogsdatasource}} | parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid \n| _messagetime as mt\n|where method matches \"{{method}}\" AND user_agent matches \"{{user_agent}}\" AND edgeresult matches \"{{edgeresult}}\" AND uri_query matches \"{{uri_query}}\" AND edgeloc matches \"{{edgeloc}}\" AND c_ip matches \"{{c_ip}}\"\n|min(mt) as start, max(mt) as stop by c_ip\n| (stop - start)/60000 as durationInMin\n| (ceil(durationInMin/5))*5 as bucketSize\n| count by c_ip,bucketSize | count by bucketSize | sort by +bucketSize",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb128e3c3bcf13946",
+      "title": "Visitor Access Platforms",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{AccessLogsdatasource}}  \n| parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid \n| urldecode(user_agent) as agent\n| if (agent matches \"*iPad*\" OR agent matches \"*iPhone*\" OR agent matches \"*BlackBerry*\" OR agent matches \"*Galaxy*\" OR agent matches \"LGE-*\" OR agent matches \"SCH-*\" OR agent matches \"*HUAWEI-*\" OR agent matches \"*SAMSUNG*\" OR agent matches \"*samsung*\" OR agent matches \"Dalvik/*\" OR agent matches \"Nokia*\" OR agent matches \"LG-*\" OR agent matches \"*CFNetwork*\"  OR agent matches \"*UP.Browser/*\" OR agent matches \"*QQ*rowser*\" OR agent matches \"*NetFront/*\" OR agent matches \"*Windows Phone*\" OR agent matches \"*iemobile*\",\"mobile\",\"\") as type\n| if (agent matches \"*Windows NT*\" OR agent matches \"*i686*\" OR agent matches \"*x86*\",\"PC\",type) as type\n| if (agent matches \"*Macintosh*\",\"Mac\",type) as type\n| if (type = \"\",\"unknown\",type) as type\n|where method matches \"{{method}}\" AND user_agent matches \"{{user_agent}}\" AND edgeresult matches \"{{edgeresult}}\" AND uri_query matches \"{{uri_query}}\" AND edgeloc matches \"{{edgeloc}}\" AND c_ip matches \"{{c_ip}}\"\n|count type",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelbebc8c3f84a03849",
+      "title": "Client Geo Distribution",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{AccessLogsdatasource}} \n| parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid\n| lookup   country_name, city from geo://location on ip = c_ip\n|where method matches \"{{method}}\" AND user_agent matches \"{{user_agent}}\" AND edgeresult matches \"{{edgeresult}}\" AND uri_query matches \"{{uri_query}}\" AND edgeloc matches \"{{edgeloc}}\" AND c_ip matches \"{{c_ip}}\"\n|count by   city,country_name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneld6cecc59b58d184b",
+      "title": "Visitor Browsers and Devices",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{AccessLogsdatasource}} | parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid \n| urldecode(user_agent) as agent\n| if (agent matches \"*Windows NT*\",\"Windows\",\"\") as OS |\nif (agent matches \"*Macintosh*\",\"MacOS\",\"\") as OS |\nif (agent matches \"*iPad*\",\"iPad\",\"\") as OS |\nif (agent matches \"*iPhone*\",\"iPhone\",\"\") as OS |\nif (agent matches \"*Android*\",\"Android\",\"\") as OS |\nif (OS == \"\",\"Other\",\"\") as OS |\nif (agent matches \"*MSIE*\",\"Internet Explorer\",\"\") as Browser |\nif (agent matches \"*Firefox*\",\"Firefox\",\"\") as Browser |\nif (agent matches \"*Safari*\",\"Safari\",\"\") as Browser | \nif (agent matches \"*Chrome*\",\"Chrome\",\"\") as Browser |\nif (Browser == \"\",\"Other\",\"\") as Browser\n|where method matches \"{{method}}\" AND user_agent matches \"{{user_agent}}\" AND edgeresult matches \"{{edgeresult}}\" AND uri_query matches \"{{uri_query}}\" AND edgeloc matches \"{{edgeloc}}\" AND c_ip matches \"{{c_ip}}\"\n|count(agent) by OS,Browser \n| transpose row os column browser as *",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf75df93bb45dbb43",
+      "title": "Requests Served by Edge Location",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"100\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{AccessLogsdatasource}}  \n| parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid\n|where method matches \"{{method}}\" AND user_agent matches \"{{user_agent}}\" AND edgeresult matches \"{{edgeresult}}\" AND uri_query matches \"{{uri_query}}\" AND edgeloc matches \"{{edgeloc}}\" AND c_ip matches \"{{c_ip}}\"\n|count by edgeloc\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "AccessLogsdatasource",
+      "displayName": "AccessLogsdatasource",
+      "defaultValue": "Labs/AWS/CloudFront",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/AWS/CloudFront"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "c_ip",
+      "displayName": "c_ip",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{AccessLogsdatasource}} | parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid \n| timeslice 5m",
+        "field": "c_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "edgeloc",
+      "displayName": "edgeloc",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{AccessLogsdatasource}} | parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid \n| timeslice 5m",
+        "field": "edgeloc"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "edgeresult",
+      "displayName": "edgeresult",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{AccessLogsdatasource}} | parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid \n| timeslice 5m",
+        "field": "edgeresult"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "method",
+      "displayName": "method",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{AccessLogsdatasource}} | parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid \n| timeslice 5m",
+        "field": "method"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "uri_query",
+      "displayName": "uri_query",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{AccessLogsdatasource}} | parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid \n| timeslice 5m",
+        "field": "uri_query"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user_agent",
+      "displayName": "user_agent",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{AccessLogsdatasource}} | parse \"*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\\t*\" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid \n| timeslice 5m",
+        "field": "user_agent"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

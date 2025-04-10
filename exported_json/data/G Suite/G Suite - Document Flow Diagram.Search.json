@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "G Suite - Document Flow Diagram",
+  "search": {
+    "queryText": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"access\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\"\n// Add doc_id, doc_title, or email to first line to focus the search\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as drive_action_type,drive_action_name\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_id\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_id>[^\\\"]*)\\\"\" nodrop\n| where drive_action_type=\"access\"\n| \"\" as _raw\n| transaction on doc_id with states create, upload, edit, view, rename, move, add_to_folder, remove_from_folder, trash, delete, untrash, download, preview, print in drive_action_name\nresults by flow\n| fromstate == \"create\" ? 1 : fromstate == \"upload\" ? 2 : fromstate == \"edit\" ? 3 : fromstate == \"view\" ? 4 : fromstate == \"rename\" ? 5 :  fromstate == \"move\" ? 6 : fromstate == \"add_to_folder\" ? 7 : fromstate == \"remove_from_folder,\" ? 8 : fromstate == \"trash\" ? 9 : fromstate == \"delete\" ? 10 : fromstate == \"untrash\" ? 11 : fromstate == \"download\" ? 12 : fromstate == \"preview\" ? 13 :  fromstate == \"print\" ? 14 : 100 as order\n| count,  max(latency) by fromstate, tostate, order",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-7d"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

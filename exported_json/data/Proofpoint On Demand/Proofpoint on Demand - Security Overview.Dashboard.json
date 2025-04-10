@@ -1,0 +1,501 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Proofpoint on Demand - Security Overview",
+  "description": "This dashboard is designed to monitor email communications for compliance with both internal policies and external regulations, such as DLP and DMARC. The dashboard provides several important features, including geo-location tracking of messages from high-risk countries, a summary of policy results for DMARC, DLP, Anti-Spam and Anti-Virus, and a breakdown of messages in the quarantine folder by category. In addition, the dashboard includes a TLS message trend chart that displays the ratio of encrypted to unencrypted messages, along with insights into unencrypted sender and receiver domains. Overall, the Security Overview dashboard helps organizations maintain compliance with relevant regulations and policies, while also providing valuable insights to improve their email security posture.",
+  "title": "Proofpoint on Demand - Security Overview",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel002F21DD9877494D",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":25}"
+      },
+      {
+        "key": "panel7B6224C3A8538945",
+        "structure": "{\"height\":13,\"width\":12,\"x\":12,\"y\":56}"
+      },
+      {
+        "key": "panelD1F955699E454849",
+        "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":15}"
+      },
+      {
+        "key": "panelDA11E0A9B433694C",
+        "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":25}"
+      },
+      {
+        "key": "panelF584D11E81FBD948",
+        "structure": "{\"height\":13,\"width\":12,\"x\":0,\"y\":56}"
+      },
+      {
+        "key": "panelPANE-2F1A210EAA4A2B41",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":35}"
+      },
+      {
+        "key": "panelPANE-3C74CA2483A75842",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panelPANE-6A80433DB3A2DB4C",
+        "structure": "{\"height\":5,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-6BC0449988F3F943",
+        "structure": "{\"height\":11,\"width\":24,\"x\":0,\"y\":45}"
+      },
+      {
+        "key": "panelPANE-9DA542E5994C894F",
+        "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":35}"
+      },
+      {
+        "key": "panelPANE-D4A978A1A6A69B47",
+        "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":5}"
+      },
+      {
+        "key": "panelPANE-DF0B891886BA9B43",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":15}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-9DA542E5994C894F",
+      "title": "Messages by Quarantine Folder",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where !isBlank(quarantine_folder)\n| count_distinct(guid) as total_messages by quarantine_folder\n| sort by total_messages\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the count of messages in the quarantine folder with respect to category.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-D4A978A1A6A69B47",
+      "title": "Messages from High Risk Countries",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where isValidIPv4(ip) or isValidIPv6(ip)\n| where !isNull(ip)\n| if(isValidIPv4(ip), if(!isPrivateIP(ip),true,false),true) as is_public\n| where is_public\n| count_distinct(guid) as frequency by ip\n| lookup latitude, longitude, country_code from geo://location on ip = ip \n| lookup country_code from https://sumologic-app-data.s3.amazonaws.com/riskycountries.csv on country_code=country_code\n| where !isBlank(country_code)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the geo locations of senders from high risk countries.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-6BC0449988F3F943",
+      "title": "Geo Locations of Unencrypted Sender Domains",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where !(is_encrypted matches \"true\")\n| where isValidIPv4(ip) or isValidIPv6(ip)\n| where !isNull(ip)\n| if(isValidIPv4(ip), if(!isPrivateIP(ip),true,false),true) as is_public\n| where is_public\n| count_distinct(guid) as frequency by ip\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = ip",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the geo-location of all the unencrypted message senders.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7B6224C3A8538945",
+      "title": "Top 10 Unencrypted Receiver Domains",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"\",\"hideLabels\":false},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"\"},\"axisY2\":{\"hideLabels\":true}},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[],\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where !(is_encrypted matches \"true\")\n// extracting individual emails from array of emails\n| extract field=receiver_email \"\\<(?<individual_receiver_email>[\\w\\s\\-@.]*)\\>\\\"?[,\\n\\]]\" multi\n| extract field=individual_receiver_email \"@(?<inbound_domain>[a-z0-9-.]*)\"\n| where !isBlank(inbound_domain)\n| count_distinct(guid) as frequency by inbound_domain\n| sort by frequency\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the list of top 10 unencrypted receiver domains.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelF584D11E81FBD948",
+      "title": "Top 10 Unencrypted Sender Domains",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"\",\"hideLabels\":false},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"\"},\"axisY2\":{\"hideLabels\":true}},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[],\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where !(is_encrypted matches \"true\")\n// extracting individual emails from array of emails\n| extract field=sender_email \"\\<(?<individual_sender_email>[\\w\\s\\-@.]*)\\>\\\"?[,\\n\\]]\" multi\n| extract field=individual_sender_email \"@(?<outbound_domain>[a-z0-9-.]*)\"\n| where !isBlank(outbound_domain)\n| count_distinct(guid) as frequency by outbound_domain\n| sort by frequency\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the list of top 10 unencrypted sender domains.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-DF0B891886BA9B43",
+      "title": "Top 10 DLP Detection Results",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"rule\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"total_messages\"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where final_module matches (\"regulation\")\n| count_distinct(guid) as total_messages by final_rule\n| sort by total_messages\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the top 10 results of actions performed by DLP detections.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelD1F955699E454849",
+      "title": "Top 10 DMARC Detection Results",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"rule\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"total_messages\"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where !isNull(action_dmarc)\n| json field=action_dmarc \"filterdResult\" as action_dmarc_rule\n| count_distinct(guid) as total_messages by action_dmarc_rule\n| sort by total_messages\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the top 10 results of actions performed by DMARC(Domain-based Message Authentication, Reporting, and Conformance).",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelDA11E0A9B433694C",
+      "title": "Top 10 Anti-Spam Results",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"rule\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"total_messages\"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where final_module matches (\"spam\")\n| count_distinct(guid) as total_messages by final_rule\n| sort by total_messages\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the top 10 results of actions performed by anti-spam filters.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel002F21DD9877494D",
+      "title": "Top 10 Anti-Virus Results",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"rule\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"total_messages\"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where final_module matches (\"av\")\n| count_distinct(guid) as total_messages by final_rule\n| sort by total_messages\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the top 10 results of actions performed by anti-virus filters.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-2F1A210EAA4A2B41",
+      "title": "TLS Messages Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":7,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| timeslice 1d\n| if(is_encrypted matches(\"true\"),\"is_encrypted\",\"is_unencrypted\") as is_encrypted_final\n| count_distinct(guid) by _timeslice, is_encrypted_final\n| fillmissing timeslice, values all in is_encrypted_final\n| transpose row _timeslice column is_encrypted_final",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the trend of TLS encrypted/unencrypted messages.",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-3C74CA2483A75842",
+      "title": "Impostor Detection Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":7,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"guid\",\"filter.modules.dmarc\",\"filter.routeDirection\",\"msg.header.from\",\"msg.header.to\",\"filter.disposition\",\"connection.ip\",\"ts\",\"msg.header.subject\",\"msg.header.message-id\",\"filter.quarantine.folder\",\"filter.isMsgEncrypted\" as guid,action_dmarc,route_direction,sender_email,receiver_email,disposition,ip,time_stamp,subject,message_id,quarantine_folder,is_encrypted nodrop\n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action\n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule\n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module\n| if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where route_direction matches \"{{route_direction}}\"\n| where final_action matches \"{{action}}\"\n| where disposition matches \"{{disposition}}\"\n| where is_encrypted matches \"{{is_encrypted}}\"\n| where final_rule matches \"{{rule}}\"\n| where final_module matches \"{{module}}\"\n| where final_module matches (\"*spam*\")\n| where final_rule matches(\"*impostor*\")\n| timeslice 1d\n| count_distinct(guid) as frequency by _timeslice\n| fillmissing timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the trend of spam messages by impostor.",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-6A80433DB3A2DB4C",
+      "title": "Untitled",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"markdownV2\",\"showTitle\":false},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Filters: \n\n###route_direction:\n\n        This refers to the direction or path that the email takes as it is sent from the sender to the recipient(s).\n\n###disposition:\n\n        This refers to the final outcome or status of an email message after it has been scanned and analyzed by the platform's security filters. Specifically, disposition indicates whether an email has been delivered, blocked, quarantined, or otherwise handled based on the platform's security policies.\n\n###action:\n\n        This refers to the ultimate decision or action taken by the platform's security filters in response to an email message.\n\n###is_encrypted:\n\n        This is a property that indicates whether an email message has been encrypted or not.\n\n###rule:\n\n        This refers to the security policy that ultimately triggered the final disposition or action taken by the platform's security filters in response to an email message.\n\n###module:\n\n        This refers to the specific security module or technology that was responsible for the final disposition or action taken by the platform's security filters in response to an email message.\n"
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "Labs/Security/ProofPoint",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Security/ProofPoint"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "action",
+      "displayName": "action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.actions[?(@.isFinal == true)].action\" as final_action nodrop\n| replace(final_action, \"[\\\"\", \"\") as final_action\n| replace(final_action, \"\\\"]\", \"\") as final_action\n| where !isEmpty(final_action)",
+        "field": "final_action"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "disposition",
+      "displayName": "disposition",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.disposition\" as disposition nodrop",
+        "field": "disposition"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "is_encrypted",
+      "displayName": "is_encrypted",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.isMsgEncrypted\" as is_encrypted nodrop\n|  if ( isNull(is_encrypted), \"null\", is_encrypted) as is_encrypted",
+        "field": "is_encrypted"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "module",
+      "displayName": "module",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.actions[?(@.isFinal == true)].module\" as final_module nodrop\n| replace(final_module, \"[\\\"\", \"\") as final_module\n| replace(final_module, \"\\\"]\", \"\") as final_module\n| where !isEmpty(final_module)",
+        "field": "final_module"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "route_direction",
+      "displayName": "route_direction",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.routeDirection\" as route_direction nodrop",
+        "field": "route_direction"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "rule",
+      "displayName": "rule",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"filter.actions[?(@.isFinal == true)].rule\" as final_rule nodrop\n| replace(final_rule, \"[\\\"\", \"\") as final_rule\n| replace(final_rule, \"\\\"]\", \"\") as final_rule\n| where !isEmpty(final_rule)",
+        "field": "final_rule"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

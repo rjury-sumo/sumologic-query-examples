@@ -1,0 +1,290 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Enterprise Audit - Collector Activities",
+  "description": "Collector Activities DashBoard provides detailed information on collector activities, such as top users by activity and a one-day time comparison. You can also review data on recent collector activities and upgrades, and use pre-populated filters for a granular view of selected data.",
+  "title": "Enterprise Audit - Collector Activities",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel37b9d54498a2a94e",
+        "structure": "{\"height\":8,\"width\":15,\"x\":9,\"y\":12}"
+      },
+      {
+        "key": "panel409fc5439cd6ea4a",
+        "structure": "{\"height\":6,\"width\":7,\"x\":6,\"y\":0}"
+      },
+      {
+        "key": "panel695cd30aa1d87a46",
+        "structure": "{\"height\":6,\"width\":15,\"x\":9,\"y\":6}"
+      },
+      {
+        "key": "panel6d28b7419a6b284c",
+        "structure": "{\"height\":6,\"width\":11,\"x\":13,\"y\":0}"
+      },
+      {
+        "key": "panel87ea0adb8173694c",
+        "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelf02142f6aa6d1946",
+        "structure": "{\"height\":14,\"width\":9,\"x\":0,\"y\":6}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel37b9d54498a2a94e",
+      "title": "Recent - Collector Activities",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=collection (CollectorCreated OR CollectorUpdated OR CollectorDeleted)\n| json \"eventName\", \"eventTime\", \"operator.email\", \"operator.id\", \"operator.sourceIp\", \"operator.interface\", \"collectorIdentity.collectorName\", \"collector.ephemeral\", \"collector.sourceSyncMode\", \"collector.collectorType\",  \"to\", \"from\" as EventName, EventTime, UserEmail, UserId, UserIp, Interface, CollectorName, IsEphemeral, SourceSyncMode, CollectorType, CurrentValue, PreviousValue nodrop\n| where EventName in (\"CollectorCreated\", \"CollectorUpdated\", \"CollectorDeleted\")\n| json field=CurrentValue \"ephemeral\", \"sourceSyncMode\", \"collectorType\" as UpdatedIsEphermal, UpdatedSourceSyncMode, UpdatedCollectorType nodrop\n| if(isNull(IsEphemeral), if(isNull(UpdatedIsEphermal), \"-\", UpdatedIsEphermal) , IsEphemeral) as IsEphemeral\n| if(isNull(SourceSyncMode), if(isNull(UpdatedSourceSyncMode), \"-\", UpdatedSourceSyncMode) , SourceSyncMode) as SourceSyncMode\n| if(isNull(CollectorType), if(isNull(UpdatedCollectorType), \"-\", UpdatedCollectorType) , CollectorType) as CollectorType\n| where EventName matches \"{{EventName}}\" and if(\"{{UserIp}}\"=\"*\", true, UserIp matches \"{{UserIp}}\") and UserEmail matches \"{{UserEmail}}\" and if(\"{{CollectorType}}\"=\"*\", true, CollectorType matches \"{{CollectorType}}\") and if(\"{{Interface}}\"=\"*\", true,Interface matches \"{{Interface}}\")\n|count by EventName, EventTime, CollectorName, IsEphemeral, SourceSyncMode, CollectorType, Interface, UserEmail, UserId, UserIp\n| sort by EventTime\n| fields - UserId, _count\n| limit 10\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel409fc5439cd6ea4a",
+      "title": "Top Users By Activities",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=collection (CollectorCreated OR CollectorUpdated OR CollectorDeleted OR ClobberCollectorDeleted OR CollectorUpgradeCompleted)\n| json \"eventName\", \"eventTime\", \"operator.email\", \"operator.id\", \"operator.sourceIp\", \"operator.interface\", \"collectorIdentity.collectorName\", \"collector.ephemeral\", \"collector.sourceSyncMode\", \"collector.collectorType\",  \"to\", \"from\", \"requestBy.userId\", \"requestBy.userEmail\" as EventName, EventTime, UserEmail, UserId, UserIp, Interface, CollectorName, IsEphemeral, SourceSyncMode, CollectorType, CurrentValue, PreviousValue, requestByUserId, requestByUserEmail nodrop\n| if(isNull(UserEmail), if(isNull(requestByUserEmail), UserId, requestByUserEmail), UserEmail) as User\n| where EventName in (\"CollectorCreated\", \"CollectorUpdated\", \"CollectorDeleted\", \"ClobberCollectorDeleted\", \"CollectorUpgradeCompleted\") \n| where EventName matches \"{{EventName}}\" and if(\"{{UserIp}}\"=\"*\", true, UserIp matches \"{{UserIp}}\") and UserEmail matches \"{{UserEmail}}\" and if(\"{{CollectorType}}\"=\"*\", true, CollectorType matches \"{{CollectorType}}\") and if(\"{{Interface}}\"=\"*\", true, Interface matches \"{{Interface}}\")\n| count as Count by User, EventName\n| transpose row User column EventName as %\"CollectorCreated\", %\"CollectorUpdated\", %\"CollectorDeleted\", %\"CollectorUpgradeCompleted\", %\"ClobberCollectorDeleted\"\n| sort by CollectorCreated, CollectorUpdated, CollectorDeleted, CollectorUpgradeCompleted, ClobberCollectorDeleted\n| limit 5\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel695cd30aa1d87a46",
+      "title": "Collector Upgrade Activities",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=collection (CollectorUpgradeCompleted)\n| json \"eventName\", \"eventTime\", \"requestBy.userEmail\", \"requestBy.userId\", \"collectorIdentity.collectorName\", \"collector.ephemeral\", \"collector.sourceSyncMode\", \"to\", \"from\", \"fromVersion\", \"toVersion\", \"status\" as EventName, EventTime, UserEmail, UserId, CollectorName, IsEphemeral, SourceSyncMode, CurrentValue, PreviousValue, FromVersion, ToVersion, UpgradeStatus nodrop\n| where EventName=\"CollectorUpgradeCompleted\"\n| where EventName matches \"{{EventName}}\" and UserEmail matches \"{{UserEmail}}\"\n| count by EventTime, UserId, CollectorName, FromVersion, ToVersion, UpgradeStatus\n| sort by EventTime\n| fields - UserId, _count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6d28b7419a6b284c",
+      "title": "Clobber Collector Deleted Activities",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=collection (ClobberCollectorDeleted)\n| json \"eventName\", \"eventTime\", \"operator.email\", \"operator.id\", \"operator.sourceIp\", \"operator.interface\", \"collectorIdentity.collectorName\", \"collector.ephemeral\", \"collector.sourceSyncMode\", \"collector.collectorType\",  \"to\", \"from\" as EventName, EventTime, UserEmail, UserId, UserIp, Interface, CollectorName, IsEphemeral, SourceSyncMode, CollectorType, CurrentValue, PreviousValue nodrop\n| where EventName=\"ClobberCollectorDeleted\"\n| where EventName matches \"{{EventName}}\" and if(\"{{UserIp}}\"=\"*\", true, UserIp matches \"{{UserIp}}\") and UserEmail matches \"{{UserEmail}}\" and if(\"{{CollectorType}}\"=\"*\", true, CollectorType matches \"{{CollectorType}}\") and if(\"{{Interface}}\"=\"*\", true, Interface matches \"{{Interface}}\")\n|count by EventTime, UserEmail, UserId, UserIp, CollectorName\n| sort by EventTime\n| fields - UserId, _count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel87ea0adb8173694c",
+      "title": "One Day Time Shift Comparison",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=collection (CollectorCreated OR CollectorUpdated OR CollectorDeleted OR EphemeralCollectorDeleted OR ClobberCollectorDeleted OR CollectorUpgradeRequested OR CollectorUpgradeCompleted)\n| json \"eventName\", \"eventTime\", \"operator.email\", \"operator.id\", \"operator.sourceIp\", \"operator.interface\", \"collectorIdentity.collectorName\", \"collector.ephemeral\", \"collector.sourceSyncMode\", \"collector.collectorType\",  \"to\", \"from\" as EventName, EventTime, UserEmail, UserId, UserIp, Interface, CollectorName, IsEphemeral, SourceSyncMode, CollectorType, CurrentValue, PreviousValue nodrop\n| where EventName in (\"CollectorCreated\", \"CollectorUpdated\", \"CollectorDeleted\", \"CollectorUpgradeCompleted\")\n| if (isNull(UserEmail), \"-\", UserEmail) as UserEmail \n| where EventName matches \"{{EventName}}\" and if(\"{{UserIp}}\"=\"*\", true, UserIp matches \"{{UserIp}}\") and UserEmail matches \"{{UserEmail}}\" and if(\"{{CollectorType}}\" = \"*\", true, CollectorType matches \"{{CollectorType}}\") and if(\"{{Interface}}\"=\"*\", true, Interface matches \"{{Interface}}\")\n| count as Count by EventName\n| fillmissing values(\"CollectorCreated\", \"CollectorUpdated\", \"CollectorDeleted\", \"CollectorUpgradeCompleted\") in EventName \n| compare timeshift 1d as Shift_1d",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf02142f6aa6d1946",
+      "title": "Geo Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=collection (CollectorCreated OR CollectorUpdated OR CollectorDeleted OR EphemeralCollectorDeleted OR ClobberCollectorDeleted OR CollectorUpgradeRequested OR CollectorUpgradeCompleted)\n| json \"eventName\", \"eventTime\", \"operator.email\", \"operator.id\", \"operator.sourceIp\", \"operator.interface\", \"collectorIdentity.collectorName\", \"collector.ephemeral\", \"collector.sourceSyncMode\", \"collector.collectorType\",  \"to\", \"from\", \"requestBy.userId\", \"requestBy.userEmail\" as EventName, EventTime, UserEmail, UserId, UserIp, Interface, CollectorName, IsEphemeral, SourceSyncMode, CollectorType, CurrentValue, PreviousValue, requestByUserId, requestByUserEmail nodrop\n| if(isNull(UserEmail), if(isNull(requestByUserEmail), UserId, requestByUserEmail), UserEmail) as User\n| where EventName in (\"CollectorCreated\", \"CollectorUpdated\", \"CollectorDeleted\", \"EphemeralCollectorDeleted\", \"ClobberCollectorDeleted\", \"CollectorUpgradeRequested\", \"CollectorUpgradeCompleted\")\n| where EventName matches \"{{EventName}}\" and if(\"{{UserIp}}\"=\"*\", true, UserIp matches \"{{UserIp}}\") and UserEmail matches \"{{UserEmail}}\" and if(\"{{CollectorType}}\"=\"*\", true,CollectorType matches \"{{CollectorType}}\") and if(\"{{Interface}}\"=\"*\", true, Interface matches \"{{Interface}}\")\n| count by UserIp\n| lookup latitude, longitude from geo://location on ip = UserIp\n| sum(_count) as count by latitude, longitude\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "CollectorType",
+      "displayName": "CollectorType",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=collection (CollectorCreated OR CollectorUpdated OR CollectorDeleted OR EphemeralCollectorDeleted OR ClobberCollectorDeleted OR CollectorUpgradeRequested OR CollectorUpgradeCompleted)\n| json \"eventName\", \"eventTime\", \"operator.email\", \"operator.id\", \"operator.sourceIp\", \"operator.interface\", \"collectorIdentity.collectorName\", \"collector.ephemeral\", \"collector.sourceSyncMode\", \"collector.collectorType\",  \"to\", \"from\" as EventName, EventTime, UserEmail, UserId, UserIp, Interface, CollectorName, IsEphemeral, SourceSyncMode, CollectorType, CurrentValue, PreviousValue nodrop\n| count by CollectorType",
+        "field": "CollectorType"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "EventName",
+      "displayName": "EventName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=collection (CollectorCreated OR CollectorUpdated OR CollectorDeleted OR EphemeralCollectorDeleted OR ClobberCollectorDeleted OR CollectorUpgradeRequested OR CollectorUpgradeCompleted)\n| json \"eventName\", \"eventTime\", \"operator.email\", \"operator.id\", \"operator.sourceIp\", \"operator.interface\", \"collectorIdentity.collectorName\", \"collector.ephemeral\", \"collector.sourceSyncMode\", \"collector.collectorType\",  \"to\", \"from\" as EventName, EventTime, UserEmail, UserId, UserIp, Interface, CollectorName, IsEphemeral, SourceSyncMode, CollectorType, CurrentValue, PreviousValue nodrop\n| count by EventName\n",
+        "field": "EventName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Interface",
+      "displayName": "Interface",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=collection (CollectorCreated OR CollectorUpdated OR CollectorDeleted OR EphemeralCollectorDeleted OR ClobberCollectorDeleted OR CollectorUpgradeRequested OR CollectorUpgradeCompleted)\n| json \"eventName\", \"eventTime\", \"operator.email\", \"operator.id\", \"operator.sourceIp\", \"operator.interface\", \"collectorIdentity.collectorName\", \"collector.ephemeral\", \"collector.sourceSyncMode\", \"collector.collectorType\",  \"to\", \"from\" as EventName, EventTime, UserEmail, UserId, UserIp, Interface, CollectorName, IsEphemeral, SourceSyncMode, CollectorType, CurrentValue, PreviousValue nodrop\n| count by Interface",
+        "field": "Interface"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "UserEmail",
+      "displayName": "UserEmail",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=collection (CollectorCreated OR CollectorUpdated OR CollectorDeleted OR EphemeralCollectorDeleted OR ClobberCollectorDeleted OR CollectorUpgradeRequested OR CollectorUpgradeCompleted)\n| json \"eventName\", \"eventTime\", \"operator.email\", \"operator.id\", \"operator.sourceIp\", \"operator.interface\", \"collectorIdentity.collectorName\", \"collector.ephemeral\", \"collector.sourceSyncMode\", \"collector.collectorType\",  \"to\", \"from\" as EventName, EventTime, UserEmail, UserId, UserIp, Interface, CollectorName, IsEphemeral, SourceSyncMode, CollectorType, CurrentValue, PreviousValue nodrop\n| count by UserEmail",
+        "field": "UserEmail"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "UserIp",
+      "displayName": "UserIp",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=collection (CollectorCreated OR CollectorUpdated OR CollectorDeleted OR EphemeralCollectorDeleted OR ClobberCollectorDeleted OR CollectorUpgradeRequested OR CollectorUpgradeCompleted)\n| json \"eventName\", \"eventTime\", \"operator.email\", \"operator.id\", \"operator.sourceIp\", \"operator.interface\", \"collectorIdentity.collectorName\", \"collector.ephemeral\", \"collector.sourceSyncMode\", \"collector.collectorType\",  \"to\", \"from\" as EventName, EventTime, UserEmail, UserId, UserIp, Interface, CollectorName, IsEphemeral, SourceSyncMode, CollectorType, CurrentValue, PreviousValue nodrop\n| count by UserIp",
+        "field": "UserIp"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

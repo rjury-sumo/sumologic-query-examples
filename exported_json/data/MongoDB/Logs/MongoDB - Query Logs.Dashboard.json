@@ -1,0 +1,245 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "MongoDB - Query Logs",
+  "description": "This dashboard shows MongoDB slow queries with connection ID, queries by keysExamined value, and queries with KeysExamined Greater than nreturned",
+  "title": "MongoDB - Query Logs",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-15m"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel37C3870FBCDBF844",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelDBCA5E169F80B849",
+        "structure": "{\"height\":6,\"width\":8,\"x\":5,\"y\":0}"
+      },
+      {
+        "key": "panel200294C9A8322841",
+        "structure": "{\"height\":6,\"width\":11,\"x\":13,\"y\":0}"
+      },
+      {
+        "key": "panel1EB24DF9BF3D384D",
+        "structure": "{\"height\":12,\"width\":7,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panel5E7B06CCB96BF84A",
+        "structure": "{\"height\":12,\"width\":9,\"x\":7,\"y\":6}"
+      },
+      {
+        "key": "panel2D1A4EE087E22A41",
+        "structure": "{\"height\":12,\"width\":8,\"x\":16,\"y\":6}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel37C3870FBCDBF844",
+      "title": "Slow Queries ",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\"},\"series\":{},\"svp\":{\"label\":\"\",\"noDataString\":\"0\",\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":100000000,\"color\":\"#BF2121\"}]}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MongoDB db_cluster={{db_cluster}} _sourceHost={{host}} db_system=mongodb | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| json field=_raw \"t.$date\" as timestamp\n| json field=_raw \"s\" as severity\n| json field=_raw \"c\" as component\n| json field=_raw \"ctx\" as context\n| json field=_raw \"msg\" as msg\n| where component matches \"*COMMAND*\"\n| json field=_raw \"attr.type\" as type\n| where type matches \"*command*\"\n| json field=_raw \"attr.command\" as command\n| replace (command,\"{\",\"\") as command\n| replace (command,\"}\",\"\") as command\n| parse regex field=command \"(?<db_cmd>[\\w\\-\\.]+):*\"\n| where db_cmd matches \"*find*\" or db_cmd matches \"*insert*\" or db_cmd matches \"*remove*\" or db_cmd matches \"*delete*\" or db_cmd matches \"*update*\"\n| json field=_raw \"attr.durationMillis\" as dur\n| number(dur)\n| where dur > 100\n| count\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelDBCA5E169F80B849",
+      "title": "Slow Queries Over Time by Type",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MongoDB db_cluster={{db_cluster}} _sourceHost={{host}} db_system=mongodb | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| json field=_raw \"t.$date\" as timestamp\n| json field=_raw \"s\" as severity\n| json field=_raw \"c\" as component\n| json field=_raw \"ctx\" as context\n| json field=_raw \"msg\" as msg\n| where component matches \"*COMMAND*\"\n| json field=_raw \"attr.type\" as type\n| where type matches \"*command*\"\n| json field=_raw \"attr.command\" as command\n| replace (command,\"{\",\"\") as command\n| replace (command,\"}\",\"\") as command\n| parse regex field=command \"(?<db_cmd>[\\w\\-\\.]+):*\"\n| where db_cmd matches \"*find*\" or db_cmd matches \"*insert*\" or db_cmd matches \"*remove*\" or db_cmd matches \"*delete*\" or db_cmd matches \"*update*\"\n| json field=_raw \"attr.durationMillis\" as dur\n| number(dur)\n| where dur > 100\n| timeslice 1 h\n| count by _timeslice, db_cmd\n| transpose row _timeslice column db_cmd\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel200294C9A8322841",
+      "title": "Slowest Running Queries by Type",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MongoDB db_cluster={{db_cluster}} _sourceHost={{host}} db_system=mongodb | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| json field=_raw \"t.$date\" as timestamp\n| json field=_raw \"s\" as severity\n| json field=_raw \"c\" as component\n| json field=_raw \"ctx\" as context\n| json field=_raw \"msg\" as msg\n| where component matches \"*COMMAND*\"\n| json field=_raw \"attr.type\" as type\n| where type matches \"*command*\"\n| json field=_raw \"attr.command\" as command\n| replace (command,\"{\",\"\") as command\n| replace (command,\"}\",\"\") as command\n| parse regex field=command \"(?<db_cmd>[\\w\\-\\.]+):*\"\n| where db_cmd matches \"*find*\" or db_cmd matches \"*insert*\" or db_cmd matches \"*remove*\" or db_cmd matches \"*delete*\" or db_cmd matches \"*update*\"\n| json field=_raw \"attr.durationMillis\" as dur\n| number(dur)\n| where dur > 100\n| max( dur) as max_duration group by db_cmd\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1EB24DF9BF3D384D",
+      "title": "Slow Queries by Connection ID",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"bar\"},\"series\":{},\"axes\":{\"axisX\":{\"title\":\"context\"},\"axisY\":{\"title\":\"count\"}},\"overrides\":[],\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MongoDB db_cluster={{db_cluster}} _sourceHost={{host}} db_system=mongodb | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| json field=_raw \"t.$date\" as timestamp\n| json field=_raw \"s\" as severity\n| json field=_raw \"c\" as component\n| json field=_raw \"ctx\" as context\n| json field=_raw \"msg\" as msg\n| where component matches \"*COMMAND*\"\n| json field=_raw \"attr.type\" as type\n| where type matches \"*command*\"\n| json field=_raw \"attr.command\" as command\n| replace (command,\"{\",\"\") as command\n| replace (command,\"}\",\"\") as command\n| parse regex field=command \"(?<db_cmd>[\\w\\-\\.]+):*\"\n|  where db_cmd matches \"*find*\" or db_cmd matches \"*insert*\" or db_cmd matches \"*remove*\" or db_cmd matches \"*delete*\" or db_cmd matches \"*update*\"\n| count by context\n| order by _count desc\n| limit 20\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5E7B06CCB96BF84A",
+      "title": "Queries by KeysExamined Value",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MongoDB db_cluster={{db_cluster}} _sourceHost={{host}} db_system=mongodb | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| json field=_raw \"t.$date\" as timestamp\n| json field=_raw \"s\" as severity\n| json field=_raw \"c\" as component\n| json field=_raw \"ctx\" as context\n| json field=_raw \"msg\" as msg\n| where component matches \"*COMMAND*\"\n| json field=_raw \"attr.type\" as type\n| where type matches \"*command*\"\n| json field=_raw \"attr.command\" as command\n| replace (command,\"{\",\"\") as command\n| replace (command,\"}\",\"\") as command\n| parse regex field=command \"(?<db_cmd>[\\w\\-\\.]+):*\"\n|  where db_cmd matches \"*find*\" or db_cmd matches \"*insert*\" or db_cmd matches \"*remove*\" or db_cmd matches \"*delete*\" or db_cmd matches \"*update*\"\n| json field=_raw \"attr.keysExamined\" as keysExamined\n| json field=_raw \"attr.docsExamined\" as docsExamined\n| json field=_raw \"attr.nreturned\" as nreturned\n| json field=_raw \"attr.durationMillis\" as dur\n| num(KeysExamined) | num (nreturned)\n| count by timestamp, dur, db_cmd, docsExamined, KeysExamined, nreturned, msg\n| fields - _count\n| order by KeysExamined desc\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2D1A4EE087E22A41",
+      "title": "Queries with KeysExamined greater than nreturned",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MongoDB db_cluster={{db_cluster}} _sourceHost={{host}} db_system=mongodb | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| json field=_raw \"t.$date\" as timestamp\n| json field=_raw \"s\" as severity\n| json field=_raw \"c\" as component\n| json field=_raw \"ctx\" as context\n| json field=_raw \"msg\" as msg\n| where component matches \"*COMMAND*\"\n| json field=_raw \"attr.type\" as type\n| where type matches \"*command*\"\n| json field=_raw \"attr.command\" as command\n| replace (command,\"{\",\"\") as command\n| replace (command,\"}\",\"\") as command\n| parse regex field=command \"(?<db_cmd>[\\w\\-\\.]+):*\"\n|  where db_cmd matches \"*find*\" or db_cmd matches \"*insert*\" or db_cmd matches \"*remove*\" or db_cmd matches \"*delete*\" or db_cmd matches \"*update*\"\n| json field=_raw \"attr.keysExamined\" as keysExamined\n| json field=_raw \"attr.docsExamined\" as docsExamined\n| json field=_raw \"attr.nreturned\" as nreturned\n| json field=_raw \"attr.durationMillis\" as dur\n| num(KeysExamined) | num (nreturned)\n| count by timestamp, dur, db_cmd, docsExamined, KeysExamined, nreturned, msg\n| fields - _count\n| where KeysExamined > nreturned\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db_cluster",
+      "displayName": "db_cluster",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "_sourceCategory = Labs/MongoDB db_system=mongodb component=database",
+        "key": "db_cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host",
+      "displayName": "host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/MongoDB db_cluster=* db_system=mongodb",
+        "field": "_sourcehost"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

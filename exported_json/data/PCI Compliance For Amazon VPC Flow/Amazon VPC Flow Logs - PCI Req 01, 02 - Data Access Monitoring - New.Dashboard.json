@@ -1,0 +1,256 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Amazon VPC Flow Logs - PCI Req 01, 02 - Data Access Monitoring - New",
+  "description": "Handles PCI Req 01 and 02 (Data Access Monitoring)",
+  "title": "Amazon VPC Flow Logs - PCI Req 01, 02 - Data Access Monitoring - New",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel480567c29458ba4e",
+        "structure": "{\"width\":24,\"height\":1,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelf68948aeb5455941",
+        "structure": "{\"width\":16,\"height\":8,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panel1161ba6abb6b084e",
+        "structure": "{\"width\":8,\"height\":8,\"x\":16,\"y\":1}"
+      },
+      {
+        "key": "panel562d2cada667aa4e",
+        "structure": "{\"width\":16,\"height\":8,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panel8ab12e33a4304b4e",
+        "structure": "{\"width\":8,\"height\":8,\"x\":16,\"y\":7}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel562d2cada667aa4e",
+      "title": "Multi-service Detected on Same Host",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC ACCEPT (80 or 8008 or 8080 or 443 or 3306 or 5439 or 5432 or 1433 or 2638 or 5984) // 3306 - MySQL/RDS, 5439 - Amazon Redshift, 5432 - PostgreSQL, 1433 - MS SQL Server, 2638 - SQLAnywhere, 5984 - couchdb\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where action=\"ACCEPT\"\n| if (dest_port in (\"80\", \"8008\", \"8080\", \"443\"), 1, 0 ) as web\n| if (dest_port in (\"3306\", \"5439\", \"5432\", \"1433\", \"2638\", \"5984\"), 1, 0 ) as db\n|where if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{account_id}}\" = \"*\", true, account_id matches \"{{account_id}}\")\n|sum(web) as webcount, sum(db) as dbcount by dest_ip\n// db ports and web ports typically should not be open on same host\n| where (webcount > 0 and dbcount > 0)\n| fields -webcount, dbcount\n| toMillis(now()) as _timeslice\n| \"Multi-services detected (DB Port open with Web Port) on same host\" as message\n| \"Medium\" as Severity",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf68948aeb5455941",
+      "title": "Traffic By Application Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 80 or 8008 or 8080 or 443 or 513 or 3306 or 5439 or 5432 or 1433 or 2638 or 5984) // 3306 - MySQL/RDS, 5439 - Amazon Redshift, 5432 - PostgreSQL, 1433 - MS SQL Server, 2638 - SQLAnywhere, 5984 - couchdb\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"443\", \"513\", \"3306\", \"5439\", \"5432\", \"1433\", \"2638\", \"5984\")\n| timeslice 5m\n|where if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{account_id}}\" = \"*\", true, account_id matches \"{{account_id}}\")\n|count as count by _timeslice, dest_port\n| lookup Keyword from https://s3.amazonaws.com/sumologic-app-data/port-numbers.csv on Decimal=dest_port\n| if (isNull(keyword), dest_port, Keyword) as application\n| if (dest_port=\"5439\", \"Redshift\", application ) as application\n| fields -keyword, dest_port \n| transpose row _timeslice column application",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel480567c29458ba4e",
+      "title": "Data Access",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panel1161ba6abb6b084e",
+      "title": "Top TCP Dest Ports",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC ACCEPT 6 // TCP = 6\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and Protocol=\"6\"\n| where ((compareCIDRPrefix(\"172.16.0.0\", src_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", src_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", src_ip, toInt(8)) and (!compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) and !compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) and !compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8)))) or \n(compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8)) and (!compareCIDRPrefix(\"172.16.0.0\", src_ip, toInt(12)) and !compareCIDRPrefix(\"192.168.0.0\", src_ip, toInt(16)) and !compareCIDRPrefix(\"10.0.0.0\", src_ip, toInt(8)))))\n|where if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{account_id}}\" = \"*\", true, account_id matches \"{{account_id}}\")\n|count as count by dest_port | sort by count | limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8ab12e33a4304b4e",
+      "title": "Top UDP Dest Ports",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC ACCEPT 17 // UDP = 17\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and Protocol=\"17\"\n| where ((compareCIDRPrefix(\"172.16.0.0\", src_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", src_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", src_ip, toInt(8)) and (!compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) and !compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) and !compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8)))) or \n(compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8)) and (!compareCIDRPrefix(\"172.16.0.0\", src_ip, toInt(12)) and !compareCIDRPrefix(\"192.168.0.0\", src_ip, toInt(16)) and !compareCIDRPrefix(\"10.0.0.0\", src_ip, toInt(8)))))\n|where if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{account_id}}\" = \"*\", true, account_id matches \"{{account_id}}\")\n|count as count by dest_port | sort by count | limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "dest_ip",
+      "displayName": "dest_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (80 or 8008 or 8080 or 443 or 3306 or 5439 or 5432 or 1433 or 2638 or 5984) // 3306 - MySQL/RDS, 5439 - Amazon Redshift, 5432 - PostgreSQL, 1433 - MS SQL Server, 2638 - SQLAnywhere, 5984 - couchdb\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where action=\"ACCEPT\"\n| if (dest_port in (\"80\", \"8008\", \"8080\", \"443\"), 1, 0 ) as web\n| if (dest_port in (\"3306\", \"5439\", \"5432\", \"1433\", \"2638\", \"5984\"), 1, 0 ) as db",
+        "field": "dest_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (80 or 8008 or 8080 or 443 or 3306 or 5439 or 5432 or 1433 or 2638 or 5984) // 3306 - MySQL/RDS, 5439 - Amazon Redshift, 5432 - PostgreSQL, 1433 - MS SQL Server, 2638 - SQLAnywhere, 5984 - couchdb\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where action=\"ACCEPT\"\n| if (dest_port in (\"80\", \"8008\", \"8080\", \"443\"), 1, 0 ) as web\n| if (dest_port in (\"3306\", \"5439\", \"5432\", \"1433\", \"2638\", \"5984\"), 1, 0 ) as db",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_port",
+      "displayName": "dest_port",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (80 or 8008 or 8080 or 443 or 3306 or 5439 or 5432 or 1433 or 2638 or 5984) // 3306 - MySQL/RDS, 5439 - Amazon Redshift, 5432 - PostgreSQL, 1433 - MS SQL Server, 2638 - SQLAnywhere, 5984 - couchdb\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where action=\"ACCEPT\"\n| if (dest_port in (\"80\", \"8008\", \"8080\", \"443\"), 1, 0 ) as web\n| if (dest_port in (\"3306\", \"5439\", \"5432\", \"1433\", \"2638\", \"5984\"), 1, 0 ) as db",
+        "field": "dest_port"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "account_id",
+      "displayName": "account_id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (80 or 8008 or 8080 or 443 or 3306 or 5439 or 5432 or 1433 or 2638 or 5984) // 3306 - MySQL/RDS, 5439 - Amazon Redshift, 5432 - PostgreSQL, 1433 - MS SQL Server, 2638 - SQLAnywhere, 5984 - couchdb\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where action=\"ACCEPT\"\n| if (dest_port in (\"80\", \"8008\", \"8080\", \"443\"), 1, 0 ) as web\n| if (dest_port in (\"3306\", \"5439\", \"5432\", \"1433\", \"2638\", \"5984\"), 1, 0 ) as db",
+        "field": "account_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "action",
+      "displayName": "action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (80 or 8008 or 8080 or 443 or 3306 or 5439 or 5432 or 1433 or 2638 or 5984) // 3306 - MySQL/RDS, 5439 - Amazon Redshift, 5432 - PostgreSQL, 1433 - MS SQL Server, 2638 - SQLAnywhere, 5984 - couchdb\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where action=\"ACCEPT\"\n| if (dest_port in (\"80\", \"8008\", \"8080\", \"443\"), 1, 0 ) as web\n| if (dest_port in (\"3306\", \"5439\", \"5432\", \"1433\", \"2638\", \"5984\"), 1, 0 ) as db",
+        "field": "action"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_port",
+      "displayName": "src_port",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (80 or 8008 or 8080 or 443 or 3306 or 5439 or 5432 or 1433 or 2638 or 5984) // 3306 - MySQL/RDS, 5439 - Amazon Redshift, 5432 - PostgreSQL, 1433 - MS SQL Server, 2638 - SQLAnywhere, 5984 - couchdb\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where action=\"ACCEPT\"\n| if (dest_port in (\"80\", \"8008\", \"8080\", \"443\"), 1, 0 ) as web\n| if (dest_port in (\"3306\", \"5439\", \"5432\", \"1433\", \"2638\", \"5984\"), 1, 0 ) as db",
+        "field": "src_port"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

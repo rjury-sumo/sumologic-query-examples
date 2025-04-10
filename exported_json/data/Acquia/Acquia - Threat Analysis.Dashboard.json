@@ -1,0 +1,229 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Acquia - Threat Analysis",
+  "description": "The Acquia - Threat Analysis Dashboard provides an at-a-glance view of threats to Apache servers on your network. Dashboard panels display threat count over a selected time period, geographic locations where threats occurred, source breakdown, actors responsible for threats, severity, and a correlation of IP addresses, method, and status code of threats.",
+  "title": "Acquia - Threat Analysis",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel4b6101cb91d07942",
+        "structure": "{\"width\":8,\"height\":10,\"x\":8,\"y\":8}"
+      },
+      {
+        "key": "panel6593c2f8a2a0c941",
+        "structure": "{\"width\":8,\"height\":10,\"x\":16,\"y\":8}"
+      },
+      {
+        "key": "panel7a836064aefe2a41",
+        "structure": "{\"width\":8,\"height\":10,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panelac21c471b42a7941",
+        "structure": "{\"width\":8,\"height\":10,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panelb5d6d907af307840",
+        "structure": "{\"width\":8,\"height\":10,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panele362e860a0dd0a43",
+        "structure": "{\"width\":8,\"height\":10,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel4b6101cb91d07942",
+      "title": "Threats by Malicious Confidence",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{_sourceCategory}} varnishncsa \n| parse \"- - - *\" as message\n| json field=message \"client_ip\" as src_ip\n|count as ip_count by src_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=src_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|sum (ip_count) as threat_count by malicious_confidence",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6593c2f8a2a0c941",
+      "title": "Threat Table",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{_sourceCategory}} varnishncsa \n| parse \"- - - *\" as message\n| json field=message \"client_ip\" as src_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=src_ip \n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|count by src_ip,method, status_code, size, referrer, user_agent\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7a836064aefe2a41",
+      "title": "Threat by Actors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{_sourceCategory}} varnishncsa \n| parse \"- - - *\" as message\n| json field=message \"client_ip\" as src_ip\n|count as ip_count by src_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=src_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|sum (ip_count) as threat_count by Actor",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelac21c471b42a7941",
+      "title": "Threat Breakdown by Sources",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{_sourceCategory}} varnishncsa \n| parse \"- - - *\" as message\n| json field=message \"client_ip\" as src_ip\n|count as ip_count by src_ip, _source\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=src_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|sum (ip_count) as threat_count by _source",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb5d6d907af307840",
+      "title": "Threat by Geo Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{_sourceCategory}} varnishncsa \n| parse \"- - - *\" as message\n| json field=message \"client_ip\" as src_ip\n|count as ip_count by src_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=src_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip\n| count by latitude, longitude, country_code, country_name, region, city, postal_code, malicious_confidence\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panele362e860a0dd0a43",
+      "title": "Threat Count",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{_sourceCategory}} varnishncsa \n| parse \"- - - *\" as message\n| json field=message \"client_ip\" as src_ip\n|count as ip_count by src_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=src_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|sum (ip_count) as threat_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "_sourceCategory",
+      "displayName": "_sourceCategory",
+      "defaultValue": "sdfgfsg",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "sdfgfsg"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

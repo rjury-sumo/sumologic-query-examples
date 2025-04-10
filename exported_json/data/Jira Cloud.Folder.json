@@ -1,0 +1,1832 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Jira Cloud",
+  "description": "This App is installed via automation.DO NOT DELETE since its shared.",
+  "children": [
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Jira Cloud - Issue Details",
+      "description": "The Jira Cloud - Issue Details dashboard provides a visual overview of issues in Jira. The analytics help you visually examine critical information related to issues created compared to issues closed. The panels also provide details on open and closed issues, issue assignments and escalations. a list of issues escalated, unassigned, or reopened, and average time taken to close issues. This information enables you to examine, prioritize, and strategize issue management at a glance.",
+      "title": "Jira Cloud - Issue Details",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelpane-5440e79c9ec19a49",
+            "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelpane-ae18da078074eb4b",
+            "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":21}"
+          },
+          {
+            "key": "panelpane-f641724c89e3d94d",
+            "structure": "{\"height\":7,\"width\":8,\"x\":0,\"y\":7}"
+          },
+          {
+            "key": "panelpane-bdba862c9c9b0942",
+            "structure": "{\"height\":7,\"width\":8,\"x\":0,\"y\":14}"
+          },
+          {
+            "key": "panelpane-f1533bd88019c847",
+            "structure": "{\"height\":7,\"width\":8,\"x\":16,\"y\":14}"
+          },
+          {
+            "key": "panelpane-6b28ac259a9cc940",
+            "structure": "{\"height\":7,\"width\":8,\"x\":8,\"y\":7}"
+          },
+          {
+            "key": "panelpane-7e1e866581aefa46",
+            "structure": "{\"height\":7,\"width\":8,\"x\":16,\"y\":7}"
+          },
+          {
+            "key": "panelpane-ffb389ffa392e843",
+            "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":21}"
+          },
+          {
+            "key": "panelpane-a86ba143ba41f947",
+            "structure": "{\"height\":7,\"width\":8,\"x\":8,\"y\":14}"
+          },
+          {
+            "key": "panelpane-92eed3668dc8eb4d",
+            "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":21}"
+          },
+          {
+            "key": "panelpane-1d5aff309e1db84e",
+            "structure": "{\"height\":1,\"width\":8,\"x\":16,\"y\":6}"
+          },
+          {
+            "key": "panelpane-e55d16a090d1b944",
+            "structure": "{\"height\":1,\"width\":8,\"x\":8,\"y\":6}"
+          },
+          {
+            "key": "panelpane-1cf45d67bc339940",
+            "structure": "{\"height\":1,\"width\":8,\"x\":0,\"y\":6}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelpane-5440e79c9ec19a49",
+          "title": "Issues Created Vs Closed",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"smooth\",\"markerSize\":\"0\",\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| where status_category in (\"New\",\"Complete\")\n| json field=change_log \"items\" as changes  \n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| timeslice 1h\n| count_distinct (issue_key) by status_category, _timeslice\n| transpose row _timeslice column status_category\n| fillmissing timeslice(1h)",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-2w"
+            },
+            "to": null
+          },
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-ae18da078074eb4b",
+          "title": "Top 10 Issue Assignee",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| where resolution =\"Done\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| count as issue_count by issue_assignee \n| sort by issue_count\n| limit 10",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-f641724c89e3d94d",
+          "title": "Top 10 Issue creator",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud*  *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\" AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| where status_category=\"New\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| count_distinct (issue_key) as issue_count by issue_creator\n| sort by issue_count\n| limit 10",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-bdba862c9c9b0942",
+          "title": "Unassigned Issues",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue* \n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\" AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes nodrop\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| withtime issue_assignee \n| most_recent(issue_assignee_withtime) as user by issue, issue_summary\n| where user=\"Unassigned\"\n| count as count by issue, issue_summary\n| fields - count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-f1533bd88019c847",
+          "title": "Issues Reopened",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\" AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| json field=change_log \"items[1].toString\" as to_String\n| json field=change_log \"items[1].fromString\" as from_String\n| json field=change_log \"items[1].fieldId\" as fieldId\n| json field=change_log \"items[1].fieldtype\" as fieldType\n| where from_String=\"Done\" and to_String=\"In Progress\" and fieldId=\"status\" and fieldType=\"jira\"\n| count as count by date_time, issue, assignee, issue_summary , project_name, type\n| fields issue, type, assignee",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-6b28ac259a9cc940",
+          "title": "Top 10 Issues that took the longest to close",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*  Complete statusCategory issue assignee \n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, summary, priority, components, labels  \n| where   project_name matches \"*\" AND issue_key matches \"*\" AND type matches \"*\" AND priority matches \"*\" AND status_category matches \"*\" AND status matches \"*\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"*\" and  label matches \"*\"\n| where status_category=\"Complete\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| json \"issue.fields.resolutiondate\", \"issue.fields.created\" as issue_resolution, issue_creation\n| parseDate(issue_resolution, \"yyyy-MM-dd'T'HH:mm:ss.SSSZ\") as issue_resolution_milliseconds\n| parseDate(issue_creation, \"yyyy-MM-dd'T'HH:mm:ss.SSSZ\") as issue_creation_milliseconds\n| issue_resolution_milliseconds - issue_creation_milliseconds as ms_to_close_issue\n| ms_to_close_issue/3600000 as hours_to_close_issue\n| format( \"%.2f\",hours_to_close_issue) as hours_to_close\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| json field=change_log \"items[1].toString\" as to_String\n| json field=change_log \"items[1].fromString\" as from_String\n| json field=change_log \"items[1].fieldId\" as fieldId\n| json field=change_log \"items[1].fieldtype\" as fieldType\n| count as count by  issue, type, hours_to_close, assignee, summary\n| num(hours_to_close)\n| sort by hours_to_close\n| fields issue, type, hours_to_close\n| limit 10",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-7e1e866581aefa46",
+          "title": "Issues Escalated to the Highest Priority",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\" AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| json field=change_log \"items[0].field\", \"items[0].from\", \"items[0].to\" as change_field, change_from,  change_to\n| where change_to=\"1\" and change_field=\"priority\" \n| count as count by date_time, issue, type, status, assignee, summary\n| fields issue, type, status, assignee\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-ffb389ffa392e843",
+          "title": "Avg Time Taken to close Issues by User",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*  Complete statusCategory issue assignee \n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  \n| where   project_name matches \"{{project_name}}\" AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| where status_category=\"Complete\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| json \"issue.fields.resolutiondate\", \"issue.fields.created\" as issue_resolution, issue_creation\n| parseDate(issue_resolution, \"yyyy-MM-dd'T'HH:mm:ss.SSSZ\") as issue_resolution_milliseconds\n| parseDate(issue_creation, \"yyyy-MM-dd'T'HH:mm:ss.SSSZ\") as issue_creation_milliseconds\n| issue_resolution_milliseconds - issue_creation_milliseconds as ms_to_close_issue\n| ms_to_close_issue/3600000 as hours_to_close_issue\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| json field=change_log \"items[1].toString\" as to_String\n| json field=change_log \"items[1].fromString\" as from_String\n| json field=change_log \"items[1].fieldId\" as fieldId\n| json field=change_log \"items[1].fieldtype\" as fieldType\n| avg (hours_to_close_issue) as avg_hrs_to_close by  issue_assignee\n| format( \"%.2f\",avg_hrs_to_close) as avg_hrs_to_close\n| fields issue_assignee, avg_hrs_to_close\n| sort by avg_hrs_to_close",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-a86ba143ba41f947",
+          "title": "Avg. Time to Close Issues by Project",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*  Complete statusCategory issue assignee \n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  \n| where   project_name matches \"{{project_name}}\" AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| where status_category=\"Complete\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| json \"issue.fields.resolutiondate\", \"issue.fields.created\" as issue_resolution, issue_creation\n| parseDate(issue_resolution, \"yyyy-MM-dd'T'HH:mm:ss.SSSZ\") as issue_resolution_milliseconds\n| parseDate(issue_creation, \"yyyy-MM-dd'T'HH:mm:ss.SSSZ\") as issue_creation_milliseconds\n| issue_resolution_milliseconds - issue_creation_milliseconds as ms_to_close_issue\n| ms_to_close_issue/3600000 as hours_to_close_issue\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| json field=change_log \"items[1].toString\" as to_String\n| json field=change_log \"items[1].fromString\" as from_String\n| json field=change_log \"items[1].fieldId\" as fieldId\n| json field=change_log \"items[1].fieldtype\" as fieldType\n| avg (hours_to_close_issue) as avg_hrs_to_close by  project_name\n| fields project_name, avg_hrs_to_close\n| sort by avg_hrs_to_close\n\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-92eed3668dc8eb4d",
+          "title": "Issues Reopened - One Month Comparison",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\" AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| json field=change_log \"items[1].toString\" as to_String\n| json field=change_log \"items[1].fromString\" as from_String\n| json field=change_log \"items[1].fieldId\" as fieldId\n| json field=change_log \"items[1].fieldtype\" as fieldType\n| where from_String=\"Done\" and to_String=\"In Progress\" and fieldId=\"status\" and fieldType=\"jira\"\n| timeslice 1h \n| count as count by _timeslice \n| fillmissing timeslice (1h)\n| compare with timeshift 30d",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-4w2d"
+            },
+            "to": null
+          },
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-1d5aff309e1db84e",
+          "title": "Issues Escalated and Reopened",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": ""
+        },
+        {
+          "id": null,
+          "key": "panelpane-e55d16a090d1b944",
+          "title": "Time Taken to Close Issues",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": ""
+        },
+        {
+          "id": null,
+          "key": "panelpane-1cf45d67bc339940",
+          "title": "Issues Created/Closed",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": ""
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "components",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n|parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi",
+            "field": "component"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "project_name",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "project_name"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "issue_key",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "issue_key"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "issue_type",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, issue_type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "issue_type"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "priority",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "priority"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "label",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n|parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi",
+            "field": "label"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "status_category",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "status_category"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "status",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "status"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Jira Cloud - Issue Overview",
+      "description": "The Jira Cloud - Issue Overview dashboard provides users with a high-level view of activities such as issues created, closed, reopened, and in progress. An analysis of the presented information helps identify th",
+      "title": "Jira Cloud - Issue Overview",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelpane-50448be9a6806b49",
+            "structure": "{\"height\":4,\"width\":6,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelpane-abe95144a7b06a4b",
+            "structure": "{\"height\":4,\"width\":6,\"x\":18,\"y\":0}"
+          },
+          {
+            "key": "panelpane-3083420d8b09084a",
+            "structure": "{\"height\":4,\"width\":6,\"x\":6,\"y\":0}"
+          },
+          {
+            "key": "panelpane-5fd64d67b9ef3a49",
+            "structure": "{\"height\":4,\"width\":6,\"x\":12,\"y\":0}"
+          },
+          {
+            "key": "panelpane-d956aceb87166b42",
+            "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":9}"
+          },
+          {
+            "key": "panelpane-cff22e7896305842",
+            "structure": "{\"height\":5,\"width\":12,\"x\":0,\"y\":4}"
+          },
+          {
+            "key": "panelpane-f06c949e88a7ba48",
+            "structure": "{\"height\":5,\"width\":12,\"x\":12,\"y\":4}"
+          },
+          {
+            "key": "panelpane-6fb4160fba390b46",
+            "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":9}"
+          },
+          {
+            "key": "panelpane-d9e6c865b8531b4d",
+            "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":9}"
+          },
+          {
+            "key": "panelpane-3e1a3b90a702db49",
+            "structure": "{\"height\":1,\"width\":8,\"x\":0,\"y\":15}"
+          },
+          {
+            "key": "panelpane-97a5e4018b2b4a4f",
+            "structure": "{\"height\":1,\"width\":8,\"x\":8,\"y\":15}"
+          },
+          {
+            "key": "panelpane-cbf8b717908c0b4c",
+            "structure": "{\"height\":1,\"width\":8,\"x\":16,\"y\":15}"
+          },
+          {
+            "key": "panelpane-2a6c9700a617794f",
+            "structure": "{\"height\":5,\"width\":8,\"x\":0,\"y\":16}"
+          },
+          {
+            "key": "panelpane-3d4d84129f2ea949",
+            "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":21}"
+          },
+          {
+            "key": "panelpane-aacc45d7b5b69943",
+            "structure": "{\"height\":6,\"width\":4,\"x\":4,\"y\":21}"
+          },
+          {
+            "key": "panelpane-aa434ff79d2d1a47",
+            "structure": "{\"height\":5,\"width\":8,\"x\":8,\"y\":16}"
+          },
+          {
+            "key": "panelpane-5e46eca7991b394d",
+            "structure": "{\"height\":6,\"width\":4,\"x\":8,\"y\":21}"
+          },
+          {
+            "key": "panelpane-cbaae917bc721b4b",
+            "structure": "{\"height\":6,\"width\":4,\"x\":12,\"y\":21}"
+          },
+          {
+            "key": "panelpane-6dba8b4c889f9b48",
+            "structure": "{\"height\":5,\"width\":8,\"x\":16,\"y\":16}"
+          },
+          {
+            "key": "panelpane-ef5ed22688cfaa47",
+            "structure": "{\"height\":6,\"width\":4,\"x\":16,\"y\":21}"
+          },
+          {
+            "key": "panelpane-a21625f4961f1b49",
+            "structure": "{\"height\":6,\"width\":4,\"x\":20,\"y\":21}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelpane-50448be9a6806b49",
+          "title": "Issues Created",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Issues\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| where status_category=\"New\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| count_distinct(issue_key)",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-abe95144a7b06a4b",
+          "title": "Issues In Progress",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Issues\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(status_category) by issue_key \n| where _first=\"In Progress\"\n| count_distinct (issue_key)",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-3083420d8b09084a",
+          "title": "Issues Closed",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Issues\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(status_category) by issue_key \n| where _first=\"Complete\"\n|count_distinct (issue_key) ",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-5fd64d67b9ef3a49",
+          "title": "Issues Reopened",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Issues\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| json field=change_log \"items[1].toString\" as to_String\n| json field=change_log \"items[1].fromString\" as from_String\n| json field=change_log \"items[1].fieldId\" as fieldId\n| json field=change_log \"items[1].fieldtype\" as fieldType\n| where from_String=\"Done\" and to_String=\"In Progress\" and fieldId=\"status\" and fieldType=\"jira\"\n| count_distinct (issue_key)",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-d956aceb87166b42",
+          "title": "Issues by Type",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud*  *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(type) as issue_type by issue_key \n| count by issue_type\n| sort by _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-cff22e7896305842",
+          "title": "Issues by Priority and Project",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| where status_category=\"New\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| count_distinct(issue_key) by priority, project_name\n| transpose row priority column project_name",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-f06c949e88a7ba48",
+          "title": "Issues by Type Over Time",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"smooth\",\"markerSize\":\"0\",\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud*  issue_*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| where status_category=\"New\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| timeslice 1h\n| count_distinct (issue_key) by _timeslice, type\n| transpose row _timeslice column type\n| fillmissing timeslice(1d)",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-2w"
+            },
+            "to": null
+          },
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-6fb4160fba390b46",
+          "title": "Issues by Component",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16},\"color\":{\"family\":\"scheme6\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(status_category) by issue_key,component \n| count_distinct (issue_key) by component",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-d9e6c865b8531b4d",
+          "title": "Issues by Project",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud*  *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(project_name) as project_name by issue_key \n| count_distinct (issue_key) by project_name\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-3e1a3b90a702db49",
+          "title": "Issues - In Progress",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":20}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": ""
+        },
+        {
+          "id": null,
+          "key": "panelpane-97a5e4018b2b4a4f",
+          "title": "Issues - Closed",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":20}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": ""
+        },
+        {
+          "id": null,
+          "key": "panelpane-cbf8b717908c0b4c",
+          "title": "Issues Re-opened",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":20}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": ""
+        },
+        {
+          "id": null,
+          "key": "panelpane-2a6c9700a617794f",
+          "title": "Issues In Progress by assignee",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(status_category) by issue_key, issue_assignee\n| where _first=\"In Progress\"\n| count_distinct (issue_key) as count by issue_assignee \n| sort",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-3d4d84129f2ea949",
+          "title": "Issues In Progress by Priority",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(status_category) by issue_key, priority\n| where _first=\"In Progress\"\n| count_distinct (issue_key) by priority \n| sort",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-aacc45d7b5b69943",
+          "title": "Issues In Progress by Project",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(status_category) by issue_key, project_name\n| where _first=\"In Progress\"\n| count_distinct (issue_key) as count by project_name \n| sort",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-aa434ff79d2d1a47",
+          "title": "Issues Closed by assignee",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(status_category) by issue_key,issue_assignee\n| where _first=\"Complete\"\n| count_distinct (issue_key) as count by issue_assignee\n| sort ",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-5e46eca7991b394d",
+          "title": "Issues Closed by Priority",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(status_category) by issue_key,priority\n| where _first=\"Complete\"\n| count_distinct (issue_key) by priority\n| sort ",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-cbaae917bc721b4b",
+          "title": "Issues Closed by Project",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(status_category) by issue_key,project_name\n| where _first=\"Complete\"\n| count_distinct (issue_key) as count by project_name\n| sort ",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-6dba8b4c889f9b48",
+          "title": "Issues Reopened by assignee",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| json field=change_log \"items[1].toString\" as to_String\n| json field=change_log \"items[1].fromString\" as from_String\n| json field=change_log \"items[1].fieldId\" as fieldId\n| json field=change_log \"items[1].fieldtype\" as fieldType\n| where from_String=\"Done\" and to_String=\"In Progress\" and fieldId=\"status\" and fieldType=\"jira\"\n| count_distinct (issue_key) as count by priority\n| sort",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-ef5ed22688cfaa47",
+          "title": "Issues Reopened by Priority",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| json field=change_log \"items[1].toString\" as to_String\n| json field=change_log \"items[1].fromString\" as from_String\n| json field=change_log \"items[1].fieldId\" as fieldId\n| json field=change_log \"items[1].fieldtype\" as fieldType\n| where from_String=\"Done\" and to_String=\"In Progress\" and fieldId=\"status\" and fieldType=\"jira\"\n| count_distinct (issue_key) by priority\n| sort",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-a21625f4961f1b49",
+          "title": "Issues Reopened by Project",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\"  AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| json field=change_log \"items[1].toString\" as to_String\n| json field=change_log \"items[1].fromString\" as from_String\n| json field=change_log \"items[1].fieldId\" as fieldId\n| json field=change_log \"items[1].fieldtype\" as fieldType\n| where from_String=\"Done\" and to_String=\"In Progress\" and fieldId=\"status\" and fieldType=\"jira\"\n| count_distinct (issue_key) as count by project_name\n| sort",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "components",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n|parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi",
+            "field": "component"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "project_name",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "project_name"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "issue_key",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "issue_key"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "issue_type",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, issue_type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "issue_type"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "priority",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "priority"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "label",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n|parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi",
+            "field": "label"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "status_category",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "status_category"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "status",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "status"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Jira Cloud - Recent Issue Changes",
+      "description": "The Jira Cloud - Recent Issues Changes dashboard tracks the recent progress of Jira issues. The panels provide information about the type of issue, timestamp when it was created, issue status, category, assignee, and issue summary.",
+      "title": "Jira Cloud - Recent Issue Changes",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelpane-71ec911a9304584d",
+            "structure": "{\"height\":25,\"width\":24,\"x\":0,\"y\":0}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelpane-71ec911a9304584d",
+          "title": "Recent Issue Changes Over Time",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\" AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n|count by date_time, issue, type, status, resolution, status_category, project_name , issue_assignee, issue_summary\n| sort by date_time\n| limit 100\n//| fields -_count\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "components",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n|parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi",
+            "field": "component"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "project_name",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "project_name"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "issue_key",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "issue_key"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "issue_type",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, issue_type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "issue_type"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "priority",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "priority"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "label",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n|parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi",
+            "field": "label"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "status_category",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "status_category"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "status",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+            "field": "status"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Jira Cloud - Sprints Events",
+      "description": "The Jira Cloud - Sprint Events dashboard provides an at-a-glance view of sprint events. The panels also provide tabular representations of all sprint events spread over a week, sprints created, sprints started, and sprints closed.",
+      "title": "Jira Cloud - Sprints Events",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelpane-8049fd97bf46a840",
+            "structure": "{\"height\":8,\"width\":8,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelpane-abaa80cdb6420946",
+            "structure": "{\"height\":8,\"width\":8,\"x\":8,\"y\":8}"
+          },
+          {
+            "key": "panelpane-5244d9728f66484d",
+            "structure": "{\"height\":8,\"width\":8,\"x\":16,\"y\":8}"
+          },
+          {
+            "key": "panelpane-fde73cab838c5b4b",
+            "structure": "{\"height\":8,\"width\":8,\"x\":0,\"y\":8}"
+          },
+          {
+            "key": "panelpane-0c70355592bcea4e",
+            "structure": "{\"height\":8,\"width\":16,\"x\":8,\"y\":0}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelpane-8049fd97bf46a840",
+          "title": "Events",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* (sprint_started or sprint_closed or sprint_created or sprint_deleted or sprint_updated)\n| json field=_raw \"webhookEvent\" as event_name\n| count by event_name\n| sort",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-abaa80cdb6420946",
+          "title": "Sprint Started",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* (sprint_started or sprint_closed or sprint_created or sprint_deleted or sprint_updated)\n| json field=_raw \"webhookEvent\", \"sprint.name\", \"sprint.state\", \"sprint.startDate\", \"sprint.endDate\", \"sprint.goal\", \"sprint.originBoardId\" as event_name, sprint_name, sprint_state, sprint_startDate, sprint_endDate, sprint_goal, sprinit_originBoardID nodrop\n| where event_name=\"sprint_started\"\n| count as count by  sprint_name, sprint_state, sprint_startDate, sprint_endDate, sprint_goal, sprinit_originBoardID\n//| fields - _count\n| sort by sprint_name",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-5244d9728f66484d",
+          "title": "Sprint Closed",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* (sprint_started or sprint_closed or sprint_created or sprint_deleted or sprint_updated)\n| json field=_raw \"webhookEvent\", \"sprint.name\", \"sprint.state\", \"sprint.startDate\", \"sprint.endDate\", \"sprint.goal\", \"sprint.originBoardId\", \"sprint.completeDate\" as event_name, sprint_name, sprint_state, sprint_startDate, sprint_endDate, sprint_goal, sprinit_originBoardID, sprint_completeDate nodrop\n| where event_name=\"sprint_closed\"\n| count as count by  sprint_name, sprint_state, sprint_startDate, sprint_endDate, sprint_completeDate, sprint_goal, sprinit_originBoardID\n//| fields - _count\n| sort by sprint_name",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-fde73cab838c5b4b",
+          "title": "Sprint Created",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* (sprint_started or sprint_closed or sprint_created or sprint_deleted or sprint_updated)\n| json field=_raw \"webhookEvent\", \"sprint.name\", \"sprint.state\", \"sprint.originBoardId\" as event_name, sprint_name, sprint_state, sprinit_originBoardID nodrop\n| where event_name=\"sprint_created\"\n| count as count by  sprint_name, sprint_state, sprinit_originBoardID\n//| fields - count\n| sort by sprint_name",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-0c70355592bcea4e",
+          "title": "Sprint Events - One Week Comparison",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* (sprint_started or sprint_closed or sprint_created or sprint_deleted or sprint_updated)\n| json field=_raw \"webhookEvent\", \"sprint.name\", \"sprint.state\", \"sprint.startDate\", \"sprint.endDate\", \"sprint.goal\", \"sprint.originBoardId\" as event_name, sprint_name, sprint_state, sprint_startDate, sprint_endDate, sprint_goal, sprinit_originBoardID nodrop\n| count as count by event_name\n| compare with timeshift 7d\n| sort by count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1w"
+            },
+            "to": null
+          },
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Jira Cloud - User Events",
+      "description": "The Jira Cloud - User Events dashboard provides an overview of user profiles. The analytics allow you to closely monitor the unusual activity related to users created, updated, and deleted. This helps in tracking the Jira users more effectively.",
+      "title": "Jira Cloud - User Events",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelpane-c7527f3288395a4e",
+            "structure": "{\"height\":8,\"width\":8,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelpane-a1ccf54a98b34b4f",
+            "structure": "{\"height\":8,\"width\":16,\"x\":8,\"y\":0}"
+          },
+          {
+            "key": "panelpane-44197347aece2843",
+            "structure": "{\"height\":9,\"width\":8,\"x\":8,\"y\":8}"
+          },
+          {
+            "key": "panelpane-2e17111298440a41",
+            "structure": "{\"height\":9,\"width\":8,\"x\":0,\"y\":8}"
+          },
+          {
+            "key": "panelpane-d30c611f8e0e6b4d",
+            "structure": "{\"height\":9,\"width\":8,\"x\":16,\"y\":8}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelpane-c7527f3288395a4e",
+          "title": "User Events",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* user_*\n| json field=_raw \"webhookEvent\" as event_type\n| where event_type matches \"user_*\"\n| count as count by event_type\n| sort by count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-a1ccf54a98b34b4f",
+          "title": "User Events - One Week Comparison",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* user_*\n| json field=_raw \"webhookEvent\" as event_type\n| where event_type matches \"user_*\"\n| json  \"timestamp\"  as timestamp\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| count as count by event_type\n| compare with timeshift 1w\n| sort by count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1w"
+            },
+            "to": null
+          },
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-44197347aece2843",
+          "title": "Users Updated",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* user_updated\n| json field=_raw \"webhookEvent\" as event_type\n| where event_type = \"user_updated\"\n| json  \"user.accountId\", \"user.displayName\", \"user.active\", \"timestamp\"  as account_id, user_name, is_active, timestamp\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| count as count by date_time, is_active , user_name\n//| fields - _count\n| sort by date_time desc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-2e17111298440a41",
+          "title": "Users Created",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* user_created\n| json field=_raw \"webhookEvent\" as event_type\n| where event_type = \"user_created\"\n| json  \"user.accountId\", \"user.displayName\", \"user.active\", \"timestamp\"  as account_id, user_name, is_active, timestamp\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| count as count by date_time, is_active , user_name\n//| fields - _count\n| sort by date_time desc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-d30c611f8e0e6b4d",
+          "title": "Users Deleted",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Jira-cloud* user_deleted\n| json field=_raw \"webhookEvent\" as event_type\n| where event_type = \"user_deleted\"\n| json   \"user.name\", \"timestamp\"  as  user_name, timestamp \n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| count as count by date_time , user_name\n| fields - count\n| sort by date_time desc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [],
+      "coloringRules": []
+    }
+  ]
+}

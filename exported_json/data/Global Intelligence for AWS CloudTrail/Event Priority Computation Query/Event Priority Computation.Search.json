@@ -1,0 +1,46 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Event Priority Computation",
+  "search": {
+    "queryText": "_index=cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD\n| where type in (\"EventCount\", \"EventResourceCount\")\n| withtime count | most_recent(count_withtime) as count by benchmarkname | toInt(count) as count\n| join (parse field=benchmarkname \"*_CountEventResources\" as event) as event1, (benchmarkname as event) as event2 on event1.event = event2.event\n| event1_benchmarkname as benchmarkname | event1_count as resourceCount | event2_count as eventCount\n| infer _category=cloudtrail _model=benchmark\n| median as resourceCountBaseline\n| toInt(resourceCountBaseline) as resourceCountBaseline\n\n| event2_benchmarkname as benchmarkname\n| fields benchmarkname, eventcount, resourcecount, resourcecountbaseline\n| infer _category=cloudtrail _model=benchmark\n| median as eventcountbaseline\n| toInt(eventcountbaseline) as eventcountbaseline\n\n| (eventCount - eventCountBaseline) as eventCount_difference | if (eventCount_difference < 0, 0, eventCount_difference) as eventCount_difference\n| eventCount_difference * resourceCount as deviation\n| sort by deviation\n| parse field=benchmarkname \"*_*\" as resourceType, eventName\n| 1 as idx | accum idx as priority\n| fields eventName, eventCount, resourceCount, eventCountBaseline, resourceCountBaseline, priority\n| save /shared/CloudTrailGIS/EventPriority",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "AutoParse",
+    "defaultTimeRange": "-3h"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-3h",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-3h"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": {
+      "thresholdType": null,
+      "operator": "lt",
+      "count": 1
+    },
+    "notification": {
+      "taskType": "EmailSearchNotificationSyncDefinition",
+      "toList": [
+        "user@company.com"
+      ],
+      "subjectTemplate": "Search Alert: {{AlertCondition}} found for {{SearchName}}",
+      "includeQuery": true,
+      "includeResultSet": true,
+      "includeHistogram": true,
+      "includeCsvAttachment": false
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": true,
+    "parameters": []
+  },
+  "description": "Compute event priority and saves to a file called \"/shared/CloudTrailGIS/EventPriority\""
+}

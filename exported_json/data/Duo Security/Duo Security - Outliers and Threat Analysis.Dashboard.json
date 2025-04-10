@@ -1,0 +1,253 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Duo Security - Outliers and Threat Analysis",
+  "description": "See outliers, and threat analysis of Duo Events",
+  "title": "Duo Security - Outliers and Threat Analysis",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1w"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel4e4904d1a63c9b4a",
+        "structure": "{\"width\":12,\"height\":8,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panel9072fbd4ba127b40",
+        "structure": "{\"width\":12,\"height\":8,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panela142c52da0f0884b",
+        "structure": "{\"width\":12,\"height\":8,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelda1d514e9ec58b4b",
+        "structure": "{\"width\":12,\"height\":8,\"x\":0,\"y\":6}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel4e4904d1a63c9b4a",
+      "title": "Threat Intel Analysis of Authentication Events",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result nodrop\n| json field=_raw \"access_device.ip\" as ip nodrop\n| json field=_raw \"access_device.location.city\" as city nodrop\n| json field=_raw \"access_device.location.country\" as country nodrop\n| json field=_raw \"access_device.location.state\" as state nodrop\n| json field=_raw \"application.name\" as application_name nodrop\n| json field=_raw \"factor\" as factor nodrop\n| json field=_raw \"reason\" as reason nodrop\n| json field=_raw \"result\" as result nodrop\n| json field=_raw \"timestamp\" as time nodrop\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time\n| json field=_raw \"user.name\" as user_name nodrop\n\n| where !isNull(ip)\n| threatlookup singleIndicator ip\n\n// normalize confidence level to a string \n| if (_threatlookup.confidence >= 85, \"high\", if (_threatlookup.confidence >= 50, \"medium\", if (_threatlookup.confidence >= 15, \"low\", if (_threatlookup.confidence >= 0, \"unverified\", \"unknown\")))) as threat_confidence\n\n| where threat_confidence in (\"high\", \"medium\", \"low\")\n\n//rename to match threat_<foo> convention\n| %\"_threatlookup.actors\" as threat_actors\n| %\"_threatlookup.type\" as type\n| %\"_threatlookup.threat_type\" as threat_type\n\n//convert threat valid from to human readable time\n| toLong(%\"_threatlookup.valid_from\" * 1000) as %\"_threatlookup.valid_from\"\n| formatDate(%\"_threatlookup.valid_from\", \"MM-dd-yyyy\") as threat_valid_from\n\n| where type matches \"ipv4-addr*\" and !isNull(threat_confidence)\n\n| if (isEmpty(threat_actors), \"Unassigned\", threat_actors) as threat_actors\n\n| where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{ip}}\" = \"*\", true, ip matches \"{{ip}}\")\n| count by date_time, ip, eventtype, result, city, application_name, factor, reason, user_name,threat_actors, threat_type,type,threat_valid_from",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9072fbd4ba127b40",
+      "title": "Outlier - Success Authentication Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication success \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result nodrop  \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip nodrop  \n| json field=_raw \"access_device.location.city\" as city nodrop  \n| json field=_raw \"access_device.location.country\" as country nodrop  \n| json field=_raw \"access_device.location.state\" as state nodrop  \n| json field=_raw \"application.name\" as application_name nodrop  \n| json field=_raw \"factor\" as factor nodrop  \n| json field=_raw \"reason\" as reason nodrop  \n| json field=_raw \"result\" as result  nodrop  \n| json field=_raw \"timestamp\" as time  nodrop  \n| json field=_raw \"user.name\" as user_name nodrop  \n| timeslice {{Timeslice}}\n|where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{ip}}\" = \"*\", true, ip matches \"{{ip}}\")\n|count by _timeslice\n| outlier _count window={{Window}},threshold={{Threshold}},consecutive={{Consecutive}},direction=+",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela142c52da0f0884b",
+      "title": "Outlier - Failed Authentication Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication denied \n| json field=_raw \"eventtype\" as eventtype nodrop\n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result  nodrop \n| where result !=\"success\" \n| json field=_raw \"access_device.ip\" as ip  nodrop\n| json field=_raw \"access_device.location.city\" as city  nodrop\n| json field=_raw \"access_device.location.country\" as country  nodrop\n| json field=_raw \"access_device.location.state\" as state  nodrop\n| json field=_raw \"application.name\" as application_name  nodrop\n| json field=_raw \"factor\" as factor  nodrop\n| json field=_raw \"reason\" as reason  nodrop\n| json field=_raw \"result\" as result  nodrop\n| json field=_raw \"timestamp\" as time  nodrop\n| json field=_raw \"user.name\" as user_name  nodrop\n| timeslice {{Timeslice}}\n|where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{ip}}\" = \"*\", true, ip matches \"{{ip}}\")\n|count by _timeslice\n| outlier _count window={{Window}},threshold={{Threshold}},consecutive={{Consecutive}},direction=+",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelda1d514e9ec58b4b",
+      "title": "Threat Intel Analysis of Admin Events",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  administrator  \n| json field=_raw \"eventtype\" as eventtype nodrop   \n| where eventtype = \"administrator\" \n| json field=_raw \"action\" as action nodrop\n| json field=_raw \"object\" as object nodrop\n| json field=_raw \"timestamp\" as time nodrop\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time\n| json field=_raw \"username\" as user_name nodrop\n| json field=_raw \"description\" as description nodrop\n| json field=description \"ip_address\" as ip_address nodrop\n\n| where !isNull(ip_address)\n| threatlookup singleIndicator ip_address\n\n// normalize confidence level to a string \n| if (_threatlookup.confidence >= 85, \"high\", if (_threatlookup.confidence >= 50, \"medium\", if (_threatlookup.confidence >= 15, \"low\", if (_threatlookup.confidence >= 0, \"unverified\", \"unknown\")))) as threat_confidence\n\n| where threat_confidence in (\"high\", \"medium\", \"low\")\n\n//rename to match threat_<foo> convention\n| %\"_threatlookup.actors\" as threat_actors\n| %\"_threatlookup.type\" as type\n| %\"_threatlookup.threat_type\" as threat_type\n\n//convert threat valid from to human readable time\n| toLong(%\"_threatlookup.valid_from\" * 1000) as %\"_threatlookup.valid_from\"\n| formatDate(%\"_threatlookup.valid_from\", \"MM-dd-yyyy\") as threat_valid_from\n\n| where type matches \"ipv4-addr*\" and !isNull(threat_confidence)\n\n| if (isEmpty(threat_actors), \"Unassigned\", threat_actors) as threat_actors\n\n| if(isnull(object),\"none\", object) as object\n| where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\")\n| count by date_time, ip_address, action, object, user_name, description,threat_actors, threat_type,type,threat_valid_from",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "Labs/Microsoft/Office365",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Microsoft/Office365"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "ip",
+      "displayName": "ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  authentication denied \n| json field=_raw \"eventtype\" as eventtype nodrop\n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result  nodrop \n| where result !=\"success\" \n| json field=_raw \"access_device.ip\" as ip  nodrop\n| json field=_raw \"access_device.location.city\" as city  nodrop\n| json field=_raw \"access_device.location.country\" as country  nodrop\n| json field=_raw \"access_device.location.state\" as state  nodrop\n| json field=_raw \"application.name\" as application_name  nodrop\n| json field=_raw \"factor\" as factor  nodrop\n| json field=_raw \"reason\" as reason  nodrop\n| json field=_raw \"result\" as result  nodrop\n| json field=_raw \"timestamp\" as time  nodrop\n| json field=_raw \"user.name\" as user_name  nodrop\n| timeslice 1h",
+        "field": "ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user_name",
+      "displayName": "user_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  authentication denied \n| json field=_raw \"eventtype\" as eventtype nodrop\n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result  nodrop \n| where result !=\"success\" \n| json field=_raw \"access_device.ip\" as ip  nodrop\n| json field=_raw \"access_device.location.city\" as city  nodrop\n| json field=_raw \"access_device.location.country\" as country  nodrop\n| json field=_raw \"access_device.location.state\" as state  nodrop\n| json field=_raw \"application.name\" as application_name  nodrop\n| json field=_raw \"factor\" as factor  nodrop\n| json field=_raw \"reason\" as reason  nodrop\n| json field=_raw \"result\" as result  nodrop\n| json field=_raw \"timestamp\" as time  nodrop\n| json field=_raw \"user.name\" as user_name  nodrop\n| timeslice 1h",
+        "field": "user_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Threshold",
+      "displayName": "Threshold",
+      "defaultValue": "1",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1,10,11,12,13"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Window",
+      "displayName": "Window",
+      "defaultValue": "10",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "10"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Timeslice",
+      "displayName": "Timeslice",
+      "defaultValue": "1h",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1h"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Consecutive",
+      "displayName": "Consecutive",
+      "defaultValue": "2",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "2"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,385 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Active Threats: AWS APIs",
+  "description": "The Active Threats: AWS APIs dashboard shows threats identified from AWS APIs. It shows threats count and trend, and threats by resource, actor, events, and geo location.",
+  "title": "Active Threats: AWS APIs",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel46F6F94AA9A8F947",
+        "structure": "{\"height\":9,\"width\":24,\"x\":0,\"y\":25}"
+      },
+      {
+        "key": "panelPANE-B78316639A998840",
+        "structure": "{\"height\":8,\"width\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-C9FACF28BFBA884E",
+        "structure": "{\"height\":8,\"width\":18,\"x\":6,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-B33FA996A5353A44",
+        "structure": "{\"height\":9,\"width\":12,\"x\":0,\"y\":16}"
+      },
+      {
+        "key": "panelPANE-EC61B92B8EF3E84A",
+        "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panelPANE-9A7B68E083848840",
+        "structure": "{\"height\":9,\"width\":12,\"x\":12,\"y\":16}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel46F6F94AA9A8F947",
+      "title": "Threats by Geo Location",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"map\",\"displayType\":\"default\",\"roundDataPoints\":true,\"mode\":\"map\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* sourceIPAddress !(\"s3.amazonaws.com\")\n| json \"eventTime\", \"eventName\", \"eventSource\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\", \"userAgent\" as event_time, event.action, eventSource, cloud.region, client.ip, event.outcome, user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\", \"userIdentity.type\" as user.name, cloud.account.id, user_identity_type nodrop\n| json field=_raw \"requestParameters.dBInstanceIdentifier\", \"requestParameters.instancesSet.items[0].instanceId\" as db_instance_id, cloud_instance_id nodrop\n\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user.name nodrop\n| parse field=eventSource \"*.\" as cloud.service.name\n| parse \"\\\"accessKeyId\\\":\\\"*\\\"\" as accessKeyId nodrop\n\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\"\n\n| if (malicious_confidence = \"low\", 1, 0) as risk.static_level\n| if (malicious_confidence = \"medium\", 2, risk.static_level) as risk.static_level\n| if (malicious_confidence = \"high\", 3, risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(db_instance_id),cloud_instance_id,db_instance_id) as cloud.instance.id\n| if(isEmpty(cloud.instance.id),\"NA\", cloud.instance.id) as cloud.instance.id\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{event.action}}\" = \"*\", true, event.action matches \"{{event.action}}\") AND if (\"{{event.outcome}}\" = \"*\", true, event.outcome matches \"{{event.outcome}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{threat.group.name}}\" = \"*\", true, actor matches \"{{threat.group.name}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level >= toInt(\"{{risk.static_level}}\"))\n\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated\n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n\n| lookup latitude, longitude from geo://location on ip = client.ip\n| count by latitude, longitude, label_name, threat_last_updated",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-B78316639A998840",
+      "title": "Threats Count",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true,\"mode\":\"singleValueMetrics\",\"noDataMessage\":\"0\"},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"textColor\":\"\",\"backgroundColor\":\"\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":2,\"color\":\"#16943E\"},{\"from\":2,\"to\":5,\"color\":\"#DFBE2E\"},{\"from\":5,\"to\":10,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":10}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* sourceIPAddress !(\"s3.amazonaws.com\")\n| json \"eventTime\", \"eventName\", \"eventSource\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\", \"userAgent\" as event_time, event.action, eventSource, cloud.region, client.ip, event.outcome, user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\", \"userIdentity.type\" as user.name, cloud.account.id, user_identity_type nodrop\n| json field=_raw \"requestParameters.dBInstanceIdentifier\", \"requestParameters.instancesSet.items[0].instanceId\" as db_instance_id, cloud_instance_id nodrop\n\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user.name nodrop\n| parse field=eventSource \"*.\" as cloud.service.name\n| parse \"\\\"accessKeyId\\\":\\\"*\\\"\" as accessKeyId nodrop\n\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\"\n\n| if (malicious_confidence = \"low\", 1, 0) as risk.static_level\n| if (malicious_confidence = \"medium\", 2, risk.static_level) as risk.static_level\n| if (malicious_confidence = \"high\", 3, risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(db_instance_id),cloud_instance_id,db_instance_id) as cloud.instance.id\n| if(isEmpty(cloud.instance.id),\"NA\", cloud.instance.id) as cloud.instance.id\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{event.action}}\" = \"*\", true, event.action matches \"{{event.action}}\") AND if (\"{{event.outcome}}\" = \"*\", true, event.outcome matches \"{{event.outcome}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{threat.group.name}}\" = \"*\", true, actor matches \"{{threat.group.name}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level >= toInt(\"{{risk.static_level}}\"))\n\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated\n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-C9FACF28BFBA884E",
+      "title": "Threats by Resource",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"roundDataPoints\":true,\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":0.001,\"to\":0.01,\"color\":\"#98ECA9\"},{\"from\":0.01,\"to\":10,\"color\":\"#F2DA73\"},{\"from\":10,\"to\":100,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"latest\",\"noDataMessage\":\"\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* sourceIPAddress !(\"s3.amazonaws.com\")\n| json \"eventTime\", \"eventName\", \"eventSource\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\", \"userAgent\" as event_time, event.action, eventSource, cloud.region, client.ip, event.outcome, user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\", \"userIdentity.type\" as user.name, cloud.account.id, user_identity_type nodrop\n| json field=_raw \"requestParameters.dBInstanceIdentifier\", \"requestParameters.instancesSet.items[0].instanceId\" as db_instance_id, cloud_instance_id nodrop\n\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user.name nodrop\n| parse field=eventSource \"*.\" as cloud.service.name\n| parse \"\\\"accessKeyId\\\":\\\"*\\\"\" as accessKeyId nodrop\n\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\"\n\n| if (malicious_confidence = \"low\", 1, 0) as risk.static_level\n| if (malicious_confidence = \"medium\", 2, risk.static_level) as risk.static_level\n| if (malicious_confidence = \"high\", 3, risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(db_instance_id),cloud_instance_id,db_instance_id) as cloud.instance.id\n| if(isEmpty(cloud.instance.id),\"NA\", cloud.instance.id) as cloud.instance.id\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{event.action}}\" = \"*\", true, event.action matches \"{{event.action}}\") AND if (\"{{event.outcome}}\" = \"*\", true, event.outcome matches \"{{event.outcome}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{threat.group.name}}\" = \"*\", true, actor matches \"{{threat.group.name}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level >= toInt(\"{{risk.static_level}}\"))\n\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated\n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n\n| count by client.ip, event.action, user.name, cloud.account.id, cloud.region, cloud.instance.id, cloud.service.name, user_identity_type, accessKeyId\n| sum(_count) as total_threats by client.ip, event.action,user_identity_type,user.name,accessKeyId , cloud.account.id, cloud.region, cloud.instance.id, cloud.service.name\n| sort by total_threats",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-B33FA996A5353A44",
+      "title": "Threats by Actor",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"roundDataPoints\":true,\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* sourceIPAddress !(\"s3.amazonaws.com\")\n| json \"eventTime\", \"eventName\", \"eventSource\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\", \"userAgent\" as event_time, event.action, eventSource, cloud.region, client.ip, event.outcome, user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\", \"userIdentity.type\" as user.name, cloud.account.id, user_identity_type nodrop\n| json field=_raw \"requestParameters.dBInstanceIdentifier\", \"requestParameters.instancesSet.items[0].instanceId\" as db_instance_id, cloud_instance_id nodrop\n\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user.name nodrop\n| parse field=eventSource \"*.\" as cloud.service.name\n| parse \"\\\"accessKeyId\\\":\\\"*\\\"\" as accessKeyId nodrop\n\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\"\n\n| if (malicious_confidence = \"low\", 1, 0) as risk.static_level\n| if (malicious_confidence = \"medium\", 2, risk.static_level) as risk.static_level\n| if (malicious_confidence = \"high\", 3, risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(db_instance_id),cloud_instance_id,db_instance_id) as cloud.instance.id\n| if(isEmpty(cloud.instance.id),\"NA\", cloud.instance.id) as cloud.instance.id\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{event.action}}\" = \"*\", true, event.action matches \"{{event.action}}\") AND if (\"{{event.outcome}}\" = \"*\", true, event.outcome matches \"{{event.outcome}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{threat.group.name}}\" = \"*\", true, actor matches \"{{threat.group.name}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level >= toInt(\"{{risk.static_level}}\"))\n\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated\n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n\n| count by actor, label_name, risk.static_level | sort by _count, actor, label_name, risk.static_level asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-EC61B92B8EF3E84A",
+      "title": "Threats Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Diverging 1\"},\"series\":{},\"overrides\":[],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"roundDataPoints\":true,\"markerSize\":8,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* sourceIPAddress !(\"s3.amazonaws.com\")\n| json \"eventTime\", \"eventName\", \"eventSource\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\", \"userAgent\" as event_time, event.action, eventSource, cloud.region, client.ip, event.outcome, user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\", \"userIdentity.type\" as user.name, cloud.account.id, user_identity_type nodrop\n| json field=_raw \"requestParameters.dBInstanceIdentifier\", \"requestParameters.instancesSet.items[0].instanceId\" as db_instance_id, cloud_instance_id nodrop\n\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user.name nodrop\n| parse field=eventSource \"*.\" as cloud.service.name\n| parse \"\\\"accessKeyId\\\":\\\"*\\\"\" as accessKeyId nodrop\n\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\"\n\n| if (malicious_confidence = \"low\", 1, 0) as risk.static_level\n| if (malicious_confidence = \"medium\", 2, risk.static_level) as risk.static_level\n| if (malicious_confidence = \"high\", 3, risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(db_instance_id),cloud_instance_id,db_instance_id) as cloud.instance.id\n| if(isEmpty(cloud.instance.id),\"NA\", cloud.instance.id) as cloud.instance.id\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{event.action}}\" = \"*\", true, event.action matches \"{{event.action}}\") AND if (\"{{event.outcome}}\" = \"*\", true, event.outcome matches \"{{event.outcome}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{threat.group.name}}\" = \"*\", true, actor matches \"{{threat.group.name}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level >= toInt(\"{{risk.static_level}}\"))\n\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated\n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n\n| timeslice 1d\n| count by _timeslice\n| fillmissing timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-9A7B68E083848840",
+      "title": "Threats by Events and Result",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"overrides\":[],\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"roundDataPoints\":true,\"fillOpacity\":1,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* sourceIPAddress !(\"s3.amazonaws.com\")\n| json \"eventTime\", \"eventName\", \"eventSource\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\", \"userAgent\" as event_time, event.action, eventSource, cloud.region, client.ip, event.outcome, user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\", \"userIdentity.type\" as user.name, cloud.account.id, user_identity_type nodrop\n| json field=_raw \"requestParameters.dBInstanceIdentifier\", \"requestParameters.instancesSet.items[0].instanceId\" as db_instance_id, cloud_instance_id nodrop\n\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user.name nodrop\n| parse field=eventSource \"*.\" as cloud.service.name\n| parse \"\\\"accessKeyId\\\":\\\"*\\\"\" as accessKeyId nodrop\n\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\"\n\n| if (malicious_confidence = \"low\", 1, 0) as risk.static_level\n| if (malicious_confidence = \"medium\", 2, risk.static_level) as risk.static_level\n| if (malicious_confidence = \"high\", 3, risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(db_instance_id),cloud_instance_id,db_instance_id) as cloud.instance.id\n| if(isEmpty(cloud.instance.id),\"NA\", cloud.instance.id) as cloud.instance.id\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{event.action}}\" = \"*\", true, event.action matches \"{{event.action}}\") AND if (\"{{event.outcome}}\" = \"*\", true, event.outcome matches \"{{event.outcome}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{threat.group.name}}\" = \"*\", true, actor matches \"{{threat.group.name}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level >= toInt(\"{{risk.static_level}}\"))\n\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated\n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n\n| count by event.action, event.outcome\n| transpose row event.action column event.outcome",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "cloud.account.id",
+      "displayName": "cloud.account.id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* !(\"s3.amazonaws.com\") \n| json \"userIdentity.accountId\" as accountId\n| if(isEmpty(accountId), \"NA\", accountId) as accountId\n| count by accountId\n| sort by accountId",
+        "field": "accountid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "cloud.region",
+      "displayName": "cloud.region",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* !(\"s3.amazonaws.com\")\n| json \"awsRegion\" as aws_region\n| count by aws_region\n| sort by aws_region asc",
+        "field": "aws_region"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "event.action",
+      "displayName": "event.action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* !(\"s3.amazonaws.com\")\n| json \"eventName\"as event_name\n| count by event_name\n| sort by event_name asc",
+        "field": "event_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "event.outcome",
+      "displayName": "event.outcome",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* !(\"s3.amazonaws.com\")\n| json \"errorCode\" as result\n| count by result\n| sort by result asc",
+        "field": "result"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user.name",
+      "displayName": "user.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* !(\"s3.amazonaws.com\")\n| json \"userIdentity.userName\" as user.name\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| count by user.name\n| sort by user.name asc",
+        "field": "user_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "risk.static_level",
+      "displayName": "risk.static_level",
+      "defaultValue": "1",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "0,1,2,3"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "cloud.instance.id",
+      "displayName": "cloud.instance.id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* !(\"s3.amazonaws.com\")\n| json field=_raw \"requestParameters.dBInstanceIdentifier\" as db_instance_id nodrop\n| json field=_raw \"requestParameters.instancesSet.items[0].instanceId\" as cloud_instance_id nodrop\n| if(isEmpty(db_instance_id),cloud_instance_id,db_instance_id) as cloud.instance.id\n| if(isEmpty(cloud.instance.id),\"NA\", cloud.instance.id) as cloud.instance.id\n| count\n| sort _count asc",
+        "field": "cloud.instance.id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "cloud.service.name",
+      "displayName": "cloud.service.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* !(\"s3.amazonaws.com\")\n| json \"eventSource\" as eventSource nodrop\n| parse field=eventSource \"*.\" as cloud.service.name",
+        "field": "cloud.service.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "client.ip",
+      "displayName": "client.ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* !(\"s3.amazonaws.com\")\n| json \"sourceIPAddress\" as src_ip nodrop",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "threat.group.name",
+      "displayName": "threat.group.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* !(\"s3.amazonaws.com\")\n| json \"sourceIPAddress\" as src_ip nodrop\n| lookup type, actor, raw, threatlevel as malicious_confidence ,threat from sumo://threat/cs on threat=src_ip\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| count by actor\n| sort by actor asc",
+        "field": "actor"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

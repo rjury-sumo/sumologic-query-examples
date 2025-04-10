@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "IAM_Events",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail (*UserPolicy or *RolePolicy or *GroupPolicy or AddUser* or *LoginProfile or CreateAccessKey or SetDefaultPolicyVersion or CreatePolicy* or HIDDEN_DUE_TO_SECURITY_REASONS or ConsoleLogin or UpdateAssumeRolePolicy)\n| json \"eventSource\", \"eventName\", \"errorCode\",\"userIdentity.userName\", \"responseElements.ConsoleLogin\" as eventSource, eventName, errorCode,userName, loginStatus nodrop \n| where (eventName in (\"AttachUserPolicy\", \"PutUserPolicy\",\"AttachRolePolicy\", \"PutRolePolicy\",\"AttachGroupPolicy\", \"PutGroupPolicy\",\"AddUserToGroup\", \"AddUsersToGroup\",\"CreateAccessKey\", \"CreateLoginProfile\", \"UpdateLoginProfile\",\"SetDefaultPolicyVersion\" , \"CreatePolicy\", \"CreatePolicyVersion\", \"UpdateAssumeRolePolicy\") and isBlank(errorCode) and eventSource= \"iam.amazonaws.com\" ) or (userName = \"HIDDEN_DUE_TO_SECURITY_REASONS\") or (eventName = \"ConsoleLogin\" and isBlank(errorCode))\n| \"\" as classification\n| if(eventName in (\"AttachUserPolicy\", \"PutUserPolicy\"),concat(\"IAM_AttachPutUserPolicy,\",classification),classification) as classification\n| if(eventName in (\"AttachRolePolicy\", \"PutRolePolicy\"),concat(\"IAM_AttachPutRolePolicy,\",classification),classification) as classification\n| if(eventName in (\"AttachGroupPolicy\", \"PutGroupPolicy\"),concat(\"IAM_AttachPutGroupPolicy,\",classification),classification) as classification\n| if(eventName in (\"AddUserToGroup\", \"AddUsersToGroup\"),concat(\"IAM_AddUserToGroup,\",classification),classification) as classification\n| if(eventName in (\"CreateAccessKey\", \"CreateLoginProfile\", \"UpdateLoginProfile\"),concat(\"IAM_CompromisedUserOrKeys,\",classification),classification) as classification\n| if(eventName in (\"SetDefaultPolicyVersion\" , \"CreatePolicy\", \"CreatePolicyVersion\"),concat(\"IAM_CreateUpdatePolicy,\",classification),classification) as classification\n| if(userName=\"HIDDEN_DUE_TO_SECURITY_REASONS\" and loginStatus=\"Failure\",concat(\"IAM_ConsoleLoginFailureWithHiddenResponse,\",classification),classification) as classification\n| if(eventName=\"ConsoleLogin\",concat(\"IAM_TotalConsoleLogins,\",classification),classification) as classification\n| if(eventName=\"UpdateAssumeRolePolicy\",concat(\"IAM_UpdateAssumeRolePolicy,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| \"EventCount\" as type \n| count as count by benchmarkname,type\n| fillmissing values(\"IAM_AttachPutUserPolicy\",\"IAM_AttachPutRolePolicy\",\"IAM_AttachPutGroupPolicy\",\"IAM_AddUserToGroup\",\"IAM_CompromisedUserOrKeys\",\"IAM_CreateUpdatePolicy\",\"IAM_ConsoleLoginFailureWithHiddenResponse\",\"IAM_TotalConsoleLogins\",\"IAM_UpdateAssumeRolePolicy\") in benchmarkname, values(\"EventCount\") in type \n| toInt(count) as count\n",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-60m"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-60m",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1h"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_inc_v1_rnd4685946T96PXzbCsyGRaXAZRUmB"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": "Several IAM events related to changes to or use of user, role or group policies"
+}

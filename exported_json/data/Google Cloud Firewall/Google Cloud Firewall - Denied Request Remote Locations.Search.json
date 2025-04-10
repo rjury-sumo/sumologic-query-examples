@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Google Cloud Firewall - Denied Request Remote Locations",
+  "search": {
+    "queryText": "_sourceCategory = Labs/GCP/firewall  logName reference resource \"\\\"type\\\":\\\"gce_subnetwork\\\"\" \"\\\"disposition\\\":\\\"DENIED\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| parse regex \"\\\"reference\\\":\\\"network:[^\\\"/]+/firewall:(?<rule>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/compute.googleapis.com%2Ffirewall\"\n| json \"message.data.resource.labels\", \"message.data.jsonPayload\" as labels, payload \n| json field=labels \"location\",\"project_id\",\"subnetwork_id\",\"subnetwork_name\" as zone,project,subnetwork_id,subnetwork_name nodrop\n| json field=payload \"disposition\", \"instance.vm_name\", \"vpc.vpc_name\", \"rule_details\", \"connection.src_ip\", \"connection.dest_ip\" as disposition, vm_instance, network, rule_details, src_ip, dest_ip\n| json field=rule_details \"action\", \"priority\", \"direction\"\n| if(direction=\"INGRESS\", src_ip, dest_ip) as remote_ip\n| lookup latitude, longitude, country_name, region, city from geo://location on ip=remote_ip\n| count by latitude, longitude",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

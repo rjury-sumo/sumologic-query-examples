@@ -1,0 +1,409 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Workday - Overview",
+  "description": "The Workday - Overview dashboard gives a high-level view of the geo-locations of user login. The panel helps you in monitoring failed login by devices and the recent activities from untrusted devices.",
+  "title": "Workday - Overview",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-DB774D28B9C8194F",
+        "structure": "{\"height\":12,\"width\":14,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-25CCA410A5BF6840",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":18}"
+      },
+      {
+        "key": "panelPANE-908B2EB5AADE1842",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":24}"
+      },
+      {
+        "key": "panelPANE-291249C09EF15844",
+        "structure": "{\"height\":6,\"width\":5,\"x\":19,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-A27695CA83A4794E",
+        "structure": "{\"height\":6,\"width\":5,\"x\":14,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-37CF783DB2702849",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":24}"
+      },
+      {
+        "key": "panelPANE-FBF6936CAE06694E",
+        "structure": "{\"height\":6,\"width\":10,\"x\":14,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-6FCF5E11A82C2840",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panelPANE-B5BE775F969EA946",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":30}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-DB774D28B9C8194F",
+      "title": "Logins by Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\",\"outlierBandColor\":\"#FF0000\",\"outlierBandMarkerColor\":\"#FF0000\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"map\":{\"layerType\":\"Cluster\",\"outlierBandColor\":\"#FF0000\",\"outlierBandMarkerColor\":\"#FF0000\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\" \n| count by Session_IP_Address\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = Session_IP_Address\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-25CCA410A5BF6840",
+      "title": "Anomaly Detection On Failed/Total Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme5\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\",\"Failed_Signon\", \"tenant_name\"  nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\"\n| timeslice 1h\n| count by _timeslice\n| outlier _count window=6, threshold=2\n| where _count_std > 0\n| if(_count_violation=1,abs(_count_error)/_count_std, 0) as deviation\n| if(deviation >= 1, 1, 0) as total_logins_anomaly\n| fields _timeslice, total_logins_anomaly //, _count_violation, _count_error, _count_std, deviation",
+          "queryType": "Logs",
+          "queryKey": "B",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        },
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\",\"Failed_Signon\", \"tenant_name\"  nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\"\n| timeslice 1h\n| where Failed_Signon=1\n| count by _timeslice\n| outlier _count window=6, threshold=2\n| where _count_std > 0\n| if(_count_violation=1,abs(_count_error)/_count_std, 0) as deviation\n| if(deviation >= 1, 1, 0) as failed_logins_anomaly\n| fields _timeslice, failed_logins_anomaly //, _count_violation, _count_error, _count_std, deviation\n",
+          "queryType": "Logs",
+          "queryKey": "C",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-908B2EB5AADE1842",
+      "title": "Download Activity by Task",
+      "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\"},\"hiddenQueryKeys\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Workday* \n| json \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\"  as  ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and !(%\"System User\" matches \"wd-*\") and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction = \"DOWNLOAD\"\n| count by Task",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-291249C09EF15844",
+      "title": "Failed Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Attempts\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":0,\"to\":0,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"hiddenQueryKeys\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Failed_Signon\", \"tenant_name\"  nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\" \n| where Failed_Signon=1\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-A27695CA83A4794E",
+      "title": "Successful Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Attempts\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":1,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":0,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Failed_Signon\", \"tenant_name\"  nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\" \n| where Failed_Signon=0\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-37CF783DB2702849",
+      "title": "Write Activity by Task",
+      "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Workday* \n| json \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\"  as  ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and !(%\"System User\" matches \"wd-*\") and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction = \"WRITE\"\n| count by Task",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-FBF6936CAE06694E",
+      "title": "Logins by Devices",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"Device_Type\", \"tenant_name\"  nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\"\n| if(isBlank(device_type),\"Unknown\", device_type) as device_type\n| count by device_type\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-6FCF5E11A82C2840",
+      "title": "Failed Logins Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"overrides\":[{\"series\":[],\"queries\":[\"B\"],\"userProvidedChartType\":true,\"properties\":{\"type\":\"line\",\"lineDashType\":\"dash\",\"displayType\":\"smooth\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Failed_Signon\", \"tenant_name\"  as %\"System User\",Session_IP_Address, Failed_Signon, tenant_name\n| where !(%\"System User\" matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Failed_Signon=1\n| timeslice 4h\n| count as %\"Count\" by %\"System User\", _timeslice\n| transpose row _timeslice column %\"System User\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        },
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Failed_Signon\", \"Authentication_Failure_Message\", \"tenant_name\"  as %\"System User\",Session_IP_Address, Failed_Signon, %\"Authentication Failure Message\", tenant_name\n| where !(%\"System User\" matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Failed_Signon=1\n| timeslice 4h\n| count as %\"Count\" by %\"Authentication Failure Message\", _timeslice\n| transpose row _timeslice column %\"Authentication Failure Message\"",
+          "queryType": "Logs",
+          "queryKey": "B",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-B5BE775F969EA946",
+      "title": "Recent Activity from Untrusted Devices or by Users with Failed Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Workday*  !api\n| json \"requestTime\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"sessionId\", \"tenant_name\"  as Time, SystemUser, Task, Target, ActivityAction, Session_ID, tenant_name nodrop\n| where [subquery from=(-24h): _sourceCategory = Labs/Workday*   \n  | json \"Session_ID\", \"Device_is_Trusted\" \n  | where Device_is_Trusted = 0 \n  | count by Session_ID \n  | compose Session_ID\n] or [subquery from=(-24h): _sourceCategory = Labs/Workday* \n  | json \"System_Account\", \"Failed_Signon\" as SystemUser, Failed_Signon\n  | where Failed_Signon = 1 \n  | count by SystemUser\n  | where _count > 1\n  | compose SystemUser\n]\n| count by Time, SystemUser, Task, Target, ActivityAction\n| sort by Time\n| fields -_count\n| limit 20",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "SystemUser",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Workday* \n| json \"systemAccount\" as SystemUser\n| count by SystemUser",
+        "field": "SystemUser"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Task",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Workday* \n| json \"taskDisplayName\" as Task\n| count by Task",
+        "field": "Task"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "IPAddress",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Workday* | json \"ipAddress\" as IPAddress| count by IPAddress",
+        "field": "IPAddress"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "ActivityAction",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Workday* | json \"activityAction\" as ActivityAction| count by ActivityAction",
+        "field": "ActivityAction"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "TenantName",
+      "displayName": "TenantName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Workday*\n| json \"tenant_name\"\n| count by tenant_name",
+        "field": "tenant_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

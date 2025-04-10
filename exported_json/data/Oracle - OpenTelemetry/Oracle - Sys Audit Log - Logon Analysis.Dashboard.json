@@ -1,0 +1,333 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Oracle - Sys Audit Log - Logon Analysis",
+  "description": "See logon activity information derived from the syslog audit trail, including successful and failed logons, logon status trends, multiple database user logons and client user logons from the same UserHost, and multiple UserHost  logons with the same database user.",
+  "title": "Oracle - Sys Audit Log - Logon Analysis",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "sumo.datasource": [
+        "oracle"
+      ],
+      "db.cluster.name": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "databases"
+      ],
+      "deployment.environment": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel0C623F869790FA4E",
+        "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":17}"
+      },
+      {
+        "key": "panel432F9B9FA820C944",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":11}"
+      },
+      {
+        "key": "panel56DCED978227FB4F",
+        "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":17}"
+      },
+      {
+        "key": "panel5F8661438C96F94F",
+        "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel9D6D6AA3AAE32949",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":5}"
+      },
+      {
+        "key": "panelCEF7703C8688284B",
+        "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":17}"
+      },
+      {
+        "key": "panelDBA311569EDED945",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":11}"
+      },
+      {
+        "key": "panelPANE-0B009504ABCDEB43",
+        "structure": "{\"height\":6,\"width\":6,\"x\":6,\"y\":5}"
+      },
+      {
+        "key": "panelPANE-44B2A6C0A4DFCA4E",
+        "structure": "{\"height\":5,\"width\":24,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel0C623F869790FA4E",
+      "title": "Multiple Client User Logons From Same UserHost",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"STATUS:[1] '0'\" \"ACTION :[7] 'CONNECT'\"\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\\nSESSIONID:[*] '*'\\nUSERHOST:[*] '*'\\nCLIENT ADDRESS:[*] '*'\\nACTION NUMBER:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid, sessionlength, sessionid, userhostlength, userHost, clientaddresslength, clientAddress, actionnumberlength, actionNumber\n| where status=\"0\" and Action=\"CONNECT\" // Successful Connection\n| fields clientAddress , Action, databaseUser, privilege, clientUser, userHost, clientTerminal, status, dbid\n| count_distinct (clientUser) as %\"UniqueClientUsers\" by userHost\n| 0 as threshold \n| where %\"UniqueClientUsers\" > threshold\n| sort by userHost, %\"UniqueClientUsers\"\n| fields -threshold",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel432F9B9FA820C944",
+      "title": "Excessive Failed Logons",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle !\"STATUS:[1] '0'\" \"ACTION :[7] 'CONNECT'\"\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid\n| where status!=\"0\" and Action=\"CONNECT\" // Failed Connection\n| fields Action, databaseUser, privilege, clientUser, clientTerminal, status, dbid\n| timeslice 5m\n| count as eventCount by _timeslice, Action, databaseUser, privilege, clientUser, clientTerminal, status, dbid\n| 5 as FailThreshold\n| where eventCount > FailThreshold\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel56DCED978227FB4F",
+      "title": "Multiple UserHosts Logons with Same Database User",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"STATUS:[1] '0'\" \"ACTION :[7] 'CONNECT'\"\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\\nSESSIONID:[*] '*'\\nUSERHOST:[*] '*'\\nCLIENT ADDRESS:[*] '*'\\nACTION NUMBER:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid, sessionlength, sessionid, userhostlength, userHost, clientaddresslength, clientAddress, actionnumberlength, actionNumber\n| where status=\"0\" and Action=\"CONNECT\" // Successful Connection\n| fields clientAddress , Action, databaseUser, privilege, clientUser, userHost, clientTerminal, status, dbid\n| count_distinct (userHost) as %\"UniqueUserHosts\" by databaseUser\n| 0 as threshold \n| where %\"UniqueUserHosts\" > threshold\n| sort by  %\"UniqueUserHosts\", databaseUser asc\n| fields -threshold",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5F8661438C96F94F",
+      "title": "Successful Logons",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\"},\"series\":{},\"svp\":{\"label\":\"Logons\",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"STATUS:[1] '0'\" \"ACTION :[7] 'CONNECT'\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid nodrop\n| where status=\"0\" and Action=\"CONNECT\" // Successful Connection\n| fields Action, databaseUser, privilege, clientUser, clientTerminal, status, dbid\n| count as eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9D6D6AA3AAE32949",
+      "title": "Logon Status Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[],\"color\":{\"family\":\"Categorical Light\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"ACTION :[7] 'CONNECT'\"\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid\n| fields Action, databaseUser, privilege, clientUser, clientTerminal, status, dbid\n| if (status=\"0\", \"Success\", \"Failure\") as LogonStatus\n| timeslice 1h\n| count as eventCount by _timeslice, LogonStatus\n| transpose row _timeslice column LogonStatus",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelCEF7703C8688284B",
+      "title": "Multiple Database User Logons From Same UserHost",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"STATUS:[1] '0'\" \"ACTION :[7] 'CONNECT'\"\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\\nSESSIONID:[*] '*'\\nUSERHOST:[*] '*'\\nCLIENT ADDRESS:[*] '*'\\nACTION NUMBER:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid, sessionlength, sessionid, userhostlength, userHost, clientaddresslength, clientAddress, actionnumberlength, actionNumber\n| where status=\"0\" and Action=\"CONNECT\" // Successful Connection\n| fields Action, databaseUser, privilege, clientUser, clientTerminal, userHost, status, dbid\n| count_distinct (databaseUser) as %\"UniqueDatabaseUsers\" by userHost\n| 1 as threshold \n| where %\"UniqueDatabaseUsers\" > threshold\n| sort by %\"UniqueDatabaseUsers\", userHost asc\n| fields -threshold",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelDBA311569EDED945",
+      "title": "Brute Force Logon Success",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"ACTION :[7] 'CONNECT'\"\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\\nSESSIONID:[*] '*'\\nUSERHOST:[*] '*'\\nCLIENT ADDRESS:[*] '*'\\nACTION NUMBER:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid, sessionlength, sessionid, userhostlength, userHost, clientaddresslength, clientAddress, actionnumberlength, actionNumber\n| where Action=\"CONNECT\" // Logon\n| fields userHost, clientAddress, Action, databaseUser, privilege, clientUser, clientTerminal, status, dbid\n| join ( where status=\"0\") as t1,\n(where status!=\"0\") as t2\non t1.databaseUser=t2.databaseUser timewindow 30m\n| (t1__messagetime-t2__messagetime) as timeGap | where (timeGap < 300000) and (timeGap>0)\n| formatDate(fromMillis(t1__messagetime),\"MM/dd/yyyy HH:mm:ss.SSS Z\") as LoginTime\n| t1_databaseUser as databaseUser \n| t1_clientAddress as clientAddress \n| t1_userHost as userHost\n| count as Attempts, max(t2__messagetime) as LastFailedEpoc by databaseUser, userHost, LoginTime, t1__messagetime \n| where Attempts > 2\n| sort by t1__messagetime | formatDate(fromMillis(long(LastFailedEpoc)),\"MM/dd/yyyy HH:mm:ss.SSS Z\") as LastFailedTime \n| fields -lastfailedepoc,t1__messagetime",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-0B009504ABCDEB43",
+      "title": "Failed Logons",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"label\":\"Logons\",\"useBackgroundColor\":true,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":0.99999,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"ACTION :[7] 'CONNECT'\"\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid nodrop\n| where status!=\"0\" and Action=\"CONNECT\" // Failed Connection\n| fields Action, databaseUser, privilege, clientUser, clientTerminal, status, dbid\n| count as eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-44B2A6C0A4DFCA4E",
+      "title": "Definitions: ",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"text\":{\"format\":\"markdownV2\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "####**userHost**:  Client host machine name\n####**Multiple Database User Logons From Same UserHost**: Lists UserHosts that successfully established connections using more than one database user\n####**Multiple Client User Logons From Same UserHost**: Lists UserHosts that successfully established connections using more than one client user\n####**Multiple UserHosts Logons with Same Database User**: Lists database users  that successfully established connections from the multiple user hosts"
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\nsumo.datasource=oracle|count by db.cluster.name",
+        "field": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\nsumo.datasource=oracle|count by deployment.environment",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

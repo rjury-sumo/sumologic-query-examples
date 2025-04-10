@@ -1,0 +1,475 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "GKE - Node Logs",
+  "description": "The GKE - Node Logs - dashboard displays information on the overall health of the nodes, along with highlights on errors, warnings, and unusual conditions.",
+  "title": "GKE - Node Logs",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {
+      "node": [
+        "*"
+      ],
+      "9f69fa4f9e3ddfd13e960f4ae06c9d17": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-15m"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelpane-92eaba1bafe74a43",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panelpane-31a57246a8706a42",
+        "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":21}"
+      },
+      {
+        "key": "panelpane-cf332874a1d84949",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":21}"
+      },
+      {
+        "key": "panelpane-c7af47058ef7fb40",
+        "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":30}"
+      },
+      {
+        "key": "panelpane-0fea371bbce71842",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":30}"
+      },
+      {
+        "key": "panelpane-e4da2c45aadfda4a",
+        "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panelpane-288f0253bde38a4d",
+        "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":1}"
+      },
+      {
+        "key": "panelpane-41967d599c38aa49",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panelpane-ca4def1397354b4b",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":39}"
+      },
+      {
+        "key": "panelpane-c7715b7c8ec3d941",
+        "structure": "{\"height\":9,\"width\":12,\"x\":0,\"y\":45}"
+      },
+      {
+        "key": "panelpane-d9cb4dc5bed16a4a",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":8}"
+      },
+      {
+        "key": "panelpane-546704189c30f844",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelpane-c3420e8882a77849",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panelpane-5ea448f9ab113a43",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":38}"
+      },
+      {
+        "key": "panelpane-bfc9eb14935d1b46",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":29}"
+      },
+      {
+        "key": "panelpane-f1ac748d94be9b4a",
+        "structure": "{\"height\":9,\"width\":12,\"x\":12,\"y\":45}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelpane-92eaba1bafe74a43",
+      "title": "Events by Node Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\"},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* jsonPayload logName source host \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/events\"\n| json \"message.data.resource.labels\", \"message.data.jsonPayload.source.host\" as labels, node\n| where node matches \"{{node}}\"\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n| timeslice 1h \n| count by _timeslice, node, cluster, project\n| transpose row _timeslice column node, cluster, project\n| fillmissing timeslice(1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-31a57246a8706a42",
+      "title": "Events by Node",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\"},\"color\":{\"family\":\"scheme5\"},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* jsonPayload logName source host \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/events\"\n| json \"message.data.resource.labels\", \"message.data.jsonPayload\" as labels, payload\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n| json field=payload \"reason\", \"source.host\" as reason, node\n| where node matches \"{{node}}\"\n| count as events by reason, node, cluster, project\n| transpose row node, cluster, project column reason",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-cf332874a1d84949",
+      "title": "Top Nodes by Events",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* logName reason host \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/events\"\n| json \"message.data.resource.labels\", \"message.data.jsonPayload\", \"message.data.severity\" as labels, payload, severity\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n| json field=payload \"reason\", \"source.host\" as reason, node\n| where node matches \"{{node}}\"\n| if (severity in (\"ERROR\",\"WARNING\", \"ALERT\", \"CRITICAL\", \"FATAL\", \"EMERGENCY\"), 1, 0) as error\n| count as events, sum(error) as errors by node, cluster, project\n| errors / events as error_pct\n| sort by events",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-c7af47058ef7fb40",
+      "title": "Scheduled Pods by Node Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"bar\"},\"color\":{\"family\":\"scheme5\"},\"legend\":{\"verticalAlign\":\"bottom\",\"enabled\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* logName \"\\\"reason\\\":\\\"Scheduled\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/events\"\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n| parse regex \"\\\"message\\\":\\\"[^\\\"]* assigned (?<pod>[^\\\" ]+) to (?<node>[^\\\" ]+)\"\n| where node matches \"{{node}}\"\n| timeslice 1h \n| count as eventCount by _timeslice, node, cluster, project\n| transpose row _timeslice column node, cluster, project\n| fillmissing timeslice(1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-0fea371bbce71842",
+      "title": "Recent Scheduled Pods by Node",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* logName \"\\\"reason\\\":\\\"Scheduled\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/events\"\n| json \"message.data.resource.labels\", \"message.data.timestamp\", \"message.data.jsonPayload.message\" as labels, timestamp, message\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n//| parse regex \"\\\"message\\\":\\\"[^\\\"]* assigned (?<pod>[^\\\" ]+) to (?<node>[^\\\" ]+)\"\n| parse regex field=message \"[^\\\"]* assigned (?<pod>[^\\\" ]+) to (?<node>[^\\\" ]+)\"\n| where node matches \"{{node}}\"\n| count as events by timestamp, message, pod, node, cluster, project\n| sort by timestamp asc\n| 1 as event\n| accum event as scheduled by node, cluster, project\n| fields timestamp, message, pod, node, cluster, project, scheduled\n| sort by timestamp",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-e4da2c45aadfda4a",
+      "title": "Created Resources by Node Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"bar\"},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"scheme1\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* logName reason host \"\\\"reason\\\":\\\"Created\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/events\"\n| json \"message.data.resource.labels\", \"message.data.jsonPayload.source.host\" as labels, node\n| where node matches \"{{node}}\"\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n| timeslice 1h \n| count as eventCount by _timeslice, node, cluster, project\n| transpose row _timeslice column node, cluster, project\n| fillmissing timeslice(1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-288f0253bde38a4d",
+      "title": "Top Nodes by Created",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* logName reason host \"\\\"reason\\\":\\\"Created\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/events\"\n| json \"message.data.resource.labels\", \"message.data.jsonPayload.source.host\", \"message.data.severity\" as labels, node, severity\n| where node matches \"{{node}}\"\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n| if (severity in (\"ERROR\",\"WARNING\", \"ALERT\", \"CRITICAL\", \"FATAL\", \"EMERGENCY\"), 1, 0) as error\n| count as created, sum(error) as errors by node, cluster, project\n| errors / created as error_pct\n| sort by created",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-41967d599c38aa49",
+      "title": "Killing Resources by Node Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\"},\"legend\":{\"verticalAlign\":\"bottom\",\"enabled\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* logName reason host \"\\\"reason\\\":\\\"Killing\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/events\"\n| json \"message.data.resource.labels\", \"message.data.jsonPayload.source.host\" as labels, node\n| where node matches \"{{node}}\"\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n| timeslice 1h \n| count as eventCount by _timeslice, node, cluster, project\n| transpose row _timeslice column node, cluster, project\n| fillmissing timeslice(1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-ca4def1397354b4b",
+      "title": "Errors by Node Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\"},\"color\":{\"family\":\"scheme7\"},\"legend\":{\"verticalAlign\":\"bottom\",\"enabled\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes*  error\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| json field=_raw \"message.data.resource.type\", \"message.data.jsonPayload.MESSAGE\", \"message.data.resource.labels.cluster_name\", \"message.data.resource.labels.node_name\", \"message.data.resource.labels.project_id\", \"message.data.timestamp\" as type,message,cluster,node, project, timestamp \n| where node matches \"{{node}}\"\n| where (type = \"k8s_node\")\n| timeslice 1h \n| count as eventCount by _timeslice, node, cluster, project\n| transpose row _timeslice column node, cluster, project\n| fillmissing timeslice(1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-c7715b7c8ec3d941",
+      "title": "Errors by Nodes",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes*  error\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| json field=_raw \"message.data.resource.type\", \"message.data.jsonPayload.MESSAGE\", \"message.data.resource.labels.cluster_name\", \"message.data.resource.labels.node_name\", \"message.data.resource.labels.project_id\", \"message.data.timestamp\" as type,message,cluster,node, project, timestamp \n| where node matches \"{{node}}\"\n| where (type = \"k8s_node\")\n| count as errors by node, cluster, project\n//| transpose row node, cluster, project column reason\n| limit 500",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-d9cb4dc5bed16a4a",
+      "title": "Top Nodes by Killing",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* logName reason host \"\\\"reason\\\":\\\"Killing\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/events\"\n| json \"message.data.resource.labels\", \"message.data.jsonPayload.source.host\", \"message.data.severity\" as labels, node, severity\n| where node matches \"{{node}}\"\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n| if (severity in (\"ERROR\", \"WARNING\", \"ALERT\", \"CRITICAL\", \"FATAL\", \"EMERGENCY\"), 1, 0) as error\n| count as killing, sum(error) as errors by node, cluster, project\n| errors / killing as error_pct\n| sort by killing",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-546704189c30f844",
+      "title": "Untitled",
+      "visualSettings": "{\"text\":{\"format\":\"text\",\"backgroundColor\":\"#abb8c3\",\"showTitle\":false,\"fontSize\":18,\"alignment\":\"left\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Overview"
+    },
+    {
+      "id": null,
+      "key": "panelpane-c3420e8882a77849",
+      "title": "Untitled",
+      "visualSettings": "{\"text\":{\"format\":\"text\",\"backgroundColor\":\"#abb8c3\",\"showTitle\":false,\"fontSize\":18,\"alignment\":\"left\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Events"
+    },
+    {
+      "id": null,
+      "key": "panelpane-5ea448f9ab113a43",
+      "title": "Untitled",
+      "visualSettings": "{\"text\":{\"format\":\"text\",\"backgroundColor\":\"#abb8c3\",\"showTitle\":false,\"fontSize\":18,\"alignment\":\"left\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Errors"
+    },
+    {
+      "id": null,
+      "key": "panelpane-bfc9eb14935d1b46",
+      "title": "Untitled",
+      "visualSettings": "{\"text\":{\"format\":\"text\",\"backgroundColor\":\"#abb8c3\",\"showTitle\":false,\"fontSize\":18,\"alignment\":\"left\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Scheduling"
+    },
+    {
+      "id": null,
+      "key": "panelpane-f1ac748d94be9b4a",
+      "title": "Error Stream",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes*  error\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| json field=_raw \"message.data.resource.type\", \"message.data.jsonPayload.MESSAGE\", \"message.data.resource.labels.cluster_name\", \"message.data.resource.labels.node_name\", \"message.data.resource.labels.project_id\", \"message.data.timestamp\" as type,message,cluster,node, project, timestamp \n| where node matches \"{{node}}\"\n| where (type = \"k8s_node\")\n| count by timestamp, node, cluster, project, message\n| limit 500\n//| transpose row node, cluster, project column reason",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "node",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "_origin=kubernetes",
+        "key": "node"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

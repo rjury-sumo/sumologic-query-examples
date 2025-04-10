@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "S3_AccessDeniedOrBucketConfigChecksFromPublicIp_CountEventResources",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail (AccessDenied or GetBucket*)\n| json \"eventSource\", \"eventName\", \"sourceIPAddress\", \"errorCode\" nodrop \n| json \"requestParameters.bucketName\" as bucketName\n| where eventSource=\"s3.amazonaws.com\"  \n| \"\" as classification\n| if (errorCode=\"AccessDenied\",concat(\"S3_AccessDeniedTotal_CountEventResources,\",classification),classification) as classification\n| if(isPublicIP(sourceIPAddress) and errorCode=\"AccessDenied\",concat(\"S3_AccessDeniedForPublicIp_CountEventResources,\",classification),classification) as classification\n| if(isBlank(errorCode) and eventSource=\"s3.amazonaws.com\" and eventName in (\"GetBucketAcl\", \"GetBucketCors\", \"GetBucketEncryption\", \"GetBucketLogging\", \"GetBucketPolicy\", \"GetBucketPublicAccessBlock\", \"GetBucketVersioning\"),concat(\"S3_BucketConfigChecksFromPublicIp_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| \"EventResourceCount\" as type \n| count_distinct(bucketName) as count by benchmarkname, type\n| fillmissing values(\"S3_AccessDeniedTotal_CountEventResources\",\"S3_AccessDeniedForPublicIp_CountEventResources\", \"S3_BucketConfigChecksFromPublicIp_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count\n",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "AutoParse",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-24h",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1d"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": "Scheduled search for counting buckets impacted by configuration checks or access denied errors"
+}

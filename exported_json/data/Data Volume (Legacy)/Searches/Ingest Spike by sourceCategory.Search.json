@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Ingest Spike by sourceCategory",
+  "search": {
+    "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcecategory_volume\"\n| parse regex \"\\\"(?<sourceCategory>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| bytes/1024/1024/1024 as gbytes\n| timeslice 1d\n| sum(gbytes) as gbytes by _timeslice, sourceCategory\n| sort by _timeslice asc \n| smooth gbytes, 30 as moving_avg by sourceCategory // 30 days moving average for specific sourceCategory - user can customize this value.\n| gbytes as curr_day_gbytes\n| 50 as spikePercentThreshold // With what percent of ingest spike user would like to have alert - user can customize this value.\n| where curr_day_gbytes >= (1 + spikePercentThreshold / 100) * moving_avg\n| Now() - _timeslice as timediff | (timediff/3600000) as timediff\n| 25 as timeThreshold // User would like to know what happened in last 25 hours\n| where timediff <= timeThreshold\n| fields -gbytes, spikePercentThreshold, timediff, timeThreshold\n// Schedule this search once a day with time range of 60 days (double of what user like to have moving average for). Set condition to alert if there are more than 0 records in the result",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-60d"
+  },
+  "searchSchedule": null,
+  "description": "Alert if current ingest for specific sourceCategory is 50% more than moving average."
+}

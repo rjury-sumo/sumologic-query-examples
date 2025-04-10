@@ -1,0 +1,301 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Windows - Overview",
+  "description": "The Windows - Overview dashboard provides insights into fatal or warning messages, policy changes, system restarts, and changes to administrative groups.",
+  "title": "Windows - Overview",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "63e05d051d90a6c73f3536eccd7716cf": [
+        "*"
+      ],
+      "d00a6d9ba979c11cf412383cab6f7179": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "host"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-003A9C38A55DC849",
+        "structure": "{\"height\":8,\"width\":13,\"x\":11,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-0516FE50B598694D",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panelPANE-0994F12A8AEE7A4E",
+        "structure": "{\"height\":8,\"width\":11,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-16FDADB596A31846",
+        "structure": "{\"height\":6,\"width\":5,\"x\":4,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-ACFA1534B6EC0B4B",
+        "structure": "{\"height\":6,\"width\":7,\"x\":17,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-F8708A149F195A4D",
+        "structure": "{\"height\":6,\"width\":8,\"x\":9,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-F9CE3D8798814847",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-003A9C38A55DC849",
+      "title": "Logins by Hour",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}}  \"\\\"channel\\\":\\\"Security\\\"\" (4624 or 4625 or 4771 or 4776 or 4768 or 4769)\n// 4624 - Login Success, 4625 or 4771 - Login Failures, 4776 - Domain Controller - Credential validation, 4768 - A Kerberos authentication ticket (TGT) was requested, 4769 - A Kerberos service ticket was requested\n| json \"event_id\", \"level\", \"message\", \"keywords\", \"channel\" as event_id_obj, event_type, msg_summary, Keywords, channel nodrop\n| json field=event_id_obj \"id\" as event_id\n| where event_id in (\"4624\", \"4625\", \"4771\", \"4776\", \"4768\", \"4769\") and channel = \"Security\" \n| if (jsonArrayContains(keywords, \"Audit Success\"), \"Success\", \"Failure\") as outcome \n| timeslice 1h \n| count as attempts by _timeslice, outcome\n| transpose row _timeslice column outcome",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-0516FE50B598694D",
+      "title": "Audit Log Cleared",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"roundDataPoints\":true,\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"\\\"channel\\\":\\\"Security\\\"\" \"\\\"id\\\":\\\"1102\\\"\" \n| json \"event_id\", \"computer\", \"message\", \"details.Subject.Account Name\", \"details.Subject.Domain Name\", \"channel\", \"keywords\" as event_id_obj, host, msg_summary, src_user, src_domain, channel, Keywords nodrop\n| json field=event_id_obj \"id\" as event_id\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id in (\"1102\") and channel = \"Security\" \n| timeslice 15m\n| count by _timeslice, msg_summary, src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-0994F12A8AEE7A4E",
+      "title": "Recent Policy Changes",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}}  ( \"Audit Policy Change\" or \"System audit policy was changed\" or *policy*change* or \"Policy Change\" or 4902 or 4904 or 4905 or 4906 or 4907 or 4912 or 4715 or 4719 or 4739)\n| json \"event_id\", \"message\" as event_id_obj, msg_summary nodrop\n| json field=event_id_obj \"id\" as event_id\n| parse regex field = msg_summary \"(?<msg_summary>.*\\.*)\" \n| where (event_id in (\"4902\", \"4904\", \"4905\", \"4906\", \"4907\", \"4912\", \"4715\", \"4719\", \"4739\") or msg_summary matches \"System audit policy was changed*\") \n| count by msg_summary | sort by _count, msg_summary asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-16FDADB596A31846",
+      "title": "Changes to Administrative Groups",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"unitify\":false,\"textColor\":\"\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"\\\"channel\\\":\\\"Security\\\"\" (\"13826\" or \"4727\" or \"4728\" or \"4729\" or \"4730\" or \"4731\" or \"4732\" or \"4733\" or \"4734\" or \"4735\" or \"4737\" or \"4754\" or \"4755\" or \"4756\" or \"4757\" or \"4758\" or \"4764\" or \"4799\") \n| json \"event_id\", \"computer\", \"message\", \"event_data.SubjectUserName\", \"event_data.SubjectDomainName\", \"event_data.TargetUserName\", \"event_data.TargetDomainName\", \"details.Group.Group Name\", \"details.Group.Group Domain\", \"channel\", \"event_data.MemberName\", \"task\" as event_id_obj, host, msg_summary, src_user, src_domain, dest_user, dest_domain, group_name, group_domain, channel, MemberName, task nodrop\n| json field=event_id_obj \"id\" as event_id\n| where (event_id in (\"4727\", \"4728\", \"4729\", \"4730\", \"4731\", \"4732\", \"4733\", \"4734\", \"4735\", \"4737\", \"4754\", \"4755\", \"4756\", \"4757\", \"4758\", \"4764\", \"4799\") or task = \"13826\") \n| where group_name in (\"Administrators\", \"Domain Admins\", \"Schema Admins\", \"Server Operators\", \"Account Operators\", \"Backup Operators\") // Update the list if you have any custom Administrative group name\n| count as count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-ACFA1534B6EC0B4B",
+      "title": "All Fatal or Warning Messages by Source Host",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}}  (WARNING or Error or FATAL)\n| json  \"level\", \"keywords\" as level, keywords nodrop\n| count as error_count by host.name\n| sort - error_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-F8708A149F195A4D",
+      "title": "Top Services Installed",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"roundDataPoints\":true,\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} ((\"\\\"channel\\\":\\\"System\\\"\" \"\\\"id\\\":\\\"7045\\\"\") or (\"\\\"channel\\\":\\\"Security\\\"\" \"\\\"id\\\":\\\"4697\\\"\"))\n| json \"event_id\", \"computer\", \"message\", \"event_data.AccountName\", \"event_data.ServiceName\", \"event_data.ServiceType\", \"event_data.StartType\", \"event_data.ImagePath\", \"event_data.EventSourceName\"  as event_id_obj, host, msg_summary, account_name, service_name, service_type, service_start_type, service_image_path, event_source_name nodrop\n| json field=event_id_obj \"id\" as event_id\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id in (\"4697\", \"7045\") \n| count by service_name \n| top 10 service_name by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-F9CE3D8798814847",
+      "title": "System Restarts",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Sum\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}}  \"\\\"channel\\\":\\\"Security\\\"\"\n| json \"event_id\", \"message\", \"channel\" as event_id_obj, msg_summary, channel nodrop \n| json field=event_id_obj \"id\" as event_id\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id = \"4608\" and channel = \"Security\" \n| count as Restarts",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=windows | count by deployment.environment",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host.group",
+      "displayName": "host.group",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=windows | count by host.group",
+        "field": "host.group"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host.name",
+      "displayName": "host.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=windows | count by host.name",
+        "field": "host.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

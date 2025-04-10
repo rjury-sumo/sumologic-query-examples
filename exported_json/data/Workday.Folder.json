@@ -1,0 +1,2561 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Workday",
+  "description": "This App is installed via automation.DO NOT DELETE since its shared.",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Parameterized Rest API Activity",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"sessionId\", \"activityAction\", \"deviceType\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, Target, SessionID, ActivityAction, %\"Device Type\", tenant_name nodrop\n| parse field=Task \"api/*\" as %\"API\"\n| if(isBlank(%\"Device Type\"),\"Unknown\", %\"Device Type\") as %\"Device Type\"\n| if(%\"API\" matches \"*GET*\", \"GET\",  if(%\"API\" matches \"*POST*\", \"POST\", \"OTHER\")) as request_method\n| where %\"API\" matches \"{{API_URL}}\" and %\"System User\" matches \"{{SYSTEM_USER}}\"\n| request_method as %\"Request Method\"\n| count by Time, %\"System User\", %\"API\", %\"Request Method\", %\"Device Type\", tenant_name\n| sort by Time\n| fields -_count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [
+          {
+            "name": "API_URL",
+            "label": "API_URL",
+            "description": "",
+            "dataType": "QUERY_FRAGMENT",
+            "value": "*",
+            "autoComplete": {
+              "autoCompleteType": "SKIP_AUTOCOMPLETE",
+              "autoCompleteKey": null,
+              "autoCompleteValues": [],
+              "lookupFileName": null,
+              "lookupLabelColumn": null,
+              "lookupValueColumn": null
+            }
+          },
+          {
+            "name": "SYSTEM_USER",
+            "label": "SYSTEM_USER",
+            "description": "",
+            "dataType": "QUERY_FRAGMENT",
+            "value": "*",
+            "autoComplete": {
+              "autoCompleteType": "SKIP_AUTOCOMPLETE",
+              "autoCompleteKey": null,
+              "autoCompleteValues": [],
+              "lookupFileName": null,
+              "lookupLabelColumn": null,
+              "lookupValueColumn": null
+            }
+          }
+        ],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Parameterized User Activity",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"sessionId\", \"activityAction\", \"deviceType\", \"tenant_name\"  as Time, ipAddress, %\"System User\", Task, Target, SessionID, ActivityAction, %\"Device Type\", tenant_name nodrop\n| if(isBlank(%\"Device Type\"),\"Unknown\", %\"Device Type\") as %\"Device Type\"\n| where  %\"System User\" matches \"{{SYSTEM_USER}}\"\n| count by Time, %\"System User\", Task, Target, tenant_name\n| sort by Time\n| fields -_count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [
+          {
+            "name": "SYSTEM_USER",
+            "label": "SYSTEM_USER",
+            "description": "",
+            "dataType": "QUERY_FRAGMENT",
+            "value": "*",
+            "autoComplete": {
+              "autoCompleteType": "SKIP_AUTOCOMPLETE",
+              "autoCompleteKey": null,
+              "autoCompleteValues": [],
+              "lookupFileName": null,
+              "lookupLabelColumn": null,
+              "lookupValueColumn": null
+            }
+          }
+        ],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Recent Personal Information Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Workday* and (\"Change My Personal Information\"\nOR \"Edit Disability Active View\"\nOR \"Edit Date of Birth Active View\"\nOR \"Edit Marital Status Active View\"\nOR \"Edit Citizenship Status Active View\"\nOR \"Edit Military Service Active View\"\nOR \"Edit Social Benefits Locality Active View\"\nOR \"Edit Medical Exam Status Active View\"\nOR \"Edit Relatives' Names Active View\"\nOR \"Edit Ethnicity Active View\"\nOR \"Payment Elections\"\nOR \"Edit Gender Active View\"\nOR \"Organizations for Employment\"\nOR \"Benefit Elections\"\nOR \"Maintain My Worker Documents\"\nOR \"Beneficiaries\"\nOR \"Dependents\"\nOR \"Change Benefits\"\nOR \"Contact Information Profile View\"\nOR \"My Emergency Contacts\"\n) \n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| count by Time, %\"System User\", Task, Target, ActivityAction, ipAddress\n\n",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Recently Failed Logins",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Workday* \n| json \"Session_Start\",\"System_Account\",\"Session_IP_Address\",\"Request_Originator\",\"Device_is_Trusted\",\"Invalid_Credentials\",\"Account_Locked__Disabled_or_Expired\",\"Authentication_Type_for_Signon\",\"Session_ID\",\"Failed_Signon\", \"Device_Type\", \"tenant_name\" nodrop\n| where !isBlank(Failed_Signon)\n| where  Failed_Signon=1\n| count by Session_Start,System_Account,Session_IP_Address,Request_Originator,Device_Type, Device_is_Trusted,Invalid_Credentials,Account_Locked__Disabled_or_Expired,Authentication_Type_for_Signon,Session_ID, tenant_name\n| fields -_count\n| sort by Session_Start",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Workday - API Activity",
+      "description": "The Workday - API Activity dashboard provides detailed graph and analytics for REST API calls and the web service logins. It also lists the details of recent and malicious API activities.",
+      "title": "Workday - API Activity",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelpane-b08c16389c9f2845",
+            "structure": "{\"height\":7,\"width\":9,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelpane-b0347fab863ea941",
+            "structure": "{\"height\":7,\"width\":7,\"x\":17,\"y\":0}"
+          },
+          {
+            "key": "panelpane-1ccbcf8189af184c",
+            "structure": "{\"height\":7,\"width\":9,\"x\":0,\"y\":7}"
+          },
+          {
+            "key": "panelpane-f0ddec40a1da8941",
+            "structure": "{\"height\":7,\"width\":15,\"x\":9,\"y\":7}"
+          },
+          {
+            "key": "panelpane-75656a4ebd5b6a4b",
+            "structure": "{\"height\":6,\"width\":15,\"x\":9,\"y\":14}"
+          },
+          {
+            "key": "panelpane-2daa4d02b70e5a4a",
+            "structure": "{\"height\":6,\"width\":9,\"x\":0,\"y\":14}"
+          },
+          {
+            "key": "panelpane-759d84b882f27842",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":20}"
+          },
+          {
+            "key": "panelpane-bd7f9d47a0c9684e",
+            "structure": "{\"height\":7,\"width\":8,\"x\":9,\"y\":0}"
+          },
+          {
+            "key": "panelpane-c642c836ab0baa4e",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":20}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelpane-b08c16389c9f2845",
+          "title": "Rest API Calls by URL",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme5\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json  \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as ipAddress, %\"System User\", Task, ActivityAction, TenantName nodrop\n| where !(%\"System User\" matches \"wd-*\") and ipAddress matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and TenantName matches \"{{TenantName}}\"\n| parse field=Task \"api/*\" as api_url\n| count as %\"Count\" by api_url\n| sort by %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-b0347fab863ea941",
+          "title": "Rest API Requests by Methods",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json  \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as ipAddress, %\"System User\", Task, ActivityAction, TenantName nodrop\n| where !(%\"System User\" matches \"wd-*\") and ipAddress matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and TenantName matches \"{{TenantName}}\"\n| parse field=Task \"api/*\" as api_url\n| if(api_url matches \"*GET*\", \"GET\",  if(api_url matches \"*POST*\", \"POST\", \"OTHER\")) as request_method\n| count as %\"Count\" by request_method\n| sort by %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-1ccbcf8189af184c",
+          "title": "Top 10 Client IPs",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json  \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as ipAddress, %\"System User\", Task, ActivityAction, TenantName nodrop\n| where !(%\"System User\" matches \"wd-*\") and ipAddress matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and TenantName matches \"{{TenantName}}\"\n| parse field=Task \"api/*\" as api_url\n| count by ipAddress\n| top 10 ipAddress by _count\n| _count as %\"Count\"\n| fields -_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-f0ddec40a1da8941",
+          "title": "ActivityAction Trend",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, ActivityAction, TenantName nodrop\n| where !(%\"System User\" matches \"wd-*\") and ipAddress matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and TenantName matches \"{{TenantName}}\"\n| parse field=Task \"api/*\" as api_url\n| timeslice 1h\n| count by activityAction, _timeslice\n| transpose row _timeslice column activityAction",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-75656a4ebd5b6a4b",
+          "title": "Malicious API Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"deviceType\", \"tenant_name\" as ipAddress, %\"System User\", Task, ActivityAction, DeviceType, TenantName nodrop\n|  where !(%\"System User\" matches \"wd-*\") and ipAddress matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and TenantName matches \"{{TenantName}}\" and (Task matches \"*Web Service*\" or Task matches \"api/*\")\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=ipAddress\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as %\"Threat Last Updated\" \n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| malicious_confidence as %\"Malicious Confidence\"\n| ipAddress as %\"Malicious IP\"\n| DeviceType as %\"Device Type\"\n| actor as %\"Malicious Actor\"\n| count as %\"Count\" by %\"System User\", %\"Malicious IP\", Task, %\"Device Type\", %\"Malicious Actor\", %\"Malicious Confidence\", %\"Threat Last Updated\"\n| sort by %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-2daa4d02b70e5a4a",
+          "title": "Web Services Logins",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"Request_Originator\", \"System_Account\", \"Authentication_Type_for_Signon\", \"Session_IP_Address\", \"tenant_name\" as %\"Request Originator\", %\"System User\", %\"Authentication Type\", session_ip_address, TenantName nodrop\n| where  !(%\"System User\" matches \"wd-*\") and session_ip_address matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and %\"Request Originator\" = \"Web Services\" and TenantName matches \"{{TenantName}}\" \n| count as %\"Count\" by %\"System User\", %\"Authentication Type\"\n| sort by %\"Count\"\n\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-759d84b882f27842",
+          "title": "Recent Web Service Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, Target, ActivityAction, TenantName nodrop\n| where !(%\"System User\" matches \"wd-*\") and ipAddress matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and TenantName matches \"{{TenantName}}\" and Task matches \"*Web Service*\"\n| count by Time, %\"System User\", Task, Target\n| sort by Time\n| fields -_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-bd7f9d47a0c9684e",
+          "title": "Rest API Requests by Device Type",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json  \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"deviceType\", \"tenant_name\" as ipAddress, %\"System User\", Task, ActivityAction, %\"Device Type\", TenantName nodrop\n| where !(%\"System User\" matches \"wd-*\") and ipAddress matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and TenantName matches \"{{TenantName}}\"\n| parse field=Task \"api/*\" as api_url\n| if(isBlank(%\"Device Type\"),\"Unknown\", %\"Device Type\") as %\"Device Type\"\n| count as %\"Count\" by %\"Device Type\"\n| sort by %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-c642c836ab0baa4e",
+          "title": "Recent Rest API Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"deviceType\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, ActivityAction, %\"Device Type\", TenantName nodrop\n| parse field=Task \"api/*\" as api_url\n| where !(%\"System User\" matches \"wd-*\") and ipAddress matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and TenantName matches \"{{TenantName}}\"\n| if(isBlank(%\"Device Type\"),\"Unknown\", %\"Device Type\") as %\"Device Type\"\n| if(api_url matches \"*GET*\", \"GET\",  if(api_url matches \"*POST*\", \"POST\", \"OTHER\")) as request_method\n| request_method as %\"Request Method\"\n| count by Time, %\"System User\", Task, %\"Request Method\", %\"Device Type\"\n| sort by Time\n| fields -_count\n| limit 50",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "SystemUser",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"systemAccount\" as SystemUser\n| count by SystemUser",
+            "field": "SystemUser"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "Task",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"taskDisplayName\" as Task\n| count by Task",
+            "field": "Task"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "IPAddress",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"ipAddress\" as IPAddress\n| count by IPAddress",
+            "field": "IPAddress"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "ActivityAction",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"activityAction\" as ActivityAction\n| count by ActivityAction",
+            "field": "ActivityAction"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "TenantName",
+          "displayName": "TenantName",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"tenant_name\"\n| count by tenant_name",
+            "field": "tenant_name"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Workday - Login Activity",
+      "description": "The Workday - Login Activity dashboard provides detailed insights into login summary, trends and malicious activities. Panel also displays the recent login activity and the information of various devices and browsers used.",
+      "title": "Workday - Login Activity",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelpane-1d838ebea7e07940",
+            "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":1}"
+          },
+          {
+            "key": "panelpane-7e8782faba9e1a45",
+            "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":22}"
+          },
+          {
+            "key": "panelpane-de3a4fd4ab05f84d",
+            "structure": "{\"height\":8,\"width\":8,\"x\":0,\"y\":13}"
+          },
+          {
+            "key": "panelpane-e656a31f892f7b4e",
+            "structure": "{\"height\":8,\"width\":8,\"x\":16,\"y\":13}"
+          },
+          {
+            "key": "panelpane-40a3b1a7876fab41",
+            "structure": "{\"height\":5,\"width\":24,\"x\":0,\"y\":50}"
+          },
+          {
+            "key": "panelpane-33714c7897976a4c",
+            "structure": "{\"height\":8,\"width\":8,\"x\":8,\"y\":13}"
+          },
+          {
+            "key": "panelpane-066efdf39de10942",
+            "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":41}"
+          },
+          {
+            "key": "panelpane-ff21746ab940784d",
+            "structure": "{\"height\":5,\"width\":24,\"x\":0,\"y\":55}"
+          },
+          {
+            "key": "panelpane-2d7c2f7caaac294f",
+            "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":1}"
+          },
+          {
+            "key": "panelpane-85bf0ef4af61a845",
+            "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":22}"
+          },
+          {
+            "key": "panelpane-bcce9603bfc88b4a",
+            "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":22}"
+          },
+          {
+            "key": "panelpane-79d80259b1acaa40",
+            "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":1}"
+          },
+          {
+            "key": "panelpane-712e3be69eae8947",
+            "structure": "{\"height\":6,\"width\":4,\"x\":4,\"y\":1}"
+          },
+          {
+            "key": "panelpane-482062b7a0c4ca44",
+            "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":7}"
+          },
+          {
+            "key": "panelpane-eff861a7b84c2b4a",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelpane-5d7c078b9233f849",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":21}"
+          },
+          {
+            "key": "panelpane-652a7d91986ccb46",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":28}"
+          },
+          {
+            "key": "panelpane-4272891386103949",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":49}"
+          },
+          {
+            "key": "panelpane-040c4910a0ea3949",
+            "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":29}"
+          },
+          {
+            "key": "panelpane-c8fb1ff08a26ca47",
+            "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":35}"
+          },
+          {
+            "key": "panelPANE-92A7DC7BB0A37B47",
+            "structure": "{\"height\":12,\"width\":16,\"x\":8,\"y\":29}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelpane-1d838ebea7e07940",
+          "title": "Failed Logins",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"logins\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":0,\"to\":0,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\",\"Failed_Signon\",\"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\" and Failed_Signon = 1 \n| count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-7e8782faba9e1a45",
+          "title": "Logins by Device Type",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"Device_Type\",\"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\"\n| if(isBlank(device_type),\"Unknown\", device_type) as device_type\n| count by device_type\n| sort by _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-de3a4fd4ab05f84d",
+          "title": "Logins by Request Originator",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\"\n| if(isBlank(Request_Originator),\"Unknown\", Request_Originator) as Request_Originator\n| count by Request_Originator\n| sort by _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-e656a31f892f7b4e",
+          "title": "Logins by Workday Account",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme7\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\"\n| count as %\"Count\" by System_Account\n| sort by %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-40a3b1a7876fab41",
+          "title": "Last 20 Recently Failed Logins",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"Session_Start\", \"Device_is_Trusted\", \"Invalid_Credentials\", \"Account_Locked__Disabled_or_Expired\", \"Authentication_Type_for_Signon\", \"Session_ID\", \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"Failed_Signon\",\"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Failed_Signon=1 and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\"\n| count by Session_Start,System_Account,Session_IP_Address,Request_Originator,Device_is_Trusted,Invalid_Credentials,Account_Locked__Disabled_or_Expired,Authentication_Type_for_Signon,Session_ID\n| fields -_count\n| sort by Session_Start\n| limit 20",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-33714c7897976a4c",
+          "title": "Logins by IP Address",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*  !\"Workday Internal\"\n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\"\n| count as %\"Count\" by Session_IP_Address\n| top 10 Session_IP_Address by %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-066efdf39de10942",
+          "title": " Logins from Malicious Sources",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"Device_Type\",\"tenant_name\" as %\"System User\", session_ip_address, Request_Originator, %\"Device Type\", tenant_name nodrop\n| where !(%\"System User\" matches \"wd-*\") and session_ip_address matches \"{{SessionIPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Request_Originator matches \"{{RequestOriginator}}\" and tenant_name matches \"{{TenantName}}\" and session_ip_address != \"0.0.0.0\" and session_ip_address != \"127.0.0.1\" and session_ip_address!=\"Workday Internal\"\n| count by %\"System User\", %\"Device Type\", session_ip_address\n|  lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=session_ip_address\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as %\"Threat Last Updated\" \n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| malicious_confidence as %\"Malicious Confidence\"\n| session_ip_address as %\"Malicious IP\"\n| Actor as %\"Malicious Actor\"\n| count as %\"Count\" by %\"System User\", %\"Malicious IP\", %\"Device Type\", %\"Malicious Actor\", %\"Malicious Confidence\", %\"Threat Last Updated\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-ff21746ab940784d",
+          "title": "Last 20 Recent Logins from Untrusted Devices",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"Session_Start\", \"Device_is_Trusted\", \"Invalid_Credentials\", \"Account_Locked__Disabled_or_Expired\", \"Authentication_Type_for_Signon\", \"Session_ID\", \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"Failed_Signon\",\"tenant_name\" nodrop\n| where Device_is_Trusted=0 and !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\"\n| count by Session_Start,System_Account,Session_IP_Address,Request_Originator,Device_is_Trusted,Invalid_Credentials,Account_Locked__Disabled_or_Expired,Authentication_Type_for_Signon,Session_ID\n| fields -_count\n| sort by Session_Start\n| limit 20",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-2d7c2f7caaac294f",
+          "title": "Logins by Authentication Type",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"Authentication_Type_for_Signon\", \"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\"\n| count by Authentication_Type_for_Signon\n| sort by _count\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-85bf0ef4af61a845",
+          "title": "Bottom 10 User Agents",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"sessionId\", \"activityAction\", \"deviceType\", \"userAgent\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, Target, SessionID, ActivityAction, DeviceType, %\"User Agent\",tenant_name nodrop\n| where %\"System User\" matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and ipAddress matches \"{{SessionIPAddress}}\"\n| if(isBlank(%\"User Agent\"), \"Unknown\", %\"User Agent\") as %\"User Agent\" \n| count as %\"Count\" by %\"User Agent\"\n| -1*%\"Count\" as %\"Count\"\n| top 10 %\"User Agent\" by %\"Count\"\n| -1*%\"Count\" as %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-bcce9603bfc88b4a",
+          "title": "Top 10 User Agents",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"sessionId\", \"activityAction\", \"deviceType\", \"userAgent\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, Target, SessionID, ActivityAction, DeviceType, %\"User Agent\", tenant_name nodrop\n| where %\"System User\" matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and ipAddress matches \"{{SessionIPAddress}}\"\n| if(isBlank(%\"User Agent\"), \"Unknown\", %\"User Agent\") as %\"User Agent\" \n| count as %\"Count\" by %\"User Agent\"\n| top 10 %\"User Agent\" by %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-79d80259b1acaa40",
+          "title": "Failed Login Reasons",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\",\"Authentication_Failure_Message\", \"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\" and !isBlank(Authentication_Failure_Message)\n| count by Authentication_Failure_Message\n| if (isBlank(Authentication_Failure_Message), \"Unknown\", Authentication_Failure_Message) as Authentication_Failure_Message\n| sort by _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-712e3be69eae8947",
+          "title": "Successful Logins",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"logins\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":1,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":0,\"to\":0,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\",\"Failed_Signon\",\"tenant_name\" nodrop\n| where Failed_Signon = 0 and !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\"\n| count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-482062b7a0c4ca44",
+          "title": "Logins Over Time",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\",\"Failed_Signon\",\"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\"\n| timeslice 1h\n| if (Failed_Signon == \"1\", 1, 0) as is_failed_signon\n| if (Failed_Signon == \"1\", 0, 1) as is_successful_signon\n| sum(is_failed_signon) as failed_signon_count, sum(is_successful_signon) as successful_signon_count, count(Failed_Signon) as total_sigons by _timeslice\n| (failed_signon_count*100/total_sigons) as failed_sigon_percent\n| (successful_signon_count*100/total_sigons) as successful_sigon_percent\n| fields -successful_signon_count,failed_signon_count,total_sigons",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-eff861a7b84c2b4a",
+          "title": "",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"showTitle\":false,\"alignment\":\"left\",\"backgroundColor\":\"#d3d3d3\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Login Summary and Trends"
+        },
+        {
+          "id": null,
+          "key": "panelpane-5d7c078b9233f849",
+          "title": "",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"showTitle\":false,\"backgroundColor\":\"#d3d3d3\",\"alignment\":\"left\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "User Agent Types"
+        },
+        {
+          "id": null,
+          "key": "panelpane-652a7d91986ccb46",
+          "title": "Untitled",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"showTitle\":false,\"backgroundColor\":\"#d3d3d3\",\"alignment\":\"left\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Malicious Activity"
+        },
+        {
+          "id": null,
+          "key": "panelpane-4272891386103949",
+          "title": "Untitled",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"showTitle\":false,\"backgroundColor\":\"#d3d3d3\",\"alignment\":\"left\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Recent Activity"
+        },
+        {
+          "id": null,
+          "key": "panelpane-040c4910a0ea3949",
+          "title": " Malicious Actors ",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\"\n| count by Session_IP_Address\n| where Session_IP_Address != \"0.0.0.0\" and Session_IP_Address != \"127.0.0.1\" and Session_IP_Address!=\"Workday Internal\"\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=Session_IP_Address\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count by Actor\n| sort by _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-c8fb1ff08a26ca47",
+          "title": "Malicious Confidence",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{SessionIPAddress}}\" and System_Account matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\"\n| count by Session_IP_Address\n| where Session_IP_Address != \"0.0.0.0\" and Session_IP_Address != \"127.0.0.1\" and Session_IP_Address!=\"Workday Internal\"\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=Session_IP_Address\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count by malicious_confidence\n| sort by _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-92A7DC7BB0A37B47",
+          "title": "Malicious Logins",
+          "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"map\":{\"layerType\":\"Cluster\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"tenant_name\" as %\"System User\", session_ip_address, Request_Originator, tenant_name nodrop\n| where !(%\"System User\" matches \"wd-*\") and session_ip_address matches \"{{SessionIPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and tenant_name matches \"{{TenantName}}\" and Request_Originator matches \"{{RequestOriginator}}\" and session_ip_address != \"0.0.0.0\" and session_ip_address != \"127.0.0.1\" and session_ip_address!=\"Workday Internal\"\n| count by session_ip_address\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=session_ip_address\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = session_ip_address\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "SystemUser",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday* \n| json \"System_Account\" as SystemUser\n| count by SystemUser",
+            "field": "SystemUser"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "SessionIPAddress",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday* \n| json \"Session_IP_Address\" as SessionIPAddress\n| count by SessionIPAddress",
+            "field": "SessionIPAddress"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "RequestOriginator",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday* \n| json \"Request_Originator\" as RequestOriginator\n| count by RequestOriginator",
+            "field": "RequestOriginator"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "TenantName",
+          "displayName": "TenantName",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"tenant_name\"\n| count by tenant_name",
+            "field": "tenant_name"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Workday - Overview",
+      "description": "The Workday - Overview dashboard gives a high-level view of the geo-locations of user login. The panel helps you in monitoring failed login by devices and the recent activities from untrusted devices.",
+      "title": "Workday - Overview",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-DB774D28B9C8194F",
+            "structure": "{\"height\":12,\"width\":14,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-25CCA410A5BF6840",
+            "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":18}"
+          },
+          {
+            "key": "panelPANE-908B2EB5AADE1842",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":24}"
+          },
+          {
+            "key": "panelPANE-291249C09EF15844",
+            "structure": "{\"height\":6,\"width\":5,\"x\":19,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-A27695CA83A4794E",
+            "structure": "{\"height\":6,\"width\":5,\"x\":14,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-37CF783DB2702849",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":24}"
+          },
+          {
+            "key": "panelPANE-FBF6936CAE06694E",
+            "structure": "{\"height\":6,\"width\":10,\"x\":14,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-6FCF5E11A82C2840",
+            "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":12}"
+          },
+          {
+            "key": "panelPANE-B5BE775F969EA946",
+            "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":30}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-DB774D28B9C8194F",
+          "title": "Logins by Location",
+          "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\",\"outlierBandColor\":\"#FF0000\",\"outlierBandMarkerColor\":\"#FF0000\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"map\":{\"layerType\":\"Cluster\",\"outlierBandColor\":\"#FF0000\",\"outlierBandMarkerColor\":\"#FF0000\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"tenant_name\" nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\" \n| count by Session_IP_Address\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = Session_IP_Address\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-25CCA410A5BF6840",
+          "title": "Anomaly Detection On Failed/Total Logins",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme5\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\",\"Failed_Signon\", \"tenant_name\"  nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\"\n| timeslice 1h\n| count by _timeslice\n| outlier _count window=6, threshold=2\n| where _count_std > 0\n| if(_count_violation=1,abs(_count_error)/_count_std, 0) as deviation\n| if(deviation >= 1, 1, 0) as total_logins_anomaly\n| fields _timeslice, total_logins_anomaly //, _count_violation, _count_error, _count_std, deviation",
+              "queryType": "Logs",
+              "queryKey": "B",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            },
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\",\"Failed_Signon\", \"tenant_name\"  nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\"\n| timeslice 1h\n| where Failed_Signon=1\n| count by _timeslice\n| outlier _count window=6, threshold=2\n| where _count_std > 0\n| if(_count_violation=1,abs(_count_error)/_count_std, 0) as deviation\n| if(deviation >= 1, 1, 0) as failed_logins_anomaly\n| fields _timeslice, failed_logins_anomaly //, _count_violation, _count_error, _count_std, deviation\n",
+              "queryType": "Logs",
+              "queryKey": "C",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-908B2EB5AADE1842",
+          "title": "Download Activity by Task",
+          "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\"},\"hiddenQueryKeys\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\"  as  ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and !(%\"System User\" matches \"wd-*\") and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction = \"DOWNLOAD\"\n| count by Task",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-291249C09EF15844",
+          "title": "Failed Logins",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Attempts\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":0,\"to\":0,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"hiddenQueryKeys\":[],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Failed_Signon\", \"tenant_name\"  nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\" \n| where Failed_Signon=1\n| count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-A27695CA83A4794E",
+          "title": "Successful Logins",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Attempts\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":1,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":0,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Failed_Signon\", \"tenant_name\"  nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\" \n| where Failed_Signon=0\n| count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-37CF783DB2702849",
+          "title": "Write Activity by Task",
+          "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\"  as  ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and !(%\"System User\" matches \"wd-*\") and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction = \"WRITE\"\n| count by Task",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-FBF6936CAE06694E",
+          "title": "Logins by Devices",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Request_Originator\", \"Device_Type\", \"tenant_name\"  nodrop\n| where !(System_Account matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and tenant_name matches \"{{TenantName}}\" and System_Account matches \"{{SystemUser}}\"\n| if(isBlank(device_type),\"Unknown\", device_type) as device_type\n| count by device_type\n| sort by _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-6FCF5E11A82C2840",
+          "title": "Failed Logins Over Time",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"overrides\":[{\"series\":[],\"queries\":[\"B\"],\"userProvidedChartType\":true,\"properties\":{\"type\":\"line\",\"lineDashType\":\"dash\",\"displayType\":\"smooth\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Failed_Signon\", \"tenant_name\"  as %\"System User\",Session_IP_Address, Failed_Signon, tenant_name\n| where !(%\"System User\" matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Failed_Signon=1\n| timeslice 4h\n| count as %\"Count\" by %\"System User\", _timeslice\n| transpose row _timeslice column %\"System User\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            },
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"System_Account\", \"Session_IP_Address\", \"Failed_Signon\", \"Authentication_Failure_Message\", \"tenant_name\"  as %\"System User\",Session_IP_Address, Failed_Signon, %\"Authentication Failure Message\", tenant_name\n| where !(%\"System User\" matches \"wd-*\") and Session_IP_Address matches \"{{IPAddress}}\" and %\"System User\" matches \"{{SystemUser}}\" and Failed_Signon=1\n| timeslice 4h\n| count as %\"Count\" by %\"Authentication Failure Message\", _timeslice\n| transpose row _timeslice column %\"Authentication Failure Message\"",
+              "queryType": "Logs",
+              "queryKey": "B",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-B5BE775F969EA946",
+          "title": "Recent Activity from Untrusted Devices or by Users with Failed Logins",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*  !api\n| json \"requestTime\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"sessionId\", \"tenant_name\"  as Time, SystemUser, Task, Target, ActivityAction, Session_ID, tenant_name nodrop\n| where [subquery from=(-24h): _sourceCategory = Labs/Workday*   \n  | json \"Session_ID\", \"Device_is_Trusted\" \n  | where Device_is_Trusted = 0 \n  | count by Session_ID \n  | compose Session_ID\n] or [subquery from=(-24h): _sourceCategory = Labs/Workday* \n  | json \"System_Account\", \"Failed_Signon\" as SystemUser, Failed_Signon\n  | where Failed_Signon = 1 \n  | count by SystemUser\n  | where _count > 1\n  | compose SystemUser\n]\n| count by Time, SystemUser, Task, Target, ActivityAction\n| sort by Time\n| fields -_count\n| limit 20",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "SystemUser",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday* \n| json \"systemAccount\" as SystemUser\n| count by SystemUser",
+            "field": "SystemUser"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "Task",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday* \n| json \"taskDisplayName\" as Task\n| count by Task",
+            "field": "Task"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "IPAddress",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday* | json \"ipAddress\" as IPAddress| count by IPAddress",
+            "field": "IPAddress"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "ActivityAction",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday* | json \"activityAction\" as ActivityAction| count by ActivityAction",
+            "field": "ActivityAction"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "TenantName",
+          "displayName": "TenantName",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"tenant_name\"\n| count by tenant_name",
+            "field": "tenant_name"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Workday - System User Activity",
+      "description": "The Workday - System User Activity dashboard monitors the system user activities. Panel also lists configuration changes in Domain Security Policy, Business Process Policy, Security Groups and API Clients.",
+      "title": "Workday - System User Activity",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelpane-ce044a3da6ea5949",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":7}"
+          },
+          {
+            "key": "panelpane-a0017738b2646b43",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":7}"
+          },
+          {
+            "key": "panelpane-b1605831bd41ca4c",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":13}"
+          },
+          {
+            "key": "panelpane-992da811a0468b4e",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":13}"
+          },
+          {
+            "key": "panelpane-ce83de16992bfa4d",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":19}"
+          },
+          {
+            "key": "panelpane-8ffc226cb63c0947",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":19}"
+          },
+          {
+            "key": "panelpane-623508909ae3c948",
+            "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":25}"
+          },
+          {
+            "key": "panelPANE-522FA9229241D943",
+            "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":0}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelpane-ce044a3da6ea5949",
+          "title": "Policy Events",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, %\"System User\", Task, Target, ActivityAction, tenant_name\n| where Task matches \"*Policy*\" and Task matches \"{{Task}}\" and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\"\n| count by Time, %\"System User\", Task, Target\n| sort by Time\n| fields -_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-a0017738b2646b43",
+          "title": "Security Group Changes",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| where Task matches \"*Security Group*\" and (ActivityAction = \"WRITE\"  OR Task matches \"*Edit*\" OR Task matches \"*Delete*\") and Task matches \"{{Task}}\" and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\"\n| count by Time, %\"System User\", Task, Target, ActivityAction\n| sort by Time\n| fields -_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-b1605831bd41ca4c",
+          "title": "Report Changes",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| where Task matches \"*Report*\" and (Task matches \"*Edit*\" or Task matches \"*Delete*\" or ActivityAction = \"WRITE\") and !(%\"System User\" matches \"wd-*\") and Task matches \"{{Task}}\" and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\"\n| count by Time, %\"System User\", Task, Target\n| sort by Time\n| fields -_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-992da811a0468b4e",
+          "title": "Business Object Events",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| where Task matches \"*Business*\" and Task matches \"*Object*\" and !(%\"System User\" matches \"wd-*\") and Task matches \"{{Task}}\" and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\"\n| count by Time, %\"System User\", Task, Target\n| sort by Time\n| fields -_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-ce83de16992bfa4d",
+          "title": "Business Process Events",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*  (\"Create Condition Rule\" or \"Reassign Tasks\" or \"Create Alert Rule\" or \"Business Process\")\n| json \"requestTime\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| where %\"System User\" != \"wd-environments\" and (Task = \"Create Condition Rule\" or Task = \"Reassign Tasks\" or Task = \"Create Alert Rule\" or Task matches \"*Business Process*\") and Task matches \"{{Task}}\" and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\"\n| count by Time, %\"System User\", Task, Target\n| sort by Time\n| fields -_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-8ffc226cb63c0947",
+          "title": "API Client Changes",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| where Task matches \"*API Client*\" and (ActivityAction = \"WRITE\" or Task matches \"*Edit*\" or Task matches \"*Delete*\") and Task matches \"{{Task}}\" and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\"\n| count by Time, %\"System User\", Task, Target\n| sort by Time\n| fields -_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-623508909ae3c948",
+          "title": "Permission Changes",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| where (Task matches \"*Permissions*\" or Task matches \"*Credentials*\") and (ActivityAction = \"WRITE\" or Task matches \"*Edit*\" or Task matches \"*Delete*\") and Task matches \"{{Task}}\" and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\"\n| count by Time, %\"System User\", Task, Target\n| sort by Time\n| fields -_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-522FA9229241D943",
+          "title": "Activity Over Time",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"overrides\":[{\"series\":[],\"queries\":[\"B\"],\"userProvidedChartType\":true,\"properties\":{\"type\":\"column\",\"displayType\":\"stackedPercent\",\"fillOpacity\":0.5}}],\"hiddenQueryKeys\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| timeslice 1h\n| where Task matches \"{{Task}}\" and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\"\n| if(Task matches \"*Security Group*\" and (ActivityAction = \"WRITE\"  OR Task matches \"*Edit*\"), 1, 0) as security_group_changes\n| if(Task matches \"*Report*\" and (Task matches \"*Edit*\" or Task matches \"*Delete*\"  or ActivityAction = \"WRITE\") ,1, 0) as report_changes\n| if(Task matches \"*API Client*\" and (ActivityAction = \"WRITE\" or Task matches \"*Edit*\" or Task matches \"*Delete*\"),1, 0) as api_client_changes\n| if(Task matches \"*Permissions*\" or Task matches \"*Credentials*\" and (ActivityAction = \"WRITE\" or Task matches \"*Edit*\" or Task matches \"*Delete*\"), 1, 0) as permission_changes\n| if(Task matches \"*Policy*\", 1, 0) as policy_events\n| if(Task matches \"*Business*\" and Task matches \"*Object*\", 1, 0) as business_object_events\n| if(Task = \"Create Condition Rule\" or Task = \"Reassign Tasks\" or Task = \"Create Alert Rule\" or Task matches \"*Business Process*\", 1, 0) as business_process_events\n| sum(security_group_changes) as %\"Security Group Changes\", sum(report_changes) as %\"Report Changes\", sum(api_client_changes) as %\"Api Client Changes\", sum(permission_changes) as %\"Permission Changes\", sum(policy_events) as %\"Policy Events\", sum(business_object_events) as %\"Business Object Events\", sum(business_process_events) as %\"Business Process Events\" by _timeslice\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            },
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* \n| json \"requestTime\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| timeslice 1h\n| where Task matches \"{{Task}}\" and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\"\n| count by ActivityAction, _timeslice\n| transpose row _timeslice column ActivityAction",
+              "queryType": "Logs",
+              "queryKey": "B",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "SystemUser",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday* \n| json \"systemAccount\" as SystemUser\n| count by SystemUser",
+            "field": "SystemUser"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "Task",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday* \n| json \"taskDisplayName\" as Task\n| count by Task",
+            "field": "Task"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "TenantName",
+          "displayName": "TenantName",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"tenant_name\"\n| count by tenant_name",
+            "field": "tenant_name"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Workday - User Activity",
+      "description": "The Workday - User Activity dashboard provides a high-level view of the user activity summary. It also provides the detailed information of the CRUD(Create/Read/Update/Delete) and suspicious activities in your Workday account.",
+      "title": "Workday - User Activity",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelpane-2b503d35afb5b94e",
+            "structure": "{\"height\":10,\"width\":9,\"x\":0,\"y\":8}"
+          },
+          {
+            "key": "panelpane-5215b96389a87942",
+            "structure": "{\"height\":10,\"width\":9,\"x\":9,\"y\":8}"
+          },
+          {
+            "key": "panelpane-c1c934b6bc8bab4c",
+            "structure": "{\"height\":9,\"width\":6,\"x\":0,\"y\":48}"
+          },
+          {
+            "key": "panelpane-422fe87593816a4b",
+            "structure": "{\"height\":7,\"width\":6,\"x\":18,\"y\":1}"
+          },
+          {
+            "key": "panelpane-7aefedd9b0b0ca4c",
+            "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":19}"
+          },
+          {
+            "key": "panelpane-e85ad989b87f8a45",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":36}"
+          },
+          {
+            "key": "panelpane-1a10ab758cfc4845",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":36}"
+          },
+          {
+            "key": "panelpane-43fc1fe3ab420949",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":42}"
+          },
+          {
+            "key": "panelpane-875cdd9ea69f1a44",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":42}"
+          },
+          {
+            "key": "panelpane-76e9a6d29baf184f",
+            "structure": "{\"height\":10,\"width\":6,\"x\":18,\"y\":8}"
+          },
+          {
+            "key": "panelpane-79dbc25197248b41",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelpane-c515c3b29a1cca4d",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":18}"
+          },
+          {
+            "key": "panelpane-7ef0552c80a4d949",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":35}"
+          },
+          {
+            "key": "panelpane-fa55564691440849",
+            "structure": "{\"height\":8,\"width\":6,\"x\":0,\"y\":27}"
+          },
+          {
+            "key": "panelpane-484c75f28aced840",
+            "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":27}"
+          },
+          {
+            "key": "panelpane-a442b4059ef8094c",
+            "structure": "{\"height\":8,\"width\":6,\"x\":6,\"y\":27}"
+          },
+          {
+            "key": "panelpane-ef940111b2f8094b",
+            "structure": "{\"height\":9,\"width\":6,\"x\":6,\"y\":48}"
+          },
+          {
+            "key": "panelpane-d3be871cb1665946",
+            "structure": "{\"height\":9,\"width\":12,\"x\":12,\"y\":48}"
+          },
+          {
+            "key": "panelPANE-F7F4436CA0E19B45",
+            "structure": "{\"height\":7,\"width\":18,\"x\":0,\"y\":1}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelpane-2b503d35afb5b94e",
+          "title": "Top 10 Tasks",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme2\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\"\n| count as %\"Count\" by Task\n| top 10 Task by %\"Count\"\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-5215b96389a87942",
+          "title": "Top 10 Users",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\"\n| count as %\"Count\" by %\"System User\"\n| top 10  %\"System User\" by %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-c1c934b6bc8bab4c",
+          "title": "Top 10 Executed Reports",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* executeCustomReport\n| json \"ipAddress\", \"systemAccount\", \"target.descriptor\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as ipAddress, %\"System User\", Target, Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\"\n and Task matches \"executeCustomReport*\"\n| Target as %\"Report Name\"\n| count as %\"Count\" by %\"Report Name\"\n| top 10 %\"Report Name\" by %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-422fe87593816a4b",
+          "title": "Activity",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\"\n| count by ActivityAction",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-7aefedd9b0b0ca4c",
+          "title": "Activity by users from Malicious IPs",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"deviceType\", \"tenant_name\" as ipAddress, %\"System User\", Task, ActivityAction, DeviceType, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\"\n | lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=ipAddress\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as %\"Threat Last Updated\" \n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| malicious_confidence as %\"Malicious Confidence\"\n| ipAddress as %\"Malicious IP\"\n| DeviceType as %\"Device Type\"\n| actor as %\"Malicious Actor\"\n| count as %\"Count\" by %\"System User\", %\"Malicious IP\", Task, %\"Device Type\", %\"Malicious Actor\", %\"Malicious Confidence\", %\"Threat Last Updated\"\n| sort by %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-e85ad989b87f8a45",
+          "title": "Delete Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and (Task matches \"*Delete*\" or Task matches \"*Remove*\" or Task matches \"*Purge*\")\n| count by Time, %\"System User\", Task, Target\n| sort by Time\n| fields -_count\n| limit 50\n\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-1a10ab758cfc4845",
+          "title": "Update Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and (Task matches \"*Update*\" or Task matches \"*Edit*\" or Task matches \"*Move*\" or Task matches \"*Reassign*\")\n| count by Time, %\"System User\", Task, Target\n| sort by Time\n| fields -_count\n| limit 50",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-43fc1fe3ab420949",
+          "title": "View Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* View\n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and Task matches \"*View*\"\n| count by Time, %\"System User\", Task, Target\n| sort by Time\n| fields -_count\n| limit 50",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-875cdd9ea69f1a44",
+          "title": "Create Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"target.descriptor\", \"activityAction\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, Target, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\" and (Task matches \"*Create*\" or Task matches \"*Generate*\" or Task matches \"*Register*\" or Task matches \"*Copy*\")\n| count by Time, %\"System User\", Task, Target\n| sort by Time\n| fields -_count\n| limit 50",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-76e9a6d29baf184f",
+          "title": "Longest User Sessions (in Minutes)",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"requestTime\", \"ipAddress\", \"sessionId\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as Time, ipAddress, SessionID, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\"\n| parseDate(Time, \"yyyy-MM-dd'T'HH:mm:ss.SSSXXX\") as milliseconds\n| max(milliseconds) as last_activity_date, min(milliseconds) as first_activity_date by sessionId, %\"System User\"\n| last_activity_date - first_activity_date as active_session_time\n| top 10  %\"System User\" by active_session_time, SessionID\n| round(active_session_time/(1000*60)) as %\"Session Time(in minutes)\"\n| SessionID as %\"Session ID\"\n| fields -active_session_time, SessionID",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-79dbc25197248b41",
+          "title": "Untitled",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"showTitle\":false,\"backgroundColor\":\"#d3d3d3\",\"alignment\":\"left\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "User Activity Summary"
+        },
+        {
+          "id": null,
+          "key": "panelpane-c515c3b29a1cca4d",
+          "title": "Untitled",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"showTitle\":false,\"backgroundColor\":\"#d3d3d3\",\"alignment\":\"left\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Suspicious Activity"
+        },
+        {
+          "id": null,
+          "key": "panelpane-7ef0552c80a4d949",
+          "title": "",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"showTitle\":false,\"backgroundColor\":\"#d3d3d3\",\"alignment\":\"left\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "User Activity Details"
+        },
+        {
+          "id": null,
+          "key": "panelpane-fa55564691440849",
+          "title": "Top 10 Malicious System Users",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json  \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as  ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\"\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=ipAddress\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count as %\"Count\" by %\"System User\"\n| top 10 %\"System User\" by %\"Count\"\n\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-484c75f28aced840",
+          "title": "Malicious IPs",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"stackedPercent\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json  \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as  ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\"\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=ipAddress\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| malicious_confidence as %\"Malicious Confidence\"\n| count by ipAddress, %\"Malicious Confidence\"\n| transpose row %\"Malicious Confidence\" column ipAddress\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-a442b4059ef8094c",
+          "title": "Top 10 Malicious User Agents",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json  \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"userAgent\", \"tenant_name\" as ipAddress, %\"System User\", Task, ActivityAction, %\"User Agents\", tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\"\n| if (isBlank(%\"User Agents\"), \"Unknown\", %\"User Agents\") as %\"User Agents\" \n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=ipAddress\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count as %\"Count\" by %\"User Agents\"\n| top 10 %\"User Agents\" by %\"Count\" \n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-ef940111b2f8094b",
+          "title": "Top 10 Downloaded Tasks",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json  \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\"  and activityAction = \"DOWNLOAD\"\n| count as %\"Count\" by Task\n| sort by %\"Count\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelpane-d3be871cb1665946",
+          "title": "Download Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday* !executeCustomReport\n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction = \"DOWNLOAD\"\n| count by Time, %\"System User\", Task\n| sort by Time\n| fields -_count\n| limit 20",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-F7F4436CA0E19B45",
+          "title": "Activity Over Time",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"overrides\":[{\"series\":[],\"queries\":[\"B\"],\"userProvidedChartType\":true,\"properties\":{\"type\":\"line\",\"lineDashType\":\"dash\",\"displayType\":\"smooth\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\"\n| timeslice 6h\n| count by _timeslice, Task\n| transpose row _timeslice column Task",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            },
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/Workday*\n| json \"requestTime\", \"ipAddress\", \"systemAccount\", \"taskDisplayName\", \"activityAction\", \"tenant_name\" as Time, ipAddress, %\"System User\", Task, ActivityAction, tenant_name nodrop\n| where ipAddress matches \"{{IPAddress}}\" and !(%\"System User\" matches \"wd-*\") and tenant_name matches \"{{TenantName}}\" and  %\"System User\" matches \"{{SystemUser}}\" and Task matches \"{{Task}}\" and ActivityAction matches \"{{ActivityAction}}\"\n| timeslice 6h\n| count by _timeslice, ActivityAction\n| transpose row _timeslice column ActivityAction",
+              "queryType": "Logs",
+              "queryKey": "B",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "SystemUser",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"systemAccount\" as SystemUser\n| count by SystemUser",
+            "field": "SystemUser"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "IPAddress",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"ipAddress\" as IPAddress\n| count by IPAddress",
+            "field": "IPAddress"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "Task",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"taskDisplayName\" as Task\n| count by Task",
+            "field": "Task"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "ActivityAction",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"activityAction\" as ActivityAction\n| count by ActivityAction",
+            "field": "ActivityAction"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "TenantName",
+          "displayName": "TenantName",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/Workday*\n| json \"tenant_name\"\n| count by tenant_name",
+            "field": "tenant_name"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    }
+  ]
+}

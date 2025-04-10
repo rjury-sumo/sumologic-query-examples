@@ -1,0 +1,193 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Cassandra - Memtable",
+  "description": "The Cassandra - Memtable dashboard provides a good insight into the memtable write-back cache of data partitions",
+  "title": "Cassandra - Memtable",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "sumo.datasource": [
+        "cassandra"
+      ],
+      "db.cluster.name": [
+        "*"
+      ],
+      "deployment.environment": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel0616F3B386E80843",
+        "structure": "{\"height\":7,\"width\":8,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel1091A3A890ED484B",
+        "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panel206537A3A6195B44",
+        "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panel61D1F10292516B4D",
+        "structure": "{\"height\":7,\"width\":16,\"x\":8,\"y\":1}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel0616F3B386E80843",
+      "title": "Flush Activity",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   (\"Writing Memtable-\" or \"Completed flushing\")| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"ColumnFamilyStore*\" or source_file matches \"Memtable*\"\n| if (message matches \"Writing Memtable-*\",1,0) as Begin_Flush\n| if (message matches \"Completed flushing *\",1,0) as End_Flush\n| timeslice 1d\n| sum(Begin_Flush) as Begin_Flush, sum(End_Flush) as End_Flush by _timeslice\n| sort by _timeslice asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1091A3A890ED484B",
+      "title": "Memtable Status",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"data\"},\"axisY2\":{\"title\":\"ops\"}},\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[{\"series\":[\"ops\"],\"queries\":[],\"properties\":{\"axisYType\":\"secondary\",\"type\":\"column\",\"name\":\"ops\"}}],\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"StatusLogger\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \" - (?<keyspace>[^.]*)\\.(?<table>[^ ]*) +(?<ops>[0-9]*),(?<data>[0-9]*)\"\n|timeslice 1d\n|sum(ops) as ops, sum(data) as data by _timeslice\n| sort by _timeslice asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel206537A3A6195B44",
+      "title": "Largest CFS being Flushed",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"Flushing largest CFS\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"ColumnFamilyStore*\"\n| parse regex field=message \"Flushing largest CFS\\(Keyspace='(?<keyspace>[^']*)', ColumnFamily='(?<table>[^']*)'\\) to free up room. Used total: (?<used_on_heap>\\d+\\.\\d+)/(?<used_off_heap>\\d+\\.\\d+), live: (?<live_on_heap>\\d+\\.\\d+)/(?<live_off_heap>\\d+\\.\\d+), flushing: (?<flushing_on_heap>\\d+\\.\\d+)/(?<flushing_off_heap>\\d+\\.\\d+), this: (?<this_on_heap>\\d+\\.\\d+)/(?<this_off_heap>\\d+\\.\\d+)\"\n| if (isEmpty(pod),host.name,pod) as host.name\n|count by host.name,keyspace,table,used_on_heap,used_off_heap,live_on_heap,live_off_heap,flushing_on_heap,flushing_off_heap,this_on_heap,this_off_heap\n|fields host.name,keyspace,table,used_on_heap,used_off_heap,live_on_heap,live_off_heap,flushing_on_heap,flushing_off_heap,this_on_heap,this_off_heap",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel61D1F10292516B4D",
+      "title": "Enqueue Flush",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"Enqueuing flush of\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"ColumnFamilyStore*\"\n| parse regex field=message \"Enqueuing flush of Memtable-(?<table>[^@]*)@(?<hash_code>[0-9]*)\\((?<serialized_bytes>[0-9]*)/(?<live_bytes>[0-9]*) serialized/live bytes, (?<ops>[0-9]*) ops\\)\" nodrop\n| parse regex field=message \"Enqueuing flush of (?<table>[^:]*): (?<on_heap_bytes>[^:]*) \\((?<on_heap_limit>[0-9]*)%\\) on-heap, (?<off_heap_bytes>[^:]*) \\((?<off_heap_limit>[0-9]*)%\\) off-heap\"\n| if (isEmpty(pod),host.name,pod) as host.name\n|count by host.name,table,hash_code,serialized_bytes,live_bytes,ops,on_heap_bytes,on_heap_limit,off_heap_bytes,off_heap_limit\n|fields host.name,table,hash_code,serialized_bytes,live_bytes,ops,on_heap_bytes,on_heap_limit,off_heap_bytes,off_heap_limit",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\n%\"sumo.datasource\"=cassandra|count by %\"deployment.environment\"",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\n%\"sumo.datasource\"=cassandra|count by %\"db.cluster.name\"",
+        "field": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

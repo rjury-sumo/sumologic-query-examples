@@ -1,0 +1,275 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Amazon S3 Audit - Details",
+  "description": "Amazon S3 Audit -Details dashboard provides geolocation of s3 clients, data added, 4xx/5xx status codes, latency, and requests by S3 Bucket.",
+  "title": "Amazon S3 Audit - Details",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-3h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-066BA28887C2E84F",
+        "structure": "{\"height\":11,\"width\":6,\"x\":6,\"y\":10}"
+      },
+      {
+        "key": "panelPANE-1F268A158B61484E",
+        "structure": "{\"height\":11,\"width\":6,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panelPANE-74F5C66787BBE94A",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-7A74CB9C8951484E",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":15}"
+      },
+      {
+        "key": "panelPANE-82C3DCF6B7D71841",
+        "structure": "{\"height\":5,\"width\":12,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-DFDFAC04A79ADA4F",
+        "structure": "{\"height\":5,\"width\":12,\"x\":12,\"y\":10}"
+      },
+      {
+        "key": "panelPANE-EF6E0695AB651A44",
+        "structure": "{\"height\":5,\"width\":12,\"x\":12,\"y\":5}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-066BA28887C2E84F",
+      "title": "Requests by Operation",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"20%\",\"maxNumOfSlices\":15},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"color\":{\"family\":\"Colorsafe\"},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   \n| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID \n| where bucket matches \"{{S3_Bucket}}\"\n| parse regex field=operation \"[A-Z]+\\.(?<operation>[\\w.]+)\" \n| count by operation",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-1F268A158B61484E",
+      "title": "Data Added to S3 Bucket",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\",\"decimals\":2},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}  PUT| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID \n| where bucket matches \"{{S3_Bucket}}\"\n| (object_size/1024)/1024 as object_volume \n| sum(object_volume) as mb by bucket \n| sort by mb",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-74F5C66787BBE94A",
+      "title": "Geolocation of Clients",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   | parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| where bucket matches \"{{S3_Bucket}}\"\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = remoteIP\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-7A74CB9C8951484E",
+      "title": "Average Latency in Milliseconds by S3 Bucket",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Diverging 2\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   \n| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| where bucket matches \"{{S3_Bucket}}\"\n| timeslice by 1m \n| avg(total_time) as latency by _timeslice, bucket\n| transpose row _timeslice column bucket",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-82C3DCF6B7D71841",
+      "title": "Data Volume Sent in MB by S3 Bucket",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Sequential 1\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   | parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| where bucket matches \"{{S3_Bucket}}\"\n| timeslice 1m\n| where (bytes_sent != \"-\")\n| (bytes_sent/(1024))/1024 as mbytes1\n| sum(mbytes1) as data_sent by _timeslice, bucket\n| transpose row _timeslice column bucket",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-DFDFAC04A79ADA4F",
+      "title": "Total 4xx/5xx Status Codes by S3 Bucket",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   \n| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| where (status_code matches \"4*\") or (status_code matches \"5*\") \n| where bucket matches \"{{S3_Bucket}}\"\n| timeslice by 5m\n| if (status_code matches \"4*\",1,0) as status_4xx\n| if (status_code matches \"5*\",1,0) as status_5xx \n| sum(status_4xx) as count_4xx, sum(status_5xx) as count_5xx by _timeslice, bucket\n| transpose row _timeslice column bucket",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-EF6E0695AB651A44",
+      "title": "Total Requests by S3 Bucket",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Colorsafe\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   | parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| where bucket matches \"{{S3_Bucket}}\"\n| timeslice 1m\n| count by _timeslice, bucket\n| transpose row _timeslice column bucket",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "S3ServerAccessLogsSource",
+      "displayName": "S3ServerAccessLogsSource",
+      "defaultValue": "Labs/Microsoft/Office365",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Microsoft/Office365"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "S3_Bucket",
+      "displayName": "S3_Bucket",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{S3ServerAccessLogsSource}}   \n| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| count by bucket",
+        "field": "bucket"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

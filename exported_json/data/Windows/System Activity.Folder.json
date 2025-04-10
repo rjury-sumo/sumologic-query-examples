@@ -1,0 +1,157 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "System Activity",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "(Kerberos) Failed Logins on the Domain Controller or Member Servers",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4771 or 4776 or 4768) (\"EventCode = 4771;\" or \"EventCode = 4776;\" or \"EventCode = 4768;\") \"Audit Failure\"\n| parse \"EventCode = *;\" as event_id nodrop | parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r\\.]+?)(?:\\r|\\.|\\\";)\" nodrop | parse \"Type = \\\"*\\\";\" as msg_type nodrop\n| parse regex \"Result Code:\\s+(?<result_code>[^\\r]+)\\r\" nodrop | parse regex \"Failure Code:\\s+(?<failure_code>[^\\r]+)\\r\" nodrop\n| parse regex \"Logon Account:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Source Workstation:\\s+(?<src_host>[^\\r]+?)\\r[\\s\\S]+?Error Code:\\s+(?<error_code>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop | parse regex \"Logon Account:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Source Workstation:\\s*\\r[\\s\\S]+?Error Code:\\s+(?<error_code>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where msg_type=\"Audit Failure\" and (event_id=\"4771\" or (event_id=\"4768\" and result_code !=\"0x0\") or (event_id=\"4776\" and error_code !=\"0x0\"))",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "(NTLM) Failed Logins",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4776 \"EventCode = 4776;\" \"Audit Failure\"\n| parse \"EventCode = *;\" as event_id nodrop\n| parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r\\.]+?)(?:\\r|\\.|\\\";)\" nodrop\n| parse \"Type = \\\"*\\\";\" as msg_type nodrop\n| parse regex \"Authentication Package:\\s+(?<Authentication_Package>[^\\r]+)\\r[\\s\\S]+?Logon Account:\\s+(?<logon_account>[^\\r]+)\\r[\\s\\S]+?Source Workstation:\\s+(?<workstation>[^\\r]+)\\r[\\s\\S]+?Error Code:\\s+(?<error_code>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where event_id=\"4776\" and msg_type=\"Audit Failure\"",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "All Directory Service Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (5136 or 5137 or 5138 or 5139 or 5141) (\"EventCode = 5136;\" or \"EventCode = 5137;\" or \"EventCode = 5138;\" or \"EventCode = 5139;\" or \"EventCode = 5141;\")\n| parse \"EventCode = *;\" as event_id nodrop | parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r\\.]+?)(?:\\r|\\.|\\\";)\" nodrop | parse \"Category = *;\" as category nodrop | parse \"CategoryString = \\\"*\\\";\" as CategoryString nodrop | parse \"Type = \\\"*\\\";\" as type nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Subject[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r\\\"]+?)\\r\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Directory Service:[\\s\\S]+?Name:\\s+(?<directory_service_name>[^\\r]+?)\\r[\\s\\S]+?Type:\\s+(?<directory_service_type>[^\\r\\\"]+?)\\r\" nodrop | parse regex \"DN:\\t(?<object_dn>.*)\\r\" nodrop\n| count by category, event_id, msg_summary, directory_service_name, directory_service_type, object_dn, type",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "All Directory Service Object Creations",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 5137 \"EventCode = 5137;\"\n| parse \"EventCode = *;\" as event_id nodrop | parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r\\.]+?)(?:\\r|\\.|\\\";)\" nodrop | parse \"Category = *;\" as category nodrop | parse \"CategoryString = \\\"*\\\";\" as CategoryString nodrop | parse \"Type = \\\"*\\\";\" as type nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Subject[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r\\\"]+?)\\r\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Directory Service:[\\s\\S]+?Name:\\s+(?<directory_service_name>[^\\r]+?)\\r[\\s\\S]+?Type:\\s+(?<directory_service_type>[^\\r\\\"]+?)\\r\" nodrop | parse regex \"DN:\\t(?<object_dn>.*)\\r\" nodrop\n| count by category, event_id, msg_summary, directory_service_name, directory_service_type, object_dn, type",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Service Events by Type",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System \"Service Control Manager\"\n| parse \"Type = \\\"*\\\";\" as msg_type nodrop | parse \"SourceName = \\\"*\\\";\" as event_source nodrop\n| where event_source=\"Service Control Manager\"\n| count by msg_type",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Service Installed",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows ((_sourceName=System and \"EventCode = 7045\") or (_sourceName=Security and \"EventCode = 4697\"))\n| parse \"EventCode = *;\" as event_id nodrop\n| parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r\\.]+?)(?:\\r|\\.|\\\";)\" nodrop\n| parse regex \"Service Name:\\s+(?<service_name>[^\\r]+?)\\r[\\s\\S]+?Service File Name:\\s+(?:\\\"|\\s*)(?<service_filename>[^\\\"\\r]+?)(?:\\\"|\\r)[\\s\\S]+?Service Type:\\s+(?<service_type>[^\\r]+?)\\r[\\s\\S]+?Service Start Type:\\s+(?<service_start_type>[^\\r]+)\\r[\\s\\S]+?Service Account:\\s+(?<service_account>[^\\\"]+)\\\";\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Subject[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r\\\"]+?)\\r\" nodrop\n| where event_id in (\"4697\", \"7045\")",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Service Starts",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System 7036 \"running state\" \"EventCode = 7036;\"\n| parse \"EventCode = *;\" as event_id nodrop\n| parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r\\.]+?)(?:\\r|\\.|\\\";)\" nodrop\n| parse regex field=msg_summary \"The (?<service_name>\\w.+?) service entered the (?<service_state>\\w+) state\" nodrop\n| where event_id=\"7036\"\n| fields host, event_id, service_name, service_state",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Service Stops",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System 7036 \"stopped state\" \"EventCode = 7036;\"\n| parse \"EventCode = *;\" as event_id nodrop\n| parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r\\.]+?)(?:\\r|\\.|\\\";)\" nodrop\n| parse regex field=msg_summary \"The (?<service_name>\\w.+?) service entered the (?<service_state>\\w+) state\" nodrop\n| where event_id=\"7036\"\n| fields host, event_id, service_name, service_state",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "System Restarted",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4608 \"EventCode = 4608;\"\n| parse \"EventCode = *;\" as event_id nodrop\n| parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r\\.]+?)(?:\\r|\\.|\\\";)\" nodrop\n| where event_id=\"4608\"",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Top Reasons for Failed Logins",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4625 \"EventCode = 4625;\"\n| parse \"EventCode = *;\" as event_id nodrop | parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop | parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logon Type:\\s+(?<logon_type>\\d+)*\" nodrop | parse regex \"Failure Information:\\s+Failure Reason:\\s+(?<fail_reason>[^.\\r]+?)[.\\r]\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Client Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Client Port:\\s+?(?<src_port>[\\d-]+)\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Source Network Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Source Port:\\s+?(?<src_port>[\\d-]+)\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Subject[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r\\\"]+?)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)\\r\" nodrop\n| where event_id=\"4625\" \n| count by host, fail_reason\n| top 10 fail_reason, host by _count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    }
+  ]
+}

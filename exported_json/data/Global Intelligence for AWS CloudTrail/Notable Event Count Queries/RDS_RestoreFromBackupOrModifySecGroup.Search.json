@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "RDS_RestoreFromBackupOrModifySecGroup",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail (Restore*From*Snapshot or AuthorizeDBSecurityGroupIngress)\n| json \"eventName\", \"errorCode\" as eventName, errorCode nodrop \n| where isBlank(errorCode) \n| \"\" as classification\n| if(eventName matches \"Restore*From*Snapshot\",concat(\"RDS_RestoreFromBackup,\",classification),classification) as classification\n| if(eventName matches \"AuthorizeDBSecurityGroupIngress\",concat(\"RDS_ModifySecurityGroup,\",classification),classification) as classification\n| if(!isBlank(classification), 1, 0) as indicator\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi\n| \"EventCount\" as type \n| sum(indicator) as count by benchmarkname, type\n| fillmissing values(\"RDS_RestoreFromBackup\",\"RDS_ModifySecurityGroup\") in benchmarkname, values(\"EventCount\") in type \n| toInt(count) as count\n",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "AutoParse",
+    "defaultTimeRange": "-60m"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-60m",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1h"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_inc_v1_rnd4685946T96PXzbCsyGRaXAZRUmB"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": ""
+}

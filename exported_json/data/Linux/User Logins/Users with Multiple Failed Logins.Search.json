@@ -1,0 +1,38 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinitionV2",
+  "name": "Users with Multiple Failed Logins",
+  "search": {
+    "queryText": "_sourceCategory={{Logsdatasource}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\") !\"passwd\" \n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_ser, src_host, src_port, protocol nodrop\n| count as Attempts by dest_user,dest_hostname \n| where (Attempts > 1) and dest_user!=\"\"\n| sort by attempts, dest_user asc, dest_hostname asc",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [
+      {
+        "name": "Logsdatasource",
+        "label": "Logsdatasource",
+        "description": "Logs data source",
+        "dataType": "QUERY_FRAGMENT",
+        "value": "uploads/linux/system",
+        "autoComplete": {
+          "autoCompleteType": "SKIP_AUTOCOMPLETE",
+          "autoCompleteKey": null,
+          "autoCompleteValues": [],
+          "lookupFileName": null,
+          "lookupLabelColumn": null,
+          "lookupValueColumn": null
+        }
+      }
+    ],
+    "parsingMode": "Manual",
+    "defaultTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-15m"
+      },
+      "to": null
+    }
+  },
+  "searchSchedule": null,
+  "description": ""
+}

@@ -1,0 +1,1620 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Operations",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "VMware ULM - Frequent Virtual Machine Power Offs",
+      "search": {
+        "queryText": "_sourceCategory = Labs/VMWare6.5 AND (\"is powered off\" OR \"is suspended\") \n | parse \"vm=*,,,host=*\" as vm, esx_host \n | count by vm, esx_host \n | where _count >=3",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-14d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "VMware ULM - Multiple Virtual Machines stopped",
+      "search": {
+        "queryText": "_sourceCategory = Labs/VMWare6.5 AND (\"is powered off\" OR \"is suspended\") \n | parse \"vm=*,,,host=*\" as vm, esx_host \n | count by vm, esx_host \n | count by esx_host \n | where _count >=3",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-30d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "VMware ULM - Summary of vCenter Alarms",
+      "search": {
+        "queryText": "_sourceCategory = Labs/VMWare6.5 and \"message=Alarm\"\n | logreduce",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-14d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "VMware ULM - Virtual Machine Creations",
+      "search": {
+        "queryText": "_sourceCategory = Labs/VMWare6.5 and \"VmCreatedEvent\" or \"VmClonedEvent\" \n| parse \"user=*,,,eventType=*,,,vm=*,,,host=*,,,datacenter=*,,,computeResource=*,,,key=*,,,chainId=*\" as user, event_type, vm, host, datacenter, cluster, key, chainid",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-30d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "VMware ULM - Virtual Machine Creations and Deletions over Time",
+      "search": {
+        "queryText": "_sourceCategory = Labs/VMWare6.5 ( \"VmCreatedEvent\" or \"VmClonedEvent\" or \"VmRemovedEvent\") \n| parse \"eventType=*,,,\" as event_type \n| if (event_type matches \"*VmCreatedEvent*\" or event_type matches \"*VmClonedEvent*\", 1,0) as creations | if (event_type matches \"*VmRemovedEvent*\", 1,0) as deletions |  timeslice by 1h | sum(creations) as creations, sum(deletions) as deletions by _timeslice",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-30d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "VMware ULM - Virtual Machine Deletions",
+      "search": {
+        "queryText": "_sourceCategory = Labs/VMWare6.5 \"VmRemovedEvent\" \n| parse \"user=*,,,eventType=*,,,vm=*,,,host=*,,,datacenter=*,,,computeResource=*,,,key=*,,,chainId=*\" as user, event_type, vm, host, datacenter, cluster, key, chainid",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-30d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "DashboardSyncDefinition",
+      "name": "VMware ULM - Virtual Machine Errors - Analysis",
+      "description": "",
+      "detailLevel": 0,
+      "properties": "{\"layoutType\":\"gridster\",\"theme\":\"dark-theme\"}",
+      "panels": [
+        {
+          "name": "Top 10 VM's facing Errors",
+          "viewerType": "column",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"error\" or \"fail\" or \"critical\")\n | parse \"eventType=*,,,\" as event_type\n | parse \"host=*,,,\" as esx_host \n | parse \"vm=*,,,\" as vm \n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}} and vm matches {{vm}}\n | count_frequent vm\n | limit 10\n\n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 1,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":1,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121541",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "vm",
+              "label": "vm",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Primary VM Failures by ESXi Hosts",
+          "viewerType": "pie",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"VmPrimaryFailoverEvent\")\n | parse \"message=*,,,\" as err_msg\n | parse \"host=*,,,\" as esx_host\n | parse \"vm=*,,,\" as vm\n | parse \"eventType=*,,,\" as event_type nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}}\n | count by esx_host\n | sort by _count \n | limit 10",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 9,
+          "y": 1,
+          "width": 16,
+          "height": 10,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null,\"minorTickInterval\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\"count\":{\"chartType\":\"line\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121539",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "VM Upgrade Failures by ESXi Hosts",
+          "viewerType": "bar",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"VmUpgradeFailedEvent\")\n | parse \"message=*,,,\" as err_msg\n | parse \"host=*,,,\" as esx_host\n | parse \"vm=*,,,\" as vm\n | parse \"eventType=*,,,\" as event_type nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}}\n | count by esx_host\n | sort by _count \n | limit 10",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 6,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":7,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null,\"minorTickInterval\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\"count\":{\"chartType\":\"line\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121535",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "VM Fault Tolerance Errors",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"VmDasUpdateErrorEvent\" or \"VmSecondaryDisabledBySystemEvent\")\n | parse \"eventType=*,,,\" as event_type\n | parse \"host=*,,,\" as esx_host \n | parse \"vm=*,,,\" as vm nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}}\n | if(event_type matches \"*VmDasUpdateErrorEvent*\",\"HA Agent Update Failed\",event_type) as ha_conflict_type \n | if(event_type matches \"*VmSecondaryDisabledBySystemEvent*\",\"Fault Tolerance Disabled\",event_type) as mac_conflict_type\n | timeslice 1h\n | count(ha_conflict_type) as ha_agent_failure, count(mac_conflict_type) as fault_tolerance_disabled by _timeslice\n | compare with timeshift 1d 7",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 11,
+          "width": 16,
+          "height": 10,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":4,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null,\"minorTickInterval\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\"count\":{\"chartType\":\"line\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":2,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121534",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "VM Power Off Failures",
+          "viewerType": "column",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"VmFailedToPowerOffEvent\")\n | parse \"message=*,,,\" as err_msg\n | parse \"host=*,,,\" as esx_host\n | parse \"vm=*,,,\" as vm\n | parse \"eventType=*,,,\" as event_type nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}}\n | timeslice by 1d\n | count by esx_host, _timeslice\n | transpose row _timeslice column esx_host",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 17,
+          "y": 11,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":6,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null,\"minorTickInterval\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\"count\":{\"chartType\":\"line\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121536",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "VM Power On Failures",
+          "viewerType": "column",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"VmFailedToPowerOnEvent\")\n | parse \"message=*,,,\" as err_msg\n | parse \"host=*,,,\" as esx_host\n | parse \"vm=*,,,\" as vm\n | parse \"eventType=*,,,\" as event_type nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}} \n | timeslice by 1d\n | count by esx_host, _timeslice\n | transpose row _timeslice column esx_host",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 17,
+          "y": 16,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":5,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null,\"minorTickInterval\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\"count\":{\"chartType\":\"line\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121538",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "General VM Errors",
+          "viewerType": "table",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"GeneralVmErrorEvent\")\n | parse \"message=*,,,\" as err_msg\n | parse \"host=*,,,\" as esx_host\n | parse \"vm=*,,,\" as vm\n | parse \"eventType=*,,,\" as event_type nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}}\n | count by esx_host, vm, err_msg, _messageTime\n | fields - _messageTime\n | fields - _count",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 21,
+          "width": 16,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null,\"minorTickInterval\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\"count\":{\"chartType\":\"line\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121540",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "VM Mac Address and UUID Conflicts",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"VmInstanceUuidConflictEvent\" or \"VmMacConflictEvent\")\n | parse \"eventType=*,,,\" as event_type\n | parse \"host=*,,,\" as esx_host \n | parse \"vm=*,,,\" as vm \n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}}\n | if(event_type matches \"*VmInstanceUuidConflictEvent*\",\"Uuid Conflict\",\"\") as conflict_type \n | if(event_type matches \"*VmMacConflictEvent*\",\"Mac Address Conflict\",conflict_type) as conflict_type\n | timeslice 15m\n | count conflict_type, _timeslice\n | transpose row _timeslice column conflict_type \n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 17,
+          "y": 21,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":1,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121537",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "fieldName": "esx_host",
+          "label": "esx_host",
+          "defaultValue": "*",
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "4121535",
+            "4121539",
+            "4121536",
+            "4121541",
+            "4121537",
+            "4121540",
+            "4121538",
+            "4121534"
+          ]
+        },
+        {
+          "fieldName": "vm",
+          "label": "vm",
+          "defaultValue": "*",
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "4121541"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "DashboardSyncDefinition",
+      "name": "VMware ULM - vCenter Errors - Analysis",
+      "description": "",
+      "detailLevel": 0,
+      "properties": "{\"layoutType\":\"gridster\",\"theme\":\"dark-theme\"}",
+      "panels": [
+        {
+          "name": "vSphere Errors Across Clusters",
+          "viewerType": "line",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"error\" or \"fail\" or \"critical\")\n | parse \"message=*,,,\" as err_msg\n | parse \"computeResource=*,,,\" as cluster\n | parse \"host=*,,,\" as esx_host\n | parse \"eventType=*,,,\" as event_type\n | parse \"vm=*,,,\" as vm nodrop\n | where esx_host matches {{esx_host}} and cluster matches {{cluster}} and event_type matches {{event_type}}\n | timeslice 15m\n | count(err_msg) by _timeslice, cluster\n | transpose row _timeslice column cluster as * ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 1,
+          "width": 15,
+          "height": 9,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":8,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121514",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "cluster",
+              "label": "cluster",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "event_type",
+              "label": "event_type",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "vSphere Errors Trend",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"error\" or \"fail\" or \"critical\")\n | parse \"message=*,,,\" as err_msg\n | parse \"host=*,,,\" as esx_host\n | parse \"eventType=*,,,\" as event_type\n | parse \"vm=*,,,\" as vm nodrop\n | parse \"computeResource=*,,,\" as cluster \n | where esx_host matches {{esx_host}} and cluster matches {{cluster}} and event_type matches {{event_type}}\n | timeslice 1h \n | count(err_msg) as err_count by _timeslice\n | compare with timeshift 1d 7",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 16,
+          "y": 1,
+          "width": 9,
+          "height": 9,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":2,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null,\"minorTickInterval\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\"count\":{\"chartType\":\"line\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121515",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "cluster",
+              "label": "cluster",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "event_type",
+              "label": "event_type",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "vSphere Errors Across ESXi Hosts",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"error\" or \"fail\" or \"critical\")\n | parse \"message=*,,,\" as err_msg\n | parse \"host=*,,,\" as esx_host\n | parse \"eventType=*,,,\" as event_type \n | parse \"vm=*,,,\" as vm nodrop\n | parse \"computeResource=*,,,\" as cluster\n | where esx_host matches {{esx_host}} and cluster matches {{cluster}} and event_type matches {{event_type}}\n | timeslice 15m\n | count(err_msg) by _timeslice, esx_host\n | transpose row _timeslice column esx_host as * ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 10,
+          "width": 24,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":2,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null,\"minorTickInterval\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\"count\":{\"chartType\":\"line\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":10,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121516",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "cluster",
+              "label": "cluster",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "event_type",
+              "label": "event_type",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "vSphere Top 10 Error Events",
+          "viewerType": "pie",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and *ErrorEvent\n | parse \"message=*,,,\" as err_msg\n | parse \"host=*,,,\" as esx_host nodrop\n | parse \"eventType=*,,,\" as event_type\n | parse \"vm=*,,,\" as vm nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}} and cluster matches {{cluster}} and event_type matches {{event_type}}\n | count by event_type\n | sort by _count\n | limit 10",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 15,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":2,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null,\"minorTickInterval\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\"count\":{\"chartType\":\"line\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"bottom\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121518",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "cluster",
+              "label": "cluster",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "event_type",
+              "label": "event_type",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Top 10 Host's facing Errors",
+          "viewerType": "column",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"error\" or \"fail\" or \"critical\")\n | parse \"eventType=*,,,\" as event_type\n | parse \"host=*,,,\" as esx_host \n | parse \"vm=*,,,\" as vm \n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}}\n | count_frequent esx_host\n | limit 10\n\n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 9,
+          "y": 15,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":1,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121513",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Clusters with Frequent Errors",
+          "viewerType": "column",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"error\" or \"fail\" or \"critical\")\n | parse \"eventType=*,,,\" as event_type\n | parse \"host=*,,,\" as esx_host \n | parse \"vm=*,,,\" as vm \n | parse \"computeResource=*,,,\" as cluster\n | where esx_host matches {{esx_host}} and cluster matches {{cluster}}\n | count_frequent cluster\n | limit 10\n\n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 17,
+          "y": 15,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":1,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121517",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "cluster",
+              "label": "cluster",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "vSphere Most Recent Error Events",
+          "viewerType": "table",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and *ErrorEvent\n | parse \"message=*,,,\" as err_msg\n | parse \"host=*,,,\" as esx_host nodrop\n | parse \"eventType=*,,,\" as event_type\n | parse \"vm=*,,,\" as vm nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}} and cluster matches {{cluster}} and event_type matches {{event_type}}\n| timeslice 1s\n| count as eventCount by _timeslice, err_msg, event_type \n| sort by _timeslice\n| limit 10\n| fields -eventCount\n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1h"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 20,
+          "width": 24,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":2,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null,\"minorTickInterval\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\"count\":{\"chartType\":\"line\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121519",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "cluster",
+              "label": "cluster",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "event_type",
+              "label": "event_type",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "fieldName": "cluster",
+          "label": "cluster",
+          "defaultValue": "*",
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "4121516",
+            "4121519",
+            "4121517",
+            "4121514",
+            "4121518",
+            "4121515"
+          ]
+        },
+        {
+          "fieldName": "esx_host",
+          "label": "esx_host",
+          "defaultValue": "*",
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "4121516",
+            "4121519",
+            "4121517",
+            "4121513",
+            "4121514",
+            "4121518",
+            "4121515"
+          ]
+        },
+        {
+          "fieldName": "event_type",
+          "label": "event_type",
+          "defaultValue": "*",
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "4121516",
+            "4121519",
+            "4121514",
+            "4121518",
+            "4121515"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "DashboardSyncDefinition",
+      "name": "VMware ULM - vCenter Operations - Overview",
+      "description": "",
+      "detailLevel": 0,
+      "properties": "{\"showColumnTitles\":false,\"layoutType\":\"gridster\",\"colorFamily\":1,\"theme\":\"dark-theme\"}",
+      "panels": [
+        {
+          "name": "Unique Clusters",
+          "viewerType": "svv",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"host=\")\n | parse \"computeResource=*,,,\" as cluster \n | where cluster != \"\"\n | count_distinct(cluster)",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 1,
+          "width": 4,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121527",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Unique ESXi Hosts",
+          "viewerType": "svv",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"host=\")\n | parse \"host=*,,,\" as esx_host\n | where esx_host != \"\"\n | count_distinct(esx_host)",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 5,
+          "y": 1,
+          "width": 4,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121529",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Unique Virtual Machines",
+          "viewerType": "svv",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"vm=\")\n | parse \"vm=*,,,\" as vm\n | where vm != \"\"\n | count_distinct(vm)",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 9,
+          "y": 1,
+          "width": 4,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121528",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "VM Failures by ESXi Hosts",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"VmPrimaryFailoverEvent\")\n | parse \"message=*,,,\" as err_msg\n | parse \"host=*,,,\" as esx_host\n | parse \"vm=*,,,\" as vm\n | parse \"eventType=*,,,\" as event_type nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}}\n | count by esx_host\n | sort by _count ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 13,
+          "y": 1,
+          "width": 12,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":0,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{\"_count\":{\"chartType\":\"column\",\"yAxis\":0}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null,\"minorTickInterval\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\"count\":{\"chartType\":\"line\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":11624065,\"name\":\"VM Errors Analysis\",\"key\":\"A2R5Zct0wy35qlkYqDlqzhWy4KUWQGhhj4YB5at5dz0QciMvHpnFj8izyqWF\"}}}}}}}",
+          "id": "4121520",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "vCenter Tasks Trend",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and \"TaskEvent\"\n | parse \"message=Task:*,,,\" as task\n | parse \"host=*,,,\" as esx_host nodrop\n | parse \"eventType=*,,,\" as event_type nodrop\n | parse \"vm=*,,,\" as vm nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}}\n | if (task matches \"*virtual machine*\",\"VM Operations\",task) as task\n | timeslice 5m \n | count as count by _timeslice,task\n | transpose row _timeslice column task",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 6,
+          "width": 24,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"5\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"bottom\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null},{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":0,\"max\":null}],\"seriesInfo\":{\" Add standalone host\":{\"chartType\":\"line\",\"yAxis\":0},\" Check new notifications\":{\"chartType\":\"line\",\"yAxis\":0},\" Create alarm\":{\"chartType\":\"line\",\"yAxis\":0},\" Create datacenter\":{\"chartType\":\"line\",\"yAxis\":0},\" Create folder\":{\"chartType\":\"line\",\"yAxis\":0},\" Create scheduled task\":{\"chartType\":\"line\",\"yAxis\":0},\" Download patch definitions\":{\"chartType\":\"line\",\"yAxis\":0},\" Set scheduled task custom value\":{\"chartType\":\"line\",\"yAxis\":0},\"VM Operations\":{\"chartType\":\"column\",\"yAxis\":1}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"10\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":null,\"max\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121525",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "vSphere Errors Across Clusters",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"error\" or \"fail\" or \"critical\")\n | parse \"message=*,,,\" as err_msg\n | parse \"computeResource=*,,,\" as cluster\n | parse \"host=*,,,\" as esx_host nodrop\n | parse \"eventType=*,,,\" as event_type nodrop\n | parse \"vm=*,,,\" as vm nodrop\n | where esx_host matches {{esx_host}}\n | timeslice 15m\n | count(err_msg) by _timeslice, cluster\n | transpose row _timeslice column cluster as * ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 12,
+          "width": 24,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":8,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{\"\":{\"chartType\":\"line\",\"yAxis\":0},\"esx1.sumolabscluster.com\":{\"chartType\":\"line\",\"yAxis\":0},\"esx2.sumolabscluster.com\":{\"chartType\":\"line\",\"yAxis\":0}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":11594204,\"name\":\"vCenter Errors Overview\",\"key\":\"lHzsVbtqBYzYLD9Af1dHhtu7mwU5rITuMp6c80AxTxHKFkoZywYHk4dxRKbk\"}}}}}}}",
+          "id": "4121530",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Virtual Machine Operations Over Time",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": " _sourceCategory = Labs/VMWare6.5 and (\"VmCreatedEvent\" OR \"VmClonedEvent\" OR (\"VmMigratedEvent\") OR (\"VmRemovedEvent\"))\n | parse \"eventType=*,,,\" as event_type \n | parse \"host=*,,,\" as esx_host nodrop\n | parse \"vm=*,,,\" as vm nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}}\n |  timeslice by 1d\n | if(event_type matches \"*VmCreatedEvent*\" OR event_type matches \"*VmClonedEvent*\",1,0) as creations \n | if(event_type matches \"*VmMigratedEvent*\",1,0) as migrations\n | if(event_type matches \"*VmRemovedEvent*\" ,1,0) as deletions\n | sum(creations) as creations,sum(deletions) as deletions,sum(migrations) as migrations by _timeslice\n | sort _timeslice asc\n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 17,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"middle\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null},\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"2\"},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"logScale\":false,\"min\":\"0\",\"max\":\"20\",\"bands\":null},\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":0},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null},\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null},\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121533",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "vCenter Alarms",
+          "viewerType": "area",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and \"AlarmStatusChangedEvent\"\n | parse \"message=Alarm '*' on * changed from * to *,,,\" as alarm_mesg,hostname,old_status,new_status\n | parse \"host=*,,,\" as esx_host nodrop\n | parse \"eventType=*,,,\" as event_type nodrop\n | parse \"vm=*,,,\" as vm nodrop\n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}}\n | timeslice 5m \n | count as count by _timeslice,alarm_mesg\n | transpose row _timeslice column alarm_mesg as * ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 9,
+          "y": 17,
+          "width": 16,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":1,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121523",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Most Active Users",
+          "viewerType": "bar",
+          "detailLevel": 2,
+          "queryString": " _sourceCategory = Labs/VMWare6.5 and \"user=\"\n| parse \",,,user=*,,,\" as user\n| where  user !=\"\"\n| count  by user\n| sort by _count\n| limit 10 ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 22,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":3,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":\" \",\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":\" \",\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null},\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null},\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null},\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null},\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121521",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "vCenter User Activity",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": " _sourceCategory = Labs/VMWare6.5\n | parse regex \"(?:message=User)\\s(?<user>.*?)\\s(?<task>logged out|logged in|.*)(?:\\s.*,,,)\"\n | where  user !=\"\"\n | timeslice 5m \n | count as count by _timeslice,task\n | transpose row _timeslice column task as * ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 9,
+          "y": 22,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"1\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":true,\"min\":null,\"max\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":1,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121524",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Virtual Machine Operations by User",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": " _sourceCategory = Labs/VMWare6.5 and (\"VmCreatedEvent\" OR \"VmClonedEvent\" OR (\"VmMigratedEvent\")  OR (\"VmRemovedEvent\"))\n | parse \"eventType=*,,,\" as event_type\n | if(event_type matches \"*VmCreatedEvent*\" OR event_type matches \"*VmClonedEvent*\",\"creations\",\"\") as type \n | if(event_type matches \"*VmMigratedEvent*\",\"migrations\",type) as type\n | if(event_type matches \"*VmRemovedEvent*\",\"deletions\",type) as type\n | parse \"host=*,,,\" as esx_host\n | parse \"user=*,,,\" as user\n | parse \"vm=*,,,\" as vm \n | parse \"computeResource=*,,,\" as cluster\n | where esx_host matches {{esx_host}}\n | count by user,type\n | transpose row user column type",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 17,
+          "y": 22,
+          "width": 8,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"middle\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null},\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"0\"},\"legend\":{\"enabled\":true,\"position\":\"bottom\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"bands\":null,\"logScale\":false,\"min\":\"0\",\"max\":null}],\"seriesInfo\":{\"creations\":{\"chartType\":\"column\",\"yAxis\":0},\"deletions\":{\"chartType\":\"column\",\"yAxis\":0}},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":0},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null},\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null},\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121531",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Infrastructure Summary",
+          "viewerType": "table",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/VMWare6.5\n | parse \"host=*,,,\" as esx_host\n | parse \"vm=*,,,\" as vm\n | parse \"computeResource=*,,,\" as cluster\n | where esx_host matches {{esx_host}} and vm matches {{vm}} and cluster matches {{cluster}}\n | count_distinct(vm)  as vm_count by esx_host, cluster",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 27,
+          "width": 24,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121522",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "cluster",
+              "label": "cluster",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "vm",
+              "label": "vm",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "ESXi Hosts per Cluster",
+          "viewerType": "table",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5\n | parse \"host=*,,,\" as esx_host\n | parse \"computeResource=*,,,\" as cluster\n | where esx_host matches {{esx_host}} and cluster matches {{cluster}}\n | count_distinct(esx_host)  as host_count by cluster",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 32,
+          "width": 13,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121532",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "cluster",
+              "label": "cluster",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "VM with Failures per ESXi Host",
+          "viewerType": "table",
+          "detailLevel": 0,
+          "queryString": "_sourceCategory = Labs/VMWare6.5 and (\"error\" or \"fail\" or \"critical\")\n | parse \"eventType=*,,,\" as event_type\n | parse \"host=*,,,\" as esx_host \n | parse \"vm=*,,,\" as vm \n | parse \"computeResource=*,,,\" as cluster nodrop\n | where esx_host matches {{esx_host}} and vm matches {{vm}}\n | count(vm) as vm_with_failures_count by esx_host",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "x": 14,
+          "y": 32,
+          "width": 11,
+          "height": 5,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\",\"dimensions\":{\"width\":null,\"height\":null}},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{},\"showLineMarker\":true,\"lineMouseTracking\":true}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"chartType\":\"map\",\"version\":1,\"configuration\":{\"maptype\":\"cluster\"}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"metrics\":{\"version\":2,\"configuration\":{\"blockSettings\":{},\"viewType\":\"timeline\",\"zoom\":\"xy\",\"yAxis\":{\"defaults\":[{\"name\":\"\"},{\"name\":\"\"}],\"custom\":[{},{}]},\"xAxis\":{\"scrubber\":true},\"outliers\":{\"enabled\":true,\"top\":1,\"scope\":\"Chart\",\"cyclicality\":false,\"threshold\":7,\"autoShowBand\":true},\"colorFamily\":\"METRIC_DEFAULT\"}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "4121526",
+          "desiredQuantizationInSecs": 0,
+          "queryParameters": [
+            {
+              "name": "esx_host",
+              "label": "esx_host",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            },
+            {
+              "name": "vm",
+              "label": "vm",
+              "description": "",
+              "dataType": "STRING",
+              "value": "*",
+              "autoComplete": {
+                "autoCompleteType": "SKIP_AUTOCOMPLETE",
+                "autoCompleteKey": null,
+                "autoCompleteValues": [],
+                "lookupFileName": null,
+                "lookupLabelColumn": null,
+                "lookupValueColumn": null
+              }
+            }
+          ],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "fieldName": "cluster",
+          "label": "cluster",
+          "defaultValue": "*",
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "4121532",
+            "4121522"
+          ]
+        },
+        {
+          "fieldName": "esx_host",
+          "label": "esx_host",
+          "defaultValue": "*",
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "4121532",
+            "4121520",
+            "4121531",
+            "4121525",
+            "4121530",
+            "4121522",
+            "4121526",
+            "4121533",
+            "4121523"
+          ]
+        },
+        {
+          "fieldName": "vm",
+          "label": "vm",
+          "defaultValue": "*",
+          "filterType": "textbox",
+          "properties": "",
+          "panelIds": [
+            "4121522",
+            "4121526"
+          ]
+        }
+      ]
+    }
+  ]
+}

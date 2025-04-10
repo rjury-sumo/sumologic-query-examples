@@ -1,0 +1,180 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Jira Cloud - Recent Issue Changes",
+  "description": "The Jira Cloud - Recent Issues Changes dashboard tracks the recent progress of Jira issues. The panels provide information about the type of issue, timestamp when it was created, issue status, category, assignee, and issue summary.",
+  "title": "Jira Cloud - Recent Issue Changes",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelpane-71ec911a9304584d",
+        "structure": "{\"height\":25,\"width\":24,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelpane-71ec911a9304584d",
+      "title": "Recent Issue Changes Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jira-cloud* *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| where   project_name matches \"{{project_name}}\" AND issue_key matches \"{{issue_key}}\" AND type matches \"{{issue_type}}\" AND priority matches \"{{priority}}\" AND status_category matches \"{{status_category}}\" AND status matches \"{{status}}\"\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where component matches \"{{components}}\" and  label matches \"{{label}}\"\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n|count by date_time, issue, type, status, resolution, status_category, project_name , issue_assignee, issue_summary\n| sort by date_time\n| limit 100\n//| fields -_count\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "components",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n|parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi",
+        "field": "component"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "project_name",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+        "field": "project_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "issue_key",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+        "field": "issue_key"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "issue_type",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, issue_type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+        "field": "issue_type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "priority",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+        "field": "priority"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "label",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n|parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi",
+        "field": "label"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "status_category",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+        "field": "status_category"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "status",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jira-cloud*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop",
+        "field": "status"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

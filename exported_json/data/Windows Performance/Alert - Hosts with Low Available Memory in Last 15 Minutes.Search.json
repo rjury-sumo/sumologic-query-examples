@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Alert - Hosts with Low Available Memory in Last 15 Minutes",
+  "search": {
+    "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfOS_Memory\" \"AvailableBytes\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"AvailableBytes\" as aBytes\n| timeslice 1m\n| avg(aBytes) as AvgAvailableBytes by host,_timeslice \n| int(AvgAvailableBytes/(1024*1024)) as AvgAvailMBytes \n// 100MB is the threshold for this alert\n| where AvgAvailMBytes < 100 \n| count as DataPoints by host \n// another threshold: more than 10 minutes where the limit drops under the above threshold\n| where DataPoints >10",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-15m"
+  },
+  "searchSchedule": null,
+  "description": "Schedule this alert to run for every 15 mins and for the last 15 minutes. Alert thresholds can be changed inside the query."
+}

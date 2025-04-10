@@ -1,0 +1,199 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "HAProxy - Error Log Analysis",
+  "description": "The HAProxy - Error Log Analysis dashboard provides a high-level view of error log levels, clients causing errors, critical error messages and trends.",
+  "title": "HAProxy - Error Log Analysis",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel30CA6454B2D96A40",
+        "structure": "{\"height\":7,\"width\":16,\"x\":8,\"y\":10}"
+      },
+      {
+        "key": "panelE18795A4BE03084F",
+        "structure": "{\"height\":7,\"width\":8,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panelF13448DAA517EB40",
+        "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":17}"
+      },
+      {
+        "key": "panelPANE-2BDF5E4DB4E2D844",
+        "structure": "{\"height\":10,\"width\":8,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-E148617B8DABAB48",
+        "structure": "{\"height\":10,\"width\":16,\"x\":8,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel30CA6454B2D96A40",
+      "title": "Backend Errors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webengine.cluster.name={{webengine.cluster.name}} sumo.datasource=haproxy backend\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+backend\\s+(?<frontend_name>\\S+)\\s+(?<msg>.*)\" nodrop\n| where length(frontend_name) > 0\n| timeslice 1s\n| count as count by _timeslice, webengine.cluster.name, frontend_name, msg\n| fields -count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE18795A4BE03084F",
+      "title": "Top 5 Clients Causing Errors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webengine.cluster.name={{webengine.cluster.name}} sumo.datasource=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)/1:\\s+(?<msg>.*)\"\n| where length(msg) > 0 and !isEmpty(c_ip)\n| count as count by c_ip | sort by count, c_ip asc\n| limit 5",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelF13448DAA517EB40",
+      "title": "Server Down Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webengine.cluster.name={{webengine.cluster.name}} sumo.datasource=haproxy Server\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+Server\\s+(?<frontend_name>\\S+)/(?<backend_name>\\S+)\\s+is\\s+DOWN,\\s+reason:\\s+(?<reason>.*),\\s+info:\\s+\\\"(?<info>.*)\\\",\\s+check\\s+duration:\\s+(?<check_duration>\\d+)ms.\\s+(?<active>\\d+)\\s+active\\s+and\\s+(?<backup>\\d+)\\s+backup\\s+servers\\s+left.\\s+(?<sessions>\\d+) sessions\\s+active,\\s+(?<requeued>\\d+)\\s+requeued,\\s+(?<remaining>\\d+)\\s+remaining\\s+in\\s+queue.\" nodrop\n| where length(frontend_name) > 0 and length(backend_name) > 0\n| timeslice 1s\n| count as count by _timeslice, webengine.cluster.name, frontend_name, backend_name, reason, info\n| fields -count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-2BDF5E4DB4E2D844",
+      "title": "Client Locations with Critical Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webengine.cluster.name={{webengine.cluster.name}} sumo.datasource=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)/1:\\s+(?<msg>.*)\"\n| where length(msg) > 0\n| where !isEmpty(c_ip)\n| count by c_ip\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = c_ip\n| where !isNull(latitude)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-E148617B8DABAB48",
+      "title": "Critical Errors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webengine.cluster.name={{webengine.cluster.name}} sumo.datasource=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)/1:\\s+(?<msg>.*)\"\n| where length(msg) > 0\n| timeslice 1s\n| count as count by _timeslice, webengine.cluster.name, c_ip, frontend_name, msg\n| sort by _timeslice\n| limit 100",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "webengine.cluster.name",
+      "displayName": "webengine.cluster.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\n| count by webengine.cluster.name",
+        "field": "webengine.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

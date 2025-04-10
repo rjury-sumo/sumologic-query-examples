@@ -1,0 +1,288 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "EKS - Controller Manager",
+  "description": "The EKS - Controller Manager dashboard displays information on the controller manager, providing visibility into the core control loops for Kubernetes.",
+  "title": "EKS - Controller Manager",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {
+      "cluster": [
+        "*"
+      ],
+      "9f7828636226654e6dc8c7b6edd1589c": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-15m"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelpane-222c43d9a49bab4f",
+        "structure": "{\"height\":5,\"width\":13,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelpane-638368d58d5d4a45",
+        "structure": "{\"height\":9,\"width\":24,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panelpane-dde5fb218b3bb842",
+        "structure": "{\"height\":5,\"width\":6,\"x\":13,\"y\":5}"
+      },
+      {
+        "key": "panelpane-d35872b2a37d584d",
+        "structure": "{\"height\":5,\"width\":5,\"x\":19,\"y\":5}"
+      },
+      {
+        "key": "panelpane-7ad6cde7b9ed4a40",
+        "structure": "{\"height\":5,\"width\":13,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panelpane-7af695ddab52e940",
+        "structure": "{\"height\":5,\"width\":6,\"x\":13,\"y\":0}"
+      },
+      {
+        "key": "panelpane-e164b1edaaec5949",
+        "structure": "{\"height\":5,\"width\":5,\"x\":19,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelpane-222c43d9a49bab4f",
+      "title": "Severity Over Time",
+      "visualSettings": "{}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "\t_sourceCategory = *eks* \n\t| json field=_raw \"message\" as log\n\t| parse regex field=log \"^(?<severity>.)(?:[0-9])\"\n\t| timeslice 1h\n\t| count _timeslice, severity \n\t| transpose row _timeslice column severity\n  | fillmissing timeslice(1h) ",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-638368d58d5d4a45",
+      "title": "Error Logs",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = *eks* error\n| json field=_raw \"message\"\n| parse regex field=message \"^(?<severity>.)(?:[0-9])\"\n| where severity == \"E\"\n| formatDate(_messageTime,\"MM-dd-yyyy HH:mm\") as MessageTime\n| count by MessageTime,severity, container, namespace,pod,message",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": {
+            "metric": "",
+            "aggregationType": "None",
+            "groupBy": "",
+            "filters": [],
+            "operators": null
+          },
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-dde5fb218b3bb842",
+      "title": "Job Creations",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"option\":\"Average\",\"label\":\"Jobs\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "\t_sourceCategory = *eks* \"Created job\"\n\t| json field=_raw \"message\" as log\n\t| parse field=log \"Created job *\" as job\n  | parse field=log \"* *       \" as code,time\n  | count by time, job",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": {
+            "metric": "",
+            "aggregationType": "None",
+            "groupBy": "",
+            "filters": [],
+            "operators": null
+          },
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-d35872b2a37d584d",
+      "title": "Job Deletions",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\"Jobs\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = *eks* \"Deleted job\"\n\t| json field=_raw \"message\" as log\n  | parse field=log \"Deleted job *\" as job_name\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": {
+            "metric": "",
+            "aggregationType": "None",
+            "groupBy": "",
+            "filters": [],
+            "operators": null
+          },
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-7ad6cde7b9ed4a40",
+      "title": "Scale Operations",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "\t_sourceCategory = *eks* \n\t| json field=_raw \"message\" as log\n| parse regex field=log \"^(?<severity>.)(?:[0-9])\"\n| where severity == \"I\"\n| parse field=log \"Scaled * replica set * to *\" as direction,replica_set,scaled_to\n| first(scaled_to) as scaled_to by  replica_set ",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": {
+            "metric": "",
+            "aggregationType": "None",
+            "groupBy": "",
+            "filters": [],
+            "operators": null
+          },
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-7af695ddab52e940",
+      "title": "Pods Created",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "\t_sourceCategory = *eks* \"Created pod:\"\n  | json field=_raw \"message\" as log\n  | parse field=log \"Created pod: *\" as pod\n  | parse field=log \"* *       \" as code,time\n  | count by time, pod",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": {
+            "metric": "",
+            "aggregationType": "None",
+            "groupBy": "",
+            "filters": [],
+            "operators": null
+          },
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-e164b1edaaec5949",
+      "title": "Pods Deleted",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "\t_sourceCategory = *eks* \"Deleted pod:\"\n\t| json field=_raw \"message\" as log\n\t| parse field=log \"Deleted pod: *\" as pod\n  | parse field=log \"* *       \" as code,time\n  | count by time, pod",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": {
+            "metric": "",
+            "aggregationType": "None",
+            "groupBy": "",
+            "filters": [],
+            "operators": null
+          },
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [],
+  "coloringRules": []
+}

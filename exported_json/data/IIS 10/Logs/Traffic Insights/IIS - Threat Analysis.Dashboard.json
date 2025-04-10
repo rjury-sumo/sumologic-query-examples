@@ -1,0 +1,292 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "IIS - Threat Analysis",
+  "description": "The IIS - Threat Analysis Dashboard provides high-level views of threats throughout your IIS network. Dashboard panels display visual graphs and detailed information on Threats by Client IP, Threats by Referrer, and Threats by URL.",
+  "title": "IIS - Threat Analysis",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-C643CCC0AF1FDB48",
+        "structure": "{\"height\":6,\"width\":7,\"x\":10,\"y\":0}"
+      },
+      {
+        "key": "panel390319898CD2484A",
+        "structure": "{\"height\":12,\"width\":10,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelBF512093814F194A",
+        "structure": "{\"height\":6,\"width\":7,\"x\":17,\"y\":0}"
+      },
+      {
+        "key": "panelC1DCBA8880C3BB40",
+        "structure": "{\"height\":6,\"width\":7,\"x\":10,\"y\":6}"
+      },
+      {
+        "key": "panelB89A0242BA3AB945",
+        "structure": "{\"height\":7,\"width\":14,\"x\":10,\"y\":12}"
+      },
+      {
+        "key": "panelDEEE7BCAB5AC3848",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":19}"
+      },
+      {
+        "key": "panel7B9A22B0BCC93949",
+        "structure": "{\"height\":6,\"width\":7,\"x\":17,\"y\":6}"
+      },
+      {
+        "key": "panel4B3BD22F968E6A44",
+        "structure": "{\"height\":7,\"width\":10,\"x\":0,\"y\":12}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-C643CCC0AF1FDB48",
+      "title": "Threat Count",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"label\":\"Threats\",\"useBackgroundColor\":true,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":0.9999,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count by c_ip\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum(_count) as threatCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel390319898CD2484A",
+      "title": "Threat Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count by c_ip\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = c_ip",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelBF512093814F194A",
+      "title": "Threat by Actors",
+      "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[],\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count by c_ip\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| sum(_count) as threatCount by Actor\n| sort by threatCount, Actor asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelC1DCBA8880C3BB40",
+      "title": "Threat by Malicious Confidence",
+      "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"title\":\"Malicious Confidence\"},\"axisY\":{\"title\":\"Threat Count\"}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count by c_ip\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum(_count) as threatCount by malicious_confidence\n| sort by threatCount, malicious_confidence asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelB89A0242BA3AB945",
+      "title": "Highly Malicious Threat Table",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| count c_ip, sc_status, cs_uri_stem, cs_referer, cs_User_Agent\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| where malicious_confidence matches \"high\"\n| count by malicious_confidence, Actor,c_ip, sc_status, cs_uri_stem, cs_referer, cs_User_Agent\n| sort by _count\n| _count as count\n| limit 20\n| fields malicious_confidence, Actor, c_ip,sc_status, cs_uri_stem, cs_referer, cs_User_Agent\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelDEEE7BCAB5AC3848",
+      "title": "Threat Table",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count c_ip, sc_status, cs_uri_stem, cs_referer, cs_User_Agent\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count by malicious_confidence, Actor,c_ip, sc_status, cs_uri_stem, cs_referer, cs_User_Agent\n| sort by _count\n| _count as count\n| limit 50\n| fields malicious_confidence, Actor, c_ip,sc_status, cs_uri_stem, cs_referer, cs_User_Agent",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7B9A22B0BCC93949",
+      "title": "Threat Breakdown by Sources",
+      "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Light\"},\"axes\":{\"axisX\":{\"title\":\"Source Name\"},\"axisY\":{\"title\":\"Threat Count\"}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count as ip_count by c_ip, _source\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum (ip_count) as threat_count by _source",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4B3BD22F968E6A44",
+      "title": "Top 5 Highly Malicious URLs",
+      "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[],\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count as ip_count by c_ip, cs_uri_stem\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| where malicious_confidence matches \"high\"\n| count by cs_uri_stem",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "webserver_farm",
+      "displayName": "webserver_farm",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "_sourceCategory = Labs/iis* webserver_system=iis",
+        "key": "webserver_farm"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

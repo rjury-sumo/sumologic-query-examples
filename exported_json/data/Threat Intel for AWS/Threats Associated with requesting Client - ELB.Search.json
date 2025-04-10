@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Threats Associated with requesting Client - ELB",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/ELB \n| parse regex \"\\S+\\s+(?<elb_server>\\S+)\\s+(?<src_ip>\\S+):(?<src_port>\\S+)\\s+(?<backendhost>\\S+):(?<dest_port>\\S+)\\s+(?<requestproc>\\S+)\\s+(?<ba_response>\\S+)\\s+(?<cli_response>\\S+)\\s+(?<elb_statuscode>\\d+)\\s+(?<be_statuscode>\\d+)\\s+(?<rcvd>\\d+)\\s+(?<send>\\d+)\\s+\\\"(?<method>\\w+)\\s+(?<fullrequest>\\S+)\\s+HTTP/[^\\\"]+\\\" \\\"(?<agent>[^\\\"]+)\\\" (?<Cipher>[A-Za-z0-9-]+) (?<ssl_protocol>[A-Za-z0-9-.]+)\"  nodrop\n| parse regex field=fullrequest \"(?<protocol>\\w+)://(?<hostname>[^/:]+)\" \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" and  malicious_confidence =\"high\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| count by elb_server, elb_statuscode, fullrequest,  src_ip,src_port , backendhost, dest_port, malicious_confidence, label_name,  threat_malware_families,threat_last_updated\n| fields - _count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

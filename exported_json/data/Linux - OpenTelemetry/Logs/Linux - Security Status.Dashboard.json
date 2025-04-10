@@ -1,0 +1,303 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Linux - Security Status",
+  "description": "See information about security on Linux hosts, including su, sudo attempts, new and existing user assignments, package operations, and system starts events.",
+  "title": "Linux - Security Status",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "63e05d051d90a6c73f3536eccd7716cf": [
+        "*"
+      ],
+      "4b33c416f6b8342db382c500c6bfc48b": [
+        "*"
+      ],
+      "d00a6d9ba979c11cf412383cab6f7179": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "host"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel1f4b8083bab97a4a",
+        "structure": "{\"width\":8,\"height\":8,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panel4bb9d17aac52fa42",
+        "structure": "{\"width\":8,\"height\":9,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panel70ba49819ee6694b",
+        "structure": "{\"width\":8,\"height\":9,\"x\":16,\"y\":6}"
+      },
+      {
+        "key": "panel8357a092999efa4f",
+        "structure": "{\"width\":8,\"height\":9,\"x\":8,\"y\":6}"
+      },
+      {
+        "key": "panelcfaa359283c21844",
+        "structure": "{\"width\":8,\"height\":8,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "paneldd8bcd7ea29f3b4d",
+        "structure": "{\"width\":8,\"height\":8,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel1f4b8083bab97a4a",
+      "title": "New User Assignments",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=linux deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}}   \"useradd\" and ((\"new user\") or (\"new account\"))\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop\n| parse \"name=*, UID=*, GID=*, home=*, shell=*\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop\n| parse \"account=*, uid=*, gid=*, home=*, shell=*,\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop \n| process_name as process.executable.name \n| timeslice 1h\n|where dest_user matches \"{{dest_user}}\" AND process.executable.name matches \"{{process.executable.name}}\"\n|count by host.name,_timeslice | sort - _timeslice  | transpose row _timeslice column host.name as *",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4bb9d17aac52fa42",
+      "title": "Sudo Attempts",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=linux deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}}   \"sudo\" \n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S*)\\s\" nodrop\n| host.name as dest_host\n| parse regex \"(?<process>\\w*):\\s+(?<src_user>[^ ]+?)\\s+:.+?USER=(?<dest_user>[^ ]+?)\\s+\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse regex \"COMMAND=(?<command>[^$]*)$\" nodrop\n| parse regex \"\\s+(?<process>\\w*): pam_unix\\(sudo:auth\\): conversation failed\" nodrop\n| parse \"pam_unix(*:auth): authentication failure;\" as process nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| where process=\"sudo\" and command !=\"\"\n|where dest_user matches \"{{dest_user}}\" \n|count as attempts by host.name,src_user,dest_user, command | sort - attempts",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel70ba49819ee6694b",
+      "title": "System Starts",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=linux deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}}   \"Initializing cgroup subsys cpuset\"\n| parse regex \"^(?<StartTime>\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+)\\s(?<dest_hostname>\\S*)\\s(?<process_name>\\w*)(?:\\[\\d+\\]|):\\s+\" nodrop\n| process_name as process.executable.name \n|  where process.executable.name matches \"{{process.executable.name}}\"\n|count by host.name,process.executable.name,StartTime,_messagetime | sort by _messagetime | fields - _count,_messagetime",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8357a092999efa4f",
+      "title": "Existing User Assignments",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=linux deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}}   \"to group\" or \"default group changed\" or \"change user\"\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop\n| parse \"add '*' to group '*'\" as dest_user,dest_group nodrop\n| parse \"account added to group - account=*, group=*, gid=*,\" as dest_user,dest_group,dest_gid nodrop\n| parse \"account=*, uid=*, gid=*, old gid=*,\" as dest_user,dest_uid, dest_gid,src_gid nodrop\n| parse \"change user '*' GID from '*' to '*'\" as dest_user,src_gid, dest_gid\n| process_name as process.executable.name \n| where dest_gid in(\"10\",\"0\",\"4\") or dest_group in (\"root\", \"wheel\", \"adm\")  \n| timeslice 1h\n|where dest_user matches \"{{dest_user}}\" AND process.executable.name matches \"{{process.executable.name}}\"\n|count by host.name,_timeslice | sort -_timeslice | transpose row _timeslice column host.name as *",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelcfaa359283c21844",
+      "title": "Package Operations",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=linux deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}}   (\"installed\" or \"erased\" or \"remove\" or \"<install>\" or \"<uninstall>\") NOT \"MTA\"\n| parse regex \"\\s+\\d+:\\d+:\\d+\\s+status\\s+(?<action>installed)\\s+(?<pkg_name>\\S*)\\s+\" nodrop\n| parse regex \"\\s+\\d+:\\d+:\\d+\\s+(?<action>Installed)\\:\\s+(?:\\d+\\:)?(?<pkg_name>\\S*)\" nodrop\n| parse regex \"\\s+\\d+:\\d+:\\d+\\s+(?<action>remove)\\s+(?<pkg_name>[^ ]*)\\s\" nodrop\n| parse regex \"\\s+\\d+:\\d+:\\d+\\s+(?<action>Erased)\\:\\s+(?:\\d+\\:)?(?<pkg_name>\\S*)\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<action>\\w*):\\s(?<pkg_name>[^ ]*)\\s\" nodrop\n| parse regex \"<(?<action>[a-zA-Z]*)>\\s+[^\\(\\)]*\\(\\d+\\)(?<pkg_name>[^\\(]*)\\(\" nodrop\n| if (action in (\"Installed\",\"install\"), \"installed\",action) as action\n| if (action in (\"uninstall\",\"erased\",\"remove\", \"Erased\"), \"uninstalled\",action) as action\n| host.name as sourceHost\n| where action!=\"\"\n|count by sourceHost,action | transpose row sourceHost column action as *",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneldd8bcd7ea29f3b4d",
+      "title": "Failed SU Attempts",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=linux deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\") (\"su:\" or \"su[\")  \n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse \"FAILED su for * by *\" as dest_user,src_user  nodrop \n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\" and src_user!=\"\"\n|where dest_user matches \"{{dest_user}}\" \n|count as attempts by host.name, src_user, dest_user | sort - attempts",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "sumo.datasource=linux",
+        "key": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host.group",
+      "displayName": "host.group",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "sumo.datasource=linux deployment.environment={{deployment.environment}} ",
+        "key": "host.group"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host.name",
+      "displayName": "host.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "sumo.datasource=linux deployment.environment={{deployment.environment}} host.group={{host.group}}",
+        "key": "host.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_user",
+      "displayName": "dest_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=linux  \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse \"FAILED su for * by *\" as dest_user,src_user  nodrop \n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"name=*, UID=*, GID=*, home=*, shell=*\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop\n| parse \"account=*, uid=*, gid=*, home=*, shell=*,\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop \n| parse \"name=*, UID=*, GID=*, home=*, shell=*\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop\n| parse \"account=*, uid=*, gid=*, home=*, shell=*,\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop \n| parse regex \"(?<process>\\w*):\\s+(?<src_user>[^ ]+?)\\s+:.+?USER=(?<dest_user>[^ ]+?)\\s+\" nodrop\n| parse \"add '*' to group '*'\" as dest_user,dest_group nodrop\n| parse \"account added to group - account=*, group=*, gid=*,\" as dest_user,dest_group,dest_gid nodrop\n| parse \"account=*, uid=*, gid=*, old gid=*,\" as dest_user,dest_uid, dest_gid,src_gid nodrop\n| parse \"change user '*' GID from '*' to '*'\" as dest_user,src_gid, dest_gid\n| count by dest_user",
+        "field": "dest_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "process.executable.name",
+      "displayName": "process.executable.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=linux  \n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse regex \"^(?<StartTime>\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+)\\s(?<dest_hostname>\\S*)\\s(?<process_name>\\w*)(?:\\[\\d+\\]|):\\s+\" nodrop\n| process_name as process.executable.name \n| count by process.executable.name",
+        "field": "process.executable.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

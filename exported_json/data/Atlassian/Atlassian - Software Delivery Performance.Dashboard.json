@@ -1,0 +1,486 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Atlassian - Software Delivery Performance",
+  "description": "The Atlassian - Software Delivery Performance dashboard provides insights into the four key metrics used to measure the effectiveness of software development and delivery, in accordance with DevOps Research and Assessment (DORA). The panels display analytics for lead time to changes, time to restore service, deployment frequency, and change failure rate.",
+  "title": "Atlassian - Software Delivery Performance",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-2w"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelpane-92cbb5a5a96efa45",
+        "structure": "{\"height\":7,\"width\":6,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panelpane-d484c844b6a43946",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panelpane-fee863e3a85fc848",
+        "structure": "{\"height\":7,\"width\":6,\"x\":6,\"y\":7}"
+      },
+      {
+        "key": "panelpane-859e2ef69636aa4a",
+        "structure": "{\"height\":7,\"width\":6,\"x\":0,\"y\":21}"
+      },
+      {
+        "key": "panelpane-5247a3f5bf5ec943",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":28}"
+      },
+      {
+        "key": "panelpane-cacd9df7a5b62b4a",
+        "structure": "{\"height\":7,\"width\":6,\"x\":6,\"y\":21}"
+      },
+      {
+        "key": "panelpane-8bf5e80a96f35844",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":14}"
+      },
+      {
+        "key": "panelpane-eaa6be44b1e53a48",
+        "structure": "{\"height\":7,\"width\":6,\"x\":18,\"y\":7}"
+      },
+      {
+        "key": "panelpane-6f10c57f9c86ea41",
+        "structure": "{\"height\":7,\"width\":5,\"x\":12,\"y\":21}"
+      },
+      {
+        "key": "panelpane-0f3a131ab53dbb48",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":28}"
+      },
+      {
+        "key": "panelpane-8af9da0bb8a2a940",
+        "structure": "{\"height\":7,\"width\":6,\"x\":12,\"y\":7}"
+      },
+      {
+        "key": "panelpane-0d245f6da8508a4a",
+        "structure": "{\"height\":1,\"width\":12,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelpane-280d1602bcdf584a",
+        "structure": "{\"height\":1,\"width\":12,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panelpane-6217d4acb5763a4c",
+        "structure": "{\"height\":1,\"width\":12,\"x\":0,\"y\":20}"
+      },
+      {
+        "key": "panelpane-f32e062a8bee094f",
+        "structure": "{\"height\":1,\"width\":12,\"x\":12,\"y\":20}"
+      },
+      {
+        "key": "panelpane-23c37971b1220a45",
+        "structure": "{\"height\":7,\"width\":7,\"x\":17,\"y\":21}"
+      },
+      {
+        "key": "panelpane-7038698d9c99184b",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelpane-92cbb5a5a96efa45",
+      "title": "Average Lead Time",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Hours\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":1,\"to\":24,\"color\":\"#16943E\"},{\"from\":25,\"to\":720,\"color\":\"#DFBE2E\"},{\"from\":721,\"to\":4320,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":4320}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/bitbucket \n//BB Commit Event\n| join\n (json \"push.changes[0].created\",  \"push.changes[0].commits[0].date\",  \"push.changes[0].commits[0].hash\"  as  created, bitbucket_commits_date, bitbucket_commit | where %\"x-event-key\" = \"repo:push\" ) as bb_commit,\n\n( json field=_raw \"buildNumber\", \"deploymentEnvironment\", \"branch\", \"repoFullName\", \"pipe_result_link\", \"deploy_status\", \"pr_id\", \"commit\", \"tag\", \"projectKey\", \"repoOwner\", \"commit_link\", \"event_date\" as buildNumber,deploymentEnvironment, deploy_branch, repo_name, pipe_result_link, deploy_status, pr_id, deploy_commit, tag, projectKey, repoOwner,  commit_link, deployevent_date ) as deploy_event\non bb_commit.bitbucket_commit = deploy_event.deploy_commit\n| parse regex field= bb_commit_bitbucket_commits_date \"(?<commits_date>\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d)\"  nodrop   \n| parseDate(commits_date, \"yyyy-MM-dd'T'HH:mm:ss\") as commit_date_milliseconds\n\n| where deploy_event_deploymentEnvironment=\"production\" and deploy_event_deploy_status=\"0\"\n| parse regex field=deploy_event_deployevent_date \"(?<d>[\\S]+) (?<t>[\\S]+)\"\n| concat(d,\"T\",t) as event_date\n| parseDate(event_date, \"yyyy-MM-dd'T'HH:mm:ss\") as deploy_date_milliseconds\n| deploy_date_milliseconds - commit_date_milliseconds as lead_time\n| lead_time/3600000 as lead_time_in_hrs\n| avg (lead_time_in_hrs) as avg_lead_time_in_hrs",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-d484c844b6a43946",
+      "title": "Daily Average lead time Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme3\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/bitbucket \n//BB Commit Event\n| join\n (json \"push.changes[0].created\",  \"push.changes[0].commits[0].date\",  \"push.changes[0].commits[0].hash\"  as  created, bitbucket_commits_date, bitbucket_commit | where %\"x-event-key\" = \"repo:push\" ) as bb_commit,\n\n( json field=_raw \"buildNumber\", \"deploymentEnvironment\", \"branch\", \"repoFullName\", \"pipe_result_link\", \"deploy_status\", \"pr_id\", \"commit\", \"tag\", \"projectKey\", \"repoOwner\", \"commit_link\", \"event_date\" as buildNumber,deploymentEnvironment, deploy_branch, repo_name, pipe_result_link, deploy_status, pr_id, deploy_commit, tag, projectKey, repoOwner,  commit_link, deployevent_date ) as deploy_event\non bb_commit.bitbucket_commit = deploy_event.deploy_commit\n| parse regex field= bb_commit_bitbucket_commits_date \"(?<commits_date>\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d)\"  nodrop   \n| parseDate(commits_date, \"yyyy-MM-dd'T'HH:mm:ss\") as commit_date_milliseconds\n\n| where deploy_event_deploymentEnvironment=\"production\" and deploy_event_deploy_status=\"0\"\n| parse regex field=deploy_event_deployevent_date \"(?<d>[\\S]+) (?<t>[\\S]+)\"\n| concat(d,\"T\",t) as event_date\n| parseDate(event_date, \"yyyy-MM-dd'T'HH:mm:ss\") as deploy_date_milliseconds\n| deploy_date_milliseconds - commit_date_milliseconds as lead_time\n| lead_time/3600000 as lead_time_in_hrs\n| avg (lead_time_in_hrs) as avg_lead_time_in_hrs by d\n| sort by d asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-2w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-fee863e3a85fc848",
+      "title": "Repos with Slowest Lead Times  (in Hours)",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/bitbucket \n//BB Commit Event\n| join\n (json \"push.changes[0].created\",  \"push.changes[0].commits[0].date\",  \"push.changes[0].commits[0].hash\"  as  created, bitbucket_commits_date, bitbucket_commit | where %\"x-event-key\" = \"repo:push\" ) as bb_commit,\n\n( json field=_raw \"buildNumber\", \"deploymentEnvironment\", \"branch\", \"repoFullName\", \"pipe_result_link\", \"deploy_status\", \"pr_id\", \"commit\", \"tag\", \"projectKey\", \"repoOwner\", \"commit_link\", \"event_date\" as buildNumber,deploymentEnvironment, deploy_branch, repo_name, pipe_result_link, deploy_status, pr_id, deploy_commit, tag, projectKey, repoOwner,  commit_link, deployevent_date ) as deploy_event\non bb_commit.bitbucket_commit = deploy_event.deploy_commit\n| parse regex field= bb_commit_bitbucket_commits_date \"(?<commits_date>\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d)\"  nodrop   \n| parseDate(commits_date, \"yyyy-MM-dd'T'HH:mm:ss\") as commit_date_milliseconds\n\n| where deploy_event_deploymentEnvironment=\"production\" and deploy_event_deploy_status=\"0\"\n| parse regex field=deploy_event_deployevent_date \"(?<d>[\\S]+) (?<t>[\\S]+)\"\n| concat(d,\"T\",t) as event_date\n| parseDate(event_date, \"yyyy-MM-dd'T'HH:mm:ss\") as deploy_date_milliseconds\n| deploy_date_milliseconds - commit_date_milliseconds as lead_time\n| lead_time/3600000 as lead_time_in_hrs\n| avg (lead_time_in_hrs) as avg_lead_time_in_hrs by deploy_event_repo_name\n| deploy_event_repo_name as repo_name\n| format( \"%.2f\",avg_lead_time_in_hrs) as avg_lead_time_in_hrs\n| fields repo_name, avg_lead_time_in_hrs\n| sort by avg_lead_time_in_hrs\n| limit 5",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-859e2ef69636aa4a",
+      "title": "Average Deploys per week",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"events\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":14,\"to\":null,\"color\":\"#16943E\"},{\"from\":7,\"to\":14,\"color\":\"#DFBE2E\"},{\"from\":0,\"to\":6,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/bitbucket production  deploymentEnvironment pipe_result_link deploy_status commit_link \n| json field=_raw \"buildNumber\", \"deploymentEnvironment\", \"branch\", \"repoFullName\", \"pipe_result_link\", \"deploy_status\", \"pr_id\", \"commit\", \"tag\", \"projectKey\", \"repoOwner\", \"commit_link\", \"event_date\" \n| if (deploy_status matches \"0\", \"Success\", \"Failed\") as deploy_status\n| where deploymentEnvironment=\"production\"\n| timeslice 7d\n| count _timeslice \n| avg (_count) as avg_deploys_week\n| round (avg_deploys_week)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-5247a3f5bf5ec943",
+      "title": "Deploys Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/bitbucket production  deploymentEnvironment pipe_result_link deploy_status commit_link \n| json field=_raw \"buildNumber\", \"deploymentEnvironment\", \"branch\", \"repoFullName\", \"pipe_result_link\", \"deploy_status\", \"pr_id\", \"commit\", \"tag\", \"projectKey\", \"repoOwner\", \"commit_link\", \"event_date\" \n| if (deploy_status matches \"0\", \"Success\", \"Failed\") as deploy_status\n| where deploymentEnvironment=\"production\"\n| timeslice 1d\n| count as count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-2w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-cacd9df7a5b62b4a",
+      "title": "Deploys by Repository",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/bitbucket production  deploymentEnvironment pipe_result_link deploy_status commit_link \n| json field=_raw \"buildNumber\", \"deploymentEnvironment\", \"branch\", \"repoFullName\", \"pipe_result_link\", \"deploy_status\", \"pr_id\", \"commit\", \"tag\", \"projectKey\", \"repoOwner\", \"commit_link\", \"event_date\" \n| if (deploy_status matches \"0\", \"Success\", \"Failed\") as deploy_status\n| where deploymentEnvironment=\"production\"\n| count as count by repoFullName\n| sort",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-8bf5e80a96f35844",
+      "title": "Daily Avg. Time to Restore Service Trends",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"smooth\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Opsgenie_alerts Close p1\n| json \"alert.createdAt\", \"alert.updatedAt\", \"alert.description\", \"alert.message\", \"action\", \"alert.team\",  \"alert.priority\", \"alert.source\" , \"alert.tags[*]\",\"alert.recipients[*]\" as created_at, updated_at, description, message, action, team, priority, source, tags, recipients nodrop\n| where action = \"Close\" and priority=\"p1\"\n| created_at*1000000 as created_at\n| updated_at - created_at as time_to_restore_service\n| time_to_restore_service/3600000000 as time_to_restore_service\n| timeslice 1d\n| avg (time_to_restore_service) as avg_time_to_restore_service by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-2w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-eaa6be44b1e53a48",
+      "title": "Services with Slowest Time (In Hours) to Restore   ",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Opsgenie_alerts Close p1\n| json \"alert.createdAt\", \"alert.updatedAt\", \"alert.description\", \"alert.message\", \"action\", \"alert.team\",  \"alert.priority\", \"alert.source\" , \"alert.tags[*]\",\"alert.recipients[*]\" as created_at, updated_at, description, message, action, team, priority, source, tags, recipients nodrop\n| where action = \"Close\" and priority=\"p1\"\n| created_at*1000000 as created_at\n| updated_at - created_at as time_to_restore_service\n| time_to_restore_service/3600000000 as time_to_restore_service\n| avg (time_to_restore_service) as avg_time_to_restore_service by source\n| format( \"%.2f\",avg_time_to_restore_service) as avg_time_to_restore_service\n| sort by avg_time_to_restore_service desc \n| limit 5",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-6f10c57f9c86ea41",
+      "title": "Change Failure Rate",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"percentage\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":0,\"to\":14.99,\"color\":\"#16943E\"},{\"from\":15,\"to\":44.99,\"color\":\"#DFBE2E\"},{\"from\":45,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Opsgenie_alerts OR (_sourceCategory = Labs/bitbucket production  deploymentEnvironment pipe_result_link deploy_status commit_link)\n| json \"alert.createdAt\", \"alert.updatedAt\", \"alert.description\", \"alert.message\", \"action\", \"alert.team\",  \"alert.priority\", \"alert.source\" , \"alert.tags[*]\",\"alert.recipients[*]\" as created_at, updated_at, description, message, action, team, priority, source, tags, recipients nodrop // alerts\n| json field=_raw \"buildNumber\", \"deploymentEnvironment\", \"branch\", \"repoFullName\", \"pipe_result_link\", \"deploy_status\", \"pr_id\", \"commit\", \"tag\", \"projectKey\", \"repoOwner\", \"commit_link\", \"event_date\"  nodrop  // deploys\n| if(!isNull(action) and action !=\"\", \"opsgenie\", \"bitbucket\") as type \n| where (type=\"opsgenie\" and action = \"Close\" and priority=\"p1\") or (type=\"bitbucket\" and deploymentEnvironment=\"production\" and deploy_status=\"0\")\n| if(type=\"opsgenie\", 1, 0) as p1_incidents\n| if(type=\"bitbucket\", 1, 0) as deploys\n| sum(p1_incidents) as incidents, sum(deploys) as deploys \n| (incidents*100/(deploys)) as pct_change_failure_rate\n| fields pct_change_failure_rate",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-0f3a131ab53dbb48",
+      "title": "Average Change Failure Rate - Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"smooth\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Opsgenie_alerts OR (_sourceCategory = Labs/bitbucket production  deploymentEnvironment pipe_result_link deploy_status commit_link)\n| json \"alert.createdAt\", \"alert.updatedAt\", \"alert.description\", \"alert.message\", \"action\", \"alert.team\",  \"alert.priority\", \"alert.source\" , \"alert.tags[*]\",\"alert.recipients[*]\" as created_at, updated_at, description, message, action, team, priority, source, tags, recipients nodrop // alerts\n| json field=_raw \"buildNumber\", \"deploymentEnvironment\", \"branch\", \"repoFullName\", \"pipe_result_link\", \"deploy_status\", \"pr_id\", \"commit\", \"tag\", \"projectKey\", \"repoOwner\", \"commit_link\", \"event_date\"  nodrop  // deploys\n| if(!isNull(action) and action !=\"\", \"opsgenie\", \"bitbucket\") as type \n| where (type=\"opsgenie\" and action = \"Close\" and priority=\"p1\") or (type=\"bitbucket\" and deploymentEnvironment=\"production\" and deploy_status=\"0\")\n| if(type=\"opsgenie\", 1, 0) as p1_incidents\n| if(type=\"bitbucket\", 1, 0) as deploys\n| timeslice 1d\n| sum(p1_incidents) as incidents, sum(deploys) as deploys by _timeslice\n| (incidents*100/deploys) as pct_change_failure_rate\n| fields _timeslice, pct_change_failure_rate",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-8af9da0bb8a2a940",
+      "title": "Average Time to Restore Service",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Hours\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":0,\"to\":0.99,\"color\":\"#16943E\"},{\"from\":1,\"to\":24,\"color\":\"#DFBE2E\"},{\"from\":25,\"to\":720,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":720}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Opsgenie_alerts Close p1\n| json \"alert.createdAt\", \"alert.updatedAt\", \"alert.description\", \"alert.message\", \"action\", \"alert.team\",  \"alert.priority\", \"alert.source\" , \"alert.tags[*]\",\"alert.recipients[*]\" as created_at, updated_at, description, message, action, team, priority, source, tags, recipients nodrop\n| where action = \"Close\" and priority=\"p1\"\n| created_at*1000000 as created_at\n| updated_at - created_at as time_to_restore_service\n| time_to_restore_service/3600000000 as time_to_restore_service\n| avg (time_to_restore_service) as avg_time_to_restore_service",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-0d245f6da8508a4a",
+      "title": "Lead Time",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"backgroundColor\":\"#8be2ff\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelpane-280d1602bcdf584a",
+      "title": "Time to Restore Service",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"backgroundColor\":\"#8be2ff\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelpane-6217d4acb5763a4c",
+      "title": "Deploys",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"backgroundColor\":\"#8be2ff\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelpane-f32e062a8bee094f",
+      "title": "Change Failure Rate",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"backgroundColor\":\"#8be2ff\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelpane-23c37971b1220a45",
+      "title": "Top Services by P1 Incidents",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Opsgenie_alerts Close p1\n| json \"alert.alertId\", \"alert.createdAt\", \"alert.updatedAt\", \"alert.description\", \"alert.message\", \"action\", \"alert.team\",  \"alert.priority\", \"alert.source\" , \"alert.tags[*]\",\"alert.recipients[*]\" as alertId, created_at, updated_at, description, message, action, team, priority, service, tags, recipients nodrop\n| where priority=\"p1\"\n| count_distinct(alertId) as incidents by service\n| sort by incidents  \n| limit 5",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-7038698d9c99184b",
+      "title": "Explanation of DORA Metrics",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"format\":\"markdown\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "The Accelerate State of DevOps 2019 Report from DevOps Research and Assessment (DORA) highlights four key metrics to measure the effectiveness of software development and delivery. \n\nThe report is available: \nhttps://cloud.google.com/devops\n\nThe four key metrics are: \n\n1. Lead time to changes: How long does it take to go from code committed to code successfully running in production? This is identified by Bitbucket commits to production events. \n\n2. Time to restore service: How long does it generally take to restore service when a service incident or a defect that impacts users occurs? This is calculated by the the time it takes to close an Opsgenie P1 incident once opened. \n\n3. Deployment Frequency: How\noften does your organization deploy code to production\nor release it to end users?\nThis is identified via Bitbucket deploy events to production.\n\n4. Change failure rate: What percentage of changes to production or released to users result in degraded\nservice? This is the percentage of the number of P1 Opsgenie incidents to the number of successful deploys to production. "
+    }
+  ],
+  "variables": [],
+  "coloringRules": []
+}

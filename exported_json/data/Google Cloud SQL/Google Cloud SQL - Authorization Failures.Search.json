@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Google Cloud SQL - Authorization Failures",
+  "search": {
+    "queryText": "_sourceCategory = Labs/GCP/sql authorizationInfo callerIp logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\", \"message.data.timestamp\" as labels, payload, timestamp\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| json field=payload \"authenticationInfo.principalEmail\", \"requestMetadata.callerIp\", \"authorizationInfo[*]\" as user, caller_ip, permissions\n| where !isNull(permissions)\n| parse regex field=permissions \"\\\"permission\\\":\\\"(?<action>[a-zA-Z\\.]+)\\\",\\\"granted\\\":(?<granted>[a-z]+)}\" multi\n| where granted != \"true\"\n| lookup country_name, city from geo://location on ip=caller_ip\n| count as operations by timestamp, user, action, instance, country_name, city, caller_ip\n| fields timestamp, user, action, instance, country_name, city, caller_ip\n| sort by timestamp",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

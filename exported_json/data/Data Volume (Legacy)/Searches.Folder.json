@@ -1,0 +1,232 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Searches",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Collector Not Sending Data",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes \n| where _sourceCategory=\"collector_volume\"\n| parse regex \"\\\"(?<collector>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| first(_messagetime) as MostRecent, sum(bytes) as TotalVolumeBytes by collector\n| formatDate(fromMillis(MostRecent),\"yyyy/MM/dd HH:mm:ss z\") as MostRecentTime \n| toMillis(now()) as currentTime\n| formatDate(fromMillis(currentTime),\"yyyy/MM/dd HH:mm:ss z\") as SearchTime\n| (currentTime-MostRecent) / 1000 / 60 as mins_since_last_logs\n| where mins_since_last_logs >= 60\n| fields -mostrecent, currenttime \n| format (\"Collector '%s' has not collected data in the past 60 minutes\", collector) as message",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "This hourly alert is generated when a Collector has not sent data to Sumo Logic for more than 60 minutes\u2028. The time range is the past 24 hours (-24h)."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Daily Plan Limit",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"collector_volume\"\n| parse regex \"\\\"(?<collector>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| bytes/1024/1024/1024 as gbytes\n| timeslice 1d\n| sum(gbytes) as gbytes by _timeslice\n| 1 as daily_plan_size // Replace the 1 with your daily plan limit in GB found by going to Administration > Account > Account Overview\n| where gbytes >= daily_plan_size\n| sort gbytes\n| fields _timeslice, gbytes, daily_plan_size",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "This daily alert is generated when when yesterday's daily account ingest greater than your daily plan limit. \n\n**You must replace the X in the search for the search to be successfully run"
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Indexes with Zero Ingest",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory = \"view_volume\"\n| parse regex \"\\\"(?<view_name>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| where (view_name not in (\"Default Index\", \"sumologic_volume\", \"sumologic_audit\")) and !(view_name matches \"_sumologic_report_*\")\n| bytes/1024/1024/1024 as gbytes\n| sum(gbytes) as gbytes by view_name\n| where gbytes = 0\n| sort by view_name asc",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-30d"
+      },
+      "searchSchedule": null,
+      "description": "This query will help identify indexes (views and partitions) not receiving ingest in specified time range."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Ingest Spike",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcecategory_volume\"\n| parse regex \"\\\"(?<sourceCategory>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| bytes/1024/1024/1024 as gbytes\n| timeslice 1d\n| sum(gbytes) as gbytes by _timeslice\n| sort by _timeslice asc \n| smooth gbytes, 30 as moving_avg // 30 days moving average - user can customize this value.\n| gbytes as curr_day_gbytes\n| 50 as spikePercentThreshold // With what percent of ingest spike user would like to have alert - user can customize this value.\n| where curr_day_gbytes >= (1 + spikePercentThreshold / 100) * moving_avg\n| sort by _timeslice | limit 1\n| Now() - _timeslice as timediff | (timediff/3600000) as timediff\n| 25 as timeThreshold // User would like to know what happened in last 25 hours\n| where timediff <= timeThreshold\n| fields -gbytes, spikePercentThreshold, timediff, timeThreshold\n// Schedule this search once a day with time range of 60 days (double of what user like to have moving average for). Set condition to alert if there are more than 0 records in the result",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60d"
+      },
+      "searchSchedule": null,
+      "description": "Alert if current ingest is 50% more than moving average."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Ingest Spike by sourceCategory",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcecategory_volume\"\n| parse regex \"\\\"(?<sourceCategory>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| bytes/1024/1024/1024 as gbytes\n| timeslice 1d\n| sum(gbytes) as gbytes by _timeslice, sourceCategory\n| sort by _timeslice asc \n| smooth gbytes, 30 as moving_avg by sourceCategory // 30 days moving average for specific sourceCategory - user can customize this value.\n| gbytes as curr_day_gbytes\n| 50 as spikePercentThreshold // With what percent of ingest spike user would like to have alert - user can customize this value.\n| where curr_day_gbytes >= (1 + spikePercentThreshold / 100) * moving_avg\n| Now() - _timeslice as timediff | (timediff/3600000) as timediff\n| 25 as timeThreshold // User would like to know what happened in last 25 hours\n| where timediff <= timeThreshold\n| fields -gbytes, spikePercentThreshold, timediff, timeThreshold\n// Schedule this search once a day with time range of 60 days (double of what user like to have moving average for). Set condition to alert if there are more than 0 records in the result",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60d"
+      },
+      "searchSchedule": null,
+      "description": "Alert if current ingest for specific sourceCategory is 50% more than moving average."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Message Size, Average by Source Category",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcecategory_volume\"\n| parse regex \"\\\"(?<sourcecategory>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| bytes/count as permessage\n| avg(permessage) by sourcecategory\n| sort by _avg",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Message Size, Average by Source Name",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcename_volume\"\n| parse regex \"\\\"(?<sourcename>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| bytes/count as permessage\n| avg(permessage) by sourcename\n| sort by _avg",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Message Size, BoxPlot by Source Category",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcecategory_volume\"\n| parse regex \"\\\"(?<sourcecategory>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| bytes/count as permessage\n| min(permessage), pct(permessage,25), pct(permessage,50), pct(permessage,75), max(permessage), count by sourcecategory",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Monthly Plan Limit",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"collector_volume\"\n| parse regex \"\\\"(?<collector>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| timeslice 1d\n| bytes/1024/1024/1024 as gbytes \n| sum(gbytes) as gbytes by _timeslice \n| formatDate(_timeslice, \"YY\") as year\n| formatDate(_timeslice, \"MM\") as month\n| number(month)\n| formatDate(_timeslice, \"dd\") as day\n| number(day)\n| formatDate(now(), \"MM\") as current_month\n| number(current_month)\n| formatDate(now(), \"dd\") as current_day\n| number(current_day)\n| 1 as billing_start // Replace the 1 with your billing start day which can be found in Administration > Account > Account Overview.\n| 28 as billing_end // Replace the 28 with your billing end day which can be found in Administration > Account > Account Overview\n| if(current_day < billing_start, current_month-1, current_month) as start_month\n| if(billing_start=1 && billing_end=31, current_month, if(current_day >= billing_start, current_month+1, current_month)) as end_month\n| if(((month>start_month AND day<=billing_end) OR (month=start_month AND day>=billing_start)), \"true\", \"false\") as include\n| 1 as day_count\n| if(start_month in(1,3,5,7,8,10,12), 31, if (start_month in(4,6,9,11), 30, if(year % 4 == 0, 29, 28))) as days_in_start_month\n| if(end_month in(1,3,5,7,8,10,12), 31, if (end_month in(4,6,9,11), 30, if(year % 4 == 0, 29, 28))) as days_in_end_month\n| where include=\"true\"\n| order by _timeslice\n| sum(gbytes) as gbytes, sum(day_count) as day_count, max(current_month) as current_month, max(current_day) as current_day, max(days_in_start_month) as days_in_start_month, max(days_in_end_month) as days_in_end_month, max(start_month) as start_month, max(end_month) as end_month, max(billing_start) as billing_start, max(billing_end) as billing_end\n| if(current_month = end_month, billing_end-current_day, if(current_month < end_month, days_in_start_month-current_day+billing_end, 0)) as billing_days_remaining\n| 1 as daily_gb_limit // Replace the 1 with your ingest limit per day which can be found in Administration > Account > Account Overview\n| daily_gb_limit * (day_count + billing_days_remaining) as expected_ingest_in_billing_cycle\n| (gbytes/expected_ingest_in_billing_cycle) * 100 as pct_used\n| where pct_used > 85",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-32d"
+      },
+      "searchSchedule": null,
+      "description": "This daily alert is generated when total ingest for the current billing period is greater than or equal to 85% of your total Sumo Logic monthly plan limit.\u2028  The alert covers the past 32 days (-32d).**You must replace the X in the search for the search to be successfully run"
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Over Daily Capacity For Last 3 Days",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcecategory_volume\"\n| parse regex \"\\\"(?<sourcecategory>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| bytes/1024/1024/1024 as gbytes \n| timeslice 1d\n| sum(gbytes) as daily_ingest_gbytes by _timeslice\n| 150 as avg_daily_ingest_capacity // This is account contract based value. Customize this value. Can be found in Administration > Account > Account Overview\n| where daily_ingest_gbytes >= avg_daily_ingest_capacity\n| Now() - _timeslice as timediff | (timediff/(3600000*24)) as timediff\n| 3 as timeThreshold // User would like to know what happened in last 3 days. It is assumed that user would like to alert if ingest for last 3 days is Over daily capacity\n| where timediff <= timeThreshold \n| fields -timediff, timeThreshold\n// Schedule this search once a day with time range of 3 days. Set condition to alert if there are 3 (keep this value same as timeThreshold) records",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-3d"
+      },
+      "searchSchedule": null,
+      "description": "Alert if ingest for each of the last 3 days is more than average daily ingest capacity as per subscription contract"
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Volume by Collector",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"collector_volume\"\n| parse regex \"\\\"(?<collector>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| timeslice 1h\n| bytes/1024/1024/1024 as gbytes\n| sum(gbytes) as gbytes by collector, _timeslice\n| transpose row _timeslice column collector",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Volume by Source Category",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcecategory_volume\"\n| parse regex \"\\\"(?<sourcecategory>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| timeslice 1h\n| bytes/1024/1024/1024 as gbytes\n| sum(gbytes) as gbytes by sourcecategory, _timeslice\n| transpose row _timeslice column sourcecategory",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Volume by Source Host",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcehost_volume\"\n| parse regex \"\\\"(?<sourcehost>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| timeslice 1h\n| bytes/1024/1024/1024 as gbytes\n| sum(gbytes) as gbytes by sourcehost, _timeslice\n| transpose row _timeslice column sourcehost",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Volume by Source Name",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcename_volume\"\n| parse regex \"\\\"(?<sourcename>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| timeslice 1h\n| bytes/1024/1024/1024 as gbytes\n| sum(gbytes) as gbytes by sourcename, _timeslice\n| transpose row _timeslice column sourcename",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "sourceCategory Ingest Spike",
+      "search": {
+        "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcecategory_volume\" \n| parse regex \"\\\"(?<sourcecategory>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| bytes/1024/1024/1024 as gbytes\n| timeslice 1h\n| sum(gbytes) as gbytes by sourcecategory, _timeslice\n| where !(sourceCategory matches \"*_volume\")\n| compare timeshift -1w 4 max \n| ((gbytes - gbytes_4w_max) / gbytes) * 100 as pct_increase\n| total gbytes by _timeslice\n| (gbytes / _total) * 100 as ingest_weight \n| where pct_increase  > 50 and ingest_weight > 25",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-65m -5m"
+      },
+      "searchSchedule": null,
+      "description": "This hourly alert is generated when both of the following occur:\n1) Ingest for any _sourceCategory in your account has a 50% spike compared with the maximum ingest for the same _sourceCategory over the last four weeks (comparison is with the same hour and day of week).\n2) The volume ingested by the _sourceCategory represents at least 25 % of the total data ingested within the hour. \u2028\n"
+    }
+  ]
+}

@@ -1,0 +1,623 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Aurora PostgreSQL ULM - CloudTrail Event - Overview - New",
+  "description": "View details for event logs, including geographical locations, trends, successful and failed events, user activity, and error codes.",
+  "title": "Aurora PostgreSQL ULM - CloudTrail Event - Overview - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel4691a5f98b36484f",
+        "structure": "{\"width\":12,\"height\":9,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel40c34d80933fba41",
+        "structure": "{\"width\":12,\"height\":9,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panel395609f3bd1f6a4e",
+        "structure": "{\"width\":6,\"height\":6,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panela3588d7ca7b17948",
+        "structure": "{\"width\":18,\"height\":6,\"x\":6,\"y\":7}"
+      },
+      {
+        "key": "panel3448a77f8205f949",
+        "structure": "{\"width\":6,\"height\":6,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panelb41de645b4c5cb4b",
+        "structure": "{\"width\":18,\"height\":6,\"x\":6,\"y\":12}"
+      },
+      {
+        "key": "panele2fdfacd9955c848",
+        "structure": "{\"width\":10,\"height\":6,\"x\":0,\"y\":17}"
+      },
+      {
+        "key": "panelc78aff249b866b4e",
+        "structure": "{\"width\":14,\"height\":6,\"x\":10,\"y\":17}"
+      },
+      {
+        "key": "panel204f8b45ab442b44",
+        "structure": "{\"width\":5,\"height\":6,\"x\":0,\"y\":22}"
+      },
+      {
+        "key": "paneldfa39607a1563842",
+        "structure": "{\"width\":5,\"height\":6,\"x\":5,\"y\":22}"
+      },
+      {
+        "key": "panel1361a714a5f06b4d",
+        "structure": "{\"width\":14,\"height\":6,\"x\":10,\"y\":22}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel3448a77f8205f949",
+      "title": "Successful Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\") !errorCode\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\")) and eventStatus=\"Success\"\n|where if (\"{{userAgent}}\" = \"*\", true, userAgent matches \"{{userAgent}}\") AND if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{mfaAuthenticated}}\" = \"*\", true, mfaAuthenticated matches \"{{mfaAuthenticated}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{sourceipaddress}}\" = \"*\", true, sourceipaddress matches \"{{sourceipaddress}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{awsregion}}\" = \"*\", true, awsregion matches \"{{awsregion}}\") AND if (\"{{errorcode}}\" = \"*\", true, errorcode matches \"{{errorcode}}\") AND if (\"{{engine}}\" = \"*\", true, engine matches \"{{engine}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{engineMode}}\" = \"*\", true, engineMode matches \"{{engineMode}}\") AND if (\"{{errorMessage}}\" = \"*\", true, errorMessage matches \"{{errorMessage}}\") AND if (\"{{dBClusterIdentifier}}\" = \"*\", true, dBClusterIdentifier matches \"{{dBClusterIdentifier}}\") AND if (\"{{eventstatus}}\" = \"*\", true, eventstatus matches \"{{eventstatus}}\")\n|count by eventName\n| sort by _count, eventName asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneldfa39607a1563842",
+      "title": "Top Error Codes",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\") errorCode\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\")) and eventStatus=\"Failure\"\n|where if (\"{{userAgent}}\" = \"*\", true, userAgent matches \"{{userAgent}}\") AND if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{mfaAuthenticated}}\" = \"*\", true, mfaAuthenticated matches \"{{mfaAuthenticated}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{sourceipaddress}}\" = \"*\", true, sourceipaddress matches \"{{sourceipaddress}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{awsregion}}\" = \"*\", true, awsregion matches \"{{awsregion}}\") AND if (\"{{errorcode}}\" = \"*\", true, errorcode matches \"{{errorcode}}\") AND if (\"{{engine}}\" = \"*\", true, engine matches \"{{engine}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{engineMode}}\" = \"*\", true, engineMode matches \"{{engineMode}}\") AND if (\"{{errorMessage}}\" = \"*\", true, errorMessage matches \"{{errorMessage}}\") AND if (\"{{dBClusterIdentifier}}\" = \"*\", true, dBClusterIdentifier matches \"{{dBClusterIdentifier}}\") AND if (\"{{eventstatus}}\" = \"*\", true, eventstatus matches \"{{eventstatus}}\")\n|count by errorCode \n| top 10 errorCode by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-3d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panele2fdfacd9955c848",
+      "title": "Top Users",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n|where if (\"{{userAgent}}\" = \"*\", true, userAgent matches \"{{userAgent}}\") AND if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{mfaAuthenticated}}\" = \"*\", true, mfaAuthenticated matches \"{{mfaAuthenticated}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{sourceipaddress}}\" = \"*\", true, sourceipaddress matches \"{{sourceipaddress}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{awsregion}}\" = \"*\", true, awsregion matches \"{{awsregion}}\") AND if (\"{{errorcode}}\" = \"*\", true, errorcode matches \"{{errorcode}}\") AND if (\"{{engine}}\" = \"*\", true, engine matches \"{{engine}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{engineMode}}\" = \"*\", true, engineMode matches \"{{engineMode}}\") AND if (\"{{errorMessage}}\" = \"*\", true, errorMessage matches \"{{errorMessage}}\") AND if (\"{{dBClusterIdentifier}}\" = \"*\", true, dBClusterIdentifier matches \"{{dBClusterIdentifier}}\") AND if (\"{{eventstatus}}\" = \"*\", true, eventstatus matches \"{{eventstatus}}\")\n|count by type, user\n| top 10 type, user by _count, type asc, user asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1361a714a5f06b4d",
+      "title": "Failed Event Details",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\") errorCode\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\")) and eventStatus=\"Failure\"\n| timeslice 1s\n|where if (\"{{userAgent}}\" = \"*\", true, userAgent matches \"{{userAgent}}\") AND if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{mfaAuthenticated}}\" = \"*\", true, mfaAuthenticated matches \"{{mfaAuthenticated}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{sourceipaddress}}\" = \"*\", true, sourceipaddress matches \"{{sourceipaddress}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{awsregion}}\" = \"*\", true, awsregion matches \"{{awsregion}}\") AND if (\"{{errorcode}}\" = \"*\", true, errorcode matches \"{{errorcode}}\") AND if (\"{{engine}}\" = \"*\", true, engine matches \"{{engine}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{engineMode}}\" = \"*\", true, engineMode matches \"{{engineMode}}\") AND if (\"{{errorMessage}}\" = \"*\", true, errorMessage matches \"{{errorMessage}}\") AND if (\"{{dBClusterIdentifier}}\" = \"*\", true, dBClusterIdentifier matches \"{{dBClusterIdentifier}}\") AND if (\"{{eventstatus}}\" = \"*\", true, eventstatus matches \"{{eventstatus}}\")\n|count by _timeslice, eventName, errorCode, errorMessage, awsRegion, sourceIPAddress, accountId, user, type, requestID, engine, engineMode\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-3d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel40c34d80933fba41",
+      "title": "Failure Events Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\") errorCode\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\")) and eventStatus=\"Failure\"\n|where if (\"{{userAgent}}\" = \"*\", true, userAgent matches \"{{userAgent}}\") AND if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{mfaAuthenticated}}\" = \"*\", true, mfaAuthenticated matches \"{{mfaAuthenticated}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{sourceipaddress}}\" = \"*\", true, sourceipaddress matches \"{{sourceipaddress}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{awsregion}}\" = \"*\", true, awsregion matches \"{{awsregion}}\") AND if (\"{{errorcode}}\" = \"*\", true, errorcode matches \"{{errorcode}}\") AND if (\"{{engine}}\" = \"*\", true, engine matches \"{{engine}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{engineMode}}\" = \"*\", true, engineMode matches \"{{engineMode}}\") AND if (\"{{errorMessage}}\" = \"*\", true, errorMessage matches \"{{errorMessage}}\") AND if (\"{{dBClusterIdentifier}}\" = \"*\", true, dBClusterIdentifier matches \"{{dBClusterIdentifier}}\") AND if (\"{{eventstatus}}\" = \"*\", true, eventstatus matches \"{{eventstatus}}\")\n|count by sourceIPAddress\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = sourceIPAddress",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb41de645b4c5cb4b",
+      "title": "Successful Event Details",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\") !errorCode\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\")) and eventStatus=\"Success\"\n| timeslice 1s\n|where if (\"{{userAgent}}\" = \"*\", true, userAgent matches \"{{userAgent}}\") AND if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{mfaAuthenticated}}\" = \"*\", true, mfaAuthenticated matches \"{{mfaAuthenticated}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{sourceipaddress}}\" = \"*\", true, sourceipaddress matches \"{{sourceipaddress}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{awsregion}}\" = \"*\", true, awsregion matches \"{{awsregion}}\") AND if (\"{{errorcode}}\" = \"*\", true, errorcode matches \"{{errorcode}}\") AND if (\"{{engine}}\" = \"*\", true, engine matches \"{{engine}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{engineMode}}\" = \"*\", true, engineMode matches \"{{engineMode}}\") AND if (\"{{errorMessage}}\" = \"*\", true, errorMessage matches \"{{errorMessage}}\") AND if (\"{{dBClusterIdentifier}}\" = \"*\", true, dBClusterIdentifier matches \"{{dBClusterIdentifier}}\") AND if (\"{{eventstatus}}\" = \"*\", true, eventstatus matches \"{{eventstatus}}\")\n|count by _timeslice, eventName, awsRegion, sourceIPAddress, accountId, user, type, requestId, userAgent, engineMode\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela3588d7ca7b17948",
+      "title": "Event Status Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null},\"axisY2\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"minimum\":0,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[{\"series\":[\"success\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"failure\"],\"queries\":[],\"properties\":{\"axisYType\":\"secondary\",\"type\":\"line\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h\n|where if (\"{{userAgent}}\" = \"*\", true, userAgent matches \"{{userAgent}}\") AND if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{mfaAuthenticated}}\" = \"*\", true, mfaAuthenticated matches \"{{mfaAuthenticated}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{sourceipaddress}}\" = \"*\", true, sourceipaddress matches \"{{sourceipaddress}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{awsregion}}\" = \"*\", true, awsregion matches \"{{awsregion}}\") AND if (\"{{errorcode}}\" = \"*\", true, errorcode matches \"{{errorcode}}\") AND if (\"{{engine}}\" = \"*\", true, engine matches \"{{engine}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{engineMode}}\" = \"*\", true, engineMode matches \"{{engineMode}}\") AND if (\"{{errorMessage}}\" = \"*\", true, errorMessage matches \"{{errorMessage}}\") AND if (\"{{dBClusterIdentifier}}\" = \"*\", true, dBClusterIdentifier matches \"{{dBClusterIdentifier}}\") AND if (\"{{eventstatus}}\" = \"*\", true, eventstatus matches \"{{eventstatus}}\")\n|count by _timeslice, eventStatus, eventName\n| transpose row _timeslice column eventStatus, eventName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-3d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel395609f3bd1f6a4e",
+      "title": "Event Status",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n|where if (\"{{userAgent}}\" = \"*\", true, userAgent matches \"{{userAgent}}\") AND if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{mfaAuthenticated}}\" = \"*\", true, mfaAuthenticated matches \"{{mfaAuthenticated}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{sourceipaddress}}\" = \"*\", true, sourceipaddress matches \"{{sourceipaddress}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{awsregion}}\" = \"*\", true, awsregion matches \"{{awsregion}}\") AND if (\"{{errorcode}}\" = \"*\", true, errorcode matches \"{{errorcode}}\") AND if (\"{{engine}}\" = \"*\", true, engine matches \"{{engine}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{engineMode}}\" = \"*\", true, engineMode matches \"{{engineMode}}\") AND if (\"{{errorMessage}}\" = \"*\", true, errorMessage matches \"{{errorMessage}}\") AND if (\"{{dBClusterIdentifier}}\" = \"*\", true, dBClusterIdentifier matches \"{{dBClusterIdentifier}}\") AND if (\"{{eventstatus}}\" = \"*\", true, eventstatus matches \"{{eventstatus}}\")\n|count by eventStatus",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel204f8b45ab442b44",
+      "title": "Failed Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\") errorCode\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\")) and eventStatus=\"Failure\"\n|where if (\"{{userAgent}}\" = \"*\", true, userAgent matches \"{{userAgent}}\") AND if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{mfaAuthenticated}}\" = \"*\", true, mfaAuthenticated matches \"{{mfaAuthenticated}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{sourceipaddress}}\" = \"*\", true, sourceipaddress matches \"{{sourceipaddress}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{awsregion}}\" = \"*\", true, awsregion matches \"{{awsregion}}\") AND if (\"{{errorcode}}\" = \"*\", true, errorcode matches \"{{errorcode}}\") AND if (\"{{engine}}\" = \"*\", true, engine matches \"{{engine}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{engineMode}}\" = \"*\", true, engineMode matches \"{{engineMode}}\") AND if (\"{{errorMessage}}\" = \"*\", true, errorMessage matches \"{{errorMessage}}\") AND if (\"{{dBClusterIdentifier}}\" = \"*\", true, dBClusterIdentifier matches \"{{dBClusterIdentifier}}\") AND if (\"{{eventstatus}}\" = \"*\", true, eventstatus matches \"{{eventstatus}}\")\n|count by eventName\n| sort by _count, eventName asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-3d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc78aff249b866b4e",
+      "title": "Events by User",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 1d\n|where if (\"{{userAgent}}\" = \"*\", true, userAgent matches \"{{userAgent}}\") AND if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{mfaAuthenticated}}\" = \"*\", true, mfaAuthenticated matches \"{{mfaAuthenticated}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{sourceipaddress}}\" = \"*\", true, sourceipaddress matches \"{{sourceipaddress}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{awsregion}}\" = \"*\", true, awsregion matches \"{{awsregion}}\") AND if (\"{{errorcode}}\" = \"*\", true, errorcode matches \"{{errorcode}}\") AND if (\"{{engine}}\" = \"*\", true, engine matches \"{{engine}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{engineMode}}\" = \"*\", true, engineMode matches \"{{engineMode}}\") AND if (\"{{errorMessage}}\" = \"*\", true, errorMessage matches \"{{errorMessage}}\") AND if (\"{{dBClusterIdentifier}}\" = \"*\", true, dBClusterIdentifier matches \"{{dBClusterIdentifier}}\") AND if (\"{{eventstatus}}\" = \"*\", true, eventstatus matches \"{{eventstatus}}\")\n|count by user, eventName\n| transpose row user column eventName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4691a5f98b36484f",
+      "title": "Successful Events Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\") !errorCode\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\")) and eventStatus=\"Success\"\n|where if (\"{{userAgent}}\" = \"*\", true, userAgent matches \"{{userAgent}}\") AND if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{mfaAuthenticated}}\" = \"*\", true, mfaAuthenticated matches \"{{mfaAuthenticated}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{sourceipaddress}}\" = \"*\", true, sourceipaddress matches \"{{sourceipaddress}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{awsregion}}\" = \"*\", true, awsregion matches \"{{awsregion}}\") AND if (\"{{errorcode}}\" = \"*\", true, errorcode matches \"{{errorcode}}\") AND if (\"{{engine}}\" = \"*\", true, engine matches \"{{engine}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{engineMode}}\" = \"*\", true, engineMode matches \"{{engineMode}}\") AND if (\"{{errorMessage}}\" = \"*\", true, errorMessage matches \"{{errorMessage}}\") AND if (\"{{dBClusterIdentifier}}\" = \"*\", true, dBClusterIdentifier matches \"{{dBClusterIdentifier}}\") AND if (\"{{eventstatus}}\" = \"*\", true, eventstatus matches \"{{eventstatus}}\")\n|count by sourceIPAddress\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = sourceIPAddress",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "engineMode",
+      "displayName": "engineMode",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "engineMode"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventstatus",
+      "displayName": "eventstatus",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "eventstatus"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "errorcode",
+      "displayName": "errorcode",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "errorcode"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "awsregion",
+      "displayName": "awsregion",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "awsregion"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventType",
+      "displayName": "eventType",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "eventType"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "errorMessage",
+      "displayName": "errorMessage",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "errorMessage"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "userAgent",
+      "displayName": "userAgent",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "userAgent"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "sourceipaddress",
+      "displayName": "sourceipaddress",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "sourceipaddress"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "engine",
+      "displayName": "engine",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "engine"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventname",
+      "displayName": "eventname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "eventname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user",
+      "displayName": "user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "accountid",
+      "displayName": "accountid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "accountid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "type",
+      "displayName": "type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "mfaAuthenticated",
+      "displayName": "mfaAuthenticated",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "mfaAuthenticated"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dBClusterIdentifier",
+      "displayName": "dBClusterIdentifier",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventSource\\\":\\\"rds.amazonaws.com\\\"\" (\"\\\"engine\\\":\\\"aurora-postgresql\\\"\")\n| json \"userIdentity\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"eventType\", \"recipientAccountId\", \"requestParameters\", \"responseElements\", \"requestID\", \"errorCode\", \"errorMessage\" nodrop\n| json field=userIdentity \"type\", \"principalId\", \"arn\", \"userName\", \"accountId\" nodrop\n| json field=userIdentity \"sessionContext.attributes.mfaAuthenticated\" as mfaAuthenticated nodrop\n| json field=requestParameters \"dBClusterIdentifier\", \"engine\", \"engineMode\" as req_dBClusterIdentifier, req_engine, req_engineMode nodrop\n| json field=responseElements \"dBClusterIdentifier\", \"engine\", \"engineMode\" as res_dBClusterIdentifier, res_engine, res_engineMode nodrop\n| parse field=arn \":assumed-role/*\" as user nodrop  \n| parse field=arn \"arn:aws:iam::*:*\" as accountId, user nodrop\n| if (isEmpty(errorCode), \"Success\", \"Failure\") as eventStatus\n| if (isEmpty(userName), user, userName) as user\n| if (isEmpty(req_dBClusterIdentifier), res_dBClusterIdentifier, req_dBClusterIdentifier) as dBClusterIdentifier\n| if (isEmpty(req_engine), res_engine, req_engine) as engine\n| if (isEmpty(req_engineMode), res_engineMode, req_engineMode) as engineMode\n| where eventSource = \"rds.amazonaws.com\" and (req_engine in (\"aurora-postgresql\") or res_engine in (\"aurora-postgresql\"))\n| timeslice 6h",
+        "field": "dBClusterIdentifier"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

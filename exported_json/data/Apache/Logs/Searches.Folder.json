@@ -1,0 +1,307 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Searches",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - All HTTP Response codes with their count",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| count by status_code, webserver_farm\n| sort by _count, webserver_farm asc",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Client Errors (4xx response codes) per day",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where status_code matches \"4*\" \n| timeslice by 1d \n| count by _timeslice",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Critical log messages",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* AND (\"emerg\" OR \"alert\" OR \"crit\") \n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<reason>[a-zA-Z].+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?:.+?) (?<file>/[a-zA-Z0-9\\._].+?)(?:$|, |: | on line| (?i)http/1.(?:0|1))\"  nodrop \n| parse regex field=mesg \" (?<file>[a-zA-Z]:\\\\.+?)(?:$|, |: | on line)\" nodrop \n| parse regex field=mesg \"\\[client (?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop \n| parse regex field=mesg \"\\[client .+?:(?<src_port>[0-9][0-9]+)\\] \" nodrop \n| parse regex field=mesg \"referer: (?<referrer>.+)$\"  nodrop \n| parse regex field=mesg \" \\[(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \"(?<reason>Forbidden): (?<file>.+?) doesn't point to a file or directory\" nodrop \n| parse regex field=mesg \"(?<reason>Handler for .+? returned invalid result code [0-9]+)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$| - .+$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Invalid [a-zA-Z]+ in request .+? (?<url>/.+?)(?:$|, |: | (?i)http/1.(?:0|1))\" nodrop \n| parse regex field=mesg \"(?<reason>Script timed out before returning headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Symbolic link not allowed.*?): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>configuration error):  couldn't .+?: (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>dir_walk error), .+? filename (?:path|)(?<file>.+?) for uri (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>handler .+? not found) for: (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>need Auth.+?): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Cannot map (?<request>.+?) to file\" nodrop \n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<file>(?:/[a-zA-Z0-9\\._].+?|[a-zA-Z]:\\\\.+?)) pcfg_openfile: (?<reason>unable to check htaccess file), ensure it is readable\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<file>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) failed; stat of '(?<file>.+?)' failed.\" nodrop \n| parse regex field=mesg \" \\[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \" \\[pid (?<process_id>[0-9]+):tid (?<thread_id>[0-9]+)\\]\" nodrop \n| parse regex field=mesg \"(?<reason>Buggy authn provider failed to set user) for (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Evaluation of .*?expression from (?<file>.+?):[0-9]+ \" nodrop \n| parse regex field=mesg \"(?<reason>Invalid status line from script) '(?<file>.+?)':\" nodrop \n| parse regex field=mesg \"(?<reason>client submitted cookie '.*?' more than once): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>malformed header from script) '(?<file>.+?)':\" nodrop \n\n// 2.2 specific\n| parse regex field=mesg \"(?<reason>client used wrong authentication scheme): (?<url>.+?)(?:$|, referer.+$)\" nodrop\n| parse regex field=mesg \"(?<reason>File does not exist): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Premature end of script headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>client sent HTTP/1.1 request without hostname) \\(.+?\\): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| where log_level in (\"emerg\", \"alert\", \"crit\")\n",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - HTTP status code summary over time",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| if(status_code matches \"2*\", 1, 0) as successes \n| if(status_code matches \"3*\", 1, 0) as redirects\n| if(status_code matches \"4*\", 1, 0) as client_errors \n| if(status_code matches \"5*\", 1, 0) as server_errors \n| timeslice by 1d \n| sum(successes) as successes, sum(redirects) as redirects, sum(client_errors) as client_errors, sum(server_errors) as server_errors by _timeslice",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Log Level counts",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=*\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<reason>[a-zA-Z].+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?:.+?) (?<file>/[a-zA-Z0-9\\._].+?)(?:$|, |: | on line| (?i)http/1.(?:0|1))\"  nodrop \n| parse regex field=mesg \" (?<file>[a-zA-Z]:\\\\.+?)(?:$|, |: | on line)\" nodrop \n| parse regex field=mesg \"\\[client (?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop \n| parse regex field=mesg \"\\[client .+?:(?<src_port>[0-9][0-9]+)\\] \" nodrop \n| parse regex field=mesg \"referer: (?<referrer>.+)$\"  nodrop \n| parse regex field=mesg \" \\[(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \"(?<reason>Forbidden): (?<file>.+?) doesn't point to a file or directory\" nodrop \n| parse regex field=mesg \"(?<reason>Handler for .+? returned invalid result code [0-9]+)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$| - .+$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Invalid [a-zA-Z]+ in request .+? (?<url>/.+?)(?:$|, |: | (?i)http/1.(?:0|1))\" nodrop \n| parse regex field=mesg \"(?<reason>Script timed out before returning headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Symbolic link not allowed.*?): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>configuration error):  couldn't .+?: (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>dir_walk error), .+? filename (?:path|)(?<file>.+?) for uri (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>handler .+? not found) for: (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>need Auth.+?): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Cannot map (?<request>.+?) to file\" nodrop \n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<file>(?:/[a-zA-Z0-9\\._].+?|[a-zA-Z]:\\\\.+?)) pcfg_openfile: (?<reason>unable to check htaccess file), ensure it is readable\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<file>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) failed; stat of '(?<file>.+?)' failed.\" nodrop \n| parse regex field=mesg \" \\[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \" \\[pid (?<process_id>[0-9]+):tid (?<thread_id>[0-9]+)\\]\" nodrop \n| parse regex field=mesg \"(?<reason>Buggy authn provider failed to set user) for (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Evaluation of .*?expression from (?<file>.+?):[0-9]+ \" nodrop \n| parse regex field=mesg \"(?<reason>Invalid status line from script) '(?<file>.+?)':\" nodrop \n| parse regex field=mesg \"(?<reason>client submitted cookie '.*?' more than once): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>malformed header from script) '(?<file>.+?)':\" nodrop \n\n// 2.2 specific\n| parse regex field=mesg \"(?<reason>client used wrong authentication scheme): (?<url>.+?)(?:$|, referer.+$)\" nodrop\n| parse regex field=mesg \"(?<reason>File does not exist): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Premature end of script headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>client sent HTTP/1.1 request without hostname) \\(.+?\\): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n\n| where log_level not in (\"\", \"en\")\n| count by log_level \n| sort by _count, log_level asc",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Malicious URL requests",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP (\"jsessionid\" or \"old\" or \"bak\") \n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where url matches \"*.old\" or url matches \"*.bak\" or url matches \"*jsessionid=*\"",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-2h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Robots",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP \"/robots.txt\" \n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| count_frequent user_agent, src_ip, method, status_code",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Server start and stop events",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* (\"caught SIGTERM, shutting down\" or \"- resuming normal operations\") \n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<reason>[a-zA-Z].+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?:.+?) (?<file>/[a-zA-Z0-9\\._].+?)(?:$|, |: | on line| (?i)http/1.(?:0|1))\"  nodrop \n| parse regex field=mesg \" (?<file>[a-zA-Z]:\\\\.+?)(?:$|, |: | on line)\" nodrop \n| parse regex field=mesg \"\\[client (?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop \n| parse regex field=mesg \"\\[client .+?:(?<src_port>[0-9][0-9]+)\\] \" nodrop \n| parse regex field=mesg \"referer: (?<referrer>.+)$\"  nodrop \n| parse regex field=mesg \" \\[(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \"(?<reason>Forbidden): (?<file>.+?) doesn't point to a file or directory\" nodrop \n| parse regex field=mesg \"(?<reason>Handler for .+? returned invalid result code [0-9]+)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$| - .+$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Invalid [a-zA-Z]+ in request .+? (?<url>/.+?)(?:$|, |: | (?i)http/1.(?:0|1))\" nodrop \n| parse regex field=mesg \"(?<reason>Script timed out before returning headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Symbolic link not allowed.*?): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>configuration error):  couldn't .+?: (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>dir_walk error), .+? filename (?:path|)(?<file>.+?) for uri (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>handler .+? not found) for: (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>need Auth.+?): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Cannot map (?<request>.+?) to file\" nodrop \n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<file>(?:/[a-zA-Z0-9\\._].+?|[a-zA-Z]:\\\\.+?)) pcfg_openfile: (?<reason>unable to check htaccess file), ensure it is readable\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<file>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) failed; stat of '(?<file>.+?)' failed.\" nodrop \n| parse regex field=mesg \" \\[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \" \\[pid (?<process_id>[0-9]+):tid (?<thread_id>[0-9]+)\\]\" nodrop \n| parse regex field=mesg \"(?<reason>Buggy authn provider failed to set user) for (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Evaluation of .*?expression from (?<file>.+?):[0-9]+ \" nodrop \n| parse regex field=mesg \"(?<reason>Invalid status line from script) '(?<file>.+?)':\" nodrop \n| parse regex field=mesg \"(?<reason>client submitted cookie '.*?' more than once): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>malformed header from script) '(?<file>.+?)':\" nodrop \n\n// 2.2 specific\n| parse regex field=mesg \"(?<reason>client used wrong authentication scheme): (?<url>.+?)(?:$|, referer.+$)\" nodrop\n| parse regex field=mesg \"(?<reason>File does not exist): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Premature end of script headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>client sent HTTP/1.1 request without hostname) \\(.+?\\): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n\n| where (mesg matches \"*caught SIGTERM, shutting down*\") or (mesg matches \"*-- resuming normal operations\")",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Server stops and starts over time",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* (\"caught SIGTERM, shutting down\" or \"- resuming normal operations\")\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<reason>[a-zA-Z].+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?:.+?) (?<file>/[a-zA-Z0-9\\._].+?)(?:$|, |: | on line| (?i)http/1.(?:0|1))\"  nodrop \n| parse regex field=mesg \" (?<file>[a-zA-Z]:\\\\.+?)(?:$|, |: | on line)\" nodrop \n| parse regex field=mesg \"\\[client (?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop \n| parse regex field=mesg \"\\[client .+?:(?<src_port>[0-9][0-9]+)\\] \" nodrop \n| parse regex field=mesg \"referer: (?<referrer>.+)$\"  nodrop \n| parse regex field=mesg \" \\[(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \"(?<reason>Forbidden): (?<file>.+?) doesn't point to a file or directory\" nodrop \n| parse regex field=mesg \"(?<reason>Handler for .+? returned invalid result code [0-9]+)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$| - .+$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Invalid [a-zA-Z]+ in request .+? (?<url>/.+?)(?:$|, |: | (?i)http/1.(?:0|1))\" nodrop \n| parse regex field=mesg \"(?<reason>Script timed out before returning headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg\"(?<reason>Symbolic link not allowed.*?): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg\"(?<reason>configuration error):  couldn't .+?: (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>dir_walk error), .+? filename (?:path|)(?<file>.+?) for uri (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>handler .+? not found) for: (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>need Auth.+?): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Cannot map (?<request>.+?) to file\" nodrop \n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<file>(?:/[a-zA-Z0-9\\._].+?|[a-zA-Z]:\\\\.+?)) pcfg_openfile: (?<reason>unable to check htaccess file), ensure it is readable\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<file>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) failed; stat of '(?<file>.+?)' failed.\" nodrop \n| parse regex field=mesg \" \\[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \" \\[pid (?<process_id>[0-9]+):tid (?<thread_id>[0-9]+)\\]\" nodrop \n| parse regex field=mesg \"(?<reason>Buggy authn provider failed to set user) for (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Evaluation of .*?expression from (?<file>.+?):[0-9]+ \" nodrop \n| parse regex field=mesg \"(?<reason>Invalid status line from script) '(?<file>.+?)':\" nodrop \n| parse regex field=mesg\"(?<reason>client submitted cookie '.*?' more than once): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>malformed header from script) '(?<file>.+?)':\" nodrop \n\n// 2.2 specific\n| parse regex field=mesg \"(?<reason>client used wrong authentication scheme): (?<url>.+?)(?:$|, referer.+$)\" nodrop\n| parse regex field=mesg \"(?<reason>File does not exist): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Premature end of script headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>client sent HTTP/1.1 request without hostname) \\(.+?\\): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n\n| if(mesg matches \"*caught SIGTERM, shutting down*\", 1, 0) as server_stop \n| if(mesg matches \"*-- resuming normal operations\",1, 0) as server_start \n| timeslice by 1h\n| sum(server_stop) as server_stops, sum(server_start) as server_starts by _timeslice",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Slowest URLs by average time",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| parse regex field=mesg \" (?:\\d+)/(?<microseconds>\\d+)$\"\n| avg(microseconds) as avgtimeinseconds by url \n| sort by avgtimeinseconds \n| limit 100 \n| (avgtimeinseconds/1000000) as avgtimeinseconds \n| (toLong(avgtimeinseconds*100)/100) as avgtimeinseconds",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Time taken to serve requests",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| parse regex field=mesg \" (?<seconds>\\d+)/(?<microseconds>\\d+)$\" \n| where microseconds != \"\"\n| toLong(microseconds/(1000000*60)) as minutes",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-30m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Top 404 referrers",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP  404\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where status_code=\"404\" \n| count_frequent referrer \n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Top Referrers causing errors",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=*\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<reason>[a-zA-Z].+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?:.+?) (?<file>/[a-zA-Z0-9\\._].+?)(?:$|, |: | on line| (?i)http/1.(?:0|1))\"  nodrop \n| parse regex field=mesg \" (?<file>[a-zA-Z]:\\\\.+?)(?:$|, |: | on line)\" nodrop \n| parse regex field=mesg \"\\[client (?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop \n| parse regex field=mesg \"\\[client .+?:(?<src_port>[0-9][0-9]+)\\] \" nodrop \n| parse regex field=mesg \"referer: (?<referrer>.+)$\"  nodrop \n| parse regex field=mesg \" \\[(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \"(?<reason>Forbidden): (?<file>.+?) doesn't point to a file or directory\" nodrop \n| parse regex field=mesg \"(?<reason>Handler for .+? returned invalid result code [0-9]+)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$| - .+$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Invalid [a-zA-Z]+ in request .+? (?<url>/.+?)(?:$|, |: | (?i)http/1.(?:0|1))\" nodrop \n| parse regex field=mesg \"(?<reason>Script timed out before returning headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Symbolic link not allowed.*?): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>configuration error):  couldn't .+?: (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>dir_walk error), .+? filename (?:path|)(?<file>.+?) for uri (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>handler .+? not found) for: (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>need Auth.+?): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Cannot map (?<request>.+?) to file\" nodrop \n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<file>(?:/[a-zA-Z0-9\\._].+?|[a-zA-Z]:\\\\.+?)) pcfg_openfile: (?<reason>unable to check htaccess file), ensure it is readable\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<file>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) failed; stat of '(?<file>.+?)' failed.\" nodrop \n| parse regex field=mesg \" \\[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \" \\[pid (?<process_id>[0-9]+):tid (?<thread_id>[0-9]+)\\]\" nodrop \n| parse regex field=mesg \"(?<reason>Buggy authn provider failed to set user) for (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Evaluation of .*?expression from (?<file>.+?):[0-9]+ \" nodrop \n| parse regex field=mesg \"(?<reason>Invalid status line from script) '(?<file>.+?)':\" nodrop \n| parse regex field=mesg \"(?<reason>client submitted cookie '.*?' more than once): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>malformed header from script) '(?<file>.+?)':\" nodrop \n\n// 2.2 specific\n| parse regex field=mesg \"(?<reason>client used wrong authentication scheme): (?<url>.+?)(?:$|, referer.+$)\" nodrop\n| parse regex field=mesg \"(?<reason>File does not exist): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Premature end of script headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>client sent HTTP/1.1 request without hostname) \\(.+?\\): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n\n| where referrer != \"\" \n| count_frequent referrer \n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-60m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Top URLs by bytes served",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where size != \"-\"\n| avg(size) as average_size_KB by url\n| sort by average_size_KB\n| limit 100\n| (average_size_KB/1024) as average_size_KB\n| (toLong(average_size_KB*100)/100) as average_size_KB",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Top browsers",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| count_frequent user_agent \n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Top clients",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where !isBlank(src_ip)\n| count_frequent src_ip \n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Top clients causing errors responses",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where status_code matches \"4*\" \n| count_frequent src_ip \n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Top error reasons",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=*\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<reason>[a-zA-Z].+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?:.+?) (?<file>/[a-zA-Z0-9\\._].+?)(?:$|, |: | on line| (?i)http/1.(?:0|1))\"  nodrop \n| parse regex field=mesg \" (?<file>[a-zA-Z]:\\\\.+?)(?:$|, |: | on line)\" nodrop \n| parse regex field=mesg  \"\\[client (?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop \n| parse regex field=mesg \"\\[client .+?:(?<src_port>[0-9][0-9]+)\\] \" nodrop \n| parse regex field=mesg \"referer: (?<referrer>.+)$\"  nodrop \n| parse regex field=mesg \" \\[(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \"(?<reason>Forbidden): (?<file>.+?) doesn't point to a file or directory\" nodrop \n| parse regex field=mesg \"(?<reason>Handler for .+? returned invalid result code [0-9]+)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$| - .+$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Invalid [a-zA-Z]+ in request .+? (?<url>/.+?)(?:$|, |: | (?i)http/1.(?:0|1))\" nodrop \n| parse regex field=mesg \"(?<reason>Script timed out before returning headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Symbolic link not allowed.*?): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>configuration error):  couldn't .+?: (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>dir_walk error), .+? filename (?:path|)(?<file>.+?) for uri (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>handler .+? not found) for: (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>need Auth.+?): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Cannot map (?<request>.+?) to file\" nodrop \n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<file>(?:/[a-zA-Z0-9\\._].+?|[a-zA-Z]:\\\\.+?)) pcfg_openfile: (?<reason>unable to check htaccess file), ensure it is readable\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<file>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) failed; stat of '(?<file>.+?)' failed.\" nodrop \n| parse regex field=mesg \" \\[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \" \\[pid (?<process_id>[0-9]+):tid (?<thread_id>[0-9]+)\\]\" nodrop \n| parse regex field=mesg \"(?<reason>Buggy authn provider failed to set user) for (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Evaluation of .*?expression from (?<file>.+?):[0-9]+ \" nodrop \n| parse regex field=mesg \"(?<reason>Invalid status line from script) '(?<file>.+?)':\" nodrop \n| parse regex field=mesg \"(?<reason>client submitted cookie '.*?' more than once): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>malformed header from script) '(?<file>.+?)':\" nodrop \n\n// 2.2 specific\n| parse regex field=mesg \"(?<reason>client used wrong authentication scheme): (?<url>.+?)(?:$|, referer.+$)\" nodrop\n| parse regex field=mesg \"(?<reason>File does not exist): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Premature end of script headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>client sent HTTP/1.1 request without hostname) \\(.+?\\): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n\n| where !isEmpty(reason)\n| count by reason \n| top 100 reason by _count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-6h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Top files causing errors",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=*\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<reason>[a-zA-Z].+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?:.+?) (?<file>/[a-zA-Z0-9\\._].+?)(?:$|, |: | on line| (?i)http/1.(?:0|1))\"  nodrop \n| parse regex field=mesg \" (?<file>[a-zA-Z]:\\\\.+?)(?:$|, |: | on line)\" nodrop \n| parse regex field=mesg \"\\[client (?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop \n| parse regex field=mesg \"\\[client .+?:(?<src_port>[0-9][0-9]+)\\] \" nodrop \n| parse regex field=mesg \"referer: (?<referrer>.+)$\"  nodrop \n| parse regex field=mesg \" \\[(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \"(?<reason>Forbidden): (?<file>.+?) doesn't point to a file or directory\" nodrop \n| parse regex field=mesg \"(?<reason>Handler for .+? returned invalid result code [0-9]+)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$| - .+$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Invalid [a-zA-Z]+ in request .+? (?<url>/.+?)(?:$|, |: | (?i)http/1.(?:0|1))\" nodrop \n| parse regex field=mesg \"(?<reason>Script timed out before returning headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Symbolic link not allowed.*?): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>configuration error):  couldn't .+?: (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>dir_walk error), .+? filename (?:path|)(?<file>.+?) for uri (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>handler .+? not found) for: (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>need Auth.+?): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Cannot map (?<request>.+?) to file\" nodrop \n| parse regex field=mesg \"(?:\\d{4}\\]|\\[client .+?\\]|\\[[a-z0-9:-]+?\\]) (?<file>(?:/[a-zA-Z0-9\\._].+?|[a-zA-Z]:\\\\.+?)) pcfg_openfile: (?<reason>unable to check htaccess file), ensure it is readable\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<file>.+?) (?:denied|failed)\" nodrop \n| parse regex field=mesg \"access to (?<url>.+?) failed; stat of '(?<file>.+?)' failed.\" nodrop \n| parse regex field=mesg \" \\[(?<module>[a-z-_]+):(?<log_level>[a-z]+)\\] \" nodrop \n| parse regex field=mesg \" \\[pid (?<process_id>[0-9]+):tid (?<thread_id>[0-9]+)\\]\" nodrop \n| parse regex field=mesg \"(?<reason>Buggy authn provider failed to set user) for (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"Evaluation of .*?expression from (?<file>.+?):[0-9]+ \" nodrop \n| parse regex field=mesg \"(?<reason>Invalid status line from script) '(?<file>.+?)':\" nodrop \n| parse regex field=mesg \"(?<reason>client submitted cookie '.*?' more than once): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>malformed header from script) '(?<file>.+?)':\" nodrop \n\n// 2.2 specific\n| parse regex field=mesg \"(?<reason>client used wrong authentication scheme): (?<url>.+?)(?:$|, referer.+$)\" nodrop\n| parse regex field=mesg \"(?<reason>File does not exist): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Invalid [a-zA-Z]+ in request) (?<request>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>Premature end of script headers): (?<file>.+?)(?:$|, referer.+$)\" nodrop \n| parse regex field=mesg \"(?<reason>client sent HTTP/1.1 request without hostname) \\(.+?\\): (?<url>.+?)(?:$|, referer.+$)\" nodrop \n\n| where file != \"\" \n| count by file \n| top 100 file by _count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Apache - Traffic volume and bytes served per day",
+      "search": {
+        "queryText": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where size != \"-\"\n| (size/1048576) as mbytes\n| timeslice by 1d \n| sum(mbytes) as Bytes_Served_mb, count as hits by _timeslice",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    }
+  ]
+}

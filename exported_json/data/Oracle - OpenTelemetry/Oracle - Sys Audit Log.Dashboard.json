@@ -1,0 +1,289 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Oracle - Sys Audit Log",
+  "description": "See information derived from the syslog audit trail, including successful and failed activities, and top usage by client, database user, and privileges used.",
+  "title": "Oracle - Sys Audit Log",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "sumo.datasource": [
+        "oracle"
+      ],
+      "db.cluster.name": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "databases"
+      ],
+      "deployment.environment": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel8339B72DA2B3D943",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":17}"
+      },
+      {
+        "key": "panel949976498D5B8A4A",
+        "structure": "{\"height\":8,\"width\":16,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panelA999A062984D7B40",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":17}"
+      },
+      {
+        "key": "panelADF2BC56BDED9A44",
+        "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":11}"
+      },
+      {
+        "key": "panelD4ECDC5FBD398942",
+        "structure": "{\"height\":5,\"width\":8,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelDC15844F80FBC844",
+        "structure": "{\"height\":9,\"width\":16,\"x\":8,\"y\":8}"
+      },
+      {
+        "key": "panelE8266E1F95E7DB4B",
+        "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":5}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel8339B72DA2B3D943",
+      "title": "Top Privileges Used",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid\n| count as eventCount by privilege\n| top 10 privilege by eventCount, privilege asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel949976498D5B8A4A",
+      "title": "Last 20 Recent Failure Activities",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle !\"STATUS:[1] '0'\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid\n| where status!=\"0\"\n| timeslice 1s\n| count as eventCount by _timeslice, Action, databaseUser, privilege, clientUser, clientTerminal, status, dbid\n| sort by _timeslice | fields -eventCount\n| limit 20",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelA999A062984D7B40",
+      "title": "Top Database Users",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid\n| count as eventCount by databaseUser\n| top 10 databaseUser by eventCount, databaseUser asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelADF2BC56BDED9A44",
+      "title": "Top Client Users",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid\n| count as eventCount by clientUser\n| top 10 clientUser by eventCount, clientUser asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelD4ECDC5FBD398942",
+      "title": "Status Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"axes\":{\"axisX\":{\"title\":\"\"},\"axisY\":{\"title\":\" \"}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid\n| if (status=\"0\", \"Sucess\", \"Failure\") as ActivityStatus\n| timeslice 1h\n| count as eventCount by _timeslice, ActivityStatus\n| transpose row _timeslice column ActivityStatus",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelDC15844F80FBC844",
+      "title": "Last 20 Recent Successful Activities",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"STATUS:[1] '0'\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid\n| where status=\"0\"\n| timeslice 1s\n| count as eventCount by _timeslice, Action, databaseUser, privilege, clientUser, clientTerminal, status, dbid\n| sort by _timeslice | fields -eventCount\n| limit 20",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE8266E1F95E7DB4B",
+      "title": "Failure Status Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle !\"STATUS:[1] '0'\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"\\nLENGTH : '*'\\nACTION :[*] '*'\\nDATABASE USER:[*] '*'\\nPRIVILEGE :[*] '*'\\nCLIENT USER:[*] '*'\\nCLIENT TERMINAL:[*] '*'\\nSTATUS:[*] '*'\\nDBID:[*] '*'\" as totallength, actionlength, Action, databaseuserlength, databaseUser, privilegelength, privilege, clientuserlength, clientUser, clientterminallength, clientTerminal, statuslength, status, dbidlength, dbid\n| where status!=\"0\"\n| timeslice 1h\n| count as eventCount by _timeslice, status\n| transpose row _timeslice column status",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\nsumo.datasource=oracle|count by db.cluster.name",
+        "field": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\nsumo.datasource=oracle|count by deployment.environment",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

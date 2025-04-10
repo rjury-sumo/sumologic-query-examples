@@ -1,0 +1,67 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "System Events",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Package Operations",
+      "search": {
+        "queryText": "_sourceCategory = Labs/OS/Linux/*  (\"installed\" or \"erased\" or \"remove\" or \"<install>\" or \"<uninstall>\") NOT \"MTA\" \n| parse regex \"\\s+\\d+:\\d+:\\d+\\s+status\\s+(?<action>installed)\\s+(?<pkg_name>\\S*)\\s+\" nodrop \n| parse regex \"\\s+\\d+:\\d+:\\d+\\s+(?<action>remove)\\s+(?<pkg_name>[^ ]*)\\s\" nodrop \n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<action>\\w*):\\s(?<pkg_name>[^ ]*)\\s\" nodrop \n| parse regex \"<(?<action>[a-zA-Z]*)>\\s+[^\\(\\)]*\\(\\d+\\)(?<pkg_name>[^\\(]*)\\(\" nodrop \n| if (action in (\"Installed\",\"install\"), \"installed\",action) as action \n| if (action in (\"uninstall\",\"erased\",\"remove\"), \"uninstalled\",action) as action \n| _sourceHost as sourceHost | where action!=\"\"",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-1d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Service Shutdown or Exiting",
+      "search": {
+        "queryText": "_sourceCategory = Labs/OS/Linux/* (\"exiting\" or \"exited\" or \"terminating\" or \"terminated\" or \"shutting\")  \n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[\\d+\\]|):\\s+\" nodrop\n| where process_name !=\"\"",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-1d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "System Shutdown",
+      "search": {
+        "queryText": "_sourceCategory = Labs/OS/Linux/*  \"main process\" \"killed by TERM\" \"init\" | parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[\\d+\\]|):\\s+\"",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-1d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "System Start",
+      "search": {
+        "queryText": "_sourceCategory = Labs/OS/Linux/* \"Initializing cgroup subsys cpuset\" \n| parse regex \"^(?<StartTime>\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+)\\s(?<dest_hostname>\\S*)\\s(?<process_name>\\w*)(?:\\[\\d+\\]|):\\s+\" nodrop \n| count by dest_hostname,process_name,StartTime,_messagetime \n| sort by _messagetime \n| fields - _count,_messagetime",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-1d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    }
+  ]
+}

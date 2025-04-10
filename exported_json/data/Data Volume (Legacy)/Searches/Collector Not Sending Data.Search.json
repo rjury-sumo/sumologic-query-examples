@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Collector Not Sending Data",
+  "search": {
+    "queryText": "_index=sumologic_volume sizeInBytes \n| where _sourceCategory=\"collector_volume\"\n| parse regex \"\\\"(?<collector>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| first(_messagetime) as MostRecent, sum(bytes) as TotalVolumeBytes by collector\n| formatDate(fromMillis(MostRecent),\"yyyy/MM/dd HH:mm:ss z\") as MostRecentTime \n| toMillis(now()) as currentTime\n| formatDate(fromMillis(currentTime),\"yyyy/MM/dd HH:mm:ss z\") as SearchTime\n| (currentTime-MostRecent) / 1000 / 60 as mins_since_last_logs\n| where mins_since_last_logs >= 60\n| fields -mostrecent, currenttime \n| format (\"Collector '%s' has not collected data in the past 60 minutes\", collector) as message",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": "This hourly alert is generated when a Collector has not sent data to Sumo Logic for more than 60 minutes\u2028. The time range is the past 24 hours (-24h)."
+}

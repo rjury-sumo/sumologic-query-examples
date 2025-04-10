@@ -1,0 +1,291 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Kafka - Logs",
+  "description": "This dashboard helps you quickly analyze your Kafka error logs across all the clusters.",
+  "title": "Kafka - Logs",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel56EC4DC0BD310A4F",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":0,\"minHeight\":3,\"minWidth\":3}"
+      },
+      {
+        "key": "panel5BB236F793C7D84C",
+        "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":20}"
+      },
+      {
+        "key": "panelD42603019F18794B",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":20}"
+      },
+      {
+        "key": "panelPANE-24A3947D88A11B41",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-7E285117A8269B4E",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":14}"
+      },
+      {
+        "key": "panelPANE-AD713FD48D204A4D",
+        "structure": "{\"height\":14,\"width\":12,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-EBA49F0BA6A2CA46",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel56EC4DC0BD310A4F",
+      "title": "Events by  Severity ",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as kafka_log_message\n| parse field=kafka_log_message \"[*] * *\" as date_time,severity,msg\n| where severity in (\"DEBUG\", \"INFO\", \"ERROR\", \"TRACE\", \"FATAL\")\n| count by severity",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5BB236F793C7D84C",
+      "title": "Log Reduce",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"count\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as kafka_log_message\n| parse field=kafka_log_message \"[*] * *\" as date_time,severity,msg\n| logreduce by msg",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelD42603019F18794B",
+      "title": "Top 10 Errors ",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} (FATAL or ERROR)\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as kafka_log_message\n| parse field=kafka_log_message \"[*] * *\" as date_time,severity,msg\n| where severity in (\"ERROR\", \"FATAL\")\n| count as count by date_time, severity, msg\n| sort by count\n| limit 10 ",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-24A3947D88A11B41",
+      "title": "Brokers Added/Started Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} started \"KafkaServer id\" \n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as kafka_log_message\n| parse field=kafka_log_message \"[*] * *\" as date_time,severity,msg\n| where severity in (\"DEBUG\", \"INFO\", \"ERROR\", \"TRACE\", \"FATAL\")\n| count by date_time, msg\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-7E285117A8269B4E",
+      "title": "Broker Shutdown Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}} \"Shutdown completed\" \"SocketServer brokerId\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as kafka_log_message\n| parse field=kafka_log_message \"[*] * *\" as date_time,severity,msg\n| where severity in (\"DEBUG\", \"INFO\", \"ERROR\", \"TRACE\", \"FATAL\")\n| count by date_time, msg\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-AD713FD48D204A4D",
+      "title": "Last 10 Errors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as kafka_log_message\n| parse field=kafka_log_message \"[*] * *\" as date_time,severity,msg\n| where severity in (\"ERROR\", \"FATAL\")\n| count by date_time, severity, msg\n| sort by date_time\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-EBA49F0BA6A2CA46",
+      "title": "Error Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=kafka deployment.environment={{deployment.environment}} messaging.cluster.name={{messaging.cluster.name}} messaging.node.name={{messaging.node.name}}\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as kafka_log_message\n| parse field=kafka_log_message \"[*] * *\" as date_time,severity,msg\n| where severity in (\"ERROR\", \"FATAL\")\n| timeslice 1h\n| count as count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=kafka | count by deployment.environment",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "messaging.cluster.name",
+      "displayName": "messaging.cluster.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=kafka | count by messaging.cluster.name",
+        "field": "messaging.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "messaging.node.name",
+      "displayName": "messaging.node.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=kafka | count by messaging.node.name",
+        "field": "messaging.node.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

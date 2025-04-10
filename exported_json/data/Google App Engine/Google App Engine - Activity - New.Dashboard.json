@@ -1,0 +1,297 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Google App Engine - Activity - New",
+  "description": "See the details of App Engine activities including the projects, services, versions, and message severity.",
+  "title": "Google App Engine - Activity - New",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelaf8bd2bd84397947",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelf66fecebae563b41",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panel960a92e4b1ad7a48",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel07bdc9e08a62cb40",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel9d4642568c69eb49",
+        "structure": "{\"width\":16,\"height\":6,\"x\":8,\"y\":5}"
+      },
+      {
+        "key": "panel7ab98788888d0b4a",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":10}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel9d4642568c69eb49",
+      "title": "Version Activity",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/appengine logName resource protoPayload methodName \"\\\"type\\\":\\\"gae_app\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload.methodName\" as labels, method\n| json field=labels \"module_id\", \"project_id\", \"version_id\", \"zone\" as service, project, version, zone\n| timeslice 1m\n\n| if (method matches \"*UpdateVersion\", 1, 0) as updates\n| if (method matches \"*CreateVersion\", 1, 0) as creates\n| if (method matches \"*DeleteVersion\", 1, 0) as deletes\n|where if (\"{{Service}}\" = \"*\", true, service matches \"{{Service}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Version}}\" = \"*\", true, version matches \"{{Version}}\") AND if (\"{{Zone}}\" = \"*\", true, zone matches \"{{Zone}}\")\n|sum(updates) as tot_updates, sum(creates) as tot_creates, sum(deletes) as tot_deletes by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel07bdc9e08a62cb40",
+      "title": "Runtime Usage",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/appengine logName resource protoPayload serviceData createVersion request version runtime \"\\\"type\\\":\\\"gae_app\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload.serviceData.createVersion.request.version.runtime\" as labels, runtime\n| json field=labels \"module_id\", \"project_id\", \"version_id\", \"zone\" as service, project, version, zone\n| timeslice 1d\n|where if (\"{{Service}}\" = \"*\", true, service matches \"{{Service}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Version}}\" = \"*\", true, version matches \"{{Version}}\") AND if (\"{{Zone}}\" = \"*\", true, zone matches \"{{Zone}}\")\n|count by _timeslice, runtime\n| transpose row _timeslice column runtime as *",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7ab98788888d0b4a",
+      "title": "Severe Messages",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/appengine logName resource severity \"\\\"type\\\":\\\"gae_app\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/appengine.googleapis.com%2Frequest_log\" or log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\", \"message.data.severity\" as labels, severity\n| json field=labels \"module_id\", \"project_id\", \"version_id\", \"zone\" as service, project, version, zone\n| timeslice 1m\n| where severity in (\"ERROR\", \"WARNING\", \"CRITICAL\", \"EMERGENCY\", \"ALERT\")\n|where if (\"{{Service}}\" = \"*\", true, service matches \"{{Service}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Version}}\" = \"*\", true, version matches \"{{Version}}\") AND if (\"{{Zone}}\" = \"*\", true, zone matches \"{{Zone}}\")\n|count by _timeslice, severity\n| fillmissing timeslice(1m), values(\"ERROR\", \"WARNING\", \"CRITICAL\", \"EMERGENCY\", \"ALERT\") in severity\n| transpose row _timeslice column severity as *",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf66fecebae563b41",
+      "title": "Top 10 Services by Messages",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/appengine logName resource \"\\\"type\\\":\\\"gae_app\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/appengine.googleapis.com%2Frequest_log\" or log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"module_id\", \"project_id\", \"version_id\", \"zone\" as service, project, version, zone\n|where if (\"{{Service}}\" = \"*\", true, service matches \"{{Service}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Version}}\" = \"*\", true, version matches \"{{Version}}\") AND if (\"{{Zone}}\" = \"*\", true, zone matches \"{{Zone}}\")\n|count as messages by service, project | top 10 service, project by messages",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel960a92e4b1ad7a48",
+      "title": "Top 10 Versions by Messages",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/appengine logName resource \"\\\"type\\\":\\\"gae_app\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/appengine.googleapis.com%2Frequest_log\" or log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"module_id\", \"project_id\", \"version_id\", \"zone\" as service, project, version, zone\n|where if (\"{{Service}}\" = \"*\", true, service matches \"{{Service}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Version}}\" = \"*\", true, version matches \"{{Version}}\") AND if (\"{{Zone}}\" = \"*\", true, zone matches \"{{Zone}}\")\n|count as messages version, service, project | top 10 version, service, project by messages",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelaf8bd2bd84397947",
+      "title": "Top 10 Projects by Messages",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/appengine logName resource \"\\\"type\\\":\\\"gae_app\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/appengine.googleapis.com%2Frequest_log\" or log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"module_id\", \"project_id\", \"version_id\", \"zone\" as service, project, version, zone\n|where if (\"{{Service}}\" = \"*\", true, service matches \"{{Service}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Version}}\" = \"*\", true, version matches \"{{Version}}\") AND if (\"{{Zone}}\" = \"*\", true, zone matches \"{{Zone}}\")\n|count as messages project | top 10 project by messages",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Zone",
+      "displayName": "Zone",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/appengine logName resource \"\\\"type\\\":\\\"gae_app\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/appengine.googleapis.com%2Frequest_log\" or log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"module_id\", \"project_id\", \"version_id\", \"zone\" as service, project, version, zone",
+        "field": "zone"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "UserLabels",
+      "displayName": "UserLabels",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/appengine logName resource \"\\\"type\\\":\\\"gae_app\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/appengine.googleapis.com%2Frequest_log\" or log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"module_id\", \"project_id\", \"version_id\", \"zone\" as service, project, version, zone",
+        "field": "labels"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Service",
+      "displayName": "Service",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/appengine logName resource \"\\\"type\\\":\\\"gae_app\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/appengine.googleapis.com%2Frequest_log\" or log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"module_id\", \"project_id\", \"version_id\", \"zone\" as service, project, version, zone",
+        "field": "service"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Version",
+      "displayName": "Version",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/appengine logName resource \"\\\"type\\\":\\\"gae_app\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/appengine.googleapis.com%2Frequest_log\" or log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"module_id\", \"project_id\", \"version_id\", \"zone\" as service, project, version, zone",
+        "field": "version"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Project",
+      "displayName": "Project",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/appengine logName resource \"\\\"type\\\":\\\"gae_app\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/appengine.googleapis.com%2Frequest_log\" or log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"module_id\", \"project_id\", \"version_id\", \"zone\" as service, project, version, zone",
+        "field": "project"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

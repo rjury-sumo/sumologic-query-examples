@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Lambda_ExcessPermissionsOrInteractWithIam",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail lambda.amazonaws.com \n| json \"eventSource\", \"eventName\", \"errorCode\", \"userIdentity.type\", \"userIdentity.invokedBy\" as eventSource, eventName, errorCode, userType, service nodrop \n| where isBlank(errorCode) and (userType=\"IAMUser\" and eventSource=\"lambda.amazonaws.com\" and (eventName matches \"CreateFunction*\" or eventName matches \"Invoke*\" or eventName matches \"CreateEventSourceMapping*\" or eventName matches \"UpdateFunctionCode*\" or eventName matches \"UpdateFunctionConfiguration*\") or (service=\"lambda.amazonaws.com\" and userType=\"IAMUser\"))\n| \"\" as classification\n| if (service=\"lambda.amazonaws.com\",concat(\"Lambda_InteractWithIam,\",classification),classification) as classification\n| if(eventSource=\"lambda.amazonaws.com\",concat(\"Lambda_ExcessPermissions,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| \"EventCount\" as type \n| count as count by benchmarkname, type\n| fillmissing values(\"Lambda_ExcessPermissions\",\"Lambda_InteractWithIam\") in benchmarkname, values(\"EventCount\") in type \n| toInt(count) as count\n",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-60m"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-60m",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1h"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_inc_v1_rnd4685946T96PXzbCsyGRaXAZRUmB"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": ""
+}

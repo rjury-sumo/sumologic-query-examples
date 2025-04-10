@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "IAM_AttachPutRoleOrGroupOrUserPolicy_CountEventResources",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail *GroupPolicy or *RolePolicy or *UserPolicy\n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where eventName in (\"AttachRolePolicy\", \"PutRolePolicy\",\"AttachGroupPolicy\", \"PutGroupPolicy\",\"AttachUserPolicy\", \"PutUserPolicy\") and isBlank(errorCode) and eventSource=\"iam.amazonaws.com\" \n| json \"requestParameters.policyArn\", \"requestParameters.policyName\" as policyArn, policyName nodrop \n| parse regex field=policyArn \".*?:.*?:.*?:.*?:.*?:policy/(?<resourceName>.*)\" nodrop \n| \"\" as classification\n| if (eventName in (\"AttachRolePolicy\", \"PutRolePolicy\"),concat(\"IAM_AttachPutRolePolicy_CountEventResources,\",classification),classification) as classification\n| if (eventName in (\"AttachGroupPolicy\", \"PutGroupPolicy\"),concat(\"IAM_AttachPutGroupPolicy_CountEventResources,\",classification),classification) as classification\n| if (eventName in (\"AttachUserPolicy\", \"PutUserPolicy\"),concat(\"IAM_AttachPutUserPolicy_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| concat(resourceName, policyName) as policyId \n| where !isBlank(policyId) and !isBlank(policyArn)\n| \"EventResourceCount\" as type \n| count_distinct(policyId) as count by benchmarkname, type\n| fillmissing values(\"IAM_AttachPutRolePolicy_CountEventResources\",\"IAM_AttachPutGroupPolicy_CountEventResources\",\"IAM_AttachPutUserPolicy_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "AutoParse",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-24h",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1d"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": ""
+}

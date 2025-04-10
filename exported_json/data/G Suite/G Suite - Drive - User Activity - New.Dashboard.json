@@ -1,0 +1,351 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "G Suite - Drive - User Activity - New",
+  "description": "The G Suite - User Activity Dashboard provides detailed information on Google Drive activity by users. A breakdown of user activity information includes most active users, most active IP addresses, and top users for downloading, uploading, creating, and sharing content",
+  "title": "G Suite - Drive - User Activity - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel731ff35da5900a4b",
+        "structure": "{\"width\":5,\"height\":8,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel5f781eebb1489840",
+        "structure": "{\"width\":5,\"height\":8,\"x\":5,\"y\":0}"
+      },
+      {
+        "key": "panelb10b78af897bab4e",
+        "structure": "{\"width\":6,\"height\":8,\"x\":10,\"y\":0}"
+      },
+      {
+        "key": "panel959c0e57aa7c5b48",
+        "structure": "{\"width\":8,\"height\":8,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panelb3141991bef4ca4e",
+        "structure": "{\"width\":5,\"height\":6,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelad6a6d93b0dfe946",
+        "structure": "{\"width\":5,\"height\":6,\"x\":5,\"y\":6}"
+      },
+      {
+        "key": "panel0df73ae486944a4a",
+        "structure": "{\"width\":14,\"height\":6,\"x\":10,\"y\":6}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel0df73ae486944a4a",
+      "title": "Content sharing by Compromised Users",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" (can_view OR can_edit OR people_with_link OR public_on_the_web)\n| json \"id\", \"actor\", \"ipAddress\" nodrop\n| json field=actor \"email\"\n| where [subquery:_sourceCategory = Labs/gsuite/alerts \"Leaked password\"\n | json \"alertId\",\"customerId\",\"source\",\"type\",\"data\", \"data.email\" as alert_id, customer_id, source, type, data, email\n | where type=\"Leaked password\"  \n | count by email\n | compose email  \n]\n| json field=id \"applicationName\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where eventType=\"acl_change\" and applicationName=\"drive\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| where new_value matches \"*can_view*\" or new_value matches \"*can_edit*\" or new_value matches \"people_with_link*\" or new_value matches \"public_on_the_web*\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{doc_title}}\" = \"*\", true, doc_title matches \"{{doc_title}}\") AND if (\"{{target_user}}\" = \"*\", true, target_user matches \"{{target_user}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\")\n|count by eventName, doc_title, new_value, target_user, email\n| fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5f781eebb1489840",
+      "title": "Top Users Downloading Contents",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" \"\\\"type\\\": \\\"access\\\"\" \"\\\"name\\\": \\\"download\\\"\"\n| json \"id\", \"ipAddress\", \"events\", \"actor\" nodrop\n| json field=actor \"email\" \n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop\n| where applicationName=\"drive\" and eventType=\"access\" and eventName=\"download\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count as eventCount by email\n| top 10 email by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb3141991bef4ca4e",
+      "title": "Top Users Uploading Contents",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" \"\\\"name\\\": \\\"upload\\\"\"\n| json \"id\", \"ipAddress\", \"events\", \"actor\" nodrop\n| json field=actor \"email\" \n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop\n| where applicationName=\"drive\" and eventType=\"access\" and eventName=\"upload\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count as eventCount by email\n| top 10 email by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelad6a6d93b0dfe946",
+      "title": "Top Users Creating Contents",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" \"\\\"name\\\": \\\"create\\\"\"\n| json \"id\", \"ipAddress\", \"events\", \"actor\" nodrop\n| json field=actor \"email\" \n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop\n| where applicationName=\"drive\" and eventType=\"access\" and eventName=\"create\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count as eventCount by email\n| top 10 email by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel959c0e57aa7c5b48",
+      "title": "Most Active IPs",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" ipAddress\n| json \"id\", \"ipAddress\", \"events\", \"actor\" nodrop\n| json field=actor \"email\" \n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop\n| where applicationName= \"drive\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count as eventCount by ipAddress\n| top 10 ipAddress by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb10b78af897bab4e",
+      "title": "Top Users Sharing Contents Outside of Organization",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" (can_view OR can_edit OR people_with_link OR public_on_the_web)\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=id \"applicationName\"\n| json field=actor \"email\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where applicationName= \"drive\" and eventType=\"acl_change\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| where new_value matches \"*can_view*\" or new_value matches \"*can_edit*\" or new_value matches \"people_with_link*\" or new_value matches \"public_on_the_web*\"\n// edit this line to match your domain\n| where email matches \"*acme.com*\" and !isEmpty(target_user) and !(target_user matches \"*acme.com*\")\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{doc_title}}\" = \"*\", true, doc_title matches \"{{doc_title}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{target_user}}\" = \"*\", true, target_user matches \"{{target_user}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count as eventCount by email\n| top 10 email by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel731ff35da5900a4b",
+      "title": "Most Active Users",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" \n| json \"id\", \"ipAddress\", \"events\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop\n| where applicationName= \"drive\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count as eventCount by email\n| top 10 email by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "doc_title",
+      "displayName": "doc_title",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" (can_view OR can_edit OR people_with_link OR public_on_the_web)\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=id \"applicationName\"\n| json field=actor \"email\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where applicationName= \"drive\" and eventType=\"acl_change\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| where new_value matches \"*can_view*\" or new_value matches \"*can_edit*\" or new_value matches \"people_with_link*\" or new_value matches \"public_on_the_web*\"\n// edit this line to match your domain\n| where email matches \"*acme.com*\" and !isEmpty(target_user) and !(target_user matches \"*acme.com*\")",
+        "field": "doc_title"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "target_user",
+      "displayName": "target_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" (can_view OR can_edit OR people_with_link OR public_on_the_web)\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=id \"applicationName\"\n| json field=actor \"email\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where applicationName= \"drive\" and eventType=\"acl_change\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| where new_value matches \"*can_view*\" or new_value matches \"*can_edit*\" or new_value matches \"people_with_link*\" or new_value matches \"public_on_the_web*\"\n// edit this line to match your domain\n| where email matches \"*acme.com*\" and !isEmpty(target_user) and !(target_user matches \"*acme.com*\")",
+        "field": "target_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventName",
+      "displayName": "eventName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" (can_view OR can_edit OR people_with_link OR public_on_the_web)\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=id \"applicationName\"\n| json field=actor \"email\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where applicationName= \"drive\" and eventType=\"acl_change\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| where new_value matches \"*can_view*\" or new_value matches \"*can_edit*\" or new_value matches \"people_with_link*\" or new_value matches \"public_on_the_web*\"\n// edit this line to match your domain\n| where email matches \"*acme.com*\" and !isEmpty(target_user) and !(target_user matches \"*acme.com*\")",
+        "field": "eventName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "applicationName",
+      "displayName": "applicationName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" (can_view OR can_edit OR people_with_link OR public_on_the_web)\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=id \"applicationName\"\n| json field=actor \"email\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where applicationName= \"drive\" and eventType=\"acl_change\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| where new_value matches \"*can_view*\" or new_value matches \"*can_edit*\" or new_value matches \"people_with_link*\" or new_value matches \"public_on_the_web*\"\n// edit this line to match your domain\n| where email matches \"*acme.com*\" and !isEmpty(target_user) and !(target_user matches \"*acme.com*\")",
+        "field": "applicationName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventType",
+      "displayName": "eventType",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" (can_view OR can_edit OR people_with_link OR public_on_the_web)\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=id \"applicationName\"\n| json field=actor \"email\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where applicationName= \"drive\" and eventType=\"acl_change\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| where new_value matches \"*can_view*\" or new_value matches \"*can_edit*\" or new_value matches \"people_with_link*\" or new_value matches \"public_on_the_web*\"\n// edit this line to match your domain\n| where email matches \"*acme.com*\" and !isEmpty(target_user) and !(target_user matches \"*acme.com*\")",
+        "field": "eventType"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "ipAddress",
+      "displayName": "ipAddress",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" (can_view OR can_edit OR people_with_link OR public_on_the_web)\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=id \"applicationName\"\n| json field=actor \"email\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where applicationName= \"drive\" and eventType=\"acl_change\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| where new_value matches \"*can_view*\" or new_value matches \"*can_edit*\" or new_value matches \"people_with_link*\" or new_value matches \"public_on_the_web*\"\n// edit this line to match your domain\n| where email matches \"*acme.com*\" and !isEmpty(target_user) and !(target_user matches \"*acme.com*\")",
+        "field": "ipAddress"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "email",
+      "displayName": "email",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" (can_view OR can_edit OR people_with_link OR public_on_the_web)\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=id \"applicationName\"\n| json field=actor \"email\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where applicationName= \"drive\" and eventType=\"acl_change\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| where new_value matches \"*can_view*\" or new_value matches \"*can_edit*\" or new_value matches \"people_with_link*\" or new_value matches \"public_on_the_web*\"\n// edit this line to match your domain\n| where email matches \"*acme.com*\" and !isEmpty(target_user) and !(target_user matches \"*acme.com*\")",
+        "field": "email"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

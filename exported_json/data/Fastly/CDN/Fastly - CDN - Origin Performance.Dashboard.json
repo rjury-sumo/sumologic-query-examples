@@ -1,0 +1,365 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Fastly - CDN - Origin Performance",
+  "description": "",
+  "title": "Fastly - CDN - Origin Performance",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel17efc8e891deab44",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":10}"
+      },
+      {
+        "key": "panel4177dadda4146b43",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panel425e34209a98fa4e",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":5}"
+      },
+      {
+        "key": "panel48db5927860c884a",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel5a0d1906aefa1945",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":5}"
+      },
+      {
+        "key": "panel8c04107c81b5bb4f",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panelc928d8c89e47fa44",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "paneled588fde89684b4a",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":10}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel17efc8e891deab44",
+      "title": "Top 404-Causing URLs",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, status\n| urldecode(url) as url\n| where status = 404\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND status matches \"{{Status}}\" AND geo_region matches \"{{Geo Region}}\"\n|count as errors by url | sort by errors | limit 25",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4177dadda4146b43",
+      "title": "Median Latency (millisecs) by Origin Host",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"status\", \"origin_host\", \"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, status, origin_host, cache_status\n| time_elapsed/1000 as time_elapsed // convert to millisecs\n| timeslice 1m\n| where cache_status = \"MISS\" or cache_status = \"PASS\"\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND status matches \"{{Status}}\" AND geo_region matches \"{{Geo Region}}\"\n|pct(time_elapsed, 50) as nintieth by origin_host, _timeslice\n| transpose row _timeslice column origin_host",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel425e34209a98fa4e",
+      "title": "Error Rate 4xx by Code",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  4??\n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"request\",\"status\",\"origin_host\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, method, status, origin_host   \n| where status matches \"4*\" and method = \"GET\"\n| timeslice 10m as _timeslice\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND status matches \"{{Status}}\" AND geo_region matches \"{{Geo Region}}\"\n|count by _timeslice, status\n| transpose row _timeslice column status",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel48db5927860c884a",
+      "title": "90%-ile Latency (millisecs) by Origin Host",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[{\"series\":[\"www.acme.org\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"line\"}}],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"status\", \"origin_host\", \"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, status, origin_host, cache_status\n| time_elapsed/1000 as time_elapsed\n| timeslice 1m\n| where cache_status = \"MISS\" or cache_status = \"PASS\"\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND status matches \"{{Status}}\" AND geo_region matches \"{{Geo Region}}\"\n|pct(time_elapsed, 90) as nintieth by origin_host, _timeslice\n| transpose row _timeslice column origin_host",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5a0d1906aefa1945",
+      "title": "Origin Content Download Time (millisecs) Histogram",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[{\"series\":[\"requests\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}}],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"cache_status\", \"status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, cache_status, status\n| where cache_status = \"MISS\" or cache_status = \"PASS\"\n| time_elapsed/1000 as time_elapse // convert to milliseconds\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(time_elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(time_elapsed/bucket_size)*bucket_size,ceil(time_elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND status matches \"{{Status}}\" AND geo_region matches \"{{Geo Region}}\"\n|count as requests by response_time \n| sort by + response_time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8c04107c81b5bb4f",
+      "title": "Slowest URLs (millisecs)",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"status\",\"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, status, cache_status\n| urldecode(url) as url \n| time_elapsed/1000 as time_elapsed // convert to millisecs\n| where cache_status = \"MISS\" or cache_status = \"PASS\"\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND status matches \"{{Status}}\" AND geo_region matches \"{{Geo Region}}\"\n|max(time_elapsed) as max_time_elapsed by url\n| sort by max_time_elapsed\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc928d8c89e47fa44",
+      "title": "Top 5XX Error-Causing URLs",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":true,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"includes\",\"value\":null,\"toValue\":null}}},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  50?\n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, status\n| urldecode(url) as url \n| where status > 499\n| where status < 600\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND status matches \"{{Status}}\" AND geo_region matches \"{{Geo Region}}\"\n|count as errors by url\n| sort by errors",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneled588fde89684b4a",
+      "title": "Error Rate 5xx",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  5??\n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"status\", \"request\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, status, method \n| where status matches \"5*\" and method=\"GET\"\n| timeslice 10m as _timeslice\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND status matches \"{{Status}}\" AND geo_region matches \"{{Geo Region}}\"\n|count by _timeslice, status\n| transpose row _timeslice column status",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "Labs/Fastly ",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Fastly "
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Logsdatasource1",
+      "displayName": "Logsdatasource1",
+      "defaultValue": "Labs/Fastly ",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Fastly "
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Client IP",
+      "displayName": "Client IP",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"status\",\"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, status, cache_status\n| urldecode(url) as url \n| time_elapsed/1000 as time_elapsed // convert to millisecs\n| where cache_status = \"MISS\" or cache_status = \"PASS\"",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Country Code",
+      "displayName": "Country Code",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"status\",\"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, status, cache_status\n| urldecode(url) as url \n| time_elapsed/1000 as time_elapsed // convert to millisecs\n| where cache_status = \"MISS\" or cache_status = \"PASS\"",
+        "field": "geo_country_code"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Geo Region",
+      "displayName": "Geo Region",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"status\",\"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, status, cache_status\n| urldecode(url) as url \n| time_elapsed/1000 as time_elapsed // convert to millisecs\n| where cache_status = \"MISS\" or cache_status = \"PASS\"",
+        "field": "geo_region"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Status",
+      "displayName": "Status",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"status\",\"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, status, cache_status\n| urldecode(url) as url \n| time_elapsed/1000 as time_elapsed // convert to millisecs\n| where cache_status = \"MISS\" or cache_status = \"PASS\"",
+        "field": "status"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,368 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "MariaDB - Slow Queries",
+  "description": "The MariaDB Slow Queries dashboard provides insights into all slow queries executed on the database.",
+  "title": "MariaDB - Slow Queries",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-4115EF1DA0D50946",
+        "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-A1CE58559B2E9848",
+        "structure": "{\"height\":6,\"width\":6,\"x\":6,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-65697D668EA1B849",
+        "structure": "{\"height\":6,\"width\":6,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-AD632F719E07D941",
+        "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-3B45E40B93F1284C",
+        "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-69AAED31AB872A4B",
+        "structure": "{\"height\":6,\"width\":6,\"x\":6,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-4916AA24B9B0584D",
+        "structure": "{\"height\":6,\"width\":6,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-58765E1C8240F84A",
+        "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-5E3DA792B6147A42",
+        "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panelPANE-6CD850EDA2E53845",
+        "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":19}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-4115EF1DA0D50946",
+      "title": "Slow Queries by Client IPs",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as mariadb_log_message\n| parse regex field=mariadb_log_message \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ \\s\\[(?<ip_addr>\\S*?)\\]\" nodrop\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\" nodrop // Pttrn1-vrtn1\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @\\s+\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" nodrop // Pttrn1-vrtn2\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" // Pttrn1-vrtn3\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" nodrop // Pttrn2-vrtn4\n| num(query_time) as query_time\n| where query_time >= {{slow_query_latency}}\n| fields -query_block\n| count as frequency by ip_addr \n| where !isEmpty(ip_addr)\n| sort by frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-A1CE58559B2E9848",
+      "title": "Slow Queries by Users",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Categorical Light\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as mariadb_log_message\n| parse regex field=mariadb_log_message \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ \\s\\[(?<ip_addr>\\S*?)\\]\" nodrop\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\" nodrop // Pttrn1-vrtn1\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @\\s+\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" nodrop // Pttrn1-vrtn2\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" // Pttrn1-vrtn3\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" nodrop // Pttrn2-vrtn4\n| num(query_time) as query_time\n| where query_time >= {{slow_query_latency}}\n| fields -query_block\n| count as frequency by user | sort by frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-65697D668EA1B849",
+      "title": "Slow Queries by Hosts",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as mariadb_log_message\n| parse regex field=mariadb_log_message \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" nodrop // Pttrn2-vrtn4\n| num(query_time) as query_time\n| where query_time >= {{slow_query_latency}}\n| if (isEmpty(pod),_sourceHost,pod) as host\n| fields -query_block\n| count as queries_count by host \n| sort by queries_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-AD632F719E07D941",
+      "title": "Excessive Slow Queries by Host",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Categorical Dark\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as mariadb_log_message\n| parse regex field=mariadb_log_message \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" // Pttrn2-vrtn4\n| num(query_time)\n| 15 as threshold // customize if need different value. As an example query taking more than 15 Seconds is considered as Excessive Slow. \n| where (query_time >= threshold)\n| if (isEmpty(pod),_sourceHost,pod) as host\n| fields -query_block\n| count as queries_count by host | sort by queries_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-3B45E40B93F1284C",
+      "title": "Slow Query by Cmd Type",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as mariadb_log_message\n| parse regex field=mariadb_log_message \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"SET timestamp=(?<set_timestamp>\\d*);(?:\\\\n|\\n)(?<sql_cmd>[\\s\\S]*);\" nodrop\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" nodrop // Pttrn2-vrtn4\n| num(query_time) as query_time\n| where query_time >= {{slow_query_latency}}\n| parse regex field=sql_cmd \"[^a-zA-Z]*(?<sql_cmd_type>[a-zA-Z]+)(?:\\s|\\\\n|\\n)\" nodrop\n| parse field=sql_cmd \"# administrator command: *\" as admn_sql_cmd\n| if (sql_cmd matches \"# administrator command: *\", admn_sql_cmd, sql_cmd_type) as sql_cmd_type\n| toUpperCase(sql_cmd_type)\n| fields -query_block\n| count as frequency group by sql_cmd_type | sort by frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-69AAED31AB872A4B",
+      "title": "Avg Execution Time by Slow SQL Cmds",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as mariadb_log_message\n| parse regex field=mariadb_log_message \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" // Pttrn2-vrtn4\n| parse regex field=query_block \"SET timestamp=(?<set_timestamp>\\d*);(?:\\\\n|\\n)(?<sql_cmd>[\\s\\S]*);\" nodrop\n| parse regex field=sql_cmd \"[^a-zA-Z]*(?<sql_cmd_type>[a-zA-Z]+)(?:\\s|\\\\n|\\n)\" nodrop\n| parse field=sql_cmd \"# administrator command: *\" as admn_sql_cmd\n| if (sql_cmd matches \"# administrator command: *\", admn_sql_cmd, sql_cmd_type) as sql_cmd_type\n| toUpperCase(sql_cmd_type)\n| fields -query_block\n| timeslice 1h\n| avg(query_time) as avg_query_time group by _timeslice, sql_cmd_type\n| transpose row _timeslice column sql_cmd_type",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-4916AA24B9B0584D",
+      "title": "Slow Queries Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as mariadb_log_message\n| parse regex field=mariadb_log_message \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" nodrop // Pttrn2-vrtn4\n| num(query_time) as query_time\n| where query_time >= {{slow_query_latency}}\n| timeslice 1h\n| count as queries_count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-58765E1C8240F84A",
+      "title": "Excessive Slow Queries Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as mariadb_log_message\n| parse regex field=mariadb_log_message \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" // Pttrn2-vrtn4\n| num(query_time)\n| 15 as threshold // customize if need different value. As an example query taking more than 15 Seconds is considered as Excessive Slow. \n| where query_time >= threshold \n| timeslice 1h\n| count as queries_count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-5E3DA792B6147A42",
+      "title": "Top 10 Slow Queries by Average Execution Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\",\"decimals\":2},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as mariadb_log_message\n| parse regex field=mariadb_log_message \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ \\s\\[(?<ip_addr>\\S*?)\\]\" nodrop\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\" nodrop // Pttrn1-vrtn1\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @\\s+\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" nodrop // Pttrn1-vrtn2\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" // Pttrn1-vrtn3\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" // Pttrn2-vrtn4\n| parse regex field=query_block \"# Bytes_sent:\\s+(?<bytes_sent>\\d*)\\s+Tmp_tables:\\s+(?<tmp_tables>\\d*)\\s+Tmp_disk_tables:\\s+(?<temp_disk_tables>\\d*)\\s+Tmp_table_sizes:\\s+(?<tmp_table_sizes>\\d*)\\n\" nodrop // Pttrn3-vrtn1\n| parse regex field=query_block \"# Bytes_sent:\\s+(?<bytes_sent>\\d*)\\n\" nodrop // Pttrn3-vrtn2\n| parse regex field=query_block \"SET timestamp=(?<set_timestamp>\\d*);(?:\\\\n|\\n)(?<sql_cmd>[\\s\\S]*);\" nodrop\n| if (isEmpty(pod),_sourceHost,pod) as host\n| fields -query_block\n| avg(query_time) as avg_time, sum(query_time) as total_time, min(query_time) as min_time, max(query_time) as max_time, avg(rows_examined) as avg_rows_examined, avg(rows_sent) as avg_rows_sent, avg(Lock_Time) as avg_lock_time, count as frequency group by sql_cmd, host\n| where avg_time >= {{slow_query_latency}}\n| sort by avg_time | limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-6CD850EDA2E53845",
+      "title": "Top 10 Excessive Slow Queries by Frequency",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\",\"decimals\":2},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as mariadb_log_message\n| parse regex field=mariadb_log_message \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ \\s\\[(?<ip_addr>\\S*?)\\]\" nodrop\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\" nodrop // Pttrn1-vrtn1\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @\\s+\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" nodrop // Pttrn1-vrtn2\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" // Pttrn1-vrtn3\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" // Pttrn2-vrtn4\n| parse regex field=query_block \"# Bytes_sent:\\s+(?<bytes_sent>\\d*)\\s+Tmp_tables:\\s+(?<tmp_tables>\\d*)\\s+Tmp_disk_tables:\\s+(?<temp_disk_tables>\\d*)\\s+Tmp_table_sizes:\\s+(?<tmp_table_sizes>\\d*)\\n\" nodrop // Pttrn3-vrtn1\n| parse regex field=query_block \"# Bytes_sent:\\s+(?<bytes_sent>\\d*)\\n\" nodrop // Pttrn3-vrtn2\n| parse regex field=query_block \"SET timestamp=(?<set_timestamp>\\d*);(?:\\\\n|\\n)(?<sql_cmd>[\\s\\S]*);\" nodrop\n| if (isEmpty(pod),_sourceHost,pod) as host\n| fields -query_block\n| count as frequency, sum(query_time) as total_time, min(query_time) as min_time, max(query_time) as max_time, avg(query_time) as avg_time, avg(rows_examined) as avg_rows_examined, avg(rows_sent) as avg_rows_sent, avg(Lock_Time) as avg_lock_time group by sql_cmd, host\n| where avg_time >= {{slow_query_latency}}\n| sort by frequency | limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db_cluster",
+      "displayName": "db_cluster",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "db_system=mariadb _sourceCategory = Labs/mariadb | count by db_cluster",
+        "field": "db_cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "slow_query_latency",
+      "displayName": "slow_query_latency",
+      "defaultValue": "10",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "0,1,2,3,4,5,6,7,8,9,10,15,20,25,30"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

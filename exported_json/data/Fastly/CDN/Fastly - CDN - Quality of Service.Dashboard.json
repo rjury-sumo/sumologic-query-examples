@@ -1,0 +1,364 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Fastly - CDN - Quality of Service",
+  "description": "",
+  "title": "Fastly - CDN - Quality of Service",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel1dc958f1a7addb4d",
+        "structure": "{\"width\":8,\"height\":13,\"x\":16,\"y\":10}"
+      },
+      {
+        "key": "panel8d1fcb309d92ba49",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panel8d3a0c9183ba594a",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":5}"
+      },
+      {
+        "key": "panelc74afb5591010944",
+        "structure": "{\"width\":8,\"height\":13,\"x\":8,\"y\":10}"
+      },
+      {
+        "key": "panelca364ff8864f8b40",
+        "structure": "{\"width\":16,\"height\":13,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelde58b555b9e39a42",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panelff02fc9eac28aa4b",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel1dc958f1a7addb4d",
+      "title": "Performance (millisecs) Stats by Data Center",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}    \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"cache_status\",\"geo_datacenter\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip , cache_status, geo_datacenter\n| if (cache_status = \"HIT\", 1,0) as cache_offload\n| time_elapsed/1000 as time_elapsed\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND url matches \"{{Url}}\" AND cache_status matches \"{{Status}}\" AND user_agent matches \"{{User Agent}}\" AND geo_region matches \"{{Geo Region}}\"\n|count as requests, sum(cache_offload) as cache_offload, pct(time_elapsed, 5) as pct_5, pct(time_elapsed, 25) as lowerq, pct(time_elapsed, 50) as median, pct(time_elapsed, 75) as upperq, pct(time_elapsed, 95) as pct_95,avg(time_elapsed) as average by geo_datacenter\n| round(cache_offload*100/requests) as hit_pct | fields -cache_offload \n| round(pct_5) | round(lowerq)| round(median)| round(upperq)| round(pct_95)| round(average)\n| sort by average",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8d1fcb309d92ba49",
+      "title": "Overall Content Download Time (millisecs) Histogram",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[{\"series\":[\"requests\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"cache_status\", \"status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, cache_status, status\n| time_elapsed/1000 as time_elapsed // convert to msecs\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(time_elapsed/bucket_size)*bucket_size as response_time\n| format(\"%6.0f-%6.0f\",floor(time_elapsed/bucket_size)*bucket_size,ceil(time_elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%6.0f\",10*bucket_size),response_time_str) as response_time\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND url matches \"{{Url}}\" AND status matches \"{{Status}}\" AND user_agent matches \"{{User Agent}}\" AND geo_region matches \"{{Geo Region}}\"\n|count as requests by response_time \n| sort by + response_time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8d3a0c9183ba594a",
+      "title": "Cache Hit Percentage Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[{\"series\":[\"_count\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"line\"}}],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}     \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\", \"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, cache_status \n| if (cache_status = \"HIT\", 1,0) as cache_offload\n| timeslice 5m\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND url matches \"{{Url}}\" AND cache_status matches \"{{Status}}\" AND user_agent matches \"{{User Agent}}\" AND geo_region matches \"{{Geo Region}}\"\n|count as totalCount, sum(cache_offload) as cache_offload by _timeslice \n| toInt((cache_offload/totalCount)*100) as CacheOffloadPct | fields -totalCount,cache_offload",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc74afb5591010944",
+      "title": "Performance (millisecs) Stats by Country",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}    \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip , cache_status\n| if (cache_status = \"HIT\", 1,0) as cache_offload\n| time_elapsed/1000 as time_elapsed\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND url matches \"{{Url}}\" AND cache_status matches \"{{Status}}\" AND user_agent matches \"{{User Agent}}\" AND geo_region matches \"{{Geo Region}}\"\n|count as requests, sum(cache_offload) as cache_offload, pct(time_elapsed, 5) as pct_5, pct(time_elapsed, 25) as lowerq, pct(time_elapsed, 50) as median, pct(time_elapsed, 75) as upperq, pct(time_elapsed, 95) as pct_95,avg(time_elapsed) as average by geo_country_code\n| round(cache_offload*100/requests) as hit_pct | fields -cache_offload \n| round(pct_5) | round(lowerq)| round(median)| round(upperq)| round(pct_95)| round(average)\n| sort by average",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelca364ff8864f8b40",
+      "title": "Download Performance Hotspots - Avg Download Above 300ms",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}    \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip \n| lookup latitude, longitude from geo://location on ip=src_ip\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND url matches \"{{Url}}\" AND user_agent matches \"{{User Agent}}\" AND geo_region matches \"{{Geo Region}}\"\n|count, avg(time_elapsed) as avg_time_elapsed by geo_country_code, latitude, longitude | round(avg_time_elapsed)\n| where avg_time_elapsed > 300000 and _count > 1| sort by avg_time_elapsed\n| fields - avg_time_elapsed",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelde58b555b9e39a42",
+      "title": "Cacheable Content Download Time (millisecs) Histogram",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[{\"series\":[\"opera/9.00 (windows nt 5.1; u; en)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/4.0 (compatible; msie3.00; windows 2005)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/8.0 (compatible; msie2.00; windows 2002)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (compatible; exabot/3.0;  http://www.exabot.com/go/robot)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (windows nt 10.0; wow64) applewebkit/537.36 (khtml, like gecko) chrome/48.0.2564.116 safari/537.36\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"opera/9.00 (windows nt 4.0; u; en)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (windows nt 6.1; wow64) applewebkit/537.36 (khtml, like gecko) chrome/48.0.2564.109 safari/537.36\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (compatible; semrushbot/1.1~bl;  http://www.semrush.com/bot.html)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/8.0 (compatible; msie4.00; windows 2002)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/8.0 (compatible; msie7.00; windows 2009)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/6.0 (compatible; msie7.00; windows 2005)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (compatible; baiduspider/2.0;  http://www.baidu.com/search/spider.html)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/2.0 (compatible; msie7.00; windows 2005)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (compatible; mj12bot/v1.4.7; http://mj12bot.com/)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/3.0 (compatible; webcapture 2.0; auto; windows)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/4.0 (compatible; msie 6.0; windows xp)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"googlebot-image/1.0\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (compatible; dotbot/1.1; http://www.opensiteexplorer.org/dotbot, help@moz.com)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (windows nt 5.1; rv:43.0) gecko/20100101 firefox/43.0\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (compatible; yandexbot/3.0;  http://yandex.com/bots)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (windows nt 6.1; rv:45.0) gecko/20100101 firefox/45.0\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/3.0 (compatible; msie5.00; windows 2003)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (windows nt 6.1; wow64) applewebkit/537.36 (khtml, like gecko) chrome/48.0.2564.103 safari/537.36\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (compatible; yandeximages/3.0;  http://yandex.com/bots)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (compatible; ahrefsbot/5.1;  http://ahrefs.com/robot/)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/6.0 (compatible; msie6.00; windows 2003)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (compatible; googlebot/2.1;  http://www.google.com/bot.html)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (windows nt 6.1) applewebkit/537.36 (khtml, like gecko) chrome/47.0.2526.111 safari/537.36\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (compatible; bingbot/2.0;  http://www.bing.com/bingbot.htm)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (compatible; msie7.00; windows 2006)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/4.0 (compatible; msie7.00; windows 2008)\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"mozilla/5.0 (windows nt 6.3; wow64) applewebkit/537.36 (khtml, like gecko) chrome/48.0.2564.109 safari/537.36\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\",\"cache_status\", \"status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, cache_status, status\n| where cache_status = \"HIT\" or cache_status = \"MISS\"\n| time_elapsed/1000 as time_elapse // convert to milliseconds\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(time_elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(time_elapsed/bucket_size)*bucket_size,ceil(time_elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND url matches \"{{Url}}\" AND status matches \"{{Status}}\" AND user_agent matches \"{{User Agent}}\" AND geo_region matches \"{{Geo Region}}\"\n|count as requests by response_time \n| sort by + response_time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelff02fc9eac28aa4b",
+      "title": "Cache Performance",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"right\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}   \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\", \"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, cache_status\n|where geo_country_code matches \"{{Country Code}}\" AND src_ip matches \"{{Client IP}}\" AND url matches \"{{Url}}\" AND cache_status matches \"{{Status}}\" AND user_agent matches \"{{User Agent}}\" AND geo_region matches \"{{Geo Region}}\"\n|count by cache_status",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "Labs/Fastly ",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Fastly "
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Logsdatasource1",
+      "displayName": "Logsdatasource1",
+      "defaultValue": "Labs/Fastly ",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Fastly "
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Client IP",
+      "displayName": "Client IP",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}   \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\", \"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, cache_status",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Country Code",
+      "displayName": "Country Code",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}   \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\", \"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, cache_status",
+        "field": "geo_country_code"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Geo Region",
+      "displayName": "Geo Region",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}   \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\", \"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, cache_status",
+        "field": "geo_region"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Status",
+      "displayName": "Status",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}   \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\", \"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, cache_status",
+        "field": "status"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Url",
+      "displayName": "Url",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}   \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\", \"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, cache_status",
+        "field": "url"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "User Agent",
+      "displayName": "User Agent",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}   \n| json \"request_user_agent\", \"time_elapsed\", \"url\",\"geo_region\",\"geo_country_code\",\"client_ip\", \"cache_status\" as user_agent, time_elapsed, url, geo_region, geo_country_code, src_ip, cache_status",
+        "field": "user_agent"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,1481 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Global Intelligence for Apache Tomcat",
+  "description": "This App is installed via automation.DO NOT DELETE since its shared.",
+  "children": [
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "GI Tomcat 01 Load Signals and Contributing Factors",
+      "description": "This dashboard compares the golden signal of load (requests per second) for a company’s Apache Tomcat servers to other servers. These signals are impacted by connections per second, requests per connection and share of HTTP POST/DELETE requests. These causal signals are also compared to the population of Apache Tomcat servers. Use this dashboard to analyze unusual load spikes and the reasons for them.",
+      "title": "GI Tomcat 01 Load Signals and Contributing Factors",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-6h"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-0",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":7}"
+          },
+          {
+            "key": "panelPANE-1",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":7}"
+          },
+          {
+            "key": "panelPANE-2",
+            "structure": "{\"height\":1,\"width\":22,\"x\":0,\"y\":5}"
+          },
+          {
+            "key": "panelPANE-3",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":14}"
+          },
+          {
+            "key": "panelPANE-4",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":14}"
+          },
+          {
+            "key": "panelPANE-5",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":22}"
+          },
+          {
+            "key": "panelPANE-6",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":22}"
+          },
+          {
+            "key": "panelPANE-9",
+            "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":29}"
+          },
+          {
+            "key": "panelPANE-10",
+            "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":37}"
+          },
+          {
+            "key": "panelPANE-11",
+            "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":37}"
+          },
+          {
+            "key": "panelPANE-12",
+            "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":29}"
+          },
+          {
+            "key": "panelPANE-13",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":21}"
+          },
+          {
+            "key": "panelPANE-14",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-34",
+            "structure": "{\"height\":5,\"width\":24,\"x\":0,\"y\":0}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-0",
+          "title": "Requests Per Second: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: Requests per Second\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerSize\":10,\"markerType\":\"circle\",\"color\":\"#f2da73\"}}],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| count as hits by _timeslice, server\n| hits/3600 as my_company_requests_per_sec\n| fields - hits\n| avg(my_company_requests_per_sec) as my_entity_avg by server\n| \"requests_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-1",
+          "title": "Requests Per Second Daily AVERAGE:  My Server v  Benchmark ",
+          "visualSettings": "{\"series\":{},\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"Requests Per Second\",\"minimum\":0}},\"legend\":{\"enabled\":true},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"markerSize\":10,\"markerType\":\"circle\",\"type\":\"column\"}},{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"color\":\"#940760\",\"markerSize\":10,\"markerType\":\"circle\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| count as hits by _timeslice, server\n| hits/3600 as my_company_requests_per_sec\n| fields - hits\n| avg(my_company_requests_per_sec) as my_entity_avg by server\n| \"requests_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-2",
+          "title": "Golden Signal Correlates",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"title\":{\"fontSize\":16},\"series\":{},\"text\":{\"showTitle\":false,\"fontSize\":14,\"format\":\"markdown\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": ""
+        },
+        {
+          "id": null,
+          "key": "panelPANE-3",
+          "title": "Connections Per Second: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: Connections Per Second\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerSize\":10,\"markerType\":\"circle\",\"color\":\"#f2da73\"}}],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_unique_connections_per_sec\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count_distinct(client_ip) as conn by server, _timeslice\n| conn/3600 as conn\n| avg(conn) as my_entity_avg by server\n| \"unique_connections_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-4",
+          "title": "Connections Per Seconds Daily AVERAGE:   My Server v  Benchmark ",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Connections Per Second\",\"minimum\":0,\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false},\"axisY2\":{\"title\":\"\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"type\":\"column\"}},{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"color\":\"#940760\",\"markerType\":\"circle\",\"markerSize\":10}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_unique_connections_per_sec\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count_distinct(client_ip) as conn by server, _timeslice\n| conn/3600 as conn\n| avg(conn) as my_entity_avg by server\n| \"unique_connections_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-5",
+          "title": "Requests Per Connection: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Distance: Requests Per Connection\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerSize\":10,\"markerType\":\"circle\",\"color\":\"#f2da73\"}}],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_req_per_connection_per_hour\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count_distinct(client_ip) as conn, count as totalreq by server, _timeslice\n| (totalreq/conn) as reqperconn\n| avg(reqperconn) as my_entity_avg by server\n| \"req_per_connection_per_hour\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-6",
+          "title": "Requests Per Connection Daily AVERAGE:   My Server v  Benchmark ",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Requests Per Connection\",\"minimum\":0,\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"type\":\"column\"}},{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"type\":\"line\",\"color\":\"#940760\",\"markerSize\":10,\"markerType\":\"circle\"}}],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_req_per_connection_per_hour\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count_distinct(client_ip) as conn, count as totalreq by server, _timeslice\n| (totalreq/conn) as reqperconn\n| avg(reqperconn) as my_entity_avg by server\n| \"req_per_connection_per_hour\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-9",
+          "title": "HTTP POST Share of Requests Daily AVERAGE:   My Server v  Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"date\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"HTTP POST Share of Requests\",\"minimum\":0}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#940760\"}},{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"type\":\"column\",\"color\":\"#005275\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_http_methods_per_req_post\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count by Method, server, _timeslice\n| total(_count) as total_count by _timeslice\n| _count/total_count*100 as my_company_percent\n| avg(my_company_percent) as my_entity_avg by Method, server\n| where toLowerCase(Method) = \"post\"\n| concat(\"methods_per_req_\", toLowerCase(Method)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-10",
+          "title": "HTTP DELETE Share of Requests: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: HTTP DELETE Share of Requests\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerSize\":10,\"markerType\":\"circle\",\"color\":\"#f2da73\"}}],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_http_methods_per_req_del\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count by Method, server, _timeslice\n| total(_count) as total_count by _timeslice\n| _count/total_count*100 as my_company_percent\n| avg(my_company_percent) as my_entity_avg by Method, server\n| where toLowerCase(Method) = \"delete\"\n| concat(\"methods_per_req_\", toLowerCase(Method)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-11",
+          "title": "HTTP DELETE Share of Requests Daily AVERAGE:   My Server v  Benchmark ",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"date\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"HTTP Delete Share of Requests\",\"minimum\":0}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"type\":\"column\"}},{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"type\":\"line\",\"color\":\"#940760\",\"markerSize\":10,\"markerType\":\"circle\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_http_methods_per_req_del\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count by Method, server, _timeslice\n| total(_count) as total_count by _timeslice\n| _count/total_count*100 as my_company_percent\n| avg(my_company_percent) as my_entity_avg by Method, server\n| where toLowerCase(Method) = \"delete\"\n| concat(\"methods_per_req_\", toLowerCase(Method)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-12",
+          "title": "HTTP POST Share of Requests: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: HTTP POST Share of Requests\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerSize\":10,\"markerType\":\"circle\",\"color\":\"#f2da73\"}}],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_http_methods_per_req_post\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count by Method, server, _timeslice\n| total(_count) as total_count by _timeslice\n| _count/total_count*100 as my_company_percent\n| avg(my_company_percent) as my_entity_avg by Method, server\n| where toLowerCase(Method) = \"post\"\n| concat(\"methods_per_req_\", toLowerCase(Method)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-13",
+          "title": "Load Contributors",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"series\":{},\"title\":{\"fontSize\":16},\"text\":{\"format\":\"markdownV2\",\"backgroundColor\":\"#00344d\",\"textColor\":\"white\",\"verticalAlignment\":\"center\",\"showTitle\":false,\"horizontalAlignment\":\"center\"},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Load Contributors"
+        },
+        {
+          "id": null,
+          "key": "panelPANE-14",
+          "title": "Load Signals",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"series\":{},\"title\":{\"fontSize\":16},\"text\":{\"format\":\"markdownV2\",\"backgroundColor\":\"#c9d0d6\",\"textColor\":\"white\",\"verticalAlignment\":\"center\",\"showTitle\":false,\"horizontalAlignment\":\"center\"},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Load Signals"
+        },
+        {
+          "id": null,
+          "key": "panelPANE-34",
+          "title": "Golden Signal Correlates",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"showTitle\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "#### Load on an Apache Tomcat server is measured by Requests per Second. Tomcat [request rate](https://tomcat.apache.org/articles/performance.pdf) is affected by connections rate,  requests per connection, data transferred (GB/request) and HTTP verb mix. In addition [configuration factors](https://www.oreilly.com/library/view/tomcat-the-definitive/9780596101060/ch04.html) such as use of  HTTPs and CPU/Memory allocation also affect Tomcat request rate.  Assess if your Tomcat request rates are significantly lower for a given server compared to other Tomcat servers. If so, consult these correlates to verify if any of these factors might be the cause. To do this, first consult the Distance measurement and then the difference between a given entity and the benchmark. \n\n#### **Distance**,  between 0 and 1, is a statistical measure of how similar a given entity is to other entities based on a given signal. Distance of 0 signifies entities that are behaving identical to the population of entities.  Sudden increases in distance coupled with sudden increases compared to benchmark values indicate entities that are either the cause of an incident or are affected by upstream issues. \n\n#### The signals and contributing factors are organized based on Golden Signal analysis. In general, load spikes lead to either latency or error spikes; latency and error spikes lead to drop in throughput. "
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "Server",
+          "displayName": "Server",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "// id=@variable_chief_query\n_sourceCategory = Labs/Tomcat*",
+            "field": "_sourcehost"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "GI Tomcat 02 Throughput Signals and Contributing Factors",
+      "description": "This dashboard compares the golden signal of throughput (GB per second) for a company’s Apache Tomcat servers to other servers. These signals are impacted by requests per second, GB per request and error rate. These causal signals are also compared to the population of Apache Tomcat servers. Use this dashboard to assess unusual throughput drops and the reasons for them such as increased errors or load spikes.",
+      "title": "GI Tomcat 02 Throughput Signals and Contributing Factors",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-6h"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-0",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":13}"
+          },
+          {
+            "key": "panelPANE-1",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":13}"
+          },
+          {
+            "key": "panelPANE-4",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":20}"
+          },
+          {
+            "key": "panelPANE-5",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":20}"
+          },
+          {
+            "key": "panelPANE-2",
+            "structure": "{\"height\":4,\"width\":24,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-15",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":5}"
+          },
+          {
+            "key": "panelPANE-16",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":5}"
+          },
+          {
+            "key": "panelPANE-17",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":12}"
+          },
+          {
+            "key": "panelPANE-18",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":4}"
+          },
+          {
+            "key": "panelPANE-19",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":27}"
+          },
+          {
+            "key": "panelPANE-20",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":28}"
+          },
+          {
+            "key": "panelPANE-21",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":28}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-0",
+          "title": "Requests Per Second: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: Requests Per Second\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":9,\"color\":\"#f2da73\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| count as hits by _timeslice, server\n| hits/3600 as my_company_requests_per_sec\n| fields - hits\n| avg(my_company_requests_per_sec) as my_entity_avg by server\n| \"requests_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-1",
+          "title": "Requests Per Second Daily AVERAGE:  My Server v  Benchmark ",
+          "visualSettings": "{\"series\":{},\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"Requests per second\",\"minimum\":0}},\"legend\":{\"enabled\":true},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#940760\"}},{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"markerSize\":10,\"markerType\":\"circle\",\"type\":\"column\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| count as hits by _timeslice, server\n| hits/3600 as my_company_requests_per_sec\n| fields - hits\n| avg(my_company_requests_per_sec) as my_entity_avg by server\n| \"requests_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-4",
+          "title": "GB Served Per Request: Daily Distance From Benchmark",
+          "visualSettings": "{\"axes\":{\"axisX\":{\"showLabels\":true,\"title\":\"date\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"showLabels\":true,\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\",\"minimum\":0,\"title\":\"Distance: GB Per Request\",\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{\"A_my_company_pct_50\":{\"visible\":true},\"A_my_company_pct_99\":{\"visible\":true}},\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#f2da73\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_gBytes_by_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| (size/(1048576*1000)) as gbytes\n| count as hits, sum(gbytes) as gbytes by _timeslice, server\n| (gbytes / hits ) as my_company_gbytesPerHit\n| avg(my_company_gbytesPerHit) as my_entity_avg by server\n| \"gbytes_by_requests_per_hr\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-5",
+          "title": "GB Served Per Request Daily AVERAGE: My Server v  Benchmark ",
+          "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":true},\"axes\":{\"axisX\":{},\"axisY\":{\"title\":\"GB per request\",\"minimum\":0}},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#940760\"}},{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"markerSize\":10,\"markerType\":\"circle\",\"type\":\"column\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_gBytes_by_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| (size/(1048576*1000)) as gbytes\n| count as hits, sum(gbytes) as gbytes by _timeslice, server\n| (gbytes / hits ) as my_company_gbytesPerHit\n| avg(my_company_gbytesPerHit) as my_entity_avg by server\n| \"gbytes_by_requests_per_hr\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-2",
+          "title": "Golden Signal Correlates",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"title\":{\"fontSize\":16},\"series\":{},\"text\":{\"showTitle\":false,\"fontSize\":14,\"format\":\"markdown\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "#### Tomcat throughput (GB per sec) is affected by: (a) request rate (b)  data transferred - GB per request. (c) Server errors. Assess if your Tomcat throughput is  significantly lower for a given server compared to other Tomcat servers. If so, consult these correlates to verify if any of these factors might be the cause. To do this, first consult the Distance measurement and then the difference between a given entity and the benchmark. \n\n#### **Distance**,  between 0 and 1, is a statistical measure of how similar a given entity is to other entities based on a given signal. Distance of 0 signifies entities that are behaving identical to the population of entities.  Sudden increases in distance coupled with sudden increases compared to benchmark values indicate entities that are either the cause of an incident or are affected by upstream issues. \n\n#### The signals and contributing factors are organized based on Golden Signal analysis. In general, load spikes lead to either latency or error spikes; latency and error spikes lead to drop in throughput. "
+        },
+        {
+          "id": null,
+          "key": "panelPANE-15",
+          "title": "GB Per Second: Daily Distance From Benchmark",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"markerSize\":5,\"lineThickness\":3},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"color\":\"#f2da73\",\"markerType\":\"circle\",\"markerSize\":10}}],\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"Distance: GB Per Second\",\"minimum\":0,\"maximum\":1},\"axisY2\":{}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_gBytes_by_sec\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| (size/(1048576*1000)) as gbytes\n| sum(gbytes) as gbytes by _timeslice, server\n| (gbytes / 3600 ) as my_company_gbytesPerSec\n| avg(my_company_gbytesPerSec) as my_entity_avg by server\n| \"gbytes_by_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-16",
+          "title": "GB Per Second Daily AVERAGE:   My Server v  Benchmark ",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"lineThickness\":3},\"series\":{},\"overrides\":[{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#940760\"}},{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"markerSize\":10,\"markerType\":\"circle\",\"type\":\"column\"}}],\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"GB Per Second\",\"minimum\":0}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_gBytes_by_sec\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| (size/(1048576*1000)) as gbytes\n| sum(gbytes) as gbytes by _timeslice, server\n| (gbytes / 3600 ) as my_company_gbytesPerSec\n| avg(my_company_gbytesPerSec) as my_entity_avg by server\n| \"gbytes_by_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-17",
+          "title": "Load Correlates",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"markdownV2\",\"backgroundColor\":\"#c9d0d6\",\"textColor\":\"white\",\"showTitle\":false,\"horizontalAlignment\":\"center\"},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Load Factors Contributing to Throughput"
+        },
+        {
+          "id": null,
+          "key": "panelPANE-18",
+          "title": "Throughput Signal",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"markdownV2\",\"backgroundColor\":\"#003816\",\"textColor\":\"white\",\"showTitle\":false,\"horizontalAlignment\":\"center\",\"verticalAlignment\":\"center\"},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Throughput Signal"
+        },
+        {
+          "id": null,
+          "key": "panelPANE-19",
+          "title": "Error Correlates",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"markdownV2\",\"backgroundColor\":\"#61003d\",\"textColor\":\"white\",\"showTitle\":false,\"horizontalAlignment\":\"center\"},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Errors Contributing to Throughput"
+        },
+        {
+          "id": null,
+          "key": "panelPANE-20",
+          "title": "Server Errors Per Request: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: Server Errors Per Request\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerSize\":10,\"markerType\":\"circle\",\"color\":\"#f2da73\"}}],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_response_types_per_req_server\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| if(Status_Code matches \"2*\", \"Success\",\nif(Status_Code matches \"3*\", \"Redirects\",\nif(status_code matches \"4*\", \"Client_Errors\",\nif(Status_Code matches \"5*\", \"Server_Errors\", \"\")))) as Status\n| timeslice 1h\n| count by Status, _timeslice, server\n| total _count by _timeslice, server\n| _count/_total * 100 as percent\n| avg(percent) as my_entity_avg by Status, server\n| where toLowerCase(Status) = \"server_errors\"\n| concat(\"response_types_per_req_per_hr_\", toLowerCase(Status)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-21",
+          "title": "Server Errors Per Request Daily AVERAGE: My Server v  Benchmark ",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"lineThickness\":3},\"series\":{},\"overrides\":[{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#940760\"}},{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"markerSize\":10,\"markerType\":\"circle\",\"type\":\"column\"}}],\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"Server Errors Per Request\",\"minimum\":0}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_response_types_per_req_server\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| if(Status_Code matches \"2*\", \"Success\",\nif(Status_Code matches \"3*\", \"Redirects\",\nif(status_code matches \"4*\", \"Client_Errors\",\nif(Status_Code matches \"5*\", \"Server_Errors\", \"\")))) as Status\n| timeslice 1h\n| count by Status, _timeslice, server\n| total _count by _timeslice, server\n| _count/_total * 100 as percent\n| avg(percent) as my_entity_avg by Status, server\n| where toLowerCase(Status) = \"server_errors\"\n| concat(\"response_types_per_req_per_hr_\", toLowerCase(Status)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "Server",
+          "displayName": "Server",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "// id=@variable_chief_query\n_sourceCategory = Labs/Tomcat*",
+            "field": "_sourcehost"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "GI Tomcat 03 Errors and Contributing Factors",
+      "description": "This dashboard compares the golden signal of error rate for a company’s Apache Tomcat servers to other servers. These signals are impacted by requests per second, connections per second and GB per request. These causal signals are also compared to the population of Apache Tomcat servers. Use this dashboard to assess unusual increases in error rate and the reasons for them such as increased load.",
+      "title": "GI Tomcat 03 Errors and Contributing Factors",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-6h"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-0",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":28}"
+          },
+          {
+            "key": "panelPANE-1",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":28}"
+          },
+          {
+            "key": "panelPANE-2",
+            "structure": "{\"height\":5,\"width\":24,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-22",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":21}"
+          },
+          {
+            "key": "panelPANE-23",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":21}"
+          },
+          {
+            "key": "panelPANE-24",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-25",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-26",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":13}"
+          },
+          {
+            "key": "panelPANE-27",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":13}"
+          },
+          {
+            "key": "panelPANE-28",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":5}"
+          },
+          {
+            "key": "panelPANE-29",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":20}"
+          },
+          {
+            "key": "panelPANE-30",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":35}"
+          },
+          {
+            "key": "panelPANE-31",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":35}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-0",
+          "title": "Requests Per Second: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: Requests per Second\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#f2da73\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| count as hits by _timeslice, server\n| hits/3600 as my_company_requests_per_sec\n| fields - hits\n| avg(my_company_requests_per_sec) as my_entity_avg by server\n| \"requests_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-1",
+          "title": "Requests Per Second Daily AVERAGE:  My Server v  Benchmark ",
+          "visualSettings": "{\"series\":{},\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"Requests Per Second\",\"minimum\":0}},\"legend\":{\"enabled\":true},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#940760\"}},{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"markerSize\":10,\"markerType\":\"circle\",\"type\":\"column\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| count as hits by _timeslice, server\n| hits/3600 as my_company_requests_per_sec\n| fields - hits\n| avg(my_company_requests_per_sec) as my_entity_avg by server\n| \"requests_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-2",
+          "title": "Golden Signal Correlates",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"title\":{\"fontSize\":16},\"series\":{},\"text\":{\"showTitle\":false,\"fontSize\":14,\"format\":\"markdown\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "#### Tomcat errors may be caused by high connection rate, high request rate or large data transfer in GB per request. Assess if your Tomcat error  is  significantly higher for a given server compared to other Tomcat servers. If so, consult these correlates to verify if any of these factors might be the cause.\n\n####To do this, first consult the Distance measurement and then the difference between a given entity and the benchmark. \n\n#### **Distance**,  between 0 and 1, is a statistical measure of how similar a given entity is to other entities based on a given signal. Distance of 0 signifies entities that are behaving identical to the population of entities.  Sudden increases in distance coupled with sudden increases compared to benchmark values indicate entities that are either the cause of an incident or are affected by upstream issues. \n\n#### The signals and contributing factors are organized based on Golden Signal analysis. In general, load spikes lead to either latency or error spikes; latency and error spikes lead to drop in throughput. "
+        },
+        {
+          "id": null,
+          "key": "panelPANE-22",
+          "title": "Connections Per Second: Daily Distance From Benchmark",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"lineThickness\":3},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#f2da73\"}}],\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"Distance: Connections Per Second\",\"minimum\":0,\"maximum\":1}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_unique_connections_per_sec\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count_distinct(client_ip) as conn by server, _timeslice\n| conn/3600 as conn\n| avg(conn) as my_entity_avg by server\n| \"unique_connections_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-23",
+          "title": "Connections Per Second Daily AVERAGE:   My Server v  Benchmark ",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"lineThickness\":3},\"series\":{},\"overrides\":[{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#940760\"}},{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"type\":\"column\",\"color\":\"#005275\",\"markerSize\":10,\"markerType\":\"circle\"}}],\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"Connections Per Second\",\"minimum\":0}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_unique_connections_per_sec\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count_distinct(client_ip) as conn by server, _timeslice\n| conn/3600 as conn\n| avg(conn) as my_entity_avg by server\n| \"unique_connections_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-24",
+          "title": "Server Errors Per Request: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: Server Errors Per Request\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerSize\":10,\"markerType\":\"circle\",\"color\":\"#f2da73\"}}],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_response_types_per_req_server\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| if(Status_Code matches \"2*\", \"Success\",\nif(Status_Code matches \"3*\", \"Redirects\",\nif(status_code matches \"4*\", \"Client_Errors\",\nif(Status_Code matches \"5*\", \"Server_Errors\", \"\")))) as Status\n| timeslice 1h\n| count by Status, _timeslice, server\n| total _count by _timeslice, server\n| _count/_total * 100 as percent\n| avg(percent) as my_entity_avg by Status, server\n| where toLowerCase(Status) = \"server_errors\"\n| concat(\"response_types_per_req_per_hr_\", toLowerCase(Status)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-25",
+          "title": "Server Errors Per Request Daily AVERAGE:   My Server v  Benchmark ",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"lineThickness\":3},\"series\":{},\"overrides\":[{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#940760\"}},{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"markerSize\":10,\"markerType\":\"circle\",\"type\":\"column\"}}],\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"Server Errors Per Request\",\"minimum\":0}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_response_types_per_req_server\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| if(Status_Code matches \"2*\", \"Success\",\nif(Status_Code matches \"3*\", \"Redirects\",\nif(status_code matches \"4*\", \"Client_Errors\",\nif(Status_Code matches \"5*\", \"Server_Errors\", \"\")))) as Status\n| timeslice 1h\n| count by Status, _timeslice, server\n| total _count by _timeslice, server\n| _count/_total * 100 as percent\n| avg(percent) as my_entity_avg by Status, server\n| where toLowerCase(Status) = \"server_errors\"\n| concat(\"response_types_per_req_per_hr_\", toLowerCase(Status)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-26",
+          "title": "Client Errors Per Request: Daily Distance From Benchmark",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"lineThickness\":3},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#f2da73\"}}],\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"Distance: Client Errors Per Request\",\"minimum\":0,\"maximum\":1}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_response_types_per_req_client\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| if(Status_Code matches \"2*\", \"Success\",\nif(Status_Code matches \"3*\", \"Redirects\",\nif(status_code matches \"4*\", \"Client_Errors\",\nif(Status_Code matches \"5*\", \"Server_Errors\", \"\")))) as Status\n| timeslice 1h\n| count by Status, _timeslice, server\n| total _count by _timeslice, server\n| _count/_total * 100 as percent\n| avg(percent) as my_entity_avg by Status, server\n| where toLowerCase(Status) = \"client_errors\"\n| concat(\"response_types_per_req_per_hr_\", toLowerCase(Status)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-27",
+          "title": "Client Errors Per Request Daily AVERAGE:   My Server v  Benchmark ",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"lineThickness\":3},\"series\":{},\"overrides\":[{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#940760\"}},{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"markerSize\":10,\"markerType\":\"circle\",\"type\":\"column\"}}],\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"Client Errors Per Request\",\"minimum\":0}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_response_types_per_req_client\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| if(Status_Code matches \"2*\", \"Success\",\nif(Status_Code matches \"3*\", \"Redirects\",\nif(status_code matches \"4*\", \"Client_Errors\",\nif(Status_Code matches \"5*\", \"Server_Errors\", \"\")))) as Status\n| timeslice 1h\n| count by Status, _timeslice, server\n| total _count by _timeslice, server\n| _count/_total * 100 as percent\n| avg(percent) as my_entity_avg by Status, server\n| where toLowerCase(Status) = \"client_errors\"\n| concat(\"response_types_per_req_per_hr_\", toLowerCase(Status)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-28",
+          "title": "Error Signals",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"series\":{},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"backgroundColor\":\"#61003d\",\"textColor\":\"white\",\"showTitle\":false,\"horizontalAlignment\":\"center\"},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Error Signals"
+        },
+        {
+          "id": null,
+          "key": "panelPANE-29",
+          "title": "Load Contributors",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"series\":{},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"backgroundColor\":\"#c9d0d6\",\"textColor\":\"white\",\"showTitle\":false,\"horizontalAlignment\":\"center\"},\"title\":{\"fontSize\":16}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Load Factors Contributing to Errors"
+        },
+        {
+          "id": null,
+          "key": "panelPANE-30",
+          "title": "GB Served per Request: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Distance: GB Per Request\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#f2da73\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_gBytes_by_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| (size/(1048576*1000)) as gbytes\n| count as hits, sum(gbytes) as gbytes by _timeslice, server\n| (gbytes / hits ) as my_company_gbytesPerHit\n| avg(my_company_gbytesPerHit) as my_entity_avg by server\n| \"gbytes_by_requests_per_hr\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-31",
+          "title": "GB Served Per Request Daily AVERAGE:   My Server v  Benchmark ",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"lineThickness\":3},\"series\":{},\"overrides\":[{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#940760\"}},{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"markerSize\":10,\"markerType\":\"circle\",\"type\":\"column\"}}],\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"GB Per Request\",\"minimum\":0}}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_gBytes_by_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| (size/(1048576*1000)) as gbytes\n| count as hits, sum(gbytes) as gbytes by _timeslice, server\n| (gbytes / hits ) as my_company_gbytesPerHit\n| avg(my_company_gbytesPerHit) as my_entity_avg by server\n| \"gbytes_by_requests_per_hr\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "Server",
+          "displayName": "Server",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "// id=@variable_chief_query\n_sourceCategory = Labs/Tomcat*",
+            "field": "_sourcehost"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "GI Tomcat 04 Latency Signals and Contributing Factors",
+      "description": "This dashboard compares the golden signal of latency for a company’s Apache Tomcat servers to other servers. These signals are impacted by requests per second and HTTP POST/DELETE share of requests. These causal signals are also compared to the population of Apache Tomcat servers. Use this dashboard to assess unusual latency increases and the reasons for them such as increased load.",
+      "title": "GI Tomcat 04 Latency Signals and Contributing Factors",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-6h"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-0",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":14}"
+          },
+          {
+            "key": "panelPANE-1",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":14}"
+          },
+          {
+            "key": "panelPANE-2",
+            "structure": "{\"height\":5,\"width\":24,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-9",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":21}"
+          },
+          {
+            "key": "panelPANE-10",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":28}"
+          },
+          {
+            "key": "panelPANE-11",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":28}"
+          },
+          {
+            "key": "panelPANE-12",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":21}"
+          },
+          {
+            "key": "panelPANE-13",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":13}"
+          },
+          {
+            "key": "panelPANE-14",
+            "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":5}"
+          },
+          {
+            "key": "panelPANE-32",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-33",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":6}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-0",
+          "title": "Requests Per Second: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: Requests per second\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#f2da73\",\"name\":\"distance\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| count as hits by _timeslice, server\n| hits/3600 as my_company_requests_per_sec\n| fields - hits\n| avg(my_company_requests_per_sec) as my_entity_avg by server\n| \"requests_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-1",
+          "title": "Requests Per Second Daily AVERAGE:  My Server v  Benchmark ",
+          "visualSettings": "{\"series\":{},\"axes\":{\"axisX\":{\"title\":\"date\"},\"axisY\":{\"title\":\"Requests per second\",\"minimum\":0}},\"legend\":{\"enabled\":true},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"markerType\":\"circle\",\"markerSize\":10,\"color\":\"#940760\"}},{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"type\":\"column\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_requests_per_hr\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where size != \"-\"\n| timeslice 1h\n| count as hits by _timeslice, server\n| hits/3600 as my_company_requests_per_sec\n| fields - hits\n| avg(my_company_requests_per_sec) as my_entity_avg by server\n| \"requests_per_sec\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-2",
+          "title": "Golden Signal Correlates",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"title\":{\"fontSize\":16},\"series\":{},\"text\":{\"showTitle\":false,\"fontSize\":14,\"format\":\"markdown\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "#### Tomcat latency is affected by request rate,  [configuration factors](https://tomcat.apache.org/tomcat-7.0-doc/config/http.html) and slow URLs.   Assess if your Tomcat latency is significantly higher for a given server compared to other Tomcat servers. If so, consult these correlates to verify if any of these factors might be the cause. \n####To do this, first consult the Distance measurement and then the difference between a given entity and the benchmark. \n\n#### **Distance**,  between 0 and 1, is a statistical measure of how similar a given entity is to other entities based on a given signal. Distance of 0 signifies entities that are behaving identical to the population of entities.  Sudden increases in distance coupled with sudden increases compared to benchmark values indicate entities that are either the cause of an incident or are affected by upstream issues. \n\n#### The signals and contributing factors are organized based on Golden Signal analysis. In general, load spikes lead to either latency or error spikes; latency and error spikes lead to drop in throughput. "
+        },
+        {
+          "id": null,
+          "key": "panelPANE-9",
+          "title": "HTTP POST Share of Requests Daily AVERAGE:   My Server v  Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"HTTP POST Share of Requests\",\"minimum\":0,\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"type\":\"column\"}},{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"type\":\"line\",\"color\":\"#940760\",\"markerSize\":10,\"markerType\":\"circle\"}}],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_http_methods_per_req_post\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count by Method, server, _timeslice\n| total(_count) as total_count by _timeslice\n| _count/total_count*100 as my_company_percent\n| avg(my_company_percent) as my_entity_avg by Method, server\n| where toLowerCase(Method) = \"post\"\n| concat(\"methods_per_req_\", toLowerCase(Method)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-10",
+          "title": "HTTP DELETE Share of Requests: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: HTTP DELETE Share of Requests\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerSize\":10,\"markerType\":\"circle\",\"color\":\"#f2da73\"}}],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_http_methods_per_req_del\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count by Method, server, _timeslice\n| total(_count) as total_count by _timeslice\n| _count/total_count*100 as my_company_percent\n| avg(my_company_percent) as my_entity_avg by Method, server\n| where toLowerCase(Method) = \"delete\"\n| concat(\"methods_per_req_\", toLowerCase(Method)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-11",
+          "title": "HTTP DELETE Share of Requests Daily AVERAGE:   My Server v  Benchmark ",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"HTTP DELETE Share of Requests\",\"minimum\":0,\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"type\":\"column\"}},{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"type\":\"line\",\"color\":\"#940760\",\"markerSize\":10,\"markerType\":\"circle\"}}],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_http_methods_per_req_del\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count by Method, server, _timeslice\n| total(_count) as total_count by _timeslice\n| _count/total_count*100 as my_company_percent\n| avg(my_company_percent) as my_entity_avg by Method, server\n| where toLowerCase(Method) = \"delete\"\n| concat(\"methods_per_req_\", toLowerCase(Method)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-12",
+          "title": "HTTP POST Share of Requests: Daily Distance From Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: HTTP POST Share of Requests\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerSize\":10,\"markerType\":\"circle\",\"color\":\"#f2da73\"}}],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_http_methods_per_req_post\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| timeslice 1h\n| count by Method, server, _timeslice\n| total(_count) as total_count by _timeslice\n| _count/total_count*100 as my_company_percent\n| avg(my_company_percent) as my_entity_avg by Method, server\n| where toLowerCase(Method) = \"post\"\n| concat(\"methods_per_req_\", toLowerCase(Method)) as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-13",
+          "title": "Load Correlates",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"series\":{},\"title\":{\"fontSize\":16},\"text\":{\"format\":\"markdownV2\",\"backgroundColor\":\"#00344d\",\"textColor\":\"white\",\"verticalAlignment\":\"center\",\"showTitle\":false,\"horizontalAlignment\":\"center\"},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Load Factors Contributing to Latency"
+        },
+        {
+          "id": null,
+          "key": "panelPANE-14",
+          "title": "Latency Signals",
+          "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"series\":{},\"title\":{\"fontSize\":16},\"text\":{\"format\":\"markdownV2\",\"backgroundColor\":\"#003816\",\"textColor\":\"white\",\"verticalAlignment\":\"center\",\"showTitle\":false,\"horizontalAlignment\":\"center\"},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "TextPanel",
+          "text": "Latency Signals"
+        },
+        {
+          "id": null,
+          "key": "panelPANE-32",
+          "title": "Latency per Request: Daily Distance from Benchmark",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Distance: Latency Per Request\",\"minimum\":0,\"maximum\":1}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[{\"series\":[\"distance\"],\"queries\":[],\"properties\":{\"markerSize\":10,\"markerType\":\"circle\",\"color\":\"#f2da73\"}}],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@distance_latency\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where timetaken != \"\"\n| toLong(timetaken)/(1000000*60) as minutes\n| timeslice 1h\n| sum(minutes) as totalmin, count as totalreq by server, _timeslice\n| totalmin/totalreq as latency\n| avg(latency) as my_entity_avg by server\n| \"latency_minutes_per_hour\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat distance=\"true\"\n| max(distance) as distance by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-33",
+          "title": "Latency per Request Daily AVERAGE:   My Server v  Benchmark ",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"date\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Latency per Request\",\"minimum\":0,\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[\"my_entity_avg\"],\"queries\":[],\"properties\":{\"color\":\"#005275\",\"type\":\"column\"}},{\"series\":[\"benchmark_avg\"],\"queries\":[],\"properties\":{\"type\":\"line\",\"color\":\"#940760\",\"markerSize\":10,\"markerType\":\"circle\"}}],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "// id=@benchmark_latency\n_sourceCategory = Labs/Tomcat*\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as tomcat_log_message\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"(?<remote_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<local_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\s+(?<user>\\S+)\\s+(?<hostname>[\\S]+)\\s+\\[\" nodrop\n| parse regex field=tomcat_log_message \"\\s+\\[(?<date>[^\\]]+)\\]\\s+\\\"(?<method>\\w+)\\s+(?<uri>\\S+)\\s+(?<protocol>\\S+)\\\"\\s+(?<status_code>\\d+)\\s+(?<size>[\\d-]+)\" nodrop\n| parse regex field=tomcat_log_message \"\\\"\\s+\\d+\\s+[\\d-]+\\s+(?<timetaken>[\\d-]+)\"\n| where _sourceHost matches \"*\" and remote_ip matches \"*\" and method matches \"*\" and uri matches \"*\" and status_code matches \"*\"\n| where _sourceHost matches \"{{Server}}\"\n| _sourceHost as server\n| where timetaken != \"\"\n| toLong(timetaken)/(1000000*60) as minutes\n| timeslice 1h\n| sum(minutes) as totalmin, count as totalreq by server, _timeslice\n| totalmin/totalreq as latency\n| avg(latency) as my_entity_avg by server\n| \"latency_minutes_per_hour\" as benchmarkname\n| infer _category=gislite _model=benchmarktrendline appname=tomcat benchmark_stat=\"avg\" my_entity_stat=\"avg\"\n| max(my_entity_avg) as my_entity_avg, max(benchmark_avg) as benchmark_avg by date\n| sort by date asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "Server",
+          "displayName": "Server",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "// id=@variable_chief_query\n_sourceCategory = Labs/Tomcat*",
+            "field": "_sourcehost"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    }
+  ]
+}

@@ -1,0 +1,321 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Amazon SQS - CloudTrail Events - New",
+  "description": "",
+  "title": "Amazon SQS - CloudTrail Events - New",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-2w"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelac625f628105884b",
+        "structure": "{\"width\":6,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel827c88c799770b42",
+        "structure": "{\"width\":9,\"height\":6,\"x\":6,\"y\":0}"
+      },
+      {
+        "key": "panel89356cdab8d2194e",
+        "structure": "{\"width\":9,\"height\":6,\"x\":15,\"y\":0}"
+      },
+      {
+        "key": "panel6f6ea95087de4943",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel9bb945768aa2584f",
+        "structure": "{\"width\":6,\"height\":6,\"x\":8,\"y\":5}"
+      },
+      {
+        "key": "panel17336e19af02ca47",
+        "structure": "{\"width\":10,\"height\":6,\"x\":14,\"y\":5}"
+      },
+      {
+        "key": "panel9ab7a1438a3bfa49",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":10}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel17336e19af02ca47",
+      "title": "Events by User",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventSource\" nodrop | json \"userName\" nodrop | json \"eventName\" nodrop | json \"awsRegion\" nodrop | json \"sourceIPAddress\" nodrop | json \"userIdentity.type\" as type nodrop | json \"userIdentity.arn\" as arn nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| json \"requestParameters.queueName\" as queueName nodrop\n| json \"requestParameters.queueUrl\" as queueUrl nodrop\n| where eventSource=\"sqs.amazonaws.com\"\n| parse field=arn \":assumed-role/*\" as user\n| if (isEmpty(userName), user, userName) as user\n| timeslice 1d\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{queuename}}\" = \"*\", true, queuename matches \"{{queuename}}\")\n|count as eventCount by user, eventName\n| transpose row user column eventName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel89356cdab8d2194e",
+      "title": "Events Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventSource\" nodrop | json \"userIdentity.type\" as type nodrop | json \"userIdentity.arn\" as arn nodrop | json \"userName\" nodrop | json \"eventName\" nodrop | json \"sourceIPAddress\" as src_ip | json \"requestParameters.queueName\" as queueName nodrop | json \"requestParameters.queueUrl\" as queueUrl nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| where eventSource=\"sqs.amazonaws.com\"\n| parse field=arn \":assumed-role/*\" as user\n| if (isEmpty(userName), user, userName) as user\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{queuename}}\" = \"*\", true, queuename matches \"{{queuename}}\")\n|count by src_ip, eventName\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel827c88c799770b42",
+      "title": "Events Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventSource\" nodrop | json \"userName\" nodrop | json \"eventName\" nodrop | json \"awsRegion\" nodrop | json \"sourceIPAddress\" nodrop | json \"userIdentity.type\" as type nodrop | json \"userIdentity.arn\" as arn nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| json \"requestParameters.queueName\" as queueName nodrop | json \"requestParameters.queueUrl\" as queueUrl nodrop\n| where eventSource=\"sqs.amazonaws.com\"\n| parse field=arn \":assumed-role/*\" as user\n| if (isEmpty(userName), user, userName) as user\n| timeslice 1d\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{queuename}}\" = \"*\", true, queuename matches \"{{queuename}}\")\n|count as eventCount by _timeslice, eventName\n| transpose row _timeslice column eventName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelac625f628105884b",
+      "title": "Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventName\" nodrop | json \"eventSource\" nodrop | json \"requestParameters.queueName\" as queueName nodrop | json \"requestParameters.queueUrl\" as queueUrl nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| where eventSource=\"sqs.amazonaws.com\"\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{queuename}}\" = \"*\", true, queuename matches \"{{queuename}}\")\n|count as eventCount by eventName\n| sort by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6f6ea95087de4943",
+      "title": "Top Queues",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventSource\" nodrop | json \"userName\" nodrop | json \"eventName\" nodrop | json \"awsRegion\" nodrop | json \"sourceIPAddress\" nodrop | json \"userIdentity.type\" as type nodrop | json \"userIdentity.arn\" as arn nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| json \"requestParameters.queueName\" as queueName nodrop\n| json \"requestParameters.queueUrl\" as queueUrl nodrop\n| where eventSource=\"sqs.amazonaws.com\"\n| parse field=arn \":assumed-role/*\" as user\n| if (isEmpty(queueName), queueUrl, queueName) as queueName\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{queuename}}\" = \"*\", true, queuename matches \"{{queuename}}\")\n|count as eventCount by queueName\n| top 10 queueName by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9ab7a1438a3bfa49",
+      "title": "Events Details",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventSource\" nodrop | json \"userName\" nodrop | json \"eventName\" nodrop | json \"awsRegion\" nodrop | json \"sourceIPAddress\" nodrop | json \"userIdentity.type\" as type nodrop | json \"userIdentity.arn\" as arn nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| json \"requestParameters.queueName\" as queueName nodrop\n| json \"requestParameters.queueUrl\" as queueUrl nodrop\n| sourceIPAddress as src_ip\n| where eventSource=\"sqs.amazonaws.com\"\n| parse field=arn \":assumed-role/*\" as user\n| if (isEmpty(userName), user, userName) as user\n| timeslice 1s\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{queuename}}\" = \"*\", true, queuename matches \"{{queuename}}\")\n|count as eventCount by _timeslice, eventName, queueName, queueUrl, type, user, accountId, awsRegion, src_ip\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9bb945768aa2584f",
+      "title": "Top Users",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventSource\" nodrop | json \"userIdentity.type\" as type nodrop | json \"userIdentity.arn\" as arn nodrop | json \"userName\" nodrop | json \"eventName\" nodrop | json \"requestParameters.queueName\" as queueName nodrop | json \"requestParameters.queueUrl\" as queueUrl nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| where eventSource=\"sqs.amazonaws.com\"\n| parse field=arn \":assumed-role/*\" as user\n| if (isEmpty(userName), user, userName) as user\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{queuename}}\" = \"*\", true, queuename matches \"{{queuename}}\")\n|count as eventCount by user\n| top 10 user by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "eventname",
+      "displayName": "eventname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventSource\" nodrop | json \"userName\" nodrop | json \"eventName\" nodrop | json \"awsRegion\" nodrop | json \"sourceIPAddress\" nodrop | json \"userIdentity.type\" as type nodrop | json \"userIdentity.arn\" as arn nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| json \"requestParameters.queueName\" as queueName nodrop\n| json \"requestParameters.queueUrl\" as queueUrl nodrop\n| where eventSource=\"sqs.amazonaws.com\"\n| parse field=arn \":assumed-role/*\" as user\n| if (isEmpty(userName), user, userName) as user\n| timeslice 1d",
+        "field": "eventname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventSource\" nodrop | json \"userName\" nodrop | json \"eventName\" nodrop | json \"awsRegion\" nodrop | json \"sourceIPAddress\" nodrop | json \"userIdentity.type\" as type nodrop | json \"userIdentity.arn\" as arn nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| json \"requestParameters.queueName\" as queueName nodrop\n| json \"requestParameters.queueUrl\" as queueUrl nodrop\n| where eventSource=\"sqs.amazonaws.com\"\n| parse field=arn \":assumed-role/*\" as user\n| if (isEmpty(userName), user, userName) as user\n| timeslice 1d",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user",
+      "displayName": "user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventSource\" nodrop | json \"userName\" nodrop | json \"eventName\" nodrop | json \"awsRegion\" nodrop | json \"sourceIPAddress\" nodrop | json \"userIdentity.type\" as type nodrop | json \"userIdentity.arn\" as arn nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| json \"requestParameters.queueName\" as queueName nodrop\n| json \"requestParameters.queueUrl\" as queueUrl nodrop\n| where eventSource=\"sqs.amazonaws.com\"\n| parse field=arn \":assumed-role/*\" as user\n| if (isEmpty(userName), user, userName) as user\n| timeslice 1d",
+        "field": "user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "queuename",
+      "displayName": "queuename",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventSource\" nodrop | json \"userName\" nodrop | json \"eventName\" nodrop | json \"awsRegion\" nodrop | json \"sourceIPAddress\" nodrop | json \"userIdentity.type\" as type nodrop | json \"userIdentity.arn\" as arn nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| json \"requestParameters.queueName\" as queueName nodrop\n| json \"requestParameters.queueUrl\" as queueUrl nodrop\n| where eventSource=\"sqs.amazonaws.com\"\n| parse field=arn \":assumed-role/*\" as user\n| if (isEmpty(userName), user, userName) as user\n| timeslice 1d",
+        "field": "queuename"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "accountid",
+      "displayName": "accountid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"\\\"eventsource\\\":\\\"sqs.amazonaws.com\\\"\"\n| json \"eventSource\" nodrop | json \"userName\" nodrop | json \"eventName\" nodrop | json \"awsRegion\" nodrop | json \"sourceIPAddress\" nodrop | json \"userIdentity.type\" as type nodrop | json \"userIdentity.arn\" as arn nodrop | json \"userIdentity.accountId\" as accountId nodrop\n| json \"requestParameters.queueName\" as queueName nodrop\n| json \"requestParameters.queueUrl\" as queueUrl nodrop\n| where eventSource=\"sqs.amazonaws.com\"\n| parse field=arn \":assumed-role/*\" as user\n| if (isEmpty(userName), user, userName) as user\n| timeslice 1d",
+        "field": "accountid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

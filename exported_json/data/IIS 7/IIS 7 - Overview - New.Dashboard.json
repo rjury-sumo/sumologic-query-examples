@@ -1,0 +1,213 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "IIS 7 - Overview - New",
+  "description": "",
+  "title": "IIS 7 - Overview - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-15m"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelf4ed88f89bb0f940",
+        "structure": "{\"width\":16,\"height\":9,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel12a0038ebac49940",
+        "structure": "{\"width\":8,\"height\":9,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel40899b3f957b694c",
+        "structure": "{\"width\":8,\"height\":8,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panelc0ecd302849a9b46",
+        "structure": "{\"width\":8,\"height\":8,\"x\":8,\"y\":7}"
+      },
+      {
+        "key": "panelb9bec654a929094f",
+        "structure": "{\"width\":8,\"height\":8,\"x\":16,\"y\":7}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel12a0038ebac49940",
+      "title": "Response Time Histogram",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/IIS/*\n| parse regex \"\\d+-\\d+-\\d+ \\d+:\\d+:\\d+ (?<server_ip>\\S+) (?<method>\\S+) (?<cs_uri_stem>/\\S+?) \\S+ \\d+ (?<user>\\S+) (?<client_ip>[\\.\\d]+) \"\n| parse regex \"\\d+ \\d+ \\d+ (?<time_taken>\\d+)$\"\n|where if (\"{{app}}\" = \"*\", true, app matches \"{{app}}\")\n|avg(time_taken) as avg_time_taken by cs_uri_stem\n| fields avg_time_taken\n| (floor(avg_time_taken/50)+1)*50 as avg_time_taken_bucket_ms\n| if (avg_time_taken > 1000, 1001, avg_time_taken_bucket_ms) as avg_time_taken_bucket_ms\n| count as Frequency by avg_time_taken_bucket_ms\n| sort by + avg_time_taken_bucket_ms\n| if (avg_time_taken_bucket_ms = 1001, \">1000\", toString(avg_time_taken_bucket_ms)) as avg_time_taken_bucket_ms",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb9bec654a929094f",
+      "title": "400 and 500 Server Errors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/IIS/*\n| parse regex \"\\d+-\\d+-\\d+ \\d+:\\d+:\\d+ (?<server_ip>\\S+) (?<method>\\S+) (?<cs_uri_stem>/\\S+?) \\S+ \\d+ (?<user>\\S+) (?<client_ip>[\\.\\d]+) \"\n| parse regex \"(?<sc_status>\\d+) (?<sc_substatus>\\d+) (?<sc_win32_status>\\d+) (?<time_taken>\\d+)$\"\n| if(sc_status matches \"5*\" OR sc_status matches \"4*\", \"Error\", \"\") as Errors\n| where Errors != \"\"\n|where if (\"{{app}}\" = \"*\", true, app matches \"{{app}}\")\n|count as Count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc0ecd302849a9b46",
+      "title": "OS Platform Breakdown",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/IIS/*\n| parse regex \"\\d+-\\d+-\\d+ \\d+:\\d+:\\d+ (?<server_ip>\\S+) (?<method>\\S+) (?<cs_uri_stem>/\\S+?) \\S+ \\d+ (?<user>\\S+) (?<client_ip>[\\.\\d]+) (?<agent>\\S+) \"\n| if (agent matches \"*iPad*\" OR agent matches \"*iPhone*\" OR agent matches \"*BlackBerry*\" OR agent matches \"*SAMSUNG*\" OR agent matches \"*Galaxy*\" or agent matches \"*Windows Phone*\" or agent matches \"*Android*\" or agent matches \"LGE-*\" or agent matches \"SCH-*\" or agent matches \"*HUAWEI-*\" or agent matches \"*samsung*\" or agent matches \"Dalvik/*\" OR agent matches \"Nokia*\" OR agent matches \"LG-*\" or agent matches \"*CFNetwork*\" or agent matches \"*UP.Browser/*\" or agent matches \"*QQ*rowser*\" or agent matches \"*NetFront/*\" or agent matches \"*Mobile Safari*\" or agent matches \"*iemobile*\", \"Mobile\", \"PC\") as type\n| if (agent matches \"*Macintosh*\" or agent matches \"*Mac OS*\" or agent matches \"*iMac*\", \"Mac\", type) as type\n|where if (\"{{app}}\" = \"*\", true, app matches \"{{app}}\")\n|count by type | sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel40899b3f957b694c",
+      "title": "Top Apps by Request",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/IIS/*\n| parse regex \"\\d+-\\d+-\\d+ \\d+:\\d+:\\d+ (?<server_ip>\\S+) (?<method>\\S+) (?<cs_uri_stem>/\\S+?) \"\n| parse regex field=cs_uri_stem \"/(?<app>[^\\./]+)/\"\n|where if (\"{{app}}\" = \"*\", true, app matches \"{{app}}\")\n|count as Requests by app  | sort -Requests | limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf4ed88f89bb0f940",
+      "title": "Visits by Country",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/IIS/*\n| parse regex \"(?:80|443) (?:\\w+|-+|\\\\+)+ (?<client_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) \"\n| count by client_ip\n| lookup latitude, longitude, country_name from geo://location on ip=client_ip\n|where if (\"{{country_name}}\" = \"*\", true, country_name matches \"{{country_name}}\")",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "country_name",
+      "displayName": "country_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "app",
+      "displayName": "app",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/IIS/*\n| parse regex \"\\d+-\\d+-\\d+ \\d+:\\d+:\\d+ (?<server_ip>\\S+) (?<method>\\S+) (?<cs_uri_stem>/\\S+?) \"\n| parse regex field=cs_uri_stem \"/(?<app>[^\\./]+)/\"",
+        "field": "app"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

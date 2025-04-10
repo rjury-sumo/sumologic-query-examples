@@ -1,0 +1,276 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "SQL Server - Operations",
+  "description": "SQL Server - Operations displays recent server configuration changes, number & type of configuration updates, error and warnings, high severity error, and warning trends.",
+  "title": "SQL Server - Operations",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "9e35882821c4dc1d083f5c8d5dce08c9": [
+        "*"
+      ],
+      "a67e9617e48c787b5fb4386c66af65a8": [
+        "*"
+      ],
+      "8de51f6232363b0f1a6883b3f8c7ee06": [
+        "*"
+      ],
+      "c79f9332f8522d1aea2ed19166f505e5": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "databases"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel4413230BA996EA45",
+        "structure": "{\"height\":8,\"width\":8,\"x\":7,\"y\":8}"
+      },
+      {
+        "key": "panel87298F338F51CB44",
+        "structure": "{\"height\":8,\"width\":15,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel9464929980726B4D",
+        "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":16}"
+      },
+      {
+        "key": "panel9B4E6642B2308A4C",
+        "structure": "{\"height\":8,\"width\":9,\"x\":15,\"y\":0}"
+      },
+      {
+        "key": "panelA60BEBEE8FFE4A49",
+        "structure": "{\"height\":8,\"width\":9,\"x\":15,\"y\":8}"
+      },
+      {
+        "key": "panelCAC9918CB2165A4D",
+        "structure": "{\"height\":8,\"width\":7,\"x\":0,\"y\":8}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel4413230BA996EA45",
+      "title": "Errors and Warnings",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver (\"Error:\" or \"Warning:\") | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse regex \"\\s+(?<Logtype>Error|Warning):\\s+(?<message>.*)$\"\n| count by LogType",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel87298F338F51CB44",
+      "title": "Recent Configuration Updates",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver option | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse \"Configuration option '*' changed from * to *.\" as object, old_val, new_val nodrop\n| parse\t\"Setting database option * to * for database '*'.\" as object, new_val, database\n| where old_val != new_val\n| timeslice 1m\n| fields _timeslice, db.node.name, object, old_val, new_val\n| count by _timeslice, db.node.name, object, old_val, new_val | fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9464929980726B4D",
+      "title": "Errors and Warnings ",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver(\"Error:\" or \"Warning:\") | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse regex \"\\s+(?<Logtype>Error|Warning):\\s+(?<message>.*)$\"\n| timeslice 1d\n| count by _timeslice, LogType\n| transpose row _timeslice column LogType",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9B4E6642B2308A4C",
+      "title": "Configuration Updates",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver option | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse \"Configuration option '*' changed from * to *.\" as object, old_val, new_val nodrop\n| parse\t\"Setting database option * to * for database '*'.\" as object, new_val, database\n| where old_val != new_val\n| count as count by object | sort by count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelA60BEBEE8FFE4A49",
+      "title": "Error Trend by Severity Code",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}}  sumo.datasource=sqlserver \"Error:\" \"Severity:\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse regex \"\\s+(?<Logtype>Error):\\s+(?<message>.*)$\"\n| parse field=message \"*, Severity: *, State:\" as error_code, severity\n| int(severity) as severity\n| where Logtype = \"Error\" and severity > 16\n| timeslice 1d\n| count by _timeslice, severity \n| transpose row _timeslice column severity",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelCAC9918CB2165A4D",
+      "title": "Configuration Update Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"area\"},\"series\":{},\"axes\":{\"axisX\":{\"title\":\"\"},\"axisY\":{\"title\":\" \"}},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver option | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse \"Configuration option '*' changed from * to *.\" as object, old_val, new_val nodrop\n| parse\t\"Setting database option * to * for database '*'.\" as object, new_val, database\n| where old_val != new_val\n| timeslice 1h\n| count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "sumo.datasource=sqlserver",
+        "key": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "deployment.environment={{deployment.environment}} sumo.datasource=sqlserver",
+        "key": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "db.node.name",
+      "displayName": "db.node.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "sumo.datasource=sqlserver deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}}",
+        "key": "db.node.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

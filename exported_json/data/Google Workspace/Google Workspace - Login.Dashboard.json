@@ -1,0 +1,447 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Google Workspace - Login",
+  "description": "The Google Workspace - Login Dashboard provides high-level graphs and detailed information for Google Workspace apps login data. Login information includes geographic locations, logins by state, successful logins, login failures by user, IP address, and type; login failure outliers, login activity trends, and logins from multiple IP addresses.",
+  "title": "Google Workspace - Login",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1w"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel09ceae15a755684a",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":18}"
+      },
+      {
+        "key": "panel0ebbe6679cf7b844",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":13}"
+      },
+      {
+        "key": "panel2ca0f38893d3b84d",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":18}"
+      },
+      {
+        "key": "panel5cbc9167a97bc940",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel8d6ba904972c9b40",
+        "structure": "{\"width\":16,\"height\":11,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel9c9d316fab0b7a45",
+        "structure": "{\"width\":8,\"height\":5,\"x\":16,\"y\":5}"
+      },
+      {
+        "key": "panelae02ebe7ad1e384e",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":13}"
+      },
+      {
+        "key": "panelb708fcf1b9e89944",
+        "structure": "{\"width\":12,\"height\":5,\"x\":12,\"y\":9}"
+      },
+      {
+        "key": "panelcfadc4218ca39b40",
+        "structure": "{\"width\":12,\"height\":5,\"x\":0,\"y\":9}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel09ceae15a755684a",
+      "title": "Logins from Multiple IPs",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop\n| where eventType=\"login\" and applicationName=\"login\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by email, ipAddress\n| join (sum(_count) by ipAddress, email) as t1, (count_distinct(ipAddress) by email) as t2 on t1.email=t2.email \n| where t2__count_distinct > 1 \n| t1_email as email\n| t1_ipAddress as ipAddress\n| t1__sum as loginCount\n| sort by email asc, t2__count_distinct, loginCount\n| fields email, ipAddress, loginCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0ebbe6679cf7b844",
+      "title": "Successful Logins by Compromised Users",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  \"login_success\" ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop\n| where applicationName=\"login\" and eventType = \"login\" and eventName=\"login_success\"\n| json field=actor \"email\", \"profileId\"\n| where [subquery:_sourceCategory={{GoogleWorkspaceAlertsDataSource}}  \"Leaked password\"\n | json \"alertId\",\"customerId\",\"source\",\"type\",\"data\", \"data.email\" as alert_id, customer_id, source, type, data, email\n | where type=\"Leaked password\"    \n | count by email\n | compose email  \n]\n| formatDate(_messageTime,\"MM-dd-yyyy HH:mm:ss:SSS\") as event_time\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\")\n|count by event_time, eventName, eventType, applicationName, email\n| fields -_count\n| sort by event_time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2ca0f38893d3b84d",
+      "title": "Login Failures by Type",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ((\"login_failure\" and \"login_failure_type\")  or (\"login_challenge\" and \"login_challenge_status\")) \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop | json \"events[0].parameters\" as eventparameters nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_type\\\",\\\"value\\\":\\\"(?<loginType>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_failure_type\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_challenge_status\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| where applicationName=\"login\" and eventType = \"login\" and eventName<>\"login_success\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{loginType}}\" = \"*\", true, loginType matches \"{{loginType}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count as eventCount by email, login_failure_type\n| sort by email asc\n| fields -eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5cbc9167a97bc940",
+      "title": "Count by Login State",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop | json \"events[0].parameters\" as eventparameters nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_type\\\",\\\"value\\\":\\\"(?<loginType>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_failure_type\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_challenge_status\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| where eventType=\"login\" and applicationName=\"login\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{loginType}}\" = \"*\", true, loginType matches \"{{loginType}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count as eventCount by eventName\n| sort by eventCount, eventName asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8d6ba904972c9b40",
+      "title": "Login Activity by Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop\n| where eventType=\"login\" and applicationName=\"login\"\n| count by ipAddress\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = ipAddress\n| where !isNull(latitude)\n| sum(_count) as _count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9c9d316fab0b7a45",
+      "title": "Login Failures by User, IP Address",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ((\"login_failure\" and \"login_failure_type\")  or (\"login_challenge\" and \"login_challenge_status\")) \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop | json \"events[0].parameters\" as eventparameters nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_type\\\",\\\"value\\\":\\\"(?<loginType>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_failure_type\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_challenge_status\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| where applicationName=\"login\" and eventType = \"login\" and eventName<>\"login_success\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{loginType}}\" = \"*\", true, loginType matches \"{{loginType}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count as eventCount by email, ipAddress",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelae02ebe7ad1e384e",
+      "title": "Login Activity Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop\n| where eventType=\"login\" and applicationName=\"login\"\n| timeslice 1d\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by eventName, _timeslice\n| transpose row _timeslice column eventName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb708fcf1b9e89944",
+      "title": "Login Failures - Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ((\"login_failure\" and \"login_failure_type\")  or (\"login_challenge\" and \"login_challenge_status\")) \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop | json \"events[0].parameters\" as eventparameters nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_type\\\",\\\"value\\\":\\\"(?<loginType>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_failure_type\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_challenge_status\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| where applicationName=\"login\" and eventType = \"login\" and eventName<>\"login_success\"\n| timeslice 1d\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{loginType}}\" = \"*\", true, loginType matches \"{{loginType}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count as login_failures by _timeslice\n| fillmissing timeslice(1h) with 0 for login_failures\n| outlier login_failures window=5, threshold=3",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-2w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelcfadc4218ca39b40",
+      "title": "Successful Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  \"login_success\" ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop\n| where applicationName=\"login\" and eventType = \"login\" and eventName=\"login_success\"\n| timeslice 1d\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count as eventCount by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "GoogleWorkspaceAlertsDataSource",
+      "displayName": "GoogleWorkspaceAlertsDataSource",
+      "defaultValue": "Labs/gsuite/alerts",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/gsuite/alerts"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "GoogleWorkspaceAuditLogsSource",
+      "displayName": "GoogleWorkspaceAuditLogsSource",
+      "defaultValue": "Labs/gsuite/apps",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/gsuite/apps"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "applicationName",
+      "displayName": "applicationName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop | json \"events[0].parameters\" as eventparameters nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_type\\\",\\\"value\\\":\\\"(?<loginType>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_failure_type\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_challenge_status\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| where eventType=\"login\" and applicationName=\"login\"",
+        "field": "applicationName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "email",
+      "displayName": "email",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop | json \"events[0].parameters\" as eventparameters nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_type\\\",\\\"value\\\":\\\"(?<loginType>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_failure_type\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_challenge_status\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| where eventType=\"login\" and applicationName=\"login\"",
+        "field": "email"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventName",
+      "displayName": "eventName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop | json \"events[0].parameters\" as eventparameters nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_type\\\",\\\"value\\\":\\\"(?<loginType>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_failure_type\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_challenge_status\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| where eventType=\"login\" and applicationName=\"login\"",
+        "field": "eventName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventType",
+      "displayName": "eventType",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop | json \"events[0].parameters\" as eventparameters nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_type\\\",\\\"value\\\":\\\"(?<loginType>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_failure_type\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_challenge_status\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| where eventType=\"login\" and applicationName=\"login\"",
+        "field": "eventType"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "ipAddress",
+      "displayName": "ipAddress",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop | json \"events[0].parameters\" as eventparameters nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_type\\\",\\\"value\\\":\\\"(?<loginType>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_failure_type\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_challenge_status\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| where eventType=\"login\" and applicationName=\"login\"",
+        "field": "ipAddress"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "loginType",
+      "displayName": "loginType",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  ipAddress email login \"\\\"type\\\": \\\"login\\\"\"\n| json \"actor\", \"id\", \"ipAddress\", \"events\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| json \"events[0].type\" as eventType nodrop | json \"events[0].name\" as eventName nodrop | json \"events[0].parameters\" as eventparameters nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_type\\\",\\\"value\\\":\\\"(?<loginType>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_failure_type\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| parse regex field=eventparameters \"\\{\\\"name\\\":\\\"login_challenge_status\\\",\\\"value\\\":\\\"(?<login_failure_type>.*?)\\\"\\}\" nodrop\n| where eventType=\"login\" and applicationName=\"login\"",
+        "field": "loginType"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

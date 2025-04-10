@@ -1,0 +1,304 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Windows - Login Status",
+  "description": "The Windows - Login Status dashboard provides information about successful and failed logins, successful RDP reconnects, and failed login outliers.",
+  "title": "Windows - Login Status",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "63e05d051d90a6c73f3536eccd7716cf": [
+        "*"
+      ],
+      "4b33c416f6b8342db382c500c6bfc48b": [
+        "*"
+      ],
+      "d00a6d9ba979c11cf412383cab6f7179": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "host"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-49118BF0A8725A4B",
+        "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-70FEF884AA99C840",
+        "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":14}"
+      },
+      {
+        "key": "panelPANE-7AADB50FBA238A48",
+        "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":7}"
+      },
+      {
+        "key": "panelPANE-89CE75CCBF540B44",
+        "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-96919492BBFA3841",
+        "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panelPANE-E0CD12D8B357394C",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":21}"
+      },
+      {
+        "key": "panelPANE-F4B95BC6A618AA40",
+        "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":14}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-49118BF0A8725A4B",
+      "title": "Logins by Hour",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"\\\"channel\\\":\\\"Security\\\"\" (4624 or 4625 or 4771 or 4776 or 4768 or 4769) \n// 4624 - Login Success, 4625 or 4771 - Login Failures, 4776 - Domain Controller - Credential validation, 4768 - A Kerberos authentication ticket (TGT) was requested, 4769 - A Kerberos service ticket was requested\n| json \"event_id\", \"keywords[0]\", \"channel\" as event_id_obj, Keywords, channel nodrop\n| json field=event_id_obj \"id\" as event_id\n| where event_id in (\"4624\", \"4625\", \"4771\", \"4776\", \"4768\", \"4769\") and channel = \"Security\" \n| if (Keywords matches \"Audit Success\", \"Success\", \"Failure\") as outcome \n| timeslice 15m \n| count as attempts by _timeslice, outcome\n| transpose row _timeslice column outcome",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-70FEF884AA99C840",
+      "title": "Successful Login Source Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"title\":{\"fontSize\":16},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"\\\"channel\\\":\\\"Security\\\"\" \"\\\"id\\\":\\\"4624\\\"\" \n| json \"event_id\", \"computer\", \"evel\", \"message\", \"keywords\", \"event_data.SubjectUserName\",  \"event_data.SubjectDomainName\", \"event_data.TargetUserName\", \"event_data.TargetDomainName\", \"event_data.IpAddress\", \"event_data.IpPort\", \"channel\" as event_id_obj, host, event_type, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel nodrop\n| json field=event_id_obj \"id\" as event_id\n| where event_id = \"4624\" and !(src_user = \"-\" and dest_user = \"-\") and channel = \"Security\" \n| count by src_ip\n| lookup latitude, longitude from geo://location on ip = src_ip\n| count by latitude, longitude\n| where !isnull(latitude)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-7AADB50FBA238A48",
+      "title": "Successful RDP Reconnects",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"\\\"channel\\\":\\\"Security\\\"\" \"\\\"id\\\":\\\"4778\\\"\" \n| json \"event_id\", \"computer\", \"event_data.AccountName\", \"event_data.AccountDomain\", \"event_data.SessionName\", \"event_data.ClientName\", \"event_data.ClientAddress\", \"channel\", \"event_data.LogonID\" as event_id_obj, host, dest_user, dest_domain, session_name, src_host, src_ip, channel, LogonID nodrop\n| json field=event_id_obj \"id\" as event_id\n| where event_id = \"4778\" and channel = \"Security\"\n| timeslice 1m\n| count as attempts by _timeslice, host.name, dest_user, dest_domain, session_name, src_host, src_ip, LogonID\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-89CE75CCBF540B44",
+      "title": "Successful Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"\\\"channel\\\":\\\"Security\\\"\" \"\\\"id\\\":\\\"4624\\\"\"\n| json \"event_id\", \"keywords\", \"event_data.SubjectUserName\",  \"event_data.SubjectDomainName\", \"event_data.TargetUserName\", \"event_data.TargetDomainName\", \"event_data.IpAddress\", \"event_data.IpPort\", \"channel\" as event_id_obj, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel nodrop\n| json field=event_id_obj \"id\" as event_id\n| where event_id = \"4624\" and (src_user!=\"\" or dest_user!=\"\") and channel = \"Security\"\n| count as attempts by host.name, src_user, dest_user, src_ip, src_port, src_domain, dest_domain\n| sort - attempts",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-96919492BBFA3841",
+      "title": "Failed Logins by Hour",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"\\\"channel\\\":\\\"Security\\\"\" (4771 or 4776 or 4768 or 4769 or 4625) \"Audit Failure\" \n| json \"event_id\", \"computer\", \"message\", \"channel\", \"event_data.Status\", \"Keywords\" as event_id_obj, host, msg_summary, channel, status, Keywords nodrop\n| json field=event_id_obj \"id\" as event_id\n| parse regex field=msg_summary \"Failure Information:\\s+Failure Reason:\\s+(?<failure_reason>[^.\\r]+?)[.\\r]\" nodrop\n| parse regex field=msg_summary \"Result Code:\\s+(?<result_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"Failure Code:\\s+(?<failure_code>[^\\r]+)\\r\" nodrop\n| where (event_id in (\"4625\", \"4771\") or (event_id = \"4768\" and result_code != \"0x0\") or (event_id = \"4769\" and failure_code != \"0x0\") or (event_id = \"4776\" and status != \"0x0\")) \n| timeslice 1h \n| count as attempts by _timeslice, host.name\n| transpose row _timeslice column host.name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-E0CD12D8B357394C",
+      "title": "Failed Logins Outlier",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"\\\"channel\\\":\\\"Security\\\"\" (4771 or 4776 or 4768 or 4769 or 4625) \"Audit Failure\" \n| json \"event_id\", \"computer\", \"message\", \"event_data.LogonType\", \"event_data.FailureReason\", \"event_data.IpAddress\", \"event_data.IpPort\", \"event_data.SubjectUserName\", \"event_data.SubjectDomainName\", \"event_data.TargetUserName\", \"event_data.TargetDomainName\", \"event_data.WorkstationName\", \"channel\", \"event_data.Status\", \"event_data.SubStatus\", \"event_data.Workstation\", \"Keywords\" as event_id_obj, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop\n| json field=event_id_obj \"id\" as event_id\n| parse regex field=msg_summary \"Failure Information:\\s+Failure Reason:\\s+(?<failure_reason>[^.\\r]+?)[.\\r]\" nodrop\n| parse regex field=msg_summary \"Result Code:\\s+(?<result_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"Failure Code:\\s+(?<failure_code>[^\\r]+)\\r\" nodrop\n| where (event_id in (\"4625\", \"4771\") or (event_id = \"4768\" and result_code != \"0x0\") or (event_id = \"4769\" and failure_code != \"0x0\") or (event_id = \"4776\" and status != \"0x0\")) \n| timeslice 15m\n| count as failed_logins by _timeslice\n| outlier failed_logins",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-F4B95BC6A618AA40",
+      "title": "Failed Logins Source Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"title\":{\"fontSize\":16},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"\\\"channel\\\":\\\"Security\\\"\" (4771 or 4776 or 4768 or 4769 or 4625) \"Audit Failure\" \n| json \"event_id\", \"computer\", \"message\", \"event_data.LogonType\", \"event_data.FailureReason\", \"event_data.IpAddress\", \"event_data.IpPort\", \"event_data.SubjectUserName\", \"event_data.SubjectDomainName\", \"event_data.TargetUserName\", \"event_data.TargetDomainName\", \"event_data.WorkstationName\", \"channel\", \"event_data.Status\", \"event_data.SubStatus\", \"event_data.Workstation\", \"Keywords\" as event_id_obj, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop\n| json field=event_id_obj \"id\" as event_id\n| parse regex field=msg_summary \"Failure Information:\\s+Failure Reason:\\s+(?<failure_reason>[^.\\r]+?)[.\\r]\" nodrop\n| parse regex field=msg_summary \"Result Code:\\s+(?<result_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"Failure Code:\\s+(?<failure_code>[^\\r]+)\\r\" nodrop\n| where (event_id in (\"4625\", \"4771\") or (event_id = \"4768\" and result_code != \"0x0\") or (event_id = \"4769\" and failure_code != \"0x0\") or (event_id = \"4776\" and status != \"0x0\")) \n| count by src_ip\n| lookup latitude, longitude from geo://location on ip = src_ip\n| count by latitude, longitude\n| where !isnull(latitude)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=windows | count by deployment.environment",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host.group",
+      "displayName": "host.group",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=windows | count by host.group",
+        "field": "host.group"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host.name",
+      "displayName": "host.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=windows | count by host.name",
+        "field": "host.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

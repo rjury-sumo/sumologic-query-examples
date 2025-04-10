@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Threats Associated with CloudTrail Events",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail* \n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, event_name, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel  as malicious_confidence ,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" and  malicious_confidence=\"high\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n|  formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| count by event_time, src_user,src_ip,event_name, aws_region , result , malicious_confidence, label_name,  threat_malware_families,threat_last_updated\n| sort by _count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

@@ -1,0 +1,539 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Kubernetes - Security Rules Triggered",
+  "description": "The Kubernetes - Security Overview Dashboard provides detailed information of anomalous activity, in addition it also provides details of the OOB Falco rules triggered by the activity on your infrastructure.",
+  "title": "Kubernetes - Security Rules Triggered",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {
+      "_sumo_domain_name": [
+        "k8s"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-30m"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelpane-f7aa7faaba70da4a",
+        "structure": "{\"height\":4,\"width\":6,\"x\":12,\"y\":23}"
+      },
+      {
+        "key": "panelpane-565e0c9e8ba17a4e",
+        "structure": "{\"height\":12,\"width\":24,\"x\":0,\"y\":3}"
+      },
+      {
+        "key": "panelpane-f28aa3f3bcfd4b46",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelpane-aa4bd37d92c60b41",
+        "structure": "{\"height\":4,\"width\":6,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panelpane-9c3e54f1ba0c5942",
+        "structure": "{\"height\":4,\"width\":4,\"x\":6,\"y\":15}"
+      },
+      {
+        "key": "panelpane-391b558eb57c6942",
+        "structure": "{\"height\":4,\"width\":6,\"x\":0,\"y\":19}"
+      },
+      {
+        "key": "panelpane-01e3131f8aceaa48",
+        "structure": "{\"height\":4,\"width\":4,\"x\":10,\"y\":15}"
+      },
+      {
+        "key": "panelpane-71e668b68ee3584e",
+        "structure": "{\"height\":4,\"width\":4,\"x\":14,\"y\":19}"
+      },
+      {
+        "key": "panelpane-f7cd5b5da198eb49",
+        "structure": "{\"height\":4,\"width\":4,\"x\":6,\"y\":19}"
+      },
+      {
+        "key": "panelpane-766824f0b72bca4e",
+        "structure": "{\"height\":4,\"width\":4,\"x\":10,\"y\":19}"
+      },
+      {
+        "key": "panelpane-febb48dcbb4e6b45",
+        "structure": "{\"height\":4,\"width\":4,\"x\":14,\"y\":15}"
+      },
+      {
+        "key": "panelpane-96020cf29e90f841",
+        "structure": "{\"height\":4,\"width\":6,\"x\":18,\"y\":15}"
+      },
+      {
+        "key": "panelpane-3ed60d9fa72e284f",
+        "structure": "{\"height\":4,\"width\":6,\"x\":0,\"y\":23}"
+      },
+      {
+        "key": "panelpane-22d4377398cee94a",
+        "structure": "{\"height\":4,\"width\":6,\"x\":18,\"y\":23}"
+      },
+      {
+        "key": "panelpane-7b7e534f85c46843",
+        "structure": "{\"height\":4,\"width\":6,\"x\":18,\"y\":19}"
+      },
+      {
+        "key": "panelpane-774a2d12ac5db844",
+        "structure": "{\"height\":4,\"width\":6,\"x\":6,\"y\":23}"
+      },
+      {
+        "key": "panelpane-6980884eaf00b846",
+        "structure": "{\"height\":2,\"width\":24,\"x\":0,\"y\":1}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelpane-f7aa7faaba70da4a",
+      "title": "Shell Configuration Modifications",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\",\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"green\"},{\"from\":null,\"to\":null,\"color\":\"yellow\"},{\"from\":null,\"to\":null,\"color\":\"red\"}]}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"Modify Shell Configuration File\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-565e0c9e8ba17a4e",
+      "title": "Rules Triggered",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n| json  \"log.priority\" as priority\n| json  \"log.rule\" as rule\n| json  \"log.time\" as time\n| json  \"$['log']['output_fields']['proc.cmdline']\" as proc_cmdline nodrop\n| json  \"$['log']['output_fields']['proc.name']\" as proc_name nodrop\n| json  \"$['log']['output_fields']['user.name']\" as user_name nodrop\n| json  \"log.output\" as output\n| json \"$['log']['output_fields']['k8s.ns.name']\" as namespace\n//| where !isEmpty(namespace)\n| count as total by time,rule, priority, cluster, container, pod, namespace, proc_cmdline, proc_name, user_name,output\n| fields time,rule, priority, cluster, container, pod, namespace, proc_cmdline, proc_name, user_name,output\n| sort by time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-f28aa3f3bcfd4b46",
+      "title": "Falco Rules",
+      "visualSettings": "{\"text\":{\"showTitle\":true,\"alignment\":\"left\",\"backgroundColor\":\"#e0e0e0\",\"textColor\":\"black\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelpane-aa4bd37d92c60b41",
+      "title": "System Procs Network Activity Alerts",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"System procs network activity\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-9c3e54f1ba0c5942",
+      "title": "Non sudo setuid",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"Non sudo setuid\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-391b558eb57c6942",
+      "title": "DB program spawned process",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"DB program spawned process\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-01e3131f8aceaa48",
+      "title": "Write below etc",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"Write below etc\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-71e668b68ee3584e",
+      "title": "Run shell untrusted",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"Run shell untrusted\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-f7cd5b5da198eb49",
+      "title": "Read sensitive file untrusted",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"Read sensitive file untrusted\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-766824f0b72bca4e",
+      "title": "Modify binary dirs",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"Modify binary dirs\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-febb48dcbb4e6b45",
+      "title": "Write below binary dir",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"Write below binary dir\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-96020cf29e90f841",
+      "title": "Change thread namespace",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"Change thread namespace\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-3ed60d9fa72e284f",
+      "title": "Create files below dev",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"Create files below dev\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-22d4377398cee94a",
+      "title": "Write below rpm database",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"Write below rpm database\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-7b7e534f85c46843",
+      "title": "Mkdir binary dirs",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"Mkdir binary dirs\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-774a2d12ac5db844",
+      "title": "System user interactive",
+      "visualSettings": "{\"general\":{\"type\":\"svp\"},\"svp\":{\"label\":\" \",\"noDataString\":\"0\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "*falco* cluster={{cluster}} output_fields rule priority output \n | json  \"log.priority\" as priority \n| json  \"log.rule\" as rule\n| where rule=\"System user interactive\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-6980884eaf00b846",
+      "title": "Untitled",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"alignment\":\"left\",\"showTitle\":false,\"fontSize\":20,\"format\":\"markdown\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "####Note: This dashboard relies on Falco. If the Dashboard is not populated, enable Falco by setting the flag \"falco:enabled\" as \"true\" in values.yaml as mentioned here: https://github.com/SumoLogic/sumologic-kubernetes-collection/blob/master/deploy/docs/Installation_with_Helm.md"
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "cluster",
+      "displayName": null,
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "_origin=\"kubernetes\"",
+        "key": "cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

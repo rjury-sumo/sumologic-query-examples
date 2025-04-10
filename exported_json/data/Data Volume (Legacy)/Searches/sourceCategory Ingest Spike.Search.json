@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "sourceCategory Ingest Spike",
+  "search": {
+    "queryText": "_index=sumologic_volume sizeInBytes\n| where _sourceCategory=\"sourcecategory_volume\" \n| parse regex \"\\\"(?<sourcecategory>[^\\\"]+)\\\"\\:\\{\\\"sizeInBytes\\\"\\:(?<bytes>\\d+),\\\"count\\\"\\:(?<count>\\d+)\\}\" multi\n| bytes/1024/1024/1024 as gbytes\n| timeslice 1h\n| sum(gbytes) as gbytes by sourcecategory, _timeslice\n| where !(sourceCategory matches \"*_volume\")\n| compare timeshift -1w 4 max \n| ((gbytes - gbytes_4w_max) / gbytes) * 100 as pct_increase\n| total gbytes by _timeslice\n| (gbytes / _total) * 100 as ingest_weight \n| where pct_increase  > 50 and ingest_weight > 25",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-65m -5m"
+  },
+  "searchSchedule": null,
+  "description": "This hourly alert is generated when both of the following occur:\n1) Ingest for any _sourceCategory in your account has a 50% spike compared with the maximum ingest for the same _sourceCategory over the last four weeks (comparison is with the same hour and day of week).\n2) The volume ingested by the _sourceCategory represents at least 25 % of the total data ingested within the hour. \u2028\n"
+}

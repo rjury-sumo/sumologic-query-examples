@@ -1,0 +1,311 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Azure Audit - Service Health - New",
+  "description": "Use this dashboard to see the details on Azure service health such as the level, status, and events.",
+  "title": "Azure Audit - Service Health - New",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1w"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panela8f77036b802294d",
+        "structure": "{\"width\":5,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel5648d86a9df56a4d",
+        "structure": "{\"width\":5,\"height\":6,\"x\":5,\"y\":0}"
+      },
+      {
+        "key": "panel5fc26ff692fe8941",
+        "structure": "{\"width\":14,\"height\":16,\"x\":10,\"y\":0}"
+      },
+      {
+        "key": "panel6f46c7a88214f84d",
+        "structure": "{\"width\":10,\"height\":5,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel1ec1f5f5be6cba4d",
+        "structure": "{\"width\":10,\"height\":5,\"x\":0,\"y\":9}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel5fc26ff692fe8941",
+      "title": "Events Details",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level resultType) or (Category Level Status))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (Category1, Category2) as Category\n| where Category = \"ServiceHealth\"\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields OperationName, Description, CorrelationId, Level, EventName, Location, Status, Category\n| withtime Status | withtime _messagetime\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{description}}\" = \"*\", true, description matches \"{{description}}\") AND if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{status}}\" = \"*\", true, status matches \"{{status}}\") AND if (\"{{location}}\" = \"*\", true, location matches \"{{location}}\") AND if (\"{{level}}\" = \"*\", true, level matches \"{{level}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\") AND if (\"{{correlationid}}\" = \"*\", true, correlationid matches \"{{correlationid}}\")\n|most_recent(Status_withtime) as Status, most_recent(_messagetime_withtime) as Time by OperationName, Description, CorrelationId, Level, EventName, Location\n| sort by Time\n| formatDate(toLong(Time),\"yyyy-MM-dd HH:mm:ss Z\") as Time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5648d86a9df56a4d",
+      "title": "Status",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory resultType) or (Category Status))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (Category1, Category2) as Category\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, Category, OperationName, Description, CorrelationId, EventName, Location\n| where Category = \"ServiceHealth\"\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{description}}\" = \"*\", true, description matches \"{{description}}\") AND if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{status}}\" = \"*\", true, status matches \"{{status}}\") AND if (\"{{location}}\" = \"*\", true, location matches \"{{location}}\") AND if (\"{{level}}\" = \"*\", true, level matches \"{{level}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\") AND if (\"{{correlationid}}\" = \"*\", true, correlationid matches \"{{correlationid}}\")\n|count by Status\n| sort by _count desc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1ec1f5f5be6cba4d",
+      "title": "Unresolved Events",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level resultType) or (Category Level Status))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (Category1, Category2) as Category\n| where Category = \"ServiceHealth\"\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields OperationName, Description, CorrelationId, Level, EventName, Location, Status, Category\n| withtime Status | withtime _messagetime\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{description}}\" = \"*\", true, description matches \"{{description}}\") AND if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{status}}\" = \"*\", true, status matches \"{{status}}\") AND if (\"{{location}}\" = \"*\", true, location matches \"{{location}}\") AND if (\"{{level}}\" = \"*\", true, level matches \"{{level}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\") AND if (\"{{correlationid}}\" = \"*\", true, correlationid matches \"{{correlationid}}\")\n|most_recent(Status_withtime) as Status, most_recent(_messagetime_withtime) as Time by CorrelationId, Level, EventName, Location\n| where Status != \"Resolved\" \n| sort by Time\n| formatDate(toLong(Time),\"yyyy-MM-dd HH:mm:ss Z\") as Time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-4w2d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela8f77036b802294d",
+      "title": "Level",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level) or (category Level))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (Category1, Category2) as Category\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, Category, OperationName, Description, CorrelationId, EventName, Location\n| where Category = \"ServiceHealth\"\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{description}}\" = \"*\", true, description matches \"{{description}}\") AND if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{status}}\" = \"*\", true, status matches \"{{status}}\") AND if (\"{{location}}\" = \"*\", true, location matches \"{{location}}\") AND if (\"{{level}}\" = \"*\", true, level matches \"{{level}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\") AND if (\"{{correlationid}}\" = \"*\", true, correlationid matches \"{{correlationid}}\")\n|count by Level\n| sort by _count desc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6f46c7a88214f84d",
+      "title": "Events Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level) or (Category Level))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (Category1, Category2) as Category\n| where Category = \"ServiceHealth\"\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields OperationName, Description, CorrelationId, Level, EventName, Location, Status, Category\n| timeslice 1d\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{description}}\" = \"*\", true, description matches \"{{description}}\") AND if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{status}}\" = \"*\", true, status matches \"{{status}}\") AND if (\"{{location}}\" = \"*\", true, location matches \"{{location}}\") AND if (\"{{level}}\" = \"*\", true, level matches \"{{level}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\") AND if (\"{{correlationid}}\" = \"*\", true, correlationid matches \"{{correlationid}}\")\n|count by _timeslice, Level\n| transpose row _timeslice column Level",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "operationname",
+      "displayName": "operationname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level resultType) or (Category Level Status))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (Category1, Category2) as Category\n| where Category = \"ServiceHealth\"\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields OperationName, Description, CorrelationId, Level, EventName, Location, Status, Category\n| withtime Status | withtime _messagetime",
+        "field": "operationname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventname",
+      "displayName": "eventname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level resultType) or (Category Level Status))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (Category1, Category2) as Category\n| where Category = \"ServiceHealth\"\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields OperationName, Description, CorrelationId, Level, EventName, Location, Status, Category\n| withtime Status | withtime _messagetime",
+        "field": "eventname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "location",
+      "displayName": "location",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level resultType) or (Category Level Status))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (Category1, Category2) as Category\n| where Category = \"ServiceHealth\"\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields OperationName, Description, CorrelationId, Level, EventName, Location, Status, Category\n| withtime Status | withtime _messagetime",
+        "field": "location"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "category",
+      "displayName": "category",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level resultType) or (Category Level Status))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (Category1, Category2) as Category\n| where Category = \"ServiceHealth\"\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields OperationName, Description, CorrelationId, Level, EventName, Location, Status, Category\n| withtime Status | withtime _messagetime",
+        "field": "category"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "level",
+      "displayName": "level",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level resultType) or (Category Level Status))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (Category1, Category2) as Category\n| where Category = \"ServiceHealth\"\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields OperationName, Description, CorrelationId, Level, EventName, Location, Status, Category\n| withtime Status | withtime _messagetime",
+        "field": "level"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "status",
+      "displayName": "status",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level resultType) or (Category Level Status))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (Category1, Category2) as Category\n| where Category = \"ServiceHealth\"\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields OperationName, Description, CorrelationId, Level, EventName, Location, Status, Category\n| withtime Status | withtime _messagetime",
+        "field": "status"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "description",
+      "displayName": "description",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level resultType) or (Category Level Status))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (Category1, Category2) as Category\n| where Category = \"ServiceHealth\"\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields OperationName, Description, CorrelationId, Level, EventName, Location, Status, Category\n| withtime Status | withtime _messagetime",
+        "field": "description"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "correlationid",
+      "displayName": "correlationid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit \"ServiceHealth\" ((properties eventCategory level resultType) or (Category Level Status))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| json \"resultDescription\", \"Description\" as Description1, Description2 nodrop // \"resultDescription\" EventHub, \"Description\" Azure Insight API\n| json \"correlationId\", \"CorrelationId\" as CorrelationId1, CorrelationId2 nodrop // \"correlationId\" EventHub, \"CorrelationId\" Azure Insight API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"category\", \"EventName\" as EventName1, EventName2 nodrop // \"category\" EventHub, \"EventName\" Azure Insight API \n| json \"location\" as Location nodrop // EventHub\n| concat (Category1, Category2) as Category\n| where Category = \"ServiceHealth\"\n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (OperationName1, OperationName2) as OperationName\n| concat (Description1, Description2) as Description\n| concat (CorrelationId1, CorrelationId2) as CorrelationId\n| concat (EventName1, EventName2) as EventName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields OperationName, Description, CorrelationId, Level, EventName, Location, Status, Category\n| withtime Status | withtime _messagetime",
+        "field": "correlationid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

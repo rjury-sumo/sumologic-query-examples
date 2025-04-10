@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Attack Surface: EC2,Redshift,S3",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail (instanceId or clusterIdentifier or bucketName)\n| json \"eventSource\", \"errorCode\" nodrop \n| where isBlank(errorCode) and (eventSource=\"ec2.amazonaws.com\"  or eventSource=\"redshift.amazonaws.com\" or eventSource=\"s3.amazonaws.com\")\n| parse regex \"\\\"(?<objectType>instanceId|clusterIdentifier|bucketName)\\\".*?:.*?(?<objectId>[^\\\"]+)\\\"\" multi \n| \"\" as classification\n| if (objectType=\"instanceId\" and eventSource=\"ec2.amazonaws.com\",concat(\"ResourcesCount_EC2,\",classification),classification) as classification\n| if (objectType=\"clusterIdentifier\" and eventSource=\"redshift.amazonaws.com\",concat(\"ResourcesCount_Redshift,\",classification),classification) as classification\n| if (objectType=\"bucketName\" and eventSource=\"s3.amazonaws.com\",concat(\"ResourcesCount_S3,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| \"ResourceCount\" as type \n| count_distinct(objectId) as count by benchmarkName, type\n| fillmissing values(\"ResourcesCount_EC2\",\"ResourcesCount_Redshift\",\"ResourcesCount_S3\") in benchmarkname, values(\"ResourceCount\") in type \n| toInt(count) as count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-24h",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1d"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": ""
+}

@@ -1,0 +1,276 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "SQL Server - General Health",
+  "description": "SQL Server - General Health dashboard gives you the overall health of SQL Server.  Use this dashboard to analyze server events including stopped/up servers, and corresponding down/uptime, monitor disk space percentage utilization, wait time trend, app-domain issues by SQL server.",
+  "title": "SQL Server - General Health",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "9e35882821c4dc1d083f5c8d5dce08c9": [
+        "*"
+      ],
+      "a67e9617e48c787b5fb4386c66af65a8": [
+        "*"
+      ],
+      "8de51f6232363b0f1a6883b3f8c7ee06": [
+        "*"
+      ],
+      "c79f9332f8522d1aea2ed19166f505e5": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "databases"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel06B27986AE954846",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":21}"
+      },
+      {
+        "key": "panel4E2CF6E1A9825A46",
+        "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panel5DA751568E426848",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":21}"
+      },
+      {
+        "key": "panel880F1EB892129A4B",
+        "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panel97D7264991877A41",
+        "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelFAE3F9BB9394FA47",
+        "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":7}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel06B27986AE954846",
+      "title": "Insufficient Space Issues",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\"},\"series\":{},\"axes\":{\"axisX\":{\"title\":\"\"},\"axisY\":{\"title\":\"count\"}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver \"Could not allocate\" (space or page) |json \"log\" as _rawlog nodrop | if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| parse \"Could not allocate space for object '*' in database '*' because *. Create disk space by deleting unneeded files, dropping objects in the filegroup, adding additional files to the filegroup, or setting autogrowth on for existing files in the filegroup.\" as object, database, reason nodrop\n| parse \"Could not allocate a new * for database '*' because *. Create the necessary space by dropping objects in the filegroup, adding additional files to the filegroup, or setting autogrowth on for existing files in the filegroup.\" as object, database, reason\n| timeslice 1d\n| count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4E2CF6E1A9825A46",
+      "title": "Up Servers",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver |json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| where _raw matches \"*SQL Server is now ready for client connections.*\" or  _raw matches \"*SQL Server is allowing new connections in response to 'continue' request from Service Control Manager.*\" or  _raw matches \"*SQL Server is not allowing new connections because the Service Control Manager requested a pause*\" or  _raw matches \"*SQL Trace was stopped due to server shutdown.\" or \"SQL Server terminating because of system shutdown.*\"\n| parse regex \"(?<time>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{2,3})\\s+\\S+\"\n| if (_raw matches \"*SQL Server is now ready for client connections.*\", \"Up\", if (_raw matches \"*SQL Server is allowing new connections in response to 'continue' request from Service Control Manager.*\", \"Up\",  if (_raw matches \"*SQL Server is not allowing new connections because the Service Control Manager requested a pause.*\", \"Down\", if (_raw matches \"*SQL Trace was stopped due to server shutdown.*\" or _raw matches \"*SQL Server terminating because of system shutdown.*\", \"Down\", \"Unkown\" )))) as server_status\n| where server_status = \"Up\"\n| timeslice 100s\n| withtime server_status | withtime _messagetime\n| most_recent(server_status_withtime) as server_status, most_recent(_messagetime_withtime) as m_time by db.node.name\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS\", \"UTC\") as event_time\n| ((toMillis(now())-m_time)/(1000*60)) as since_mins | format(\"%.2f\", since_mins) as since_minutes\n| concat (\"Since \", since_minutes, \" minutes\") as uptime\n//| fields - m_time, since_mins, since_minutes \n| fields db.node.name, event_time, server_status, uptime",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5DA751568E426848",
+      "title": "AppDomain Issues",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\"},\"series\":{},\"overrides\":[],\"axes\":{\"axisX\":{\"title\":\"\"},\"axisY\":{\"title\":\"count\"}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver  (AppDomain or \"memory pressure\" or \"out of memory\") |json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| parse \"AppDomain * (*) is marked for unload due to *.\" as AppDomainID, detail, reason nodrop\n| parse \"AppDomain * was unloaded by escalation policy to ensure the consistency of your application. * happened while accessing a critical resource\" as detail, reason nodrop\n| Parse \"Failed to initialize the Common Language Runtime * due to *.\" as detail, reason nodrop\n| parse \"Error: *, Severity: *, State: *. .NET Framework execution was aborted by escalation policy because of *.\" as error, severity, state, reason\n| timeslice 1d\n| count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel880F1EB892129A4B",
+      "title": "Server Events",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\"},\"series\":{},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver |json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| where _raw matches \"*SQL Server is now ready for client connections.*\" or  _raw matches \"*SQL Server is allowing new connections in response to 'continue' request from Service Control Manager.*\" or  _raw matches \"*SQL Server is not allowing new connections because the Service Control Manager requested a pause*\" or  _raw matches \"*SQL Trace was stopped due to server shutdown.*\" or \"*SQL Server terminating because of system shutdown.*\"\n| parse regex \"(?<time>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{2,3})\\s+\\S+\"\n| if (_raw matches \"*SQL Server is now ready for client connections.*\", \"Up\", if (_raw matches \"*SQL Server is allowing new connections in response to 'continue' request from Service Control Manager.*\", \"Up\",  if (_raw matches \"*SQL Server is not allowing new connections because the Service Control Manager requested a pause.*\", \"Down\", if (_raw matches \"*SQL Trace was stopped due to server shutdown.*\" or _raw matches \"*SQL Server terminating because of system shutdown.*\", \"Down\", \"Unkown\" )))) as server_status\n| timeslice 1h\n| count by _timeslice, server_status\n| transpose row _timeslice column server_status",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel97D7264991877A41",
+      "title": "Stopped Servers",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver |json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| where _raw matches \"*SQL Server is now ready for client connections.*\" or  _raw matches \"*SQL Server is allowing new connections in response to 'continue' request from Service Control Manager.*\" or  _raw matches \"*SQL Server is not allowing new connections because the Service Control Manager requested a pause*\" or  _raw matches \"*SQL Trace was stopped due to server shutdown.*\" or \"*SQL Server terminating because of system shutdown.*\"\n| parse regex \"(?<time>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{2,3})\\s+\\S+\"\n| if (_raw matches \"*SQL Server is now ready for client connections.*\", \"Up\", if (_raw matches \"*SQL Server is allowing new connections in response to 'continue' request from Service Control Manager.*\", \"Up\",  if (_raw matches \"*SQL Server is not allowing new connections because the Service Control Manager requested a pause.*\", \"Down\", if (_raw matches \"*SQL Trace was stopped due to server shutdown.*\" or _raw matches \"*SQL Server terminating because of system shutdown.*\", \"Down\", \"Unkown\" )))) as server_status\n| where !(server_status=\"Up\")\n| timeslice 100s\n| withtime server_status | withtime _messagetime\n| most_recent(server_status_withtime) as server_status, most_recent(_messagetime_withtime) as m_time by db.node.name\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS\", \"UTC\") as event_time\n| ((toMillis(now())-m_time)/(1000*60)) as since_mins | format(\"%.2f\", since_mins) as since_minutes\n| concat (\"Since \", since_minutes, \" minutes\") as downtime\n| fields db.node.name, event_time, server_status, downtime",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelFAE3F9BB9394FA47",
+      "title": "Deadlocks",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\"},\"series\":{},\"color\":{\"family\":\"Diverging 2\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver deadlocked\n| timeslice 1d\n| count as count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "sumo.datasource=sqlserver",
+        "key": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "deployment.environment={{deployment.environment}} sumo.datasource=sqlserver",
+        "key": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "db.node.name",
+      "displayName": "db.node.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "sumo.datasource=sqlserver db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}}",
+        "key": "db.node.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,364 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Oracle - Monitor Performance by DB Script",
+  "description": "See details of Oracle listener process activity, including database connections by host and application, connection failures, command execution status and trends and other data derived from the Oracle Listener log.",
+  "title": "Oracle - Monitor Performance by DB Script",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "sumo.datasource": [
+        "oracle"
+      ],
+      "db.cluster.name": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "databases"
+      ],
+      "deployment.environment": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel117D898698232945",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panel311FA51DB2D79841",
+        "structure": "{\"height\":6,\"width\":6,\"x\":12,\"y\":8}"
+      },
+      {
+        "key": "panel3C5ED23D8926DB40",
+        "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":2}"
+      },
+      {
+        "key": "panel66BA87EC8594DA4F",
+        "structure": "{\"height\":6,\"width\":5,\"x\":11,\"y\":2}"
+      },
+      {
+        "key": "panel8B9FB8D3A746CA40",
+        "structure": "{\"height\":6,\"width\":6,\"x\":6,\"y\":8}"
+      },
+      {
+        "key": "panel963E30B9BE607A4C",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":2}"
+      },
+      {
+        "key": "panel97A559528F009B40",
+        "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panelC6A3053F81D0DA49",
+        "structure": "{\"height\":6,\"width\":7,\"x\":4,\"y\":2}"
+      },
+      {
+        "key": "panelE20BDB73A6DC6B42",
+        "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":8}"
+      },
+      {
+        "key": "panelPANE-D6DF8040A6075843",
+        "structure": "{\"height\":2,\"width\":24,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel117D898698232945",
+      "title": "Last 10 Recent Jobs in the Database",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"job status\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \" queryoutput=*\" as jsonOUT \n| json field=jsonout \"TOTAL_TIME\", \"WHAT\", \"NEXT_DATE\", \"LOG_USER\", \"NLS_ENV\", \"INTERVAL\", \"LAST_DATE\", \"SCHEMA_USER\", \"MISC_ENV\", \"BROKEN\", \"JOB\", \"PRIV_USER\", \"MONITOR_TYPE\", \"FAILURES\" as TOTALTIME, WHAT, NEXT_DATE, LOG_USER, NLS_ENV, INTERVAL, LAST_DATE, SCHEMA_USER, MISC_ENV, BROKEN, JOB, PRIV_USER, MONITORTYPE, FAILURES\n| parse field=jsonout \"\\\"MISC_ENV\\\": \\\"*\\\"\" as MISC_ENV nodrop\n| where monitorType=\"job status\"\n| timeslice 1s\n| count by _timeslice, TOTALTIME, WHAT, NEXT_DATE, LOG_USER, NLS_ENV, INTERVAL, LAST_DATE, SCHEMA_USER, MISC_ENV, BROKEN, JOB, PRIV_USER, MONITORTYPE, FAILURES \n| fields -_count\n| sort by _timeslice\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel311FA51DB2D79841",
+      "title": "Maximum Wait Time (sec) by User",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"session waits\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \" queryoutput=*\" as jsonOUT \n| json field=jsonOUT \"MONITOR_TYPE\",\"SECONDS_IN_WAIT\",\"USERNAME\",\"STATE\",\"EVENT\" as monitorType, secondsinwait, username, state, event\n| where monitorType=\"session waits\"\n| timeslice by 5m \n| max(secondsinwait) group username, _timeslice \n| transpose row _timeslice column username",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel3C5ED23D8926DB40",
+      "title": "% Datafile Space Utilization Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"datafile status\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message \n| parse field=oracle_log_message \" queryoutput=*\" as jsonOUT \n| json field=jsonOUT \"MONITOR_TYPE\",\"FILE_NAME\",\"FREE_SPACE_MB\",\"ALLOCATED_MB\",\"USED_MB\" as monitorType, filename, freespace, allocated, usedSpace\n| where monitorType=\"datafile status\"\n| (usedSpace/allocated*100) as Percent_datafilespace_Utilization\n| timeslice 5m\n| max(Percent_datafilespace_Utilization) as Percent_datafilespace_Utilization by filename, _timeslice\n| sort by Percent_datafilespace_Utilization desc \n| transpose row _timeslice column filename",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel66BA87EC8594DA4F",
+      "title": "Avg Datafile Space Utilization",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"%\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":79.999,\"color\":\"#16943E\"},{\"from\":80,\"to\":89.999,\"color\":\"#DFBE2E\"},{\"from\":90,\"to\":100,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":100}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"datafile status\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \" queryoutput=*\" as jsonOUT \n| json field=jsonOUT \"MONITOR_TYPE\",\"FILE_NAME\",\"FREE_SPACE_MB\",\"ALLOCATED_MB\",\"USED_MB\" as monitorType, filename, freespace, allocated, usedSpace\n| where monitorType=\"datafile status\"\n| (usedSpace/allocated*100) as Percent_Datafilespace_Utilization\n| format( \"%.2f\",Percent_Datafilespace_Utilization) as Percent_Datafilespace_Utilization\n| avg (Percent_Datafilespace_Utilization) as avg_percent_Datafilespace_Utilization",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8B9FB8D3A746CA40",
+      "title": "Recent Active Connections",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"active sessions\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \" queryoutput=*\" as jsonOUT \n| json field=jsonOUT \"MONITOR_TYPE\",\"USERNAME\",\"STATUS\",\"MACHINE\",\"PROGRAM\",\"SERIAL#\" as monitorType, USERNAME, STATUS, MACHINE, PROGRAM, serial \n| where monitorType=\"active sessions\" and STATUS = \"ACTIVE\" \n| count_distinct(serial) as numConnects by username, machine\n| sort by numConnects",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel963E30B9BE607A4C",
+      "title": "Avg Tablespace Utilization",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"%\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":79.99,\"color\":\"#16943E\"},{\"from\":80,\"to\":89.999,\"color\":\"#DFBE2E\"},{\"from\":90,\"to\":100,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":100}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"tablespace status\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse  field=oracle_log_message \" queryoutput=*\" as jsonOUT \n| json field=jsonOUT \"Tablespace Name\", \"USED_SPACE\", \"MONITOR_TYPE\",\"TOTAL_SPACE\",\"FREE_SPACE\" as tablespace_name, usedSpace, monitorType, totalSpace, freeSpace\n| where monitorType=\"tablespace status\"\n| (usedSpace/totalSpace*100) as Percent_Tablespace_Utilization\n| format( \"%.2f\",Percent_Tablespace_Utilization) as Percent_Tablespace_Utilization\n| avg (Percent_Tablespace_Utilization) as avg_percent_Tablespace_Utilization",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel97A559528F009B40",
+      "title": "Buffer Cache Hit Ratio",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"area\"},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"buffer cache hit ratio\" \n| json \"log\" as _rawlog nodrop\n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \" queryoutput=*\" as jsonOUT \n| json field=jsonout \"Cache Hit Ratio\", \"MONITOR_TYPE\" as cachehitratio, monitorType\n| where monitorType=\"buffer cache hit ratio\"\n| timeslice by 5m \n| max(cachehitratio) as %\"CacheHitRatio\" by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelC6A3053F81D0DA49",
+      "title": "% Tablespace Utilization Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\"},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"tablespace status\"  | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \" queryoutput=*\" as jsonOUT \n| json field=jsonOUT \"Tablespace Name\", \"USED_SPACE\", \"MONITOR_TYPE\",\"TOTAL_SPACE\",\"FREE_SPACE\" as tablespace_name, usedSpace, monitorType, totalSpace, freeSpace\n| where monitorType=\"tablespace status\"\n| (usedSpace/totalSpace*100) as Percent_Tablespace_Utilization\n| timeslice 5m\n| max(Percent_Tablespace_Utilization) as Percent_Tablespace_Utilization by tablespace_name, _timeslice\n| sort by Percent_Tablespace_Utilization desc \n| transpose row _timeslice column tablespace_name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE20BDB73A6DC6B42",
+      "title": "Top Session Wait Time Events",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"session waits\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \" queryoutput=*\" as jsonOUT \n| json field=jsonOUT \"MONITOR_TYPE\",\"SECONDS_IN_WAIT\",\"USERNAME\",\"STATE\",\"EVENT\" as monitorType, secondsinwait, username, state, event\n| where monitorType=\"session waits\"\n| count as eventCount by event \n| top 10 event by eventCount, event asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-D6DF8040A6075843",
+      "title": "",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"markdownV2\",\"showTitle\":false},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "####The Sumo app for Oracle uses a Python script to query database tables to collect Oracle server performance metrics.\n####The script connects the database using a database user account, runs a set of example SQL queries, and prints the query results in JSON format to the console."
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\nsumo.datasource=oracle|count by db.cluster.name",
+        "field": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\nsumo.datasource=oracle|count by deployment.environment",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,333 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Linux - Overview",
+  "description": "See an overview of Linux activity, including the distribution of system events across hosts,  group assignment changes, a breakdown of successful and failed logins, sudo attempts, and the count of reporting hosts.",
+  "title": "Linux - Overview",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel05022a50be322b4e",
+        "structure": "{\"width\":8,\"height\":16,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel2eb4a4a3825a984f",
+        "structure": "{\"width\":8,\"height\":9,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panela16225cfb398d841",
+        "structure": "{\"width\":8,\"height\":8,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panela9dd159eb23e1940",
+        "structure": "{\"width\":8,\"height\":8,\"x\":8,\"y\":7}"
+      },
+      {
+        "key": "panelc54fb8e79a544949",
+        "structure": "{\"width\":8,\"height\":9,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel05022a50be322b4e",
+      "title": "Sudo Attempts",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \"sudo\" \n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S*)\\s\" nodrop\n| _sourceHost as dest_host\n| parse regex \"(?<process>\\w*):\\s+(?<src_user>[^ ]+?)\\s+:.+?USER=(?<dest_user>[^ ]+?)\\s+\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse regex \"COMMAND=(?<command>[^$]*)$\" nodrop\n| parse regex \"\\s+(?<process>\\w*): pam_unix\\(sudo:auth\\): conversation failed\" nodrop\n| parse \"pam_unix(*:auth): authentication failure;\" as process nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| where process=\"sudo\" and command != \"\"\n|where if (\"{{dest_hostname}}\" = \"*\", true, dest_hostname matches \"{{dest_hostname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\") AND if (\"{{command}}\" = \"*\", true, command matches \"{{command}}\")\n|count as attempts by dest_hostname,src_user,dest_user, command \n| sort - attempts",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2eb4a4a3825a984f",
+      "title": "Logins by Outcome",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  (\"sshd:\" or \"sshd[\" or \"pam:\" ) ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\") or (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")) !\"closed\"\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| if (message matches \"*failure;*\" or message matches \"*FAILED *\" or message matches \"*invalid user*\" or message matches \"*Invalid user*\" or message matches \"*Failed*\", \"Failure\", \"Success\") as outcome\n|where if (\"{{outcome}}\" = \"*\", true, outcome matches \"{{outcome}}\") AND if (\"{{dest_hostname}}\" = \"*\", true, dest_hostname matches \"{{dest_hostname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{process_name}}\" = \"*\", true, process_name matches \"{{process_name}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count by outcome",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela16225cfb398d841",
+      "title": "User Assignments",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  (\"to group\" or \"default group changed\" or \"change user\") or (\"useradd\" and ((\"new user\") or (\"new account\")))\n| parse \"add '*' to group '*'\" as dest_user,dest_group nodrop\n| parse \"account added to group - account=*, group=*, gid=*,\" as dest_user,dest_group,dest_gid nodrop\n| parse \"account=*, uid=*, gid=*, old gid=*,\" as dest_user,dest_uid, dest_gid,src_gid nodrop\n| parse \"change user '*' GID from '*' to '*'\" as dest_user,src_gid, dest_gid nodrop\n| parse \"name=*, UID=*, GID=*, home=*, shell=*\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop\n| parse \"account=*, uid=*, gid=*, home=*, shell=*,\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop\n| if(dest_group=\"\" or isNull(dest_group), dest_gid, dest_group) as dest_group\n|where if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{shell}}\" = \"*\", true, shell matches \"{{shell}}\") AND if (\"{{dest_group}}\" = \"*\", true, dest_group matches \"{{dest_group}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\") AND if (\"{{home_dir}}\" = \"*\", true, home_dir matches \"{{home_dir}}\")\n|count_distinct(dest_user) by dest_group\n| sum(_count_distinct)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela9dd159eb23e1940",
+      "title": "Reporting Hosts",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[\\d+\\]|):\\s+\"\n|where if (\"{{dest_hostname}}\" = \"*\", true, dest_hostname matches \"{{dest_hostname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{process_name}}\" = \"*\", true, process_name matches \"{{process_name}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count_distinct(dest_hostname) as _hostCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc54fb8e79a544949",
+      "title": "Total Event Distribution",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S*)\\s(?<process_name>\\w*)(?:\\[\\d+\\]|):\\s+\"\n|where if (\"{{dest_hostname}}\" = \"*\", true, dest_hostname matches \"{{dest_hostname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{process_name}}\" = \"*\", true, process_name matches \"{{process_name}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as Events by dest_hostname",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "uploads/linux/system",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "uploads/linux/system"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "command",
+      "displayName": "command",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"sudo\" \n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S*)\\s\" nodrop\n| _sourceHost as dest_host\n| parse regex \"(?<process>\\w*):\\s+(?<src_user>[^ ]+?)\\s+:.+?USER=(?<dest_user>[^ ]+?)\\s+\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse regex \"COMMAND=(?<command>[^$]*)$\" nodrop\n| parse regex \"\\s+(?<process>\\w*): pam_unix\\(sudo:auth\\): conversation failed\" nodrop\n| parse \"pam_unix(*:auth): authentication failure;\" as process nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| where process=\"sudo\" and command != \"\"",
+        "field": "command"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_group",
+      "displayName": "dest_group",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"to group\" or \"default group changed\" or \"change user\") or (\"useradd\" and ((\"new user\") or (\"new account\")))\n| parse \"add '*' to group '*'\" as dest_user,dest_group nodrop\n| parse \"account added to group - account=*, group=*, gid=*,\" as dest_user,dest_group,dest_gid nodrop\n| parse \"account=*, uid=*, gid=*, old gid=*,\" as dest_user,dest_uid, dest_gid,src_gid nodrop\n| parse \"change user '*' GID from '*' to '*'\" as dest_user,src_gid, dest_gid nodrop\n| parse \"name=*, UID=*, GID=*, home=*, shell=*\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop\n| parse \"account=*, uid=*, gid=*, home=*, shell=*,\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop\n| if(dest_group=\"\" or isNull(dest_group), dest_gid, dest_group) as dest_group",
+        "field": "dest_group"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_hostname",
+      "displayName": "dest_hostname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"sudo\" \n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S*)\\s\" nodrop\n| _sourceHost as dest_host\n| parse regex \"(?<process>\\w*):\\s+(?<src_user>[^ ]+?)\\s+:.+?USER=(?<dest_user>[^ ]+?)\\s+\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse regex \"COMMAND=(?<command>[^$]*)$\" nodrop\n| parse regex \"\\s+(?<process>\\w*): pam_unix\\(sudo:auth\\): conversation failed\" nodrop\n| parse \"pam_unix(*:auth): authentication failure;\" as process nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| where process=\"sudo\" and command != \"\"",
+        "field": "dest_hostname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_user",
+      "displayName": "dest_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"sudo\" \n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S*)\\s\" nodrop\n| _sourceHost as dest_host\n| parse regex \"(?<process>\\w*):\\s+(?<src_user>[^ ]+?)\\s+:.+?USER=(?<dest_user>[^ ]+?)\\s+\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse regex \"COMMAND=(?<command>[^$]*)$\" nodrop\n| parse regex \"\\s+(?<process>\\w*): pam_unix\\(sudo:auth\\): conversation failed\" nodrop\n| parse \"pam_unix(*:auth): authentication failure;\" as process nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| where process=\"sudo\" and command != \"\"",
+        "field": "dest_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "home_dir",
+      "displayName": "home_dir",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"to group\" or \"default group changed\" or \"change user\") or (\"useradd\" and ((\"new user\") or (\"new account\")))\n| parse \"add '*' to group '*'\" as dest_user,dest_group nodrop\n| parse \"account added to group - account=*, group=*, gid=*,\" as dest_user,dest_group,dest_gid nodrop\n| parse \"account=*, uid=*, gid=*, old gid=*,\" as dest_user,dest_uid, dest_gid,src_gid nodrop\n| parse \"change user '*' GID from '*' to '*'\" as dest_user,src_gid, dest_gid nodrop\n| parse \"name=*, UID=*, GID=*, home=*, shell=*\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop\n| parse \"account=*, uid=*, gid=*, home=*, shell=*,\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop\n| if(dest_group=\"\" or isNull(dest_group), dest_gid, dest_group) as dest_group",
+        "field": "home_dir"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "outcome",
+      "displayName": "outcome",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"sshd:\" or \"sshd[\" or \"pam:\" ) ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\") or (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")) !\"closed\"\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| if (message matches \"*failure;*\" or message matches \"*FAILED *\" or message matches \"*invalid user*\" or message matches \"*Invalid user*\" or message matches \"*Failed*\", \"Failure\", \"Success\") as outcome",
+        "field": "outcome"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "process_name",
+      "displayName": "process_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S*)\\s(?<process_name>\\w*)(?:\\[\\d+\\]|):\\s+\"",
+        "field": "process_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "shell",
+      "displayName": "shell",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"to group\" or \"default group changed\" or \"change user\") or (\"useradd\" and ((\"new user\") or (\"new account\")))\n| parse \"add '*' to group '*'\" as dest_user,dest_group nodrop\n| parse \"account added to group - account=*, group=*, gid=*,\" as dest_user,dest_group,dest_gid nodrop\n| parse \"account=*, uid=*, gid=*, old gid=*,\" as dest_user,dest_uid, dest_gid,src_gid nodrop\n| parse \"change user '*' GID from '*' to '*'\" as dest_user,src_gid, dest_gid nodrop\n| parse \"name=*, UID=*, GID=*, home=*, shell=*\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop\n| parse \"account=*, uid=*, gid=*, home=*, shell=*,\" as dest_user,dest_uid,dest_gid,home_dir,shell nodrop\n| if(dest_group=\"\" or isNull(dest_group), dest_gid, dest_group) as dest_group",
+        "field": "shell"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_user",
+      "displayName": "src_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"sudo\" \n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S*)\\s\" nodrop\n| _sourceHost as dest_host\n| parse regex \"(?<process>\\w*):\\s+(?<src_user>[^ ]+?)\\s+:.+?USER=(?<dest_user>[^ ]+?)\\s+\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse regex \"COMMAND=(?<command>[^$]*)$\" nodrop\n| parse regex \"\\s+(?<process>\\w*): pam_unix\\(sudo:auth\\): conversation failed\" nodrop\n| parse \"pam_unix(*:auth): authentication failure;\" as process nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| where process=\"sudo\" and command != \"\"",
+        "field": "src_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

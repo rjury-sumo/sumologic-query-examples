@@ -1,0 +1,352 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Google Cloud SQL - Overview - New",
+  "description": "See an overview of activity in Google Cloud SQL, including activity locations, created and deleted resources, operations by resources, authorization failures, and messages over time by severity.",
+  "title": "Google Cloud SQL - Overview - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelea079862b2849a45",
+        "structure": "{\"width\":14,\"height\":11,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelde4aeddc8fdf9b47",
+        "structure": "{\"width\":5,\"height\":11,\"x\":14,\"y\":0}"
+      },
+      {
+        "key": "panel528316f38028284c",
+        "structure": "{\"width\":5,\"height\":11,\"x\":19,\"y\":0}"
+      },
+      {
+        "key": "panel573b8f16b600cb47",
+        "structure": "{\"width\":7,\"height\":6,\"x\":0,\"y\":9}"
+      },
+      {
+        "key": "panel90434df2a028294a",
+        "structure": "{\"width\":5,\"height\":6,\"x\":7,\"y\":9}"
+      },
+      {
+        "key": "panelea5ea48c8057f847",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":9}"
+      },
+      {
+        "key": "panelc9f56df394648b4b",
+        "structure": "{\"width\":11,\"height\":9,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panele8345b2ca289da42",
+        "structure": "{\"width\":13,\"height\":9,\"x\":11,\"y\":14}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelc9f56df394648b4b",
+      "title": "Operations by Resources",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/sql authorizationInfo logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\" as labels, payload\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| json field=payload \"authenticationInfo.principalEmail\", \"authorizationInfo[*]\" as user, permissions\n| where !isNull(permissions)\n| parse regex field=permissions \"\\\"permission\\\":\\\"(?<resource_type>[^\\\"]+)\\.(?<method>[^\\\"]+?)\\\"\" multi\n|where if (\"{{Region}}\" = \"*\", true, region matches \"{{Region}}\") AND if (\"{{User}}\" = \"*\", true, user matches \"{{User}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Instance}}\" = \"*\", true, instance matches \"{{Instance}}\")\n|count as operations by resource_type, method\n| transpose row resource_type column method",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelea5ea48c8057f847",
+      "title": "Top 10 Users by Messages",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/sql logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload.authenticationInfo.principalEmail\" as labels, user\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n|where if (\"{{Region}}\" = \"*\", true, region matches \"{{Region}}\") AND if (\"{{User}}\" = \"*\", true, user matches \"{{User}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Instance}}\" = \"*\", true, instance matches \"{{Instance}}\")\n|count as messages by user\n| sort by messages\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panele8345b2ca289da42",
+      "title": "Messages Over Time by Severity",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/sql authorizationInfo logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\" as labels, payload\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| json field=payload \"authenticationInfo.principalEmail\" as user\n| json \"message.data.severity\" as severity\n| timeslice 1h\n|where if (\"{{Region}}\" = \"*\", true, region matches \"{{Region}}\") AND if (\"{{User}}\" = \"*\", true, user matches \"{{User}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Instance}}\" = \"*\", true, instance matches \"{{Instance}}\")\n|count by _timeslice, severity\n| transpose row _timeslice column severity",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel573b8f16b600cb47",
+      "title": "Messages by Region",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/sql data resource labels callerIp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\", \"message.data.protoPayload.requestMetadata.callerIp\" as labels, payload, caller_ip nodrop\n| json field=payload \"authenticationInfo.principalEmail\", \"authorizationInfo[*]\" as user, permissions nodrop\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n|where if (\"{{Region}}\" = \"*\", true, region matches \"{{Region}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Instance}}\" = \"*\", true, instance matches \"{{Instance}}\")\n|count as messages by region\n| sort by messages",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel90434df2a028294a",
+      "title": "Authorization Failures",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/sql authorizationInfo logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\" as labels, payload\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| json field=payload \"authenticationInfo.principalEmail\", \"authorizationInfo[*]\" as user, permissions\n| where !isNull(permissions)\n| parse regex field=permissions \"\\\"permission\\\":\\\"(?<resource_type>[^\\\"]+)\\.(?<method>[^\\\"]+?)\\\",\\\"granted\\\":(?<granted>[a-z]+)}\" multi\n| where granted != \"true\"\n|where if (\"{{Region}}\" = \"*\", true, region matches \"{{Region}}\") AND if (\"{{User}}\" = \"*\", true, user matches \"{{User}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Instance}}\" = \"*\", true, instance matches \"{{Instance}}\")\n|count as failures",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel528316f38028284c",
+      "title": "Deleted Resources",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"bottom\",\"showAsTable\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/sql authorizationInfo logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\" as labels, payload\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| json field=payload \"authenticationInfo.principalEmail\", \"authorizationInfo[*]\" as user, permissions\n| where !isNull(permissions)\n| parse regex field=permissions \"\\\"permission\\\":\\\"(?<resource_type>[^\\\"]+)\\.(?<method>[^\\\"]+?)\\\"\" multi\n| where method = \"delete\"\n|where if (\"{{Region}}\" = \"*\", true, region matches \"{{Region}}\") AND if (\"{{User}}\" = \"*\", true, user matches \"{{User}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Instance}}\" = \"*\", true, instance matches \"{{Instance}}\")\n|count as deletions by resource_type\n| sort by deletions",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelea079862b2849a45",
+      "title": "Location of Activity",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/sql data resource labels callerIp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\" as labels, payload\n| json \"message.data.resource.labels\", \"message.data.protoPayload.requestMetadata.callerIp\" as labels, caller_ip\n| json field=payload \"authenticationInfo.principalEmail\", \"authorizationInfo[*]\" as user, permissions\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| lookup latitude, longitude from geo://location on ip=caller_ip\n|where if (\"{{Region}}\" = \"*\", true, region matches \"{{Region}}\") AND if (\"{{User}}\" = \"*\", true, user matches \"{{User}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Instance}}\" = \"*\", true, instance matches \"{{Instance}}\")\n|count by latitude, longitude",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelde4aeddc8fdf9b47",
+      "title": "Created Resources",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"bottom\",\"showAsTable\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/sql authorizationInfo logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\" as labels, payload\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| json field=payload \"authenticationInfo.principalEmail\", \"authorizationInfo[*]\" as user, permissions\n| where !isNull(permissions)\n| parse regex field=permissions \"\\\"permission\\\":\\\"(?<resource_type>[^\\\"]+)\\.(?<method>[^\\\"]+?)\\\"\" multi\n| where method = \"create\"\n|where if (\"{{Region}}\" = \"*\", true, region matches \"{{Region}}\") AND if (\"{{User}}\" = \"*\", true, user matches \"{{User}}\") AND if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Instance}}\" = \"*\", true, instance matches \"{{Instance}}\")\n|count as creations by resource_type\n| sort by creations",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Instance",
+      "displayName": "Instance",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/sql authorizationInfo logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\" as labels, payload\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| json field=payload \"authenticationInfo.principalEmail\", \"authorizationInfo[*]\" as user, permissions\n| where !isNull(permissions)\n| parse regex field=permissions \"\\\"permission\\\":\\\"(?<resource_type>[^\\\"]+)\\.(?<method>[^\\\"]+?)\\\"\" multi",
+        "field": "instance"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "User",
+      "displayName": "User",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/sql authorizationInfo logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\" as labels, payload\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| json field=payload \"authenticationInfo.principalEmail\", \"authorizationInfo[*]\" as user, permissions\n| where !isNull(permissions)\n| parse regex field=permissions \"\\\"permission\\\":\\\"(?<resource_type>[^\\\"]+)\\.(?<method>[^\\\"]+?)\\\"\" multi",
+        "field": "user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Region",
+      "displayName": "Region",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/sql authorizationInfo logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\" as labels, payload\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| json field=payload \"authenticationInfo.principalEmail\", \"authorizationInfo[*]\" as user, permissions\n| where !isNull(permissions)\n| parse regex field=permissions \"\\\"permission\\\":\\\"(?<resource_type>[^\\\"]+)\\.(?<method>[^\\\"]+?)\\\"\" multi",
+        "field": "region"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "UserLabels",
+      "displayName": "UserLabels",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/sql authorizationInfo logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\" as labels, payload\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| json field=payload \"authenticationInfo.principalEmail\", \"authorizationInfo[*]\" as user, permissions\n| where !isNull(permissions)\n| parse regex field=permissions \"\\\"permission\\\":\\\"(?<resource_type>[^\\\"]+)\\.(?<method>[^\\\"]+?)\\\"\" multi",
+        "field": "labels"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Project",
+      "displayName": "Project",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/sql authorizationInfo logName principalEmail resource timestamp \"\\\"type\\\":\\\"cloudsql_database\\\"\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/*\"\n| json \"message.data.resource.labels\", \"message.data.protoPayload\" as labels, payload\n| json field=labels \"database_id\", \"project_id\", \"region\" as instance, project, region\n| json field=payload \"authenticationInfo.principalEmail\", \"authorizationInfo[*]\" as user, permissions\n| where !isNull(permissions)\n| parse regex field=permissions \"\\\"permission\\\":\\\"(?<resource_type>[^\\\"]+)\\.(?<method>[^\\\"]+?)\\\"\" multi",
+        "field": "project"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

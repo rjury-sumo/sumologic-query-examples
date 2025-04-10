@@ -1,0 +1,305 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Azure Audit - Overview - New",
+  "description": "Use this dashboard to get a high-level view of the Azure activity by location, and details of events.",
+  "title": "Azure Audit - Overview - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1w"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel669ce6b59daf3b4b",
+        "structure": "{\"width\":16,\"height\":10,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelef5a7035aa5d0a44",
+        "structure": "{\"width\":8,\"height\":5,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panelcc5cd05fa05beb49",
+        "structure": "{\"width\":8,\"height\":5,\"x\":16,\"y\":4}"
+      },
+      {
+        "key": "panelbd4a2bb1be9dda45",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panel1b5fd445bea4eb43",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":8}"
+      },
+      {
+        "key": "panelf5e46a68add2b942",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":8}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelf5e46a68add2b942",
+      "title": "Events by Category",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[{\"series\":[\"administrative\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"servicehealth\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Azure/Audit ((properties eventCategory) or Category)\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName\n| timeslice 1d\n|where if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{status}}\" = \"*\", true, status matches \"{{status}}\") AND if (\"{{level}}\" = \"*\", true, level matches \"{{level}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\")\n|count by Category, _timeslice\n| transpose row _timeslice column Category",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelef5a7035aa5d0a44",
+      "title": "Events By Level",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Azure/Audit (level or Level)\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName\n|where if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{status}}\" = \"*\", true, status matches \"{{status}}\") AND if (\"{{level}}\" = \"*\", true, level matches \"{{level}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\")\n|count by Level | where !isEmpty(Level)\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelbd4a2bb1be9dda45",
+      "title": "Events by Caller",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Azure/Audit ((identity claims name) or Caller)\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName\n| timeslice 1d\n|where if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{status}}\" = \"*\", true, status matches \"{{status}}\") AND if (\"{{level}}\" = \"*\", true, level matches \"{{level}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\")\n|count by _timeslice, src_user\n| where !isEmpty(src_user)\n| transpose row _timeslice column src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1b5fd445bea4eb43",
+      "title": "Events by Resource Group",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[{\"series\":[\"administrative\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"servicehealth\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Azure/Audit ((resourceId RESOURCEGROUPS) or ResourceGroupName)\n| json \"resourceId\" as resourceId1 nodrop // EventHub\n| parse regex field=resourceId1 \"/RESOURCEGROUPS/(?<ResourceGroupName1>[^/]+)\" nodrop // EventHub\n| json \"ResourceGroupName\" as ResourceGroupName2 nodrop // Azure Insight API using our Powershell scripts \n| if (isEmpty(ResourceGroupName1), ResourceGroupName2, ResourceGroupName1) as ResourceGroupName\n| where !isEmpty(ResourceGroupName)\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName, ResourceGroupName\n| timeslice 1d\n| tolowercase(ResourceGroupName) as ResourceGroupName\n|where if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{status}}\" = \"*\", true, status matches \"{{status}}\") AND if (\"{{level}}\" = \"*\", true, level matches \"{{level}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\")\n|count by ResourceGroupName, _timeslice\n| transpose row _timeslice column ResourceGroupName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel669ce6b59daf3b4b",
+      "title": "Azure Activity by Source Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Azure/Audit (callerIpAddress or (HttpRequest ClientIpAddress))\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName\n|where if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{status}}\" = \"*\", true, status matches \"{{status}}\") AND if (\"{{level}}\" = \"*\", true, level matches \"{{level}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\")\n|count by src_ip | where !isEmpty(src_ip)\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip\n| count by latitude, longitude\n| where !isNull(latitude)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelcc5cd05fa05beb49",
+      "title": "Events By Status",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Azure/Audit (resultType or Status)\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName\n| timeslice 1d\n|where if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{status}}\" = \"*\", true, status matches \"{{status}}\") AND if (\"{{level}}\" = \"*\", true, level matches \"{{level}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\")\n|count by Status, _timeslice\n| where !isEmpty(Status)\n| transpose row _timeslice column Status",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "category",
+      "displayName": "category",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit ((identity claims name) or Caller)\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName\n| timeslice 1d",
+        "field": "category"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "status",
+      "displayName": "status",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit ((identity claims name) or Caller)\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName\n| timeslice 1d",
+        "field": "status"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "level",
+      "displayName": "level",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit ((identity claims name) or Caller)\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName\n| timeslice 1d",
+        "field": "level"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_user",
+      "displayName": "src_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit ((identity claims name) or Caller)\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName\n| timeslice 1d",
+        "field": "src_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "operationname",
+      "displayName": "operationname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit ((identity claims name) or Caller)\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName\n| timeslice 1d",
+        "field": "operationname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Azure/Audit ((identity claims name) or Caller)\n| json \"level\", \"Level\" as level1, level2 nodrop // \"level\" EventHub, \"Level\"  Azure Insight API\n| json \"resultType\", \"Status\" as status1, status2 nodrop // \"resultType\" EventHub, \"Status\" Azure Insight API\n| json \"identity.claims.name\", \"Caller\" as src_user1, src_user2 nodrop // \"identity.claims.name\" EventHub, \"Caller\" Azure Insight API\n| json \"callerIpAddress\", \"HttpRequest.ClientIpAddress\" as src_ip1, src_ip2 nodrop // \"callerIpAddress\" EventHub, \"HttpRequest.ClientIpAddress\" API\n| json \"properties.eventCategory\", \"Category\"  as Category1, Category2 nodrop // \"properties.eventCategory\" EventHub, \"Category\" Azure Insight API\n| json \"operationName\", \"OperationName\" as OperationName1, OperationName2 nodrop // \"operationName\" EventHub, \"OperationName\" Azure Insight API \n| concat (level1, level2) as Level\n| concat (status1, status2) as Status\n| concat (src_user1, src_user2) as src_user\n| concat (src_ip1, src_ip2) as src_ip\n| concat (Category1, Category2) as Category\n| concat (OperationName1, OperationName2) as OperationName\n| if (IsEmpty(Category), \"Undefined\", Category) as Category\n| if(Level=\"1\",\"Critical\", if (Level=\"2\",\"Error\", if (Level=\"3\",\"Warning\", if (Level=\"4\",\"Information\", Level) ))) as Level\n| fields Level, Status, src_user, src_ip, Category, OperationName\n| timeslice 1d",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,379 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Linux - Login Status",
+  "description": "See information about logins to Linux hosts; including logins by hour; failed logins per host; the top 30 successful and failed  logins; and the top 30 successful and failed remote logins.",
+  "title": "Linux - Login Status",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel0d202055b6de4a4b",
+        "structure": "{\"width\":8,\"height\":9,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel1c679b95a2bf894c",
+        "structure": "{\"width\":8,\"height\":8,\"x\":8,\"y\":7}"
+      },
+      {
+        "key": "panel335242aaa7748848",
+        "structure": "{\"width\":8,\"height\":8,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panel7510c37b8e666a42",
+        "structure": "{\"width\":8,\"height\":9,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panel84ecc2c099510b4c",
+        "structure": "{\"width\":8,\"height\":9,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel950aa30dbabd8b42",
+        "structure": "{\"width\":8,\"height\":8,\"x\":16,\"y\":7}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel0d202055b6de4a4b",
+      "title": "Logins by Hour",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  (\"sshd:\" or \"sshd[\" or \"pam:\" ) ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\") or (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")) !\"closed\"\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| if (message matches \"*failure;*\" or message matches \"*FAILED *\" or message matches \"*invalid user*\" or message matches \"*Invalid user*\" or message matches \"*Failed*\", \"Failure\", \"Success\") as outcome\n| timeslice 1h\n|where if (\"{{outcome}}\" = \"*\", true, outcome matches \"{{outcome}}\") AND if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{dest_hostname}}\" = \"*\", true, dest_hostname matches \"{{dest_hostname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{process_name}}\" = \"*\", true, process_name matches \"{{process_name}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count by outcome, _timeslice | transpose row _timeslice column outcome as %\"Success\", %\"Failure\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1c679b95a2bf894c",
+      "title": "Top 30 Successful Remote Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  (\"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex  \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop\n| parse \"session * for user * by *(uid=*)\" as (action,dest_user,src_user,src_user_id) nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| where dest_user!=\"\"\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{dest_hostname}}\" = \"*\", true, dest_hostname matches \"{{dest_hostname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{process_name}}\" = \"*\", true, process_name matches \"{{process_name}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as count by dest_user,dest_hostname | sort - count | limit 30",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel335242aaa7748848",
+      "title": "Failed Logins per Host by Hour",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| timeslice 1h \n| where dest_user!=\"\"\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_tty}}\" = \"*\", true, src_tty matches \"{{src_tty}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{dest_hostname}}\" = \"*\", true, dest_hostname matches \"{{dest_hostname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count by dest_hostname,_timeslice | sort by -_timeslice | transpose row _timeslice column dest_hostname",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7510c37b8e666a42",
+      "title": "Top 30 Successful User Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex  \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop\n| parse \"session * for user * by *(uid=*)\" as (action,dest_user,src_user,src_user_id) nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"Accepted keyboard-interactive/pam for * from * port * *\" as (dest_user,src_hostname,src_port,protocol)\n| where dest_user!=\"\"\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{dest_hostname}}\" = \"*\", true, dest_hostname matches \"{{dest_hostname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{process_name}}\" = \"*\", true, process_name matches \"{{process_name}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\") AND if (\"{{src_hostname}}\" = \"*\", true, src_hostname matches \"{{src_hostname}}\")\n|count as count by dest_user,dest_hostname | sort by -count | limit 30",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel84ecc2c099510b4c",
+      "title": "Top 30 Failed Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_tty}}\" = \"*\", true, src_tty matches \"{{src_tty}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{dest_hostname}}\" = \"*\", true, dest_hostname matches \"{{dest_hostname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as Attempts by src_host, dest_user, dest_hostname | sort - Attempts | limit 30",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel950aa30dbabd8b42",
+      "title": "Top 30 Failed Remote Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\") (\"ssh\" or \"sshd\") \n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_tty}}\" = \"*\", true, src_tty matches \"{{src_tty}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{dest_hostname}}\" = \"*\", true, dest_hostname matches \"{{dest_hostname}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as Attempts by src_host, dest_user, dest_hostname | sort - Attempts | limit 30",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "uploads/linux/system",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "uploads/linux/system"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "action",
+      "displayName": "action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| timeslice 1h \n| where dest_user!=\"\"",
+        "field": "action"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_hostname",
+      "displayName": "dest_hostname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| timeslice 1h \n| where dest_user!=\"\"",
+        "field": "dest_hostname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_user",
+      "displayName": "dest_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| timeslice 1h \n| where dest_user!=\"\"",
+        "field": "dest_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "outcome",
+      "displayName": "outcome",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"sshd:\" or \"sshd[\" or \"pam:\" ) ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\") or (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")) !\"closed\"\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| if (message matches \"*failure;*\" or message matches \"*FAILED *\" or message matches \"*invalid user*\" or message matches \"*Invalid user*\" or message matches \"*Failed*\", \"Failure\", \"Success\") as outcome\n| timeslice 1h",
+        "field": "outcome"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "process_name",
+      "displayName": "process_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"sshd:\" or \"sshd[\" or \"pam:\" ) ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\") or (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")) !\"closed\"\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| if (message matches \"*failure;*\" or message matches \"*FAILED *\" or message matches \"*invalid user*\" or message matches \"*Invalid user*\" or message matches \"*Failed*\", \"Failure\", \"Success\") as outcome\n| timeslice 1h",
+        "field": "process_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "protocol",
+      "displayName": "protocol",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| timeslice 1h \n| where dest_user!=\"\"",
+        "field": "protocol"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_hostname",
+      "displayName": "src_hostname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex  \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop\n| parse \"session * for user * by *(uid=*)\" as (action,dest_user,src_user,src_user_id) nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"Accepted keyboard-interactive/pam for * from * port * *\" as (dest_user,src_hostname,src_port,protocol)\n| where dest_user!=\"\"",
+        "field": "src_hostname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_port",
+      "displayName": "src_port",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| timeslice 1h \n| where dest_user!=\"\"",
+        "field": "src_port"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_tty",
+      "displayName": "src_tty",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| timeslice 1h \n| where dest_user!=\"\"",
+        "field": "src_tty"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_user",
+      "displayName": "src_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  (\"authentication failure\" or \"FAILED SU\" or \"input_userauth_request: invalid user\" or \"Invalid user\" or \"Failed publickey\" or \"Failed password\")\n| parse regex \"\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_hostname>\\S+)\\s(?<process_name>\\w*)(?:\\[|:)\" nodrop \n| parse \" user = * \" as dest_user nodrop \n| parse \"User *: Authentication failure\" as dest_user nodrop \n| parse \" user=*\" as dest_user nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_hostname>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?<src_tty>\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| parse \"input_userauth_request: invalid user *\" as dest_user nodrop\n| parse \"Invalid user * from * port *\" as dest_user, src_host, src_port nodrop\n| parse \"Failed publickey for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| parse \"Failed password for invalid user * from * port * *\" as dest_user, src_host, src_port, protocol nodrop\n| timeslice 1h \n| where dest_user!=\"\"",
+        "field": "src_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

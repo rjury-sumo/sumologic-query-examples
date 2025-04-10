@@ -1,0 +1,452 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Cisco Meraki - URLs Threat Intel",
+  "description": "The Cisco Meraki - URLs Threat Intel dashboard provides a high-level view of the number of threats, their geographic locations, threats by actor, the malicious confidence, and details on IP destinations. The panels also show the number of threats by URL, their geographic locations, threats by actor, the malicious confidence, and the details on the URL threats.",
+  "title": "Cisco Meraki - URLs Threat Intel",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-3h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel060d41169d85aa4c",
+        "structure": "{\"height\":6,\"width\":6,\"x\":12,\"y\":17}"
+      },
+      {
+        "key": "panel497235468360f945",
+        "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":17}"
+      },
+      {
+        "key": "panel656e7703a6c22949",
+        "structure": "{\"height\":3,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel7b1581f0af191843",
+        "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":4}"
+      },
+      {
+        "key": "panel7d40b21bbb058b44",
+        "structure": "{\"height\":6,\"width\":6,\"x\":12,\"y\":4}"
+      },
+      {
+        "key": "panel82eab93b8b166a43",
+        "structure": "{\"height\":6,\"width\":8,\"x\":4,\"y\":17}"
+      },
+      {
+        "key": "panela731f97f9933aa4c",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":17}"
+      },
+      {
+        "key": "panelc0ab043596154a41",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panelc56f415bbc922b4a",
+        "structure": "{\"height\":6,\"width\":8,\"x\":4,\"y\":4}"
+      },
+      {
+        "key": "panelcab23180ba361940",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":3}"
+      },
+      {
+        "key": "paneld67b8399b333e846",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":4}"
+      },
+      {
+        "key": "paneldb8ec6b9838bf848",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":23}"
+      },
+      {
+        "key": "panelff2a3bc6a69c984b",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":16}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel060d41169d85aa4c",
+      "title": "Threat By Actor",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by url\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=url \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"url\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum(_count) as threatCount by Actor\n| sort by threatCount, Actor asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel497235468360f945",
+      "title": "Threat by Malicious Confidence",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by url\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=url \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"url\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum(_count) as threatCount by malicious_confidence\n| sort by threatCount, malicious_confidence asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7b1581f0af191843",
+      "title": "Threat by Malicious Confidence",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by dest_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=dest_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum(_count) as threatCount by malicious_confidence\n| sort by threatCount, malicious_confidence asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7d40b21bbb058b44",
+      "title": "Threat By Actor",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by dest_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=dest_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum(_count) as threatCount by Actor\n| sort by threatCount, Actor asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel82eab93b8b166a43",
+      "title": "Threat Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by dest_ip, url\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=url \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"url\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| lookup latitude, longitude from geo://location on ip = dest_ip\n| where !isNull(latitude)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela731f97f9933aa4c",
+      "title": "Threat Count",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":true,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by url\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=url \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"url\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum(_count) as threatCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc0ab043596154a41",
+      "title": "Destination IP Threat Details",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by src_ip, dest_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=dest_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| fields src_ip, dest_ip, actor, malicious_confidence, label_name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc56f415bbc922b4a",
+      "title": "Threat Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by dest_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=dest_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| lookup latitude, longitude from geo://location on ip = dest_ip\n| where !isNull(latitude)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneld67b8399b333e846",
+      "title": "Threat Count",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":true,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by dest_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=dest_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum(_count) as threatCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneldb8ec6b9838bf848",
+      "title": "URL Threat Details",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by url\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=url \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"url\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| fields url, actor, malicious_confidence, label_name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel656e7703a6c22949",
+      "title": "Threats Analysis",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Potential threats are analyzed from the CrowdStrike Integrated Threat Intelligence. For details refer https://help.sumologic.com/docs/integrations/security-threat-detection/threat-intel-quick-analysis/#threat-intel-faq\nThreat feed is updated once per day."
+    },
+    {
+      "id": null,
+      "key": "panelcab23180ba361940",
+      "title": "Threats By Destination IP",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelff2a3bc6a69c984b",
+      "title": "Threats By URL",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Metricsdatasource",
+      "displayName": "Metricsdatasource",
+      "defaultValue": "Labs/CiscoMeraki",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/CiscoMeraki"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_ip",
+      "displayName": "dest_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| count by dest_ip | sort by dest_ip asc",
+        "field": "dest_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "name",
+      "displayName": "name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| where msg_type=\"urls\"\n| count by name | sort by name asc",
+        "field": "name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop\n| where msg_type=\"urls\"\n| count by src_ip | sort by src_ip asc",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "url",
+      "displayName": "url",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| parse \"request: * *\" as method, url nodrop\n| where msg_type=\"urls\"\n| count by url | sort by url asc",
+        "field": "url"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

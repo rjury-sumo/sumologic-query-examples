@@ -1,0 +1,242 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Elasticsearch - Login And Connections",
+  "description": "Elasticsearch - Login And Connections dashboard shows geo location of client connection requests, failed connection logins and count of failed login attempts",
+  "title": "Elasticsearch - Login And Connections",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "7478db846bd6c5245d2c861e7895bf89": [
+        "*"
+      ],
+      "c79f9332f8522d1aea2ed19166f505e5": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "databases"
+      ],
+      "d8ba1dcb2067928c5ac1e2505f443432": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel0F35D4C8B5B31B47",
+        "structure": "{\"height\":6,\"width\":9,\"x\":15,\"y\":0}"
+      },
+      {
+        "key": "panel8556C7E7B8E52B49",
+        "structure": "{\"height\":6,\"width\":11,\"x\":4,\"y\":0}"
+      },
+      {
+        "key": "panelC160039A8F385940",
+        "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panelE7D675C7B4A0DB43",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-46F3EF53843C3944",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel0F35D4C8B5B31B47",
+      "title": "Failed Logins by User",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " sumo.datasource=elasticsearch deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} db.node.name={{db.node.name}} \"failed to authenticate user\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| json field=_raw \"timestamp\" as timestamp\n| json field=_raw \"level\" as level\n| json field=_raw \"component\" as es_component\n| json field=_raw \"message\" as message\n| where level = \"INFO\" and message matches \"*failed to authenticate user*\"\n| parse regex field=message \"failed to authenticate user \\[(?<user>[\\S]+)\\]\"\n| if (isEmpty(pod),db.node.name,pod) as db.node.name\n| count by db.node.name,user\n| order by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8556C7E7B8E52B49",
+      "title": "Login Failed By Host",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"count\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " sumo.datasource=elasticsearch deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} db.node.name={{db.node.name}} \"failed to authenticate user\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| json field=_raw \"timestamp\" as timestamp\n| json field=_raw \"level\" as level\n| json field=_raw \"component\" as es_component\n| json field=_raw \"message\" as message\n| where message matches \"*failed to authenticate user*\"\n| if (isEmpty(pod),db.node.name,pod) as db.node.name\n| timeslice 1h\n| count by _timeslice, db.node.name\n| transpose row _timeslice column db.node.name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelC160039A8F385940",
+      "title": "Failed Login Attempt Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " sumo.datasource=elasticsearch deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} db.node.name={{db.node.name}} \"failed to authenticate user\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| json field=_raw \"timestamp\" as timestamp\n| json field=_raw \"level\" as level\n| json field=_raw \"component\" as es_component\n| json field=_raw \"message\" as message\n| where level = \"INFO\" and message matches \"*failed to authenticate user*\"\n| parse regex field=message \"failed to authenticate user \\[(?<user>[\\S]+)\\]\"\n| if (isEmpty(pod),db.node.name,pod) as db.node.name\n| count by timestamp, db.node.name, user, message\n| fields - _count\n| sort by timestamp",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE7D675C7B4A0DB43",
+      "title": "Failed Password",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " sumo.datasource=elasticsearch deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} db.node.name={{db.node.name}} \"failed to retrieve password hash for reserved user\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| json field=_raw \"timestamp\" as timestamp\n| json field=_raw \"level\" as level\n| json field=_raw \"component\" as es_component\n| json field=_raw \"message\" as message\n| where level = \"ERROR\" and message matches \"*failed to retrieve password hash for reserved user*\"\n| parse regex field=message \"failed to retrieve password hash for reserved user \\[(?<user>[\\S]+)\\]\"\n| if (isEmpty(pod),db.node.name,pod) as db.node.name\n| count by timestamp, db.node.name, user, message\n| fields - _count\n| sort by timestamp",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-46F3EF53843C3944",
+      "title": "Login Failed",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"\",\"useBackgroundColor\":true,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":2,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " sumo.datasource=elasticsearch deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} db.node.name={{db.node.name}} \"failed to authenticate user\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| json field=_raw \"timestamp\" as timestamp\n| json field=_raw \"level\" as level\n| json field=_raw \"component\" as es_component\n| json field=_raw \"message\" as message\n| where  message matches \"*failed to authenticate user*\"\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=elasticsearch | count by deployment.environment",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=elasticsearch | count by db.cluster.name",
+        "field": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "db.node.name",
+      "displayName": "db.node.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=elasticsearch | count by db.node.name",
+        "field": "db.node.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

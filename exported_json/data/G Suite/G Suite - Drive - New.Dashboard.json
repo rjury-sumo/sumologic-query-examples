@@ -1,0 +1,472 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "G Suite - Drive - New",
+  "description": "The G Suite - Drive Dashboard provides at-a-glance graphs and detailed analytics on Google Drive activity. The up-to-date G Suite Drive information includes drive activity by location, trends in drive activity by country, ACL changes, counts of primary actions, recent uploads, document types, documents viewed, and documents shared.",
+  "title": "G Suite - Drive - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel081cd4f5b3ee3b41",
+        "structure": "{\"width\":12,\"height\":10,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel323158a2b3439b45",
+        "structure": "{\"width\":12,\"height\":10,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "paneldba28651b0ebb94d",
+        "structure": "{\"width\":12,\"height\":13,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panel2f43322899c27a46",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":8}"
+      },
+      {
+        "key": "panel73427577b1a5594f",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":13}"
+      },
+      {
+        "key": "panel0c4778379b3afa46",
+        "structure": "{\"width\":12,\"height\":8,\"x\":0,\"y\":18}"
+      },
+      {
+        "key": "panel5f3d6505bd07284d",
+        "structure": "{\"width\":6,\"height\":8,\"x\":12,\"y\":18}"
+      },
+      {
+        "key": "panel061f198ea1799b4c",
+        "structure": "{\"width\":6,\"height\":8,\"x\":18,\"y\":18}"
+      },
+      {
+        "key": "panel6c64879ba4b67a48",
+        "structure": "{\"width\":12,\"height\":8,\"x\":0,\"y\":24}"
+      },
+      {
+        "key": "panel111d61589b9ae943",
+        "structure": "{\"width\":12,\"height\":8,\"x\":12,\"y\":24}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel081cd4f5b3ee3b41",
+      "title": "Drive Activity by Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" ipAddress\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| where applicationName=\"drive\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by ipAddress\n| lookup latitude, longitude from geo://location on ip = ipAddress\n| where !isNull(latitude)\n| sum(_count) as _count by latitude, longitude\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel73427577b1a5594f",
+      "title": "Document Downloads by Title",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" \"\\\"name\\\": \\\"download\\\"\"\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| parse regex \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]+)\\\"\" nodrop // short cut here since doc_title is the same for all event objects\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where applicationName=\"drive\" and eventName=\"download\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{doc_title}}\" = \"*\", true, doc_title matches \"{{doc_title}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by doc_title\n| sort  by _count desc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneldba28651b0ebb94d",
+      "title": "ACL Changes",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" \n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where eventType=\"acl_change\" and applicationName=\"drive\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"old_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<old_value>[^\\]]*)\\]\\n\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| replace (old_value, \"\\\"\", \"\") as old_value\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{doc_title}}\" = \"*\", true, doc_title matches \"{{doc_title}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{target_user}}\" = \"*\", true, target_user matches \"{{target_user}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by eventName, doc_title, old_value, new_value, target_user, email\n| fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5f3d6505bd07284d",
+      "title": "Document Types",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" \n| json \"id\", \"actor\", \"ipAddress\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| where applicationName=\"drive\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_type\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_type>[^\\\"]*)\\\"\" nodrop\n| parse regex field=doc_title \"[^\\?]+?\\.(?<doc_ext>[a-zA-Z0-9]{2,4})$\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{doc_title}}\" = \"*\", true, doc_title matches \"{{doc_title}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by doc_title,doc_type,doc_ext\n| if(doc_type=\"unknown\",doc_ext,doc_type) as doc_type\n| count_distinct(doc_title) by doc_type\n| sort by _count_distinct desc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel323158a2b3439b45",
+      "title": "Drive Activity by Country Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" ipAddress\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| where applicationName=\"drive\" \n| timeslice 1h\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by _timeslice, ipAddress\n| lookup latitude, longitude, country_name from geo://location on ip = ipAddress\n| where !isEmpty(country_name)\n| count by _timeslice, country_name\n| transpose row _timeslice column country_name as *",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2f43322899c27a46",
+      "title": "Primary Action Count",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\"\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| parse regex  \"\\{\\n\\s+\\\"type\\\": \\\"(?<eventType>\\w+)\\\",\\n\\s+\\\"name\\\": \\\"(?<eventName>\\w+)\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n\"\n| where applicationName=\"drive\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by eventType, eventName\n| transpose row eventType column eventName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel061f198ea1799b4c",
+      "title": "Documents Viewed - Top 10",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"access\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\"\n| json \"id\", \"actor\", \"ipAddress\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| where applicationName=\"drive\" and eventType=\"access\" and eventName=\"view\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{doc_title}}\" = \"*\", true, doc_title matches \"{{doc_title}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by doc_title, eventName\n| Top 10 doc_title by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel111d61589b9ae943",
+      "title": "Documents Shared Outside of Organization",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" (can_view OR can_edit OR people_with_link OR public_on_the_web)\n| json \"id\", \"actor\", \"ipAddress\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where eventType=\"acl_change\" and applicationName=\"drive\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| where new_value matches \"*can_view*\" or new_value matches \"*can_edit*\" or new_value matches \"people_with_link*\" or new_value matches \"public_on_the_web*\"\n// edit this line to match your domain\n| where !(target_user matches \"*acme.com*\") and !isEmpty(target_user)\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{doc_title}}\" = \"*\", true, doc_title matches \"{{doc_title}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{target_user}}\" = \"*\", true, target_user matches \"{{target_user}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by eventName, doc_title, new_value, target_user, email\n| fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0c4778379b3afa46",
+      "title": "Recent Uploads by Title",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" \"\\\"type\\\": \\\"access\\\"\" \"\\\"name\\\": \\\"upload\\\"\"\n| json \"id\", \"actor\", \"ipAddress\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| parse regex \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]+)\\\"\" nodrop // short cut here since doc_title is the same for all event objects\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where applicationName=\"drive\" and eventType=\"access\" and eventName=\"upload\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{doc_title}}\" = \"*\", true, doc_title matches \"{{doc_title}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by doc_title\n| sort  by _count desc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1h"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6c64879ba4b67a48",
+      "title": "Documents Being Shared",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" (can_view OR can_edit OR people?with* OR public*) \n| json \"id\", \"actor\", \"ipAddress\" nodrop\n| json field=actor \"email\", \"profileId\"\n| json field=id \"applicationName\"\n| where applicationName=\"drive\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where eventType=\"acl_change\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop \n| replace (new_value, \"\\\"\", \"\") as new_value\n| where new_value matches \"*can_view*\" or new_value matches \"*can_edit*\" or new_value matches \"people_with*\" or new_value matches \"public_*\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\") AND if (\"{{doc_title}}\" = \"*\", true, doc_title matches \"{{doc_title}}\") AND if (\"{{eventType}}\" = \"*\", true, eventType matches \"{{eventType}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{target_user}}\" = \"*\", true, target_user matches \"{{target_user}}\") AND if (\"{{eventName}}\" = \"*\", true, eventName matches \"{{eventName}}\") AND if (\"{{ipAddress}}\" = \"*\", true, ipAddress matches \"{{ipAddress}}\")\n|count by doc_title, new_value\n| sort by doc_title asc\n| fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "doc_title",
+      "displayName": "doc_title",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" \n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where eventType=\"acl_change\" and applicationName=\"drive\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"old_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<old_value>[^\\]]*)\\]\\n\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| replace (old_value, \"\\\"\", \"\") as old_value",
+        "field": "doc_title"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventType",
+      "displayName": "eventType",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" \n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where eventType=\"acl_change\" and applicationName=\"drive\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"old_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<old_value>[^\\]]*)\\]\\n\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| replace (old_value, \"\\\"\", \"\") as old_value",
+        "field": "eventType"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "target_user",
+      "displayName": "target_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" \n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where eventType=\"acl_change\" and applicationName=\"drive\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"old_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<old_value>[^\\]]*)\\]\\n\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| replace (old_value, \"\\\"\", \"\") as old_value",
+        "field": "target_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "applicationName",
+      "displayName": "applicationName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" ipAddress\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| where applicationName=\"drive\"",
+        "field": "applicationName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventName",
+      "displayName": "eventName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"type\\\": \\\"acl_change\\\"\" \"\\\"applicationName\\\": \\\"drive\\\"\" \n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| parse regex \"(?<p_Event>\\{\\n\\s+\\\"type\\\": \\\"\\w+\\\",\\n\\s+\\\"name\\\": \\\"\\w+\\\",\\n\\s+\\\"parameters\\\": \\[\\n\\s+\\{\\n\\s+\\\"name\\\": \\\"primary_event\\\",\\n\\s+\\\"boolValue\\\": true\\n(?s).+?)(?=,\\n\\s+\\{\\n\\s+\\\"type\\\"|\\n\\s+\\]\\n\\}$)\"\n| json field=p_Event \"type\",\"name\" as eventType, eventName\n| where eventType=\"acl_change\" and applicationName=\"drive\"\n| parse regex field=p_Event \"\\\"name\\\": \\\"doc_title\\\",\\n\\s+\\\"value\\\": \\\"(?<doc_title>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"target_user\\\",\\n\\s+\\\"value\\\": \\\"(?<target_user>[^\\\"]*)\\\"\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"old_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<old_value>[^\\]]*)\\]\\n\" nodrop\n| parse regex field=p_Event \"\\\"name\\\": \\\"new_value\\\",\\n\\s+\\\"multiValue\\\": \\[\\n\\s+(?<new_value>[^\\]]*?)\\]\\n\" nodrop\n| replace (new_value, \"\\\"\", \"\") as new_value\n| replace (old_value, \"\\\"\", \"\") as old_value",
+        "field": "eventName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "email",
+      "displayName": "email",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" ipAddress\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| where applicationName=\"drive\"",
+        "field": "email"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "ipAddress",
+      "displayName": "ipAddress",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/gsuite/apps \"\\\"applicationName\\\": \\\"drive\\\"\" ipAddress\n| json \"id\", \"ipAddress\", \"actor\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| where applicationName=\"drive\"",
+        "field": "ipAddress"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,214 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "MongoDB - Logins and Connections",
+  "description": "This dashboard shows geo location of client connection requests, failed connection logins by geo location, and count of failed login attempts",
+  "title": "MongoDB - Logins and Connections",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-15m"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-8072DB2B9376B84F",
+        "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panel1DADE7E28A69D94D",
+        "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":16}"
+      },
+      {
+        "key": "panelFED2DD748745A941",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":8}"
+      },
+      {
+        "key": "panel7A4F883F8917D841",
+        "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelDC37357CA587394D",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-8072DB2B9376B84F",
+      "title": "Client Connection Requests",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MongoDB db_cluster={{db_cluster}} _sourceHost={{host}} db_system=mongodb | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| json field=_raw \"t.$date\" as timestamp\n| json field=_raw \"s\" as severity\n| json field=_raw \"c\" as component\n| json field=_raw \"ctx\" as context\n| json field=_raw \"msg\" as msg\n| where component = \"NETWORK\"\n| where msg = \"Connection accepted\"\n| json field=_raw \"attr.remote\" as template_ip\n| parse regex field=template_ip \"(?<client_ip>\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}+):[\\d]+\"\n| count by client_ip\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1DADE7E28A69D94D",
+      "title": "Failed Login Attempt Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MongoDB db_cluster={{db_cluster}} _sourceHost={{host}} db_system=mongodb | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| json field=_raw \"t.$date\" as timestamp\n| json field=_raw \"s\" as severity\n| json field=_raw \"c\" as component\n| json field=_raw \"ctx\" as context\n| json field=_raw \"msg\" as msg\n| where msg = \"Authentication failed\"\n| json field=_raw \"attr.client\" as template_ip\n| json field=_raw \"attr.principalName\" as user\n| json field=_raw \"attr.authenticationDatabase\" as database\n| json field=_raw \"attr.result\" as reason\n| parse regex field=template_ip \"(?<client_ip>\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}+):[\\d]+\"\n| count by timestamp, user, database, client_ip, reason\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelFED2DD748745A941",
+      "title": "Failed Logins by User",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MongoDB db_cluster={{db_cluster}} _sourceHost={{host}} db_system=mongodb | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| json field=_raw \"t.$date\" as timestamp\n| json field=_raw \"s\" as severity\n| json field=_raw \"c\" as component\n| json field=_raw \"ctx\" as context\n| json field=_raw \"msg\" as msg\n| where msg = \"Authentication failed\"\n| json field=_raw \"attr.client\" as template_ip\n| json field=_raw \"attr.principalName\" as user\n| json field=_raw \"attr.authenticationDatabase\" as database\n| json field=_raw \"attr.result\" as reason\n| parse regex field=template_ip \"(?<client_ip>\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}+):[\\d]+\"\n| count by user, client_ip\n| order by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7A4F883F8917D841",
+      "title": "Location of Client Connection Requests",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MongoDB db_cluster={{db_cluster}}  _sourceHost={{host}} db_system=mongodb | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| json field=_raw \"t.$date\" as timestamp\n| json field=_raw \"s\" as severity\n| json field=_raw \"c\" as component\n| json field=_raw \"ctx\" as context\n| json field=_raw \"msg\" as msg\n| where component = \"NETWORK\"\n| where msg = \"Connection accepted\"\n| json field=_raw \"attr.remote\" as template_ip\n| parse regex field=template_ip \"(?<client_ip>\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}+):[\\d]+\"\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = client_ip\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count\n\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelDC37357CA587394D",
+      "title": "Location of Failed Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MongoDB db_cluster={{db_cluster}} _sourceHost={{host}}  db_system=mongodb | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| json field=_raw \"t.$date\" as timestamp\n| json field=_raw \"s\" as severity\n| json field=_raw \"c\" as component\n| json field=_raw \"ctx\" as context\n| json field=_raw \"msg\" as msg\n| where msg = \"Authentication failed\"\n| json field=_raw \"attr.client\" as template_ip\n| json field=_raw \"attr.principalName\" as user\n| json field=_raw \"attr.authenticationDatabase\" as database\n| json field=_raw \"attr.result\" as reason\n| parse regex field=template_ip \"(?<client_ip>\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}+):[\\d]+\"\n| where !(client_ip matches \"127.0.0.1\")\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = client_ip\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db_cluster",
+      "displayName": "db_cluster",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "_sourceCategory = Labs/MongoDB db_system=mongodb component=database",
+        "key": "db_cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host",
+      "displayName": "host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/MongoDB db_cluster=* db_system=mongodb",
+        "field": "_sourcehost"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,434 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Duo Security - Success Authentications",
+  "description": "See geo - location of successful authentication events, one day time comparison of events, breakdown of events by Application, Factor, Users, Country, State, and City.",
+  "title": "Duo Security - Success Authentications",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel1d0acfc0be863a4f",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel512144e397a02b4f",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel5fefd174b73d5844",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel758adf05bf1f7a4c",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":5}"
+      },
+      {
+        "key": "panel8d6fbdb38578394c",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panel8f412564b2734841",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":10}"
+      },
+      {
+        "key": "panel9ff34041b0eb0b43",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":5}"
+      },
+      {
+        "key": "panelc5647af2b6926a44",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panelcdb5c7a7aa226b41",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":10}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel1d0acfc0be863a4f",
+      "title": "Geo Location of Authentication Events",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time\n| json field=_raw \"user.name\" as user_name\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = ip\n|where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{eventtype}}\" = \"*\", true, eventtype matches \"{{eventtype}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{city}}\" = \"*\", true, city matches \"{{city}}\") AND if (\"{{reason}}\" = \"*\", true, reason matches \"{{reason}}\") AND if (\"{{factor}}\" = \"*\", true, factor matches \"{{factor}}\") AND if (\"{{country}}\" = \"*\", true, country matches \"{{country}}\")\n|count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel512144e397a02b4f",
+      "title": "Breakdown by Factor",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| json field=_raw \"user.name\" as user_name\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time\n|where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{eventtype}}\" = \"*\", true, eventtype matches \"{{eventtype}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{city}}\" = \"*\", true, city matches \"{{city}}\") AND if (\"{{reason}}\" = \"*\", true, reason matches \"{{reason}}\") AND if (\"{{factor}}\" = \"*\", true, factor matches \"{{factor}}\") AND if (\"{{country}}\" = \"*\", true, country matches \"{{country}}\")\n|count by factor\n| sort by _count, factor asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5fefd174b73d5844",
+      "title": "Breakdown by Application",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| json field=_raw \"user.name\" as user_name\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time\n|where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{eventtype}}\" = \"*\", true, eventtype matches \"{{eventtype}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{city}}\" = \"*\", true, city matches \"{{city}}\") AND if (\"{{reason}}\" = \"*\", true, reason matches \"{{reason}}\") AND if (\"{{factor}}\" = \"*\", true, factor matches \"{{factor}}\") AND if (\"{{country}}\" = \"*\", true, country matches \"{{country}}\")\n|count by application_name\n| sort by _count, application_name asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel758adf05bf1f7a4c",
+      "title": "Top 10 Active Users",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time\n| json field=_raw \"user.name\" as user_name\n|where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{eventtype}}\" = \"*\", true, eventtype matches \"{{eventtype}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{city}}\" = \"*\", true, city matches \"{{city}}\") AND if (\"{{reason}}\" = \"*\", true, reason matches \"{{reason}}\") AND if (\"{{factor}}\" = \"*\", true, factor matches \"{{factor}}\") AND if (\"{{country}}\" = \"*\", true, country matches \"{{country}}\")\n|count by user_name\n| sort by _count  \n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8d6fbdb38578394c",
+      "title": "Authentication by Users Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time\n| json field=_raw \"user.name\" as user_name\n| timeslice 1h\n|where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{eventtype}}\" = \"*\", true, eventtype matches \"{{eventtype}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{city}}\" = \"*\", true, city matches \"{{city}}\") AND if (\"{{reason}}\" = \"*\", true, reason matches \"{{reason}}\") AND if (\"{{factor}}\" = \"*\", true, factor matches \"{{factor}}\") AND if (\"{{country}}\" = \"*\", true, country matches \"{{country}}\")\n|count by _timeslice, user_name \n| transpose row _timeslice column user_name\n| fillmissing timeslice(1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8f412564b2734841",
+      "title": "Breakdown by Reason",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time\n| json field=_raw \"user.name\" as user_name\n|where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{eventtype}}\" = \"*\", true, eventtype matches \"{{eventtype}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{city}}\" = \"*\", true, city matches \"{{city}}\") AND if (\"{{reason}}\" = \"*\", true, reason matches \"{{reason}}\") AND if (\"{{factor}}\" = \"*\", true, factor matches \"{{factor}}\") AND if (\"{{country}}\" = \"*\", true, country matches \"{{country}}\")\n|count by reason\n| sort by _count, reason asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9ff34041b0eb0b43",
+      "title": "Breakdown by Country, State, City",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time\n|where if (\"{{eventtype}}\" = \"*\", true, eventtype matches \"{{eventtype}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{city}}\" = \"*\", true, city matches \"{{city}}\") AND if (\"{{reason}}\" = \"*\", true, reason matches \"{{reason}}\") AND if (\"{{factor}}\" = \"*\", true, factor matches \"{{factor}}\") AND if (\"{{country}}\" = \"*\", true, country matches \"{{country}}\")\n|count by Country, State, City\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc5647af2b6926a44",
+      "title": "Authentication by Users - One Day Time Comparison",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time\n| json field=_raw \"user.name\" as user_name\n|where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{eventtype}}\" = \"*\", true, eventtype matches \"{{eventtype}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{city}}\" = \"*\", true, city matches \"{{city}}\") AND if (\"{{reason}}\" = \"*\", true, reason matches \"{{reason}}\") AND if (\"{{factor}}\" = \"*\", true, factor matches \"{{factor}}\") AND if (\"{{country}}\" = \"*\", true, country matches \"{{country}}\")\n|count by user_name \n| sort by _count  \n| compare with timeshift 1d",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelcdb5c7a7aa226b41",
+      "title": "Success Authentication Events Table",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time\n| json field=_raw \"user.name\" as user_name\n|where if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{eventtype}}\" = \"*\", true, eventtype matches \"{{eventtype}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{city}}\" = \"*\", true, city matches \"{{city}}\") AND if (\"{{reason}}\" = \"*\", true, reason matches \"{{reason}}\") AND if (\"{{factor}}\" = \"*\", true, factor matches \"{{factor}}\") AND if (\"{{country}}\" = \"*\", true, country matches \"{{country}}\")\n|count by date_time, user_name, city, result, reason, factor, application_name\n| sort by date_time asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "Labs/Microsoft/Office365",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Microsoft/Office365"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "application_name",
+      "displayName": "application_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time",
+        "field": "application_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "city",
+      "displayName": "city",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time",
+        "field": "city"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "country",
+      "displayName": "country",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time",
+        "field": "country"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventtype",
+      "displayName": "eventtype",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time",
+        "field": "eventtype"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "factor",
+      "displayName": "factor",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time",
+        "field": "factor"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "reason",
+      "displayName": "reason",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time",
+        "field": "reason"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user_name",
+      "displayName": "user_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  authentication \n| json field=_raw \"eventtype\" as eventtype nodrop  \n| where eventtype = \"authentication\"\n| json field=_raw \"result\" as result \n| where result =\"success\" \n| json field=_raw \"access_device.ip\" as ip\n| json field=_raw \"access_device.location.city\" as city\n| json field=_raw \"access_device.location.country\" as country\n| json field=_raw \"access_device.location.state\" as state\n| json field=_raw \"application.name\" as application_name\n| json field=_raw \"factor\" as factor\n| json field=_raw \"reason\" as reason\n| json field=_raw \"result\" as result \n| json field=_raw \"timestamp\" as time\n| json field=_raw \"user.name\" as user_name\n| time* 1000 as timemilli\n| formatDate(fromMillis(toLong(timemilli)), \"MM-dd-yyyy HH:mm:ss\") as date_time",
+        "field": "user_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

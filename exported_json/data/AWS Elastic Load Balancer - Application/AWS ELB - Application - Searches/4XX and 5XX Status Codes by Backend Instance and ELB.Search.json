@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "4XX and 5XX Status Codes by Backend Instance and ELB",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| where (elb_status_code matches \"4*\") or (target_status_code matches \"4*\") or (elb_status_code matches \"5*\") or (target_status_code matches \"5*\") \n| if (elb_status_code matches \"4*\",1,0) as elb_flag4\n| if (target_status_code matches \"4*\",1,0) as be_flag4\n| if (elb_status_code matches \"5*\",1,0) as elb_flag5\n| if (target_status_code matches \"5*\",1,0) as be_flag5\n| sum(elb_flag4) as elb_4xx, sum(be_flag4) as backend_4xx, sum(elb_flag5) as elb_5xx, sum(be_flag5) as backend_5xx",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-60m"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

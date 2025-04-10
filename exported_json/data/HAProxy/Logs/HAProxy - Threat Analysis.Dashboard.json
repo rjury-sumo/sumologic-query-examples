@@ -1,0 +1,292 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "HAProxy - Threat Analysis",
+  "description": "The HAProxy - Threat Intel dashboard provides an at-a-glance view of incoming threats to your Apache servers based on known malicious IP addresses. Dashboard panels show threat count,  geographic locations, actors, threat severity, and URLS accessed.",
+  "title": "HAProxy - Threat Analysis",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-9E21E5EFB4DE5942",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-BABCEC4FA964084F",
+        "structure": "{\"height\":5,\"width\":6,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panel4F5B9F3CB7E7484C",
+        "structure": "{\"height\":5,\"width\":6,\"x\":18,\"y\":0}"
+      },
+      {
+        "key": "panelA608EE7EB3F0D844",
+        "structure": "{\"height\":5,\"width\":6,\"x\":12,\"y\":5}"
+      },
+      {
+        "key": "panel8059C07FA9B50848",
+        "structure": "{\"height\":5,\"width\":6,\"x\":18,\"y\":5}"
+      },
+      {
+        "key": "panel84FDC769BB9E1B41",
+        "structure": "{\"height\":8,\"width\":6,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panel260912329BA84946",
+        "structure": "{\"height\":8,\"width\":18,\"x\":6,\"y\":10}"
+      },
+      {
+        "key": "panelE8763E3EA791EA40",
+        "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":18}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-9E21E5EFB4DE5942",
+      "title": "Threat Locations",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "proxy_cluster=* proxy_cluster = {{proxy_cluster}} proxy_system=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| count as ip_count by c_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = c_ip\n| where !isNull(latitude)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-BABCEC4FA964084F",
+      "title": "Threat Count",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Average\",\"label\":\"Threats\",\"useBackgroundColor\":true,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":1,\"to\":null,\"color\":\"#bf2121\"},{\"from\":0,\"to\":0,\"color\":\"#116b25\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "proxy_cluster=* proxy_cluster = {{proxy_cluster}} proxy_system=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| count as ip_count by c_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| sum(ip_count) as threat_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4F5B9F3CB7E7484C",
+      "title": "Threats by Actors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "proxy_cluster=* proxy_cluster = {{proxy_cluster}} proxy_system=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| count as ip_count by c_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| sum (ip_count) as threat_count by Actor",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelA608EE7EB3F0D844",
+      "title": "Threats by Malicious Confidence",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"Malicious Confidence\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Threat count\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "proxy_cluster=* proxy_cluster = {{proxy_cluster}} proxy_system=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| count as ip_count by c_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| sum (ip_count) as threat_count by malicious_confidence",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8059C07FA9B50848",
+      "title": "Threats by Source",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"Source\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Threat count\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "proxy_cluster=* proxy_cluster = {{proxy_cluster}} proxy_system=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| count as ip_count by c_ip,  _source\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| _source as source\n| sum (ip_count) as threat_count by source",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel84FDC769BB9E1B41",
+      "title": "Top 5 Highly Malicious URLs",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "proxy_cluster=* proxy_cluster = {{proxy_cluster}} proxy_system=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| count as ip_count by c_ip, request\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| where malicious_confidence matches \"high\"\n| count by request\n| limit 5",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel260912329BA84946",
+      "title": "Highly Malicious Threats",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "proxy_cluster=* proxy_cluster = {{proxy_cluster}} proxy_system=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| count as threat_count by c_ip, method, status_code, bytes_read, referrer, user_agent, request\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| where  type=\"ip_address\" and !isNull(malicious_confidence) and malicious_confidence matches \"high\"\n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| sum(threat_count) as threat_count by c_ip, method, status_code, bytes_read, referrer, user_agent, request, malicious_confidence, actor\n| sort by threat_count\n| limit 20",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE8763E3EA791EA40",
+      "title": "Top 10 Threats",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "proxy_cluster=* proxy_cluster = {{proxy_cluster}} proxy_system=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| count as threat_count by c_ip, method, status_code, bytes_read, referrer, user_agent, request\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| where  type=\"ip_address\" and !isNull(malicious_confidence) and malicious_confidence matches \"high\"\n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| sum(threat_count) as request_count by c_ip, method, status_code, bytes_read, referrer, user_agent, request, malicious_confidence, actor\n| sort by request_count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "proxy_cluster",
+      "displayName": "proxy_cluster",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "proxy_system=haproxy proxy_cluster=*",
+        "key": "proxy_cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

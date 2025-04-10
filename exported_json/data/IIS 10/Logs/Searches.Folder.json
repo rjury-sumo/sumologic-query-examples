@@ -1,0 +1,232 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Searches",
+  "description": "App Searches based on Log Queries",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Counters_HTTPServiceRequestQueues Log Parser",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis Win32_PerfFormattedData_Counters_HTTPServiceRequestQueues\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse field=iis_log_message \"Name = \\\"*\\\";\" as Name nodrop\n| parse field=iis_log_message \"ArrivalRate = \\\"*\\\";\" as ArrivalRate nodrop\n| parse field=iis_log_message \"CacheHitRate = \\\"*\\\";\" as CacheHitRate nodrop\n|\tparse field=iis_log_message \"CurrentQueueSize = *;\" as CurrentQueueSize nodrop\n|\tparse field=iis_log_message \"MaxQueueItemAge = \\\"*\\\";\" as MaxQueueItemAge nodrop\n|\tparse field=iis_log_message \"RejectionRate = \\\"*\\\";\" as RejectionRate nodrop",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - All HTTP Response Codes with their Count",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis \n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count by sc_status \n| sort by _count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - Client Errors (4xx response codes) per Day",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis 4*\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| where sc_status matches \"4*\" \n| timeslice by 1d \n| count by _timeslice\n| sort by _timeslice",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - HTTP Status Code Summary over time",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| if(sc_status matches \"2*\", 1, 0) as successes \n| if(sc_status matches \"3*\", 1, 0) as redirects \n| if(sc_status matches \"4*\", 1, 0) as client_errors \n| if(sc_status matches \"5*\", 1, 0) as server_errors \n| timeslice by 1d \n| sum(successes) as successes, sum(redirects) as redirects, sum(client_errors) as client_errors,  sum(server_errors) as server_errors by _timeslice",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - Malicious URL Requests",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis (\"jsessionid\" or \"old\" or \"bak\") \n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| where cs_uri_stem matches \"*.old\" or cs_uri_stem matches \"*.bak\" or cs_uri_query matches \"*jsessionid=*\"",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - Robots",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis \"/robots.txt\" \n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| where cs_uri_stem = \"/robots.txt\"\n| count_frequent cs_User_Agent",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - Slowest URLs by Average Time",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis \n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| (time_taken/1000) as seconds \n| avg(seconds) as avgtimeinseconds by cs_uri_stem \n| sort by avgtimeinseconds \n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - Time Taken to Serve Requests",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis \n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"  \n| (time_taken/1000) as seconds \n| seconds/60 as minutes ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - Top 404 URLs",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis 404\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| where sc_status matches \"404\" \n| count_frequent cs_uri_stem \n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - Top Browsers",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| count_frequent cs_user_agent \n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - Top Clients",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis \n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| count_frequent c_ip \n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - Top Clients Causing Errors",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis 4*\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| where sc_status matches \"4*\" \n| count_frequent c_ip \n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - Top URLs by Count",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| count_frequent cs_uri_stem \n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IIS - Traffic Volume Served per Day",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| timeslice by 1d \n| count as hits by _timeslice\n| sort by _timeslice",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "W3SVC_WebService Log Parser",
+      "search": {
+        "queryText": "_sourceCategory = Labs/iis* webserver_system=iis Win32_PerfFormattedData_W3SVC_WebService\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse field=iis_log_message \"Name = \\\"*\\\";\" as Name nodrop\n| parse field=iis_log_message \"BytesReceivedPersec = \\\"*\\\";\" as BytesReceivedPersec nodrop\n| parse\tfield=iis_log_message \"BytesSentPersec = \\\"*\\\";\" as BytesSentPersec nodrop\n| parse\tfield=iis_log_message \"BytesTotalPersec = \\\"*\\\";\" as BytesTotalPersec nodrop\n| parse\tfield=iis_log_message \"CGIRequestsPersec = *;\" as CGIRequestsPersec nodrop\n| parse\tfield=iis_log_message \"CurrentAnonymousUsers = *;\" as CurrentAnonymousUsers nodrop\n| parse\tfield=iis_log_message \"CurrentConnections = *;\" as CurrentConnections nodrop\n| parse\tfield=iis_log_message \"CurrentNonAnonymousUsers = *;\" as CurrentNonAnonymousUsers nodrop\n| parse\tfield=iis_log_message \"FilesReceivedPersec = *;\" as FilesReceivedPersec nodrop\n| parse\tfield=iis_log_message \"FilesSentPersec = *;\" as FilesSentPersec nodrop\n| parse\tfield=iis_log_message \"GetRequestsPersec = *;\" as GetRequestsPersec nodrop\n| parse\t\"ISAPIExtensionRequestsPersec = *;\" as GetRequestsPersec nodrop\n| parse\t\"PostRequestsPersec = *;\" as PostRequestsPersec nodrop\n| parse\t\"ServiceUptime = *;\" as ServiceUptime nodrop\n| parse \"TotalMethodRequestsPersec = *;\" as TotalMethodRequestsPersec nodrop\n",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    }
+  ]
+}

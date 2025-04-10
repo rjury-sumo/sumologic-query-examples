@@ -1,0 +1,244 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "AWS Lambda - CloudTrail Events - Security - New",
+  "description": "See the details of AWS services, and IAM users invoking Lambda functions, and the threat details based on caller IP address.",
+  "title": "AWS Lambda - CloudTrail Events - Security - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel61cd3e5caa455949",
+        "structure": "{\"width\":11,\"height\":8,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelb419349b9d3f294b",
+        "structure": "{\"width\":13,\"height\":8,\"x\":11,\"y\":0}"
+      },
+      {
+        "key": "panel6aa19dd3b9b82b4c",
+        "structure": "{\"width\":11,\"height\":6,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panel4d0d519e8daffa40",
+        "structure": "{\"width\":13,\"height\":6,\"x\":11,\"y\":6}"
+      },
+      {
+        "key": "panel383b11da9e93984d",
+        "structure": "{\"width\":24,\"height\":10,\"x\":0,\"y\":11}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel6aa19dd3b9b82b4c",
+      "title": "IAM User Invoking Functions - Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke IAMUser\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as  IAMUser\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"IAMUser\" \n| timeslice 1h\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{function_version}}\" = \"*\", true, function_version matches \"{{function_version}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by caller, _timeslice\n| outlier _count by caller\n| fields _timeslice,caller, _count_violation\n| transpose row _timeslice column caller",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4d0d519e8daffa40",
+      "title": "Time Compare - Yesterday Vs Today",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke IAMUser\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as  IAMUser\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"IAMUser\"\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{function_version}}\" = \"*\", true, function_version matches \"{{function_version}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by caller\n| compare with timeshift 1d as vs_yesterday\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb419349b9d3f294b",
+      "title": "Time Compare - Yesterday Vs Today",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\"  AWSService\n| json field=_raw \"eventName\" as event_name \n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"AWSService\"\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{function_version}}\" = \"*\", true, function_version matches \"{{function_version}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by caller\n| compare with timeshift 1d as vs_yesterday\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel61cd3e5caa455949",
+      "title": "AWS Services Invoking Functions - Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\"  AWSService\n| json field=_raw \"eventName\" as event_name \n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"AWSService\" \n| timeslice 1h\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{function_version}}\" = \"*\", true, function_version matches \"{{function_version}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by caller, _timeslice\n| outlier _count by caller\n| fields _timeslice,caller, _count_violation\n| transpose row _timeslice column caller",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel383b11da9e93984d",
+      "title": "Threat Table based on Caller IP Address",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail*  \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent| json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=src_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and malicious_confidence = \"high\"\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{function_version}}\" = \"*\", true, function_version matches \"{{function_version}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by  src_ip, malicious_confidence, Actor,  function_name, caller, user_agent, label_name\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "caller",
+      "displayName": "caller",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent| json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=src_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and malicious_confidence = \"high\"\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor",
+        "field": "caller"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "caller_type",
+      "displayName": "caller_type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent| json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=src_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and malicious_confidence = \"high\"\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor",
+        "field": "caller_type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "function_name",
+      "displayName": "function_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent| json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=src_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and malicious_confidence = \"high\"\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor",
+        "field": "function_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "function_version",
+      "displayName": "function_version",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent| json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=src_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and malicious_confidence = \"high\"\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor",
+        "field": "function_version"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

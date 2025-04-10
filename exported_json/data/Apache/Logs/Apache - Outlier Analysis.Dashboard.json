@@ -1,0 +1,239 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Apache - Outlier Analysis",
+  "description": "The Apache -  Outlier Analysis dashboard helps you quickly identify outliers for key Apache metrics such bytes served, number of visitors, server errors, and client errors.",
+  "title": "Apache - Outlier Analysis",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-432135AEA0A55B42",
+        "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panelPANE-445DE83B87A37A49",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":8}"
+      },
+      {
+        "key": "panelPANE-DEFD0F539A919B4C",
+        "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel48AD6EF99D24094C",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-432135AEA0A55B42",
+      "title": "Bytes Served - Outlier",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm={{webserver_farm}} _sourceHost={{host}} HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where size != \"-\" and !isEmpty(size)\n| number(size)\n| (size/(1048576*1000)) as gbytes \n| timeslice {{timeslice}} \n| sum(gbytes) as gbytes by _timeslice \n| sort _timeslice asc\n| outlier gbytes window={{window}}, threshold={{threshold}}, consecutive={{consecutive}}, direction=+-",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-445DE83B87A37A49",
+      "title": "Number of Visitors",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm={{webserver_farm}} _sourceHost={{host}} HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where !isEmpty(src_ip)\n| timeslice {{timeslice}}\n| count as hits by _timeslice \n| sort _timeslice asc\n| outlier hits window={{window}}, threshold={{threshold}}, consecutive={{consecutive}}, direction=+",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-DEFD0F539A919B4C",
+      "title": "Server Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm={{webserver_farm}} _sourceHost={{host}} HTTP 5*\n| parse regex \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where (status_code matches \"5*\") \n| timeslice {{timeslice}}\n| count as server_errors by _timeslice\n| sort _timeslice asc\n| outlier server_errors window={{window}}, threshold={{threshold}}, consecutive={{consecutive}}, direction=+",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel48AD6EF99D24094C",
+      "title": "Client Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm={{webserver_farm}} _sourceHost={{host}} HTTP 4*\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where (status_code matches \"4*\") \n| timeslice {{timeslice}}\n| count as client_errors by _timeslice\n| sort _timeslice asc\n| outlier client_errors window={{window}}, threshold={{threshold}}, consecutive={{consecutive}}, direction=+",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "timeslice",
+      "displayName": "timeslice",
+      "defaultValue": "1m",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1m,2m,5m,10m,15m,30m,1h"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "window",
+      "displayName": "window",
+      "defaultValue": "10",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1,2,3,4,5,6,7,8,9,10"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "threshold",
+      "displayName": "threshold",
+      "defaultValue": "3",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1,2,3,4,5,6,7,8,9"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "consecutive",
+      "displayName": "consecutive",
+      "defaultValue": "1",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1,2,3,4,5,6,7,8,9"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "webserver_farm",
+      "displayName": "webserver_farm",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* | count by webserver_farm",
+        "field": "webserver_farm"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host",
+      "displayName": "host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* _sourceHost=* | count by _sourceHost",
+        "field": "_sourcehost"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

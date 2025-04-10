@@ -1,0 +1,245 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "MongoDB Atlas - Logins and Connections",
+  "description": "The MongoDB Atlas - Logins and Connections dashboard provides a high-level view of the geographic locations of client connection requests, remote IP addresses of malicious logins, and the locations of failed logins.",
+  "title": "MongoDB Atlas - Logins and Connections",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-5B022A959A10AA46",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-A9568C5BAC6AFB4B",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-4FDE9A4B8790784B",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-34A147338113184F",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":12,\"minHeight\":3,\"minWidth\":3}"
+      },
+      {
+        "key": "panelPANE-793CDE56973D7A43",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":12,\"minHeight\":3,\"minWidth\":3}"
+      },
+      {
+        "key": "panelPANE-877C96A6A23FEB44",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":18,\"minHeight\":3,\"minWidth\":3}"
+      },
+      {
+        "key": "panelPANE-1E67B4B4911DF846",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":18,\"minHeight\":3,\"minWidth\":3}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-5B022A959A10AA46",
+      "title": "Location of Client Connection Requests",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=Labs/MongoDBAtlas/logs (\"connection accepted\" and NETWORK) \n| json \"t.$date\",\"s\",\"c\",\"ctx\",\"attr.remote\" as timestamp,severity,component,context,client_ip\n| json \"msg\",\"project_id\",\"hostname\",\"cluster_name\"\n| parse regex field=client_ip \"(?<client_ip>(?<=).*(?=:))\"\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = client_ip\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-A9568C5BAC6AFB4B",
+      "title": "Logins from Malicious Remote IP",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=Labs/MongoDBAtlas/logs AND (_source=\"mongodb-audit-log.gz\" OR _source=\"mongos-audit-log.gz\")\n| json \"atype\", \"local.ip\", \"remote.ip\", \"users\", \"result\", \"project_id\", \"hostname\", \"cluster_name\" as atype, local_ip, remote_ip, users, result, project_id, hostname, cluster_name\n| timeslice 1h\n| count by remote_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=remote_ip\n| where type=\"ip_address\" and malicious_confidence =\"high\"\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = remote_ip",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-4FDE9A4B8790784B",
+      "title": "Unreachable Nodes",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=Labs/MongoDBAtlas/logs (NETWORK OR ASIO) (reach OR connect)\n| json \"t.$date\",\"s\",\"c\",\"ctx\",\"attr.error.codeName\",\"attr.error.errmsg\" as timestamp,severity,component,context,errorName,errorMessage\n| json \"msg\",\"project_id\",\"hostname\",\"cluster_name\"\n| where (component matches \"*NETWORK*\" or component matches \"*ASIO*\") and (errorName matches \"*HostUnreachable*\")\n| hostname as from_node\n| parse regex field=errorMessage \"(?<dest_node>(?<=server ).*(?=,))\" nodrop\n| last(msg) by project_id, cluster_name, from_node, dest_node\n| if (_last matches \"Successfully*\", 1, 0) as isreachable\n| where isreachable = 0\n| _last as message\n| fields -isreachable,_last",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-34A147338113184F",
+      "title": "Threat Intel by Remote IP",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=Labs/MongoDBAtlas/logs AND (_source=\"mongodb-audit-log.gz\" OR _source=\"mongos-audit-log.gz\")\n| json \"atype\", \"local.ip\", \"remote.ip\", \"users\", \"result\", \"project_id\", \"hostname\", \"cluster_name\" as atype, local_ip, remote_ip, users, result, project_id, hostname, cluster_name\n| timeslice 1h\n| count by remote_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=remote_ip\n| where type=\"ip_address\" and malicious_confidence =\"high\"\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-793CDE56973D7A43",
+      "title": "Failed Login Attempt Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=Labs/MongoDBAtlas/logs \"authentication failed\"\n| json \"t.$date\",\"s\",\"c\",\"ctx\",\"attr.authenticationDatabase\",\"attr.remote\",\"attr.principalName\",\"attr.error\" as timestamp,severity,component,context,database,client_ip,user,reason\n| substring(client_ip,0,15) as client_ip\n| json \"msg\",\"project_id\",\"hostname\",\"cluster_name\"\n| count by timestamp, project_id, hostname, cluster_name, user, database, client_ip, reason\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-877C96A6A23FEB44",
+      "title": "Location of Failed Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=Labs/MongoDBAtlas/logs \"authentication failed\"\n| json \"t.$date\",\"s\",\"c\",\"ctx\",\"attr.authenticationDatabase\",\"attr.remote\",\"attr.principalName\",\"attr.error\" as timestamp,severity,component,context,database,client_ip,user,reason\n| parse regex field=client_ip \"(?<client_ip>(?<=).*(?=:))\"\n| json \"msg\",\"project_id\",\"hostname\",\"cluster_name\" \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = client_ip\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-1E67B4B4911DF846",
+      "title": "Threat Intel Outlier by Remote IP",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=Labs/MongoDBAtlas/logs AND (_source=\"mongodb-audit-log.gz\" OR _source=\"mongos-audit-log.gz\")| json \"atype\", \"local.ip\", \"remote.ip\", \"users\",\"result\", \"project_id\", \"hostname\", \"cluster_name\" as atype, local_ip, remote_ip, users, result, project_id, hostname, cluster_name\n| timeslice 1h\n| count by _timeslice, remote_ip\n| lookup type, actor, raw, threatlevel as malicious_confidence, threat from sumo://threat/cs on threat=remote_ip\n| where type=\"ip_address\" and malicious_confidence =\"high\"\n| json field=raw \"malware_families[*]\" as threat_malware_families nodrop\n| json field=raw \"last_updated\" as last_updated nodrop\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name nodrop\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| sum(_count) as count by _timeslice\n| outlier count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [],
+  "coloringRules": []
+}

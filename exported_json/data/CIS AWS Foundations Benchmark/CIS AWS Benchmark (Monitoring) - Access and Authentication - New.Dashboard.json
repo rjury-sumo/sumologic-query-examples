@@ -1,0 +1,321 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "CIS AWS Benchmark (Monitoring) - Access and Authentication - New",
+  "description": "",
+  "title": "CIS AWS Benchmark (Monitoring) - Access and Authentication - New",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelc564eb079a487849",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel8cdb6a1a8b9f194f",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panelfa4516a4b192eb40",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel37160506ae9fda4f",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panela68dcbd69d8bdb4e",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":5}"
+      },
+      {
+        "key": "panel823f769aa5ee494f",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":5}"
+      },
+      {
+        "key": "panel8a3abb54b823d944",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":10}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel823f769aa5ee494f",
+      "title": "Failed Console Logins by Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* (\"ConsoleLogin\" and \"Failed authentication\")\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"userIdentity.userName\" as user_name\n| json \"eventName\"\n| json \"errorMessage\"\n| json \"responseElements.ConsoleLogin\", \"userIdentity.userName\" as loginResult, user_name\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{acc_id}}\" = \"*\", true, acc_id matches \"{{acc_id}}\")\n|count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela68dcbd69d8bdb4e",
+      "title": "Unauthorized AWS API Requests",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* (\"AccessDenied\" or \"UnauthorizedOperation\")\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json \"errorCode\" as error\n| json field=_raw \"eventName\"\n| json \"userIdentity.sessionContext.sessionIssuer.userName\" as user_name\n| where error=\"AccessDenied\" or error=\"UnauthorizedOperation\"\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{acc_id}}\" = \"*\", true, acc_id matches \"{{acc_id}}\")\n|count by user_name, error \n| transpose row user_name column error",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8cdb6a1a8b9f194f",
+      "title": "Disabled or Scheduled Deletion of CMK",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* (\"DisableKey\" or \"ScheduleKeyDeletion\")\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json field=_raw \"userIdentity.userName\" as user_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json \"eventName\"\n| where eventName matches \"DisableKey\" or eventName matches \"ScheduleKeyDeletion\"\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{acc_id}}\" = \"*\", true, acc_id matches \"{{acc_id}}\")\n|count by eventName, user_name\n| transpose row user_name column eventName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc564eb079a487849",
+      "title": "Console Logins without MFA",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* (!Failure and \"ConsoleLogin\")\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json \"eventName\", \"additionalEventData.MFAUsed\" as eventName, MFAUsed nodrop\n| json \"userIdentity.userName\", \"responseElements.ConsoleLogin\" as user_name, loginResult nodrop\n| json \"sourceIPAddress\" as src_ip\n| where loginResult<>\"Failure\"\n| where eventName matches \"ConsoleLogin\"\n| where mfaUsed<>\"Yes\"\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{acc_id}}\" = \"*\", true, acc_id matches \"{{acc_id}}\")\n|count by user_name\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8a3abb54b823d944",
+      "title": "Outlier - Failed Console Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* (\"ConsoleLogin\" and \"Failed authentication\")\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json \"eventName\"\n| json \"errorMessage\"\n| json \"responseElements.ConsoleLogin\", \"userIdentity.userName\" as loginResult, user_name\n| where (eventName matches \"ConsoleLogin\" and errorMessage matches \"Failed authentication\")\n| timeslice 1h\n| count by _timeslice\n| outlier _count  \n\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelfa4516a4b192eb40",
+      "title": "Failed Console Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* (\"ConsoleLogin\" and \"Failed authentication\")\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json \"eventName\"\n| json \"errorMessage\"\n| json \"responseElements.ConsoleLogin\", \"userIdentity.userName\" as loginResult, user_name\n| where (eventName matches \"ConsoleLogin\" and errorMessage matches \"Failed authentication\")\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{acc_id}}\" = \"*\", true, acc_id matches \"{{acc_id}}\")\n|count by user_name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel37160506ae9fda4f",
+      "title": "Root Account Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"Root\"\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"eventName\"\n| json \"userIdentity.type\" as loginType\n| json \"userIdentity.userName\" as user_name\n| where loginType=\"Root\"\n|where if (\"{{eventname}}\" = \"*\", true, eventname matches \"{{eventname}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{acc_id}}\" = \"*\", true, acc_id matches \"{{acc_id}}\")\n|count by user_name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "acc_id",
+      "displayName": "acc_id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* (\"DisableKey\" or \"ScheduleKeyDeletion\")\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json field=_raw \"userIdentity.userName\" as user_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json \"eventName\"\n| where eventName matches \"DisableKey\" or eventName matches \"ScheduleKeyDeletion\"",
+        "field": "acc_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventname",
+      "displayName": "eventname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* (\"DisableKey\" or \"ScheduleKeyDeletion\")\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json field=_raw \"userIdentity.userName\" as user_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json \"eventName\"\n| where eventName matches \"DisableKey\" or eventName matches \"ScheduleKeyDeletion\"",
+        "field": "eventname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "region",
+      "displayName": "region",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* (\"DisableKey\" or \"ScheduleKeyDeletion\")\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json field=_raw \"userIdentity.userName\" as user_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json \"eventName\"\n| where eventName matches \"DisableKey\" or eventName matches \"ScheduleKeyDeletion\"",
+        "field": "region"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* (\"DisableKey\" or \"ScheduleKeyDeletion\")\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json field=_raw \"userIdentity.userName\" as user_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json \"eventName\"\n| where eventName matches \"DisableKey\" or eventName matches \"ScheduleKeyDeletion\"",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user_name",
+      "displayName": "user_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* (\"DisableKey\" or \"ScheduleKeyDeletion\")\n| json field=_raw \"awsRegion\" as region\n| json field=_raw \"userIdentity.accountId\" as acc_id\n| json field=_raw \"userIdentity.userName\" as user_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json \"eventName\"\n| where eventName matches \"DisableKey\" or eventName matches \"ScheduleKeyDeletion\"",
+        "field": "user_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

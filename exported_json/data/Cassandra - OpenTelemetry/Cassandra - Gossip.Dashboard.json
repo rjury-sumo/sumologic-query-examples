@@ -1,0 +1,472 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Cassandra - Gossip",
+  "description": "The Cassandra - Gossip dashboard provides a good insight into nodes status",
+  "title": "Cassandra - Gossip",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "sumo.datasource": [
+        "cassandra"
+      ],
+      "db.cluster.name": [
+        "*"
+      ],
+      "deployment.environment": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel425D22E78BB07944",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panel4910E0D7BEBE8A4A",
+        "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":4}"
+      },
+      {
+        "key": "panel4FF062CEBC8E2B4F",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":22}"
+      },
+      {
+        "key": "panel617167A98CBFF842",
+        "structure": "{\"height\":4,\"width\":6,\"x\":6,\"y\":0}"
+      },
+      {
+        "key": "panel6C978D8EA4975943",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":10}"
+      },
+      {
+        "key": "panel72A80208B7205A4A",
+        "structure": "{\"height\":4,\"width\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel8CAAA8DAB4EAA949",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":16}"
+      },
+      {
+        "key": "panelB7344D7BAEC4784E",
+        "structure": "{\"height\":4,\"width\":6,\"x\":18,\"y\":0}"
+      },
+      {
+        "key": "panelD1F274D986FD2A46",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":22}"
+      },
+      {
+        "key": "panelD2F0542AA9F0EB4E",
+        "structure": "{\"height\":4,\"width\":6,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelF0B6BA9CAB18E847",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":16}"
+      },
+      {
+        "key": "panelF8F7E0EDB26E5944",
+        "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":4}"
+      },
+      {
+        "key": "panelFAA5E362A3A33948",
+        "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":4}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel425D22E78BB07944",
+      "title": "Pending Tasks",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\" \"}},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[{\"series\":[\"pending_tasks\"],\"queries\":[],\"properties\":{\"name\":\"Pending Tasks\"}}],\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"Gossip stage has\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Gossip stage has (?<pending_tasks>[0-9]+) pending tasks; skipping status check \\(no nodes will be marked down\\)\"\n| timeslice 1d\n| sum(pending_tasks) as pending_tasks by _timeslice\n\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4910E0D7BEBE8A4A",
+      "title": "Node Join Events",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"is now part of the cluster\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Node /(?<endpoint>[^ ]*) is now part of the cluster\"\n| timeslice 1s\n| count by _timeslice, endpoint\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4FF062CEBC8E2B4F",
+      "title": "Sleep Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"count\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Dark\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   Sleeping | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Sleeping for 30000ms to ensure /(?<endpoint>[^ ]*) does not change\"\n| timeslice 1d\n| count by _timeslice, endpoint\n| transpose row _timeslice column endpoint",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel617167A98CBFF842",
+      "title": "Nodes Down",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":1,\"color\":\"#75bf00\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":9999999,\"color\":\"#f36644\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| parse regex field=_raw \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| if (message matches \"InetAddress * is now UP\",1,0) as UP\n| if (message matches \"InetAddress * is now DOWN\",1,0) as DOWN\n| if (message matches \"Node * has restarted, now UP\",1,0) as RESTARTED\n| if (message matches \"Node * is now part of the cluster\",1,0) as JOINED\n| if (message matches \"Removing host: *\",1,0) as REMOVING\n| if (message matches \"Completing removal of *\",1,0) as REMOVED\n| timeslice 1d\n| sum(DOWN) as DOWN by _timeslice\n| sort by _timeslice asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6C978D8EA4975943",
+      "title": "Node Activity",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{\"A_DOWN\":{\"visible\":true},\"A_UP\":{\"visible\":true},\"A_RESTARTED\":{\"visible\":true}},\"overrides\":[],\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| parse regex field=_raw \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| if (message matches \"InetAddress * is now UP\",1,0) as UP\n| if (message matches \"InetAddress * is now DOWN\",1,0) as DOWN\n| if (message matches \"Node * has restarted, now UP\",1,0) as RESTARTED\n| if (message matches \"Node * is now part of the cluster\",1,0) as JOINED\n| if (message matches \"Removing host: *\",1,0) as REMOVING\n| if (message matches \"Completing removal of *\",1,0) as REMOVED\n| timeslice 1d\n| sum(UP) as UP, sum(DOWN) as DOWN,  sum(RESTARTED) as RESTARTED, sum(JOINED) as JOINED, sum(REMOVING) as REMOVING,sum(REMOVED) as REMOVED by _timeslice\n| sort by _timeslice asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel72A80208B7205A4A",
+      "title": "Nodes Up",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":999999,\"color\":\"#75bf00\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{\"A_UP\":{\"visible\":true},\"A_DOWN\":{\"visible\":false},\"A_RESTARTED\":{\"visible\":false},\"A_JOINED\":{\"visible\":false},\"A_REMOVING\":{\"visible\":false},\"A_REMOVED\":{\"visible\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| parse regex field=_raw \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| if (message matches \"InetAddress * is now UP\",1,0) as UP\n| timeslice 1d\n| sum(UP) as UP by _timeslice\n| sort by _timeslice asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8CAAA8DAB4EAA949",
+      "title": "Handshake Failures by Endpoint",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"color\":{\"family\":\"Diverging 2\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} handshake %\"db.cluster.name\"={{db.cluster.name}}  | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Cannot handshake version with /(?<endpoint>.*)\"\n| count by endpoint\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelB7344D7BAEC4784E",
+      "title": "Pending Tasks",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":true,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":9999999,\"color\":\"#75bf00\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"Gossip stage has\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Gossip stage has (?<pending_tasks>[0-9]+) pending tasks; skipping status check \\(no nodes will be marked down\\)\"\n| last(pending_tasks) \n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelD1F274D986FD2A46",
+      "title": "Replication Endpoints Down Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"is down and will not receive data for re-replication of\"| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"Endpoint /(?<target_endpoint>[^ ]*) is down and will not receive data for re-replication of /(?<source_endpoint>.*)\"\n| timeslice 1s\n| count by _timeslice, target_endpoint, source_endpoint\n| fields - _count\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelD2F0542AA9F0EB4E",
+      "title": "Nodes Joined",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":9999999999,\"color\":\"#75bf00\"},{\"from\":null,\"to\":null,\"color\":\"#f6c851\"},{\"from\":null,\"to\":null,\"color\":\"#f36644\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw\n| parse regex field=_raw \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| if (message matches \"InetAddress * is now UP\",1,0) as UP\n| if (message matches \"InetAddress * is now DOWN\",1,0) as DOWN\n| if (message matches \"Node * has restarted, now UP\",1,0) as RESTARTED\n| if (message matches \"Node * is now part of the cluster\",1,0) as JOINED\n| if (message matches \"Removing host: *\",1,0) as REMOVING\n| if (message matches \"Completing removal of *\",1,0) as REMOVED\n| timeslice 1d\n| sum(JOINED) as JOINED by _timeslice\n| sort by _timeslice asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelF0B6BA9CAB18E847",
+      "title": "Silent Client Removed",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"color\":{\"family\":\"Diverging 2\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   FatClient | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"FatClient /(?<endpoint>[^ ]*) has been silent for 30000ms, removing from gossip\"\n| count by endpoint",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelF8F7E0EDB26E5944",
+      "title": "Node Up Events",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"InetAddress\" \"is now UP\"| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"InetAddress /(?<endpoint>[^ ]*) is now UP\"\n| timeslice 100s\n| withtime server_status | withtime _messagetime\n| most_recent(server_status_withtime) as server_status, most_recent(_messagetime_withtime) as m_time by endpoint\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS\", \"UTC\") as event_time\n| ((toMillis(now())-m_time)/(1000*60)) as since_mins | format(\"%.2f\", since_mins) as since_minutes\n| concat (\"Since \", since_minutes, \" minutes\") as Remark\n| fields - m_time, since_mins, since_minutes \n| fields endpoint, event_time, remark\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelFAA5E362A3A33948",
+      "title": "Node Down Events",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"InetAddress\" \"is now DOWN\"| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| parse regex field=message \"InetAddress /(?<endpoint>[^ ]*) is now DOWN\"\n| timeslice 100s\n| withtime server_status | withtime _messagetime\n| most_recent(server_status_withtime) as server_status, most_recent(_messagetime_withtime) as m_time by endpoint\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS\", \"UTC\") as event_time\n| ((toMillis(now())-m_time)/(1000*60)) as since_mins | format(\"%.2f\", since_mins) as since_minutes\n| concat (\"Since \", since_minutes, \" minutes\") as Remark\n| fields - m_time, since_mins, since_minutes \n| fields endpoint, event_time, remark",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\n%\"sumo.datasource\"=cassandra|count by %\"deployment.environment\"",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\n%\"sumo.datasource\"=cassandra|count by %\"db.cluster.name\"",
+        "field": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

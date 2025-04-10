@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Total Process Time Latency 90th, 95 pct",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n// Need to filter out logs where request_processing_time, target_processing_time, or response_processing_time are -1\n// This means the load balancer can't dispatch the request to a target\n| where !(request_processing_time=-1 OR request_processing_time=-1 OR response_processing_time=-1)\n| timeslice by 1m\n| pct(request_processing_time,90,95), pct(target_processing_time,90,95), pct(response_processing_time,90,95) by _timeslice\n| (_request_processing_time_pct_90+_target_processing_time_pct_90+_response_processing_time_pct_90) as total_process_time_pct_90\n| (_request_processing_time_pct_95+_target_processing_time_pct_95+_response_processing_time_pct_95) as total_process_time_pct_95\n| fields - _request_processing_time_pct_90, _target_processing_time_pct_90, _response_processing_time_pct_90, _request_processing_time_pct_95, _target_processing_time_pct_95, _response_processing_time_pct_95",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-60m"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

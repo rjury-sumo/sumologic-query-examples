@@ -1,0 +1,460 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "AWS Lambda - CloudTrail Events - Overview - New",
+  "description": "See the overview of AWS Lambda functions including the function name, version, user agent, and IAM users.",
+  "title": "AWS Lambda - CloudTrail Events - Overview - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel3cf1e438b2c82940",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel67064697bc559846",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panel266d54b2825e4a43",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel8aa5999bb7a27b44",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panelfafc6e2dbc859843",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":5}"
+      },
+      {
+        "key": "panel372606baa31d8947",
+        "structure": "{\"width\":8,\"height\":9,\"x\":16,\"y\":5}"
+      },
+      {
+        "key": "panel4604033ca2501a49",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panel5812778f80df4a43",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":10}"
+      },
+      {
+        "key": "panel51f7aa7cac888849",
+        "structure": "{\"width\":8,\"height\":10,\"x\":16,\"y\":12}"
+      },
+      {
+        "key": "panel270c98a29aa6f94e",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panel0fa68db5b6da5b48",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":15}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel3cf1e438b2c82940",
+      "title": "Function Name Invocation Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" \n| json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| timeslice 1h\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by function_name, _timeslice\n| transpose row _timeslice column function_name \n| fillmissing timeslice (1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel51f7aa7cac888849",
+      "title": "Location of Callers",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by latitude, longitude, country_code, country_name, region, city, postal_code, event_name\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel270c98a29aa6f94e",
+      "title": "IAM User Invoking Functions",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"IAMUser\"\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by caller\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8aa5999bb7a27b44",
+      "title": "Invoke Breakdown by Function Name",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" \n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" \n| json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by function_name\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel266d54b2825e4a43",
+      "title": "User Agent Breakdown",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail*  \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by user_agent",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel372606baa31d8947",
+      "title": "Function Callers Details",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" \n| json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"awsRegion\" as aws_region\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by function_name, function_version, caller, caller_type, src_ip, aws_region\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelfafc6e2dbc859843",
+      "title": "Invoke Breakdown by Function Version",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" \n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" \n| json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by function_version\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0fa68db5b6da5b48",
+      "title": "AWS Services Invoking Functions",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"AWSService\"\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by caller",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel67064697bc559846",
+      "title": "Function Version Invocation Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" \n| json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| timeslice 1h\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by function_version, _timeslice\n| transpose row _timeslice column function_version \n| fillmissing timeslice (1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5812778f80df4a43",
+      "title": "AWS Services Invoking Functions Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"AWSService\" \n| timeslice 1h\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by caller, _timeslice\n| transpose row _timeslice column caller \n| fillmissing timeslice (1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4604033ca2501a49",
+      "title": "IAM User Invoking Functions Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke IAMUser\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"IAMUser\" \n| timeslice 1h\n|where if (\"{{function_name}}\" = \"*\", true, function_name matches \"{{function_name}}\") AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{caller}}\" = \"*\", true, caller matches \"{{caller}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{caller_type}}\" = \"*\", true, caller_type matches \"{{caller_type}}\")\n|count by caller, _timeslice\n| transpose row _timeslice column caller \n| fillmissing timeslice (1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "caller_type",
+      "displayName": "caller_type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke IAMUser\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"IAMUser\" \n| timeslice 1h",
+        "field": "caller_type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "caller",
+      "displayName": "caller",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke IAMUser\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"IAMUser\" \n| timeslice 1h",
+        "field": "caller"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "function_name",
+      "displayName": "function_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke IAMUser\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"IAMUser\" \n| timeslice 1h",
+        "field": "function_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user_name",
+      "displayName": "user_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke IAMUser\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"IAMUser\" \n| timeslice 1h",
+        "field": "user_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user_agent",
+      "displayName": "user_agent",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke IAMUser\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"IAMUser\" \n| timeslice 1h",
+        "field": "user_agent"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "aws_region",
+      "displayName": "aws_region",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" Invoke IAMUser\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_name>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.type\" as caller_type\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"IAMUser\" \n| timeslice 1h",
+        "field": "aws_region"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,327 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Active Threats: AWS Storage",
+  "description": "The Active Threats: AWS Storage dashboard shows threats identified from AWS S3 CloudTrail Events. It shows threats count and trend, and threats by resource, actor, events, and geo location.",
+  "title": "Active Threats: AWS Storage",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-1B7C15759C7D2B4C",
+        "structure": "{\"height\":6,\"width\":7,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-8A44017386311B4E",
+        "structure": "{\"height\":6,\"width\":17,\"x\":7,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-46A9A85A84243943",
+        "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-266652EE90089947",
+        "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":13}"
+      },
+      {
+        "key": "panelPANE-D6C25EF1999A9A4F",
+        "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":13}"
+      },
+      {
+        "key": "panelPANE-5314019FA8ACD94B",
+        "structure": "{\"height\":10,\"width\":24,\"x\":0,\"y\":20}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-1B7C15759C7D2B4C",
+      "title": "Threats Count",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true,\"noDataMessage\":\"0\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"textColor\":\"\",\"backgroundColor\":\"\",\"label\":\"Label\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":true,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222d3b\"},\"gauge\":{\"show\":false,\"max\":null}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"userIdentity\", \"eventTime\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"errorCode\", \"requestParameters\", \"eventType\" as userIdentity, event_time, eventSource, event.action, cloud.region, client.ip, user_agent, event.outcome, requestParameters, eventType nodrop\n| where eventSource = \"s3.amazonaws.com\"\n| json field=userIdentity \"type\", \"accountId\", \"userName\" as userType, cloud.account.id, user.name\n| json field=requestParameters \"bucketName\" as cloud.instance.id\n| parse field=eventSource \"*.\" as cloud.service.name\n| if (userType matches(\"IAMUser\"), \"user\", \"machine\") as event.agent\n\n| lookup type, actor, raw, threatlevel  as risk.static_level ,threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\" and !isNull(risk.static_level)\n//| where risk.static_level =\"high\"\n\n// global filters\n| where isNull(cloud.instance.id) or cloud.instance.id matches \"{{cloud.instance.id}}\"\n| where isNull(event.action) or event.action matches \"{{event.action}}\"\n| where isNull(user.name) or user.name matches \"{{user.name}}\"\n| where isNull(client.ip) or client.ip matches \"{{client.ip}}\"\n| where isNull(risk.static_level) or risk.static_level matches \"{{risk.static_level}}\"\n| where isNull(actor) or actor matches \"{{threat.group.name}}\"\n| where isNull(source.user) or source.user matches \"{{source.user}}\"\n\n// handle empty values\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-8A44017386311B4E",
+      "title": "Threats by Resource",
+      "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\",\"roundDataPoints\":true},\"title\":{\"fontSize\":14},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\",\"noDataMessage\":\"\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"userIdentity\", \"eventTime\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"errorCode\", \"requestParameters\", \"eventType\" as userIdentity, event_time, eventSource, event.action, cloud.region, client.ip, user_agent, event.outcome, requestParameters, eventType nodrop\n| where eventSource = \"s3.amazonaws.com\"\n| json field=userIdentity \"type\", \"accountId\", \"userName\" as userType, cloud.account.id, user.name\n| json field=requestParameters \"bucketName\" as cloud.instance.id\n| parse field=eventSource \"*.\" as cloud.service.name\n| if (userType matches(\"IAMUser\"), \"user\", \"machine\") as event.agent\n\n| lookup type, actor, raw, threatlevel  as risk.static_level ,threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\" and !isNull(risk.static_level)\n//| where risk.static_level =\"high\"\n\n// global filters\n| where isNull(cloud.instance.id) or cloud.instance.id matches \"{{cloud.instance.id}}\"\n| where isNull(event.action) or event.action matches \"{{event.action}}\"\n| where isNull(user.name) or user.name matches \"{{user.name}}\"\n| where isNull(client.ip) or client.ip matches \"{{client.ip}}\"\n| where isNull(risk.static_level) or risk.static_level matches \"{{risk.static_level}}\"\n| where isNull(actor) or actor matches \"{{threat.group.name}}\"\n| where isNull(source.user) or source.user matches \"{{source.user}}\"\n\n// handle empty values\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n\n| count by cloud.instance.id, client.ip, user.name, risk.static_level\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-46A9A85A84243943",
+      "title": "Threats Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"roundDataPoints\":true,\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"userIdentity\", \"eventTime\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"errorCode\", \"requestParameters\", \"eventType\" as userIdentity, event_time, eventSource, event.action, cloud.region, client.ip, user_agent, event.outcome, requestParameters, eventType nodrop\n| where eventSource = \"s3.amazonaws.com\"\n| json field=userIdentity \"type\", \"accountId\", \"userName\" as userType, cloud.account.id, user.name\n| json field=requestParameters \"bucketName\" as cloud.instance.id\n| parse field=eventSource \"*.\" as cloud.service.name\n| if (userType matches(\"IAMUser\"), \"user\", \"machine\") as event.agent\n\n| lookup type, actor, raw, threatlevel  as risk.static_level ,threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\" and !isNull(risk.static_level)\n//| where risk.static_level =\"high\"\n\n// global filters\n| where isNull(cloud.instance.id) or cloud.instance.id matches \"{{cloud.instance.id}}\"\n| where isNull(event.action) or event.action matches \"{{event.action}}\"\n| where isNull(user.name) or user.name matches \"{{user.name}}\"\n| where isNull(client.ip) or client.ip matches \"{{client.ip}}\"\n| where isNull(risk.static_level) or risk.static_level matches \"{{risk.static_level}}\"\n| where isNull(actor) or actor matches \"{{threat.group.name}}\"\n| where isNull(source.user) or source.user matches \"{{source.user}}\"\n\n// handle empty values\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n\n| timeslice 1d\n| count by _timeslice\n| fillmissing timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-266652EE90089947",
+      "title": "Threats by Actor",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"roundDataPoints\":true,\"fillOpacity\":1,\"mode\":\"distribution\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"userIdentity\", \"eventTime\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"errorCode\", \"requestParameters\", \"eventType\" as userIdentity, event_time, eventSource, event.action, cloud.region, client.ip, user_agent, event.outcome, requestParameters, eventType nodrop\n| where eventSource = \"s3.amazonaws.com\"\n| json field=userIdentity \"type\", \"accountId\", \"userName\" as userType, cloud.account.id, user.name\n| json field=requestParameters \"bucketName\" as cloud.instance.id\n| parse field=eventSource \"*.\" as cloud.service.name\n| if (userType matches(\"IAMUser\"), \"user\", \"machine\") as event.agent\n\n| lookup type, actor, raw, threatlevel  as risk.static_level ,threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\" and !isNull(risk.static_level)\n//| where risk.static_level =\"high\"\n\n// global filters\n| where isNull(cloud.instance.id) or cloud.instance.id matches \"{{cloud.instance.id}}\"\n| where isNull(event.action) or event.action matches \"{{event.action}}\"\n| where isNull(user.name) or user.name matches \"{{user.name}}\"\n| where isNull(client.ip) or client.ip matches \"{{client.ip}}\"\n| where isNull(risk.static_level) or risk.static_level matches \"{{risk.static_level}}\"\n| where isNull(actor) or actor matches \"{{threat.group.name}}\"\n| where isNull(source.user) or source.user matches \"{{source.user}}\"\n\n// handle empty values\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor \n\n| count by actor\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-D6C25EF1999A9A4F",
+      "title": "Threats by Events and Result",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"roundDataPoints\":true,\"fillOpacity\":1,\"mode\":\"distribution\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"userIdentity\", \"eventTime\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"errorCode\", \"requestParameters\", \"eventType\" as userIdentity, event_time, eventSource, event.action, cloud.region, client.ip, user_agent, event.outcome, requestParameters, eventType nodrop\n| where eventSource = \"s3.amazonaws.com\"\n| json field=userIdentity \"type\", \"accountId\", \"userName\" as userType, cloud.account.id, user.name\n| json field=requestParameters \"bucketName\" as cloud.instance.id\n| parse field=eventSource \"*.\" as cloud.service.name\n| if (userType matches(\"IAMUser\"), \"user\", \"machine\") as event.agent\n\n| lookup type, actor, raw, threatlevel  as risk.static_level ,threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\" and !isNull(risk.static_level)\n//| where risk.static_level =\"high\"\n\n// global filters\n| where isNull(cloud.instance.id) or cloud.instance.id matches \"{{cloud.instance.id}}\"\n| where isNull(event.action) or event.action matches \"{{event.action}}\"\n| where isNull(user.name) or user.name matches \"{{user.name}}\"\n| where isNull(client.ip) or client.ip matches \"{{client.ip}}\"\n| where isNull(risk.static_level) or risk.static_level matches \"{{risk.static_level}}\"\n| where isNull(actor) or actor matches \"{{threat.group.name}}\"\n| where isNull(source.user) or source.user matches \"{{source.user}}\"\n\n// handle empty values\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor \n\n| count by event.action, event.outcome\n| transpose row event.action column event.outcome",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-5314019FA8ACD94B",
+      "title": "Threats by Geo Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\",\"roundDataPoints\":true},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"userIdentity\", \"eventTime\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"errorCode\", \"requestParameters\", \"eventType\" as userIdentity, event_time, eventSource, event.action, cloud.region, client.ip, user_agent, event.outcome, requestParameters, eventType nodrop\n| where eventSource = \"s3.amazonaws.com\"\n| json field=userIdentity \"type\", \"accountId\", \"userName\" as userType, cloud.account.id, user.name\n| json field=requestParameters \"bucketName\" as cloud.instance.id\n| parse field=eventSource \"*.\" as cloud.service.name\n| if (userType matches(\"IAMUser\"), \"user\", \"machine\") as event.agent\n\n| lookup type, actor, raw, threatlevel  as risk.static_level ,threat from sumo://threat/cs on threat=client.ip\n| where type=\"ip_address\" and !isNull(risk.static_level)\n//| where risk.static_level =\"high\"\n\n// global filters\n| where isNull(cloud.instance.id) or cloud.instance.id matches \"{{cloud.instance.id}}\"\n| where isNull(event.action) or event.action matches \"{{event.action}}\"\n| where isNull(user.name) or user.name matches \"{{user.name}}\"\n| where isNull(client.ip) or client.ip matches \"{{client.ip}}\"\n| where isNull(risk.static_level) or risk.static_level matches \"{{risk.static_level}}\"\n| where isNull(actor) or actor matches \"{{threat.group.name}}\"\n| where isNull(source.user) or source.user matches \"{{source.user}}\"\n\n// handle empty values\n| if (isEmpty(event.outcome), \"Success\", event.outcome) as event.outcome\n| if (isEmpty(user.name), \"NA\", user.name) as user.name\n| if (isEmpty(actor), \"Unassigned\", actor) as actor \n\n| lookup latitude, longitude from geo://location on ip = client.ip\n| count by latitude, longitude",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "cloud.instance.id",
+      "displayName": "cloud.instance.id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"eventSource\", \"requestParameters\" as eventSource, requestParameters\n| where eventSource = \"s3.amazonaws.com\"\n| json field=requestParameters \"bucketName\" as cloud.instance.id",
+        "field": "cloud.instance.id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "event.action",
+      "displayName": "event.action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"eventSource\", \"eventName\" as eventSource, event.action\n| where eventSource = \"s3.amazonaws.com\"",
+        "field": "event.action"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user.name",
+      "displayName": "user.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"userIdentity\", \"eventSource\" as userIdentity, eventSource\n| where eventSource = \"s3.amazonaws.com\"\n| json field=userIdentity \"userName\" as user.name\n| if (isEmpty(user.name), \"NA\", user.name) as user.name",
+        "field": "user.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "client.ip",
+      "displayName": "client.ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"eventSource\", \"sourceIPAddress\" as eventSource, client.ip\n| where eventSource = \"s3.amazonaws.com\"",
+        "field": "client.ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "source.user",
+      "displayName": "source.user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"userIdentity\", \"eventTime\", \"eventSource\", \"eventName\", \"awsRegion\", \"sourceIPAddress\", \"userAgent\", \"errorCode\", \"requestParameters\", \"eventType\" as userIdentity, event_time, eventSource, event.action, cloud.region, client.ip, user_agent, event.outcome, requestParameters, eventType nodrop\n\n| where eventSource = \"s3.amazonaws.com\"\n| json field=userIdentity \"type\", \"accountId\", \"userName\" as user_identity_type, cloud.account.id, user.name\n\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n",
+        "field": "source.user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "risk.static_level",
+      "displayName": "risk.static_level",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"eventSource\", \"sourceIPAddress\" as eventSource, client.ip\n| where eventSource = \"s3.amazonaws.com\"\n\n| where !isPrivateIP(client.ip)\n| lookup threatlevel as risk.static_level from sumo://threat/cs on threat=client.ip\n| where !isNull(risk.static_level)",
+        "field": "risk.static_level"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "threat.group.name",
+      "displayName": "threat.group.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* \"s3.amazonaws.com\"\n| json \"eventSource\", \"sourceIPAddress\" as eventSource, client.ip\n| where eventSource = \"s3.amazonaws.com\"\n\n| where !isPrivateIP(client.ip)\n| lookup actor as threat.group.name from sumo://threat/cs on threat=client.ip\n| where !isNull(threat.group.name) \n| where !isEmpty(threat.group.name)\n| where !isBlank(threat.group.name)\n| count by threat.group.name",
+        "field": "threat.group.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,441 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Cassandra - Cache Stats",
+  "description": "The Cassandra - Cache dashboard provides a good insight into cache stats",
+  "title": "Cassandra - Cache Stats",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "sumo.datasource": [
+        "cassandra"
+      ],
+      "db.cluster.name": [
+        "*"
+      ],
+      "deployment.environment": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel01637F79A770E845",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":18}"
+      },
+      {
+        "key": "panel0214D8E7B68BD844",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panel183DDA5B9D1FE947",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":12}"
+      },
+      {
+        "key": "panel376A46C0936E6A41",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panel5A9CD2BE8CF4884E",
+        "structure": "{\"height\":6,\"width\":4,\"x\":4,\"y\":0}"
+      },
+      {
+        "key": "panel6956E6AFBA41794E",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel7A03446583307849",
+        "structure": "{\"height\":6,\"width\":4,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel7B306776BF729848",
+        "structure": "{\"height\":6,\"width\":4,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panelA8FDCC1D9F345A47",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panelB0AF606F9B621B48",
+        "structure": "{\"height\":6,\"width\":4,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelE3E0701A9A005A47",
+        "structure": "{\"height\":6,\"width\":4,\"x\":20,\"y\":0}"
+      },
+      {
+        "key": "panelFC5D24BBA787B842",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":18}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel01637F79A770E845",
+      "title": "Cache Loading Details",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"AutoSavingCache*\" and message matches \"*Completed loading*\"\n| parse regex field=message \"Completed loading \\((?<load_duration_ms>[0-9]*) ms; (?<cache_items>[0-9]*) keys\\) KeyCache cache\"\n| timeslice 1m\n| count by _timeslice,load_duration_ms,cache_items | fields -_count\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0214D8E7B68BD844",
+      "title": "Cache Status",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Size\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false},\"axisY2\":{\"title\":\"Capacity\"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Dark\"},\"overrides\":[{\"series\":[\"size\"],\"queries\":[],\"properties\":{\"axisYType\":\"secondary\",\"type\":\"line\",\"name\":\"Size\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"Service Thread\" and message matches \"KeyCache*\"\n| parse regex field=message \"(?<cache_type>[A-Za-z]*Cache(?! Type)) *(?<size>[0-9]*) *(?<capacity>[0-9]*) *(?<keys_to_save>[^ ]*) *(?<provider>[A-Za-z_.$]*)\"\n| timeslice 1h\n|sum(size) as size, sum(capacity) as capacity by _timeslice\n| sort by _timeslice asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel183DDA5B9D1FE947",
+      "title": "Cache Saving Schedule",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"main\" and source_file matches \"CacheService*\" and message matches \"Scheduling*\"\n| parse regex field=message \"Scheduling (?<cache_type>[^ ]*) cache save to every (?<save_interval>[0-9]*) seconds \\(going to save (?<keys_to_save>[^ ]*) keys\\).\"\n| count by _timeslice,cache_type,save_interval,keys_to_save\n| fields - _count\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel376A46C0936E6A41",
+      "title": "Cache Init",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\" \",\"unit\":{\"value\":\"MB\",\"isCustom\":false}}},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[{\"series\":[\"cache_capacity_mb\"],\"queries\":[],\"properties\":{\"name\":\"Cache Capacity\"}}],\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" Initializing | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"main\" and source_file matches \"CacheService*\" and message matches \"Initializing*\"\n| parse field=message \"Initializing * cache with capacity of * MBs*\" as cache_type,cache_capacity_mb,cache_provider\n| timeslice 1h\n|sum(cache_capacity_mb) as cache_capacity_mb by _timeslice\n| sort by _timeslice asc\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5A9CD2BE8CF4884E",
+      "title": "Cache Items Save",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"Items\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" \"CompactionExecutor\" \"Saved\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"CompactionExecutor\" and source_file matches \"AutoSavingCache*\" and message matches \"*Saved KeyCache*\"\n| parse regex field=message \"Saved (?<cache_type>[^ ]*) \\((?<cache_items>[0-9]*) items\\) in (?<save_duration_ms>[0-9]*) ms\"\n| sum(cache_items) as cache_items\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6956E6AFBA41794E",
+      "title": "Cache Init Capacity (MB)",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"MB\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" Initializing | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"main\" and source_file matches \"CacheService*\" and message matches \"Initializing*\"\n| parse field=message \"Initializing * cache with capacity of * MBs*\" as cache_type,cache_capacity_mb,cache_provider\n|sum(cache_capacity_mb) as cache_capacity_mb\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7A03446583307849",
+      "title": "Total Cache Capacity",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"Service Thread\" and message matches \"KeyCache*\"\n| parse regex field=message \"(?<cache_type>[A-Za-z]*Cache(?! Type)) *(?<size>[0-9]*) *(?<capacity>[0-9]*) *(?<keys_to_save>[^ ]*) *(?<provider>[A-Za-z_.$]*)\"\n| sum (capacity) as capacity",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7B306776BF729848",
+      "title": "Cache Loading Items",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"Items\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"AutoSavingCache*\" and message matches \"*Completed loading*\"\n| parse regex field=message \"Completed loading \\((?<load_duration_ms>[0-9]*) ms; (?<cache_items>[0-9]*) keys\\) KeyCache cache\"\n| sum(cache_items) as cache_items\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelA8FDCC1D9F345A47",
+      "title": "Cache Saving Details",
+      "visualSettings": "{\"series\":{},\"axes\":{\"axisX\":{\"title\":\" \"},\"axisY\":{\"title\":\"items\",\"logarithmic\":false},\"axisY2\":{\"unit\":{\"value\":\"ms\",\"isCustom\":false},\"title\":\"Save Duration\"}},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Dark\"},\"overrides\":[{\"series\":[\"save_duration\"],\"queries\":[],\"properties\":{\"axisYType\":\"secondary\",\"lineDashType\":\"dash\",\"type\":\"line\",\"name\":\"Save Duration\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" \"CompactionExecutor\" \"Saved\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"CompactionExecutor\" and source_file matches \"AutoSavingCache*\" and message matches \"*Saved KeyCache*\"\n| parse regex field=message \"Saved (?<cache_type>[^ ]*) \\((?<cache_items>[0-9]*) items\\) in (?<save_duration_ms>[0-9]*) ms\"\n| timeslice 5m\n|sum(cache_items) as items, sum(save_duration_ms) as save_duration by _timeslice\n| sort by _timeslice asc\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelB0AF606F9B621B48",
+      "title": "Total Cache Size",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where thread_name matches \"Service Thread\" and message matches \"KeyCache*\"\n| parse regex field=message \"(?<cache_type>[A-Za-z]*Cache(?! Type)) *(?<size>[0-9]*) *(?<capacity>[0-9]*) *(?<keys_to_save>[^ ]*) *(?<provider>[A-Za-z_.$]*)\"\n|sum(size) as size",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE3E0701A9A005A47",
+      "title": "Total Cache Read",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"AutoSavingCache*\" and message matches \"*reading saved cache*\"\n| parse regex field=message \"reading saved cache (?<cache_file>.*)\"\n| count by cache_file",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelFC5D24BBA787B842",
+      "title": "Cache Read",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"axes\":{\"axisX\":{\"title\":\"\"},\"axisY\":{\"title\":\" \"}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "%\"sumo.datasource\"=cassandra %\"deployment.environment\"={{deployment.environment}} %\"db.cluster.name\"={{db.cluster.name}}   \"INFO\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as mesg\n| parse regex field=mesg \"(?<level>[A-Z]*) *\\[(?<thread_name>[^\\]]*?)[:_-]?(?<thread_id>[0-9]*)\\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)\"\n| where source_file matches \"AutoSavingCache*\" and message matches \"*reading saved cache*\"\n| parse regex field=message \"reading saved cache (?<cache_file>.*)\"\n| timeslice 1d\n| count by _timeslice, cache_file\n| transpose row _timeslice column cache_file\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\n%\"sumo.datasource\"=cassandra|count by %\"deployment.environment\"",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\n%\"sumo.datasource\"=cassandra|count by %\"db.cluster.name\"",
+        "field": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

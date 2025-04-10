@@ -1,0 +1,410 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Threat Intel for AWS - AWS CloudTrail - New",
+  "description": "Review this dashboard for details on potential threats and IOCs for AWS CloudTrail.",
+  "title": "Threat Intel for AWS - AWS CloudTrail - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panele093f2738aa7194f",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel5692dfaea6701b4d",
+        "structure": "{\"width\":16,\"height\":18,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panel5ce8cbe9aaa37847",
+        "structure": "{\"width\":8,\"height\":8,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panelca9333c1b3a13b4e",
+        "structure": "{\"width\":8,\"height\":10,\"x\":0,\"y\":11}"
+      },
+      {
+        "key": "panel0f90f86a87309b4a",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":14}"
+      },
+      {
+        "key": "panelb534973090f77a4c",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":14}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelb534973090f77a4c",
+      "title": "Threats by Events and Result",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, event_name, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence ,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| if (isNull(actor) or actor=\"\",\"Unassigned\",actor) as actor\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{result}}\" = \"*\", true, result matches \"{{result}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count by event_name, result\n| transpose row event_name column result",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5ce8cbe9aaa37847",
+      "title": "Threats by Events and I.P",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, event_name, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| where result!=\"AccessDenied\"\n| lookup type, actor, raw, threatlevel  as malicious_confidence ,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n|where if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{result}}\" = \"*\", true, result matches \"{{result}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count by  src_ip, event_name\n| transpose row src_ip column event_name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0f90f86a87309b4a",
+      "title": "Threats By Actor",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* sourceIPAddress \n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, event_name, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Unknown\",result) as result\n| lookup type, actor, raw, threatlevel as malicious_confidence ,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| if (isNull(actor) or actor=\"\",\"Unassigned\",actor) as actor\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{result}}\" = \"*\", true, result matches \"{{result}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count by actor",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panele093f2738aa7194f",
+      "title": "Threats by Geo Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{result}}\" = \"*\", true, result matches \"{{result}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count by latitude, longitude, label_name,threat_last_updated",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5692dfaea6701b4d",
+      "title": "Threats Associated with CloudTrail Events",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":16,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, event_name, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel  as malicious_confidence ,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n|  formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{result}}\" = \"*\", true, result matches \"{{result}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count by event_time, src_user,src_ip,event_name, aws_region , result , malicious_confidence, label_name,  threat_malware_families,threat_last_updated",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelca9333c1b3a13b4e",
+      "title": "Threats Over Time by Result",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, event_name, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel  as malicious_confidence ,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| timeslice 1h\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{result}}\" = \"*\", true, result matches \"{{result}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{aws_region}}\" = \"*\", true, aws_region matches \"{{aws_region}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count by _timeslice, result\n| transpose row _timeslice column result",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "actor",
+      "displayName": "actor",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "actor"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "label_name",
+      "displayName": "label_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "label_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_user",
+      "displayName": "src_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "src_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user_agent",
+      "displayName": "user_agent",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "user_agent"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "aws_region",
+      "displayName": "aws_region",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "aws_region"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "action",
+      "displayName": "action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "action"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "threat_last_updated",
+      "displayName": "threat_last_updated",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "threat_last_updated"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "threat_malware_families",
+      "displayName": "threat_malware_families",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "threat_malware_families"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "event_time",
+      "displayName": "event_time",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "event_time"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "result",
+      "displayName": "result",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "result"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "event_name",
+      "displayName": "event_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "event_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "malicious_confidence",
+      "displayName": "malicious_confidence",
+      "defaultValue": "high",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "malicious_confidence"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "accountid",
+      "displayName": "accountid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  sourceIPAddress\n| json \"eventTime\",\"eventName\", \"awsRegion\", \"sourceIPAddress\", \"errorCode\",\"userAgent\" as event_time, action, aws_region, src_ip, result,user_agent nodrop\n| json \"userIdentity.userName\", \"userIdentity.accountId\" as src_user, accountId nodrop \n| if (result==\"\" or isNull(result), \"Success\",result) as result \n| lookup type, actor, raw, threatlevel as malicious_confidence,threat from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name \n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip",
+        "field": "accountid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

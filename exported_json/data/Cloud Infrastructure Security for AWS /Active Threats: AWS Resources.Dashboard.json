@@ -1,0 +1,395 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Active Threats: AWS Resources",
+  "description": "The Active Threats: AWS Resources dashboard shows threats identified in AWS resources such as EC2 and IAM User. It shows findings by resource, trend, resource type, category, and country. Like the Resource Risk Dashboard, this dashboard has an Action Plan panel so you can access suggested resources that need attention.",
+  "title": "Active Threats: AWS Resources",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-3FD47E66A1DFDB4F",
+        "structure": "{\"height\":9,\"width\":12,\"x\":0,\"y\":16}"
+      },
+      {
+        "key": "panelPANE-EFAE317E9AAE7A47",
+        "structure": "{\"height\":9,\"width\":24,\"x\":0,\"y\":39}"
+      },
+      {
+        "key": "panelPANE-B482D54AA6974840",
+        "structure": "{\"height\":14,\"width\":24,\"x\":0,\"y\":25}"
+      },
+      {
+        "key": "panelPANE-AADE9717BFE58942",
+        "structure": "{\"height\":8,\"width\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelABB5324180D49A40",
+        "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panel27E7995392A26843",
+        "structure": "{\"height\":9,\"width\":12,\"x\":12,\"y\":16}"
+      },
+      {
+        "key": "panel1E2D0410AE265B43",
+        "structure": "{\"height\":8,\"width\":18,\"x\":6,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-3FD47E66A1DFDB4F",
+      "title": "Findings by Resource Type",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"roundDataPoints\":true,\"fillOpacity\":1,\"mode\":\"distribution\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/GuardDuty \n| json \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\", \"resource.instanceDetails\", \"resource.accessKeyDetails.userName\" as cloud.account.id, cloud.region, partition, id, arn, type, service_name, detector_id, action, severity_level, title, description, vpcId, subnetId , securityGroupId, tags, securityGroupName, instanceDetails, user.name nodrop\n\n| json field=instanceDetails \"instanceId\", \"instanceType\",\"networkInterfaces[0].publicIp\" as instanceid, cloud.machine.type, server.ip\n| json field=_raw \"resource.resourceType\" as resourceType\n| json field=_raw \"resource.s3BucketDetails[0].name\" as bucketName nodrop\n| if (resourceType = \"S3Bucket\",bucketName, instanceid  ) as cloud.instance.id\n\n| json field=action \"awsApiCallAction.remoteIpDetails.ipAddressV4\", \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as awsCallActionIp, networkActionIp, localPort nodrop\n\n| parse field=type \"*:*/*\" as threat.tactic.name,cloud.service.name,threat.technique.name \n| if (severity_level = 0, \"informational\", risk.static_level) as risk.static_level\n| if (severity_level <= 2, \"low\", risk.static_level) as risk.static_level\n| if ((severity_level <= 5) and (severity_level > 2), \"medium\", risk.static_level) as risk.static_level\n| if ((severity_level <= 9) and (severity_level > 5), \"high\", risk.static_level) as risk.static_level\n| if (severity_level > 9,\"critical\", risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(user.name), \"NA\", user.name) as user.name\n| if(isEmpty(awsCallActionIp), networkActionIp, awsCallActionIp) as client.ip\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level matches \"{{risk.static_level}}\") AND if (\"{{threat.tactic.name}}\" = \"*\", true, threat.tactic.name matches \"{{threat.tactic.name}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\")\n\n| count by cloud.service.name\n| sort by _count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-EFAE317E9AAE7A47",
+      "title": "Threats by Country",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"map\",\"displayType\":\"default\",\"roundDataPoints\":true,\"mode\":\"map\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/GuardDuty   (geoLocation and lat and lon)\n| json \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\", \"resource.instanceDetails\", \"resource.accessKeyDetails.userName\" as cloud.account.id, cloud.region, partition, id, arn, type, service_name, detector_id, action, severity_level, title, description, vpcId, subnetId , securityGroupId, tags, securityGroupName, instanceDetails, user.name nodrop\n\n| json field=instanceDetails \"instanceId\", \"instanceType\",\"networkInterfaces[0].publicIp\" as instanceid, cloud.machine.type, server.ip\n| json field=_raw \"resource.resourceType\" as resourceType\n| json field=_raw \"resource.s3BucketDetails[0].name\" as bucketName nodrop\n| if (resourceType = \"S3Bucket\",bucketName, instanceid  ) as cloud.instance.id\n\n| json field=action \"awsApiCallAction.remoteIpDetails.ipAddressV4\", \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\",\"networkConnectionAction.remoteIpDetails.geoLocation.lon\", \"networkConnectionAction.remoteIpDetails.geoLocation.lat\", \"networkConnectionAction.remoteIpDetails.organization.asnOrg\", \"networkConnectionAction.remoteIpDetails.organization.org\", \"networkConnectionAction.remoteIpDetails.organization.isp\" as awsCallActionIp, networkActionIp, localPort,longitude, latitude, asnOrg, organization, isp nodrop\n\n| parse field=type \"*:*/*\" as threat.tactic.name,cloud.service.name,threat.technique.name \n| if (severity_level = 0, \"informational\", risk.static_level) as risk.static_level\n| if (severity_level <= 2, \"low\", risk.static_level) as risk.static_level\n| if ((severity_level <= 5) and (severity_level > 2), \"medium\", risk.static_level) as risk.static_level\n| if ((severity_level <= 9) and (severity_level > 5), \"high\", risk.static_level) as risk.static_level\n| if (severity_level > 9,\"critical\", risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(user.name), \"NA\", user.name) as user.name\n| if(isEmpty(awsCallActionIp), networkActionIp, awsCallActionIp) as client.ip\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level matches \"{{risk.static_level}}\") AND if (\"{{threat.tactic.name}}\" = \"*\", true, threat.tactic.name matches \"{{threat.tactic.name}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\")\n\n| lookup latitude, longitude from geo://location on ip = client.ip\n|  count by latitude, longitude",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-B482D54AA6974840",
+      "title": "Action Plan",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"roundDataPoints\":true,\"paginationPageSize\":10,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/GuardDuty \n| json \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\", \"resource.instanceDetails\", \"resource.accessKeyDetails.userName\" as cloud.account.id, cloud.region, partition, id, arn, type, service_name, detector_id, action, severity_level, title, description, vpcId, subnetId , securityGroupId, tags, securityGroupName, instanceDetails, user.name nodrop\n\n| json field=instanceDetails \"instanceId\", \"instanceType\",\"networkInterfaces[0].publicIp\" as instanceid, cloud.machine.type, server.ip\n| json field=_raw \"resource.resourceType\" as resourceType\n| json field=_raw \"resource.s3BucketDetails[0].name\" as bucketName nodrop\n| if (resourceType = \"S3Bucket\",bucketName, instanceid  ) as cloud.instance.id\n\n| json field=action \"awsApiCallAction.remoteIpDetails.ipAddressV4\", \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\",\"networkConnectionAction.remoteIpDetails.geoLocation.lon\", \"networkConnectionAction.remoteIpDetails.geoLocation.lat\", \"networkConnectionAction.remoteIpDetails.organization.asnOrg\", \"networkConnectionAction.remoteIpDetails.organization.org\", \"networkConnectionAction.remoteIpDetails.organization.isp\" as awsCallActionIp, networkActionIp, localPort,longitude, latitude, asnOrg, organization, isp nodrop\n\n| parse field=type \"*:*/*\" as threat.tactic.name,cloud.service.name,threat.technique.name \n| if (severity_level = 0, \"informational\", risk.static_level) as risk.static_level\n| if (severity_level <= 2, \"low\", risk.static_level) as risk.static_level\n| if ((severity_level <= 5) and (severity_level > 2), \"medium\", risk.static_level) as risk.static_level\n| if ((severity_level <= 9) and (severity_level > 5), \"high\", risk.static_level) as risk.static_level\n| if (severity_level > 9,\"critical\", risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(user.name), \"NA\", user.name) as user.name\n| if(isEmpty(awsCallActionIp), networkActionIp, awsCallActionIp) as client.ip\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level matches \"{{risk.static_level}}\") AND if (\"{{threat.tactic.name}}\" = \"*\", true, threat.tactic.name matches \"{{threat.tactic.name}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\")\n\n| if(!isNull(cloud.instance.id),concat (\"https://\",region,\".console.aws.amazon.com/ec2/v2/home?region=\",cloud.region,\"#Instances:search=\",cloud.instance.id),\"\") as link\n| tourl (link, cloud.account.id) as cloud.account.id\n| count as frequency by title, cloud.account.id, cloud.service.name, organization, isp, client.ip\n| sort by frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-AADE9717BFE58942",
+      "title": "Total Findings",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true,\"noDataMessage\":\"0\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"textColor\":\"\",\"backgroundColor\":\"\",\"label\":\"Label\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":true,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":1,\"to\":10,\"color\":\"#16943E\"},{\"from\":10.0001,\"to\":100,\"color\":\"#DFBE2E\"},{\"from\":100.0001,\"to\":10000,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":10000}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/GuardDuty \n| json \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\", \"resource.instanceDetails\", \"resource.accessKeyDetails.userName\" as cloud.account.id, cloud.region, partition, id, arn, type, service_name, detector_id, action, severity_level, title, description, vpcId, subnetId , securityGroupId, tags, securityGroupName, instanceDetails, user.name nodrop\n\n| json field=instanceDetails \"instanceId\", \"instanceType\",\"networkInterfaces[0].publicIp\" as instanceid, cloud.machine.type, server.ip\n| json field=_raw \"resource.resourceType\" as resourceType\n| json field=_raw \"resource.s3BucketDetails[0].name\" as bucketName nodrop\n| if (resourceType = \"S3Bucket\",bucketName, instanceid  ) as cloud.instance.id\n\n| json field=action \"awsApiCallAction.remoteIpDetails.ipAddressV4\", \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as awsCallActionIp, networkActionIp, localPort nodrop\n\n| parse field=type \"*:*/*\" as threat.tactic.name,cloud.service.name,threat.technique.name \n| if (severity_level = 0, \"informational\", risk.static_level) as risk.static_level\n| if (severity_level <= 2, \"low\", risk.static_level) as risk.static_level\n| if ((severity_level <= 5) and (severity_level > 2), \"medium\", risk.static_level) as risk.static_level\n| if ((severity_level <= 9) and (severity_level > 5), \"high\", risk.static_level) as risk.static_level\n| if (severity_level > 9,\"critical\", risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(user.name), \"NA\", user.name) as user.name\n| if(isEmpty(awsCallActionIp), networkActionIp, awsCallActionIp) as client.ip\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level matches \"{{risk.static_level}}\") AND if (\"{{threat.tactic.name}}\" = \"*\", true, threat.tactic.name matches \"{{threat.tactic.name}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\")\n\n| count ",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelABB5324180D49A40",
+      "title": "Findings Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Diverging 1\"},\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"roundDataPoints\":true,\"markerSize\":8,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3,\"mode\":\"timeSeries\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/GuardDuty \n| json \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\", \"resource.instanceDetails\", \"resource.accessKeyDetails.userName\" as cloud.account.id, cloud.region, partition, id, arn, type, service_name, detector_id, action, severity_level, title, description, vpcId, subnetId , securityGroupId, tags, securityGroupName, instanceDetails, user.name nodrop\n\n| json field=instanceDetails \"instanceId\", \"instanceType\",\"networkInterfaces[0].publicIp\" as instanceid, cloud.machine.type, server.ip\n| json field=_raw \"resource.resourceType\" as resourceType\n| json field=_raw \"resource.s3BucketDetails[0].name\" as bucketName nodrop\n| if (resourceType = \"S3Bucket\",bucketName, instanceid  ) as cloud.instance.id\n\n| json field=action \"awsApiCallAction.remoteIpDetails.ipAddressV4\", \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as awsCallActionIp, networkActionIp, localPort nodrop\n\n| parse field=type \"*:*/*\" as threat.tactic.name,cloud.service.name,threat.technique.name \n| if (severity_level = 0, \"informational\", risk.static_level) as risk.static_level\n| if (severity_level <= 2, \"low\", risk.static_level) as risk.static_level\n| if ((severity_level <= 5) and (severity_level > 2), \"medium\", risk.static_level) as risk.static_level\n| if ((severity_level <= 9) and (severity_level > 5), \"high\", risk.static_level) as risk.static_level\n| if (severity_level > 9,\"critical\", risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(user.name), \"NA\", user.name) as user.name\n| if(isEmpty(awsCallActionIp), networkActionIp, awsCallActionIp) as client.ip\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level matches \"{{risk.static_level}}\") AND if (\"{{threat.tactic.name}}\" = \"*\", true, threat.tactic.name matches \"{{threat.tactic.name}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\")\n\n| timeslice 1d\n| count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel27E7995392A26843",
+      "title": "Findings by Category",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"roundDataPoints\":true,\"fillOpacity\":1,\"mode\":\"distribution\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/GuardDuty \n| json \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\", \"resource.instanceDetails\", \"resource.accessKeyDetails.userName\" as cloud.account.id, cloud.region, partition, id, arn, type, service_name, detector_id, action, severity_level, title, description, vpcId, subnetId , securityGroupId, tags, securityGroupName, instanceDetails, user.name nodrop\n\n| json field=instanceDetails \"instanceId\", \"instanceType\",\"networkInterfaces[0].publicIp\" as instanceid, cloud.machine.type, server.ip\n| json field=_raw \"resource.resourceType\" as resourceType\n| json field=_raw \"resource.s3BucketDetails[0].name\" as bucketName nodrop\n| if (resourceType = \"S3Bucket\",bucketName, instanceid  ) as cloud.instance.id\n\n| json field=action \"awsApiCallAction.remoteIpDetails.ipAddressV4\", \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as awsCallActionIp, networkActionIp, localPort nodrop\n\n| parse field=type \"*:*/*\" as threat.tactic.name,cloud.service.name,threat.technique.name \n| if (severity_level = 0, \"informational\", risk.static_level) as risk.static_level\n| if (severity_level <= 2, \"low\", risk.static_level) as risk.static_level\n| if ((severity_level <= 5) and (severity_level > 2), \"medium\", risk.static_level) as risk.static_level\n| if ((severity_level <= 9) and (severity_level > 5), \"high\", risk.static_level) as risk.static_level\n| if (severity_level > 9,\"critical\", risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(user.name), \"NA\", user.name) as user.name\n| if(isEmpty(awsCallActionIp), networkActionIp, awsCallActionIp) as client.ip\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level matches \"{{risk.static_level}}\") AND if (\"{{threat.tactic.name}}\" = \"*\", true, threat.tactic.name matches \"{{threat.tactic.name}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\")\n\n| count  by threat.tactic.name\n| sort by _count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1E2D0410AE265B43",
+      "title": "Findings by Resource ",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"roundDataPoints\":true,\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":0.01,\"color\":\"#98ECA9\"},{\"from\":0.01,\"to\":10,\"color\":\"#F2DA73\"},{\"from\":10,\"to\":100,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\",\"noDataMessage\":\"\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/GuardDuty \n| json \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\", \"resource.instanceDetails\", \"resource.accessKeyDetails.userName\" as cloud.account.id, cloud.region, partition, id, arn, type, service_name, detector_id, action, severity_level, title, description, vpcId, subnetId , securityGroupId, tags, securityGroupName, instanceDetails, user.name nodrop\n\n| json field=instanceDetails \"instanceId\", \"instanceType\",\"networkInterfaces[0].publicIp\" as instanceid, cloud.machine.type, server.ip\n| json field=_raw \"resource.resourceType\" as resourceType\n| json field=_raw \"resource.s3BucketDetails[0].name\" as bucketName nodrop\n| if (resourceType = \"S3Bucket\",bucketName, instanceid  ) as cloud.instance.id\n\n| json field=action \"awsApiCallAction.remoteIpDetails.ipAddressV4\", \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as awsCallActionIp, networkActionIp, localPort nodrop\n\n| parse field=type \"*:*/*\" as threat.tactic.name,cloud.service.name,threat.technique.name \n| if (severity_level = 0, \"informational\", risk.static_level) as risk.static_level\n| if (severity_level <= 2, \"low\", risk.static_level) as risk.static_level\n| if ((severity_level <= 5) and (severity_level > 2), \"medium\", risk.static_level) as risk.static_level\n| if ((severity_level <= 9) and (severity_level > 5), \"high\", risk.static_level) as risk.static_level\n| if (severity_level > 9,\"critical\", risk.static_level) as risk.static_level\n\n// handle empty values\n| if(isEmpty(user.name), \"NA\", user.name) as user.name\n| if(isEmpty(awsCallActionIp), networkActionIp, awsCallActionIp) as client.ip\n\n// global filters\n| where if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.instance.id}}\" = \"*\", true, cloud.instance.id matches \"{{cloud.instance.id}}\") AND if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{risk.static_level}}\" = \"*\", true, risk.static_level matches \"{{risk.static_level}}\") AND if (\"{{threat.tactic.name}}\" = \"*\", true, threat.tactic.name matches \"{{threat.tactic.name}}\") AND if (\"{{cloud.service.name}}\" = \"*\", true, cloud.service.name matches \"{{cloud.service.name}}\") AND if (\"{{user.name}}\" = \"*\", true, user.name matches \"{{user.name}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\")\n\n| count by cloud.instance.id, cloud.account.id, cloud.region, risk.static_level,threat.tactic.name,cloud.service.name,threat.technique.name, user.name, client.ip\n| sort by _count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "cloud.account.id",
+      "displayName": "cloud.account.id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail*  \n| json \"userIdentity.accountId\" as accountId\n| count by accountId\n| sort by accountId",
+        "field": "accountid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "cloud.region",
+      "displayName": "cloud.region",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/GuardDuty \n| json field=_raw \"region\"",
+        "field": "region"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "cloud.service.name",
+      "displayName": "cloud.service.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/GuardDuty  \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\", \"resource.instanceDetails.instanceId\" as account_id, region, partition, id, arn, type, service_name, detector_id, action, severity, title, description, vpcId, subnetId , securityGroupId, tags, securityGroupName, instanceid nodrop\n| parse field=type \"*:*/*\" as threat.tactic.name,ResourceType,ThreatName",
+        "field": "ResourceType"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "server.ip",
+      "displayName": "server.ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "(_sourceCategory=PDET/CIS/AWS/GuardDuty )\n| json field=_raw \"resource.instanceDetails.networkInterfaces[0].publicIp\" as sourceIpAddress nodrop",
+        "field": "sourceIpAddress"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "cloud.instance.id",
+      "displayName": "cloud.instance.id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/GuardDuty \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\", \"resource.instanceDetails.instanceId\" as account_id, region, partition, id, arn, type, service_name, detector_id, action, severity, title, description, vpcId, subnetId , securityGroupId, tags, securityGroupName, instanceid nodrop\n\n| json field=_raw \"resource.resourceType\" as resourceType\n| json field=_raw \"resource.s3BucketDetails[0].name\" as bucketName nodrop\n| if (resourceType = \"S3Bucket\",bucketName, instanceid  ) as instance_id\n| if  (isNull(instance_id), \"NA\", instance_id) as instance_id\n| count by instance_id",
+        "field": "instance_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "risk.static_level",
+      "displayName": "risk.static_level",
+      "defaultValue": "high",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/GuardDuty  \n| json \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\", \"resource.instanceDetails.instanceId\" as account_id, region, partition, id, arn, type, service_name, detector_id, action, severity_level, title, description, vpcId, subnetId , securityGroupId, tags, securityGroupName, instanceid nodrop\n| if (severity_level = 0, \"informational\", severity) as severity\n| if (severity_level <= 2, \"low\", severity) as severity\n| if ((severity_level <= 5) and (severity_level > 2), \"medium\", severity) as severity\n| if ((severity_level <= 9) and (severity_level > 5), \"high\", severity) as severity\n| if (severity_level > 9,\"critical\", severity) as risk.static_level",
+        "field": "risk.static_level"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "threat.tactic.name",
+      "displayName": "threat.tactic.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/GuardDuty \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceTypeAffected,ThreatFamilyName\n| count by ThreatPurpose,ResourceTypeAffected,ThreatFamilyName",
+        "field": "ThreatPurpose"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user.name",
+      "displayName": "user.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/GuardDuty  \n| json field=_raw \"resource.accessKeyDetails.userName\" as user.name nodrop\n| if(isEmpty(user.name), \"NA\", user.name) as user.name",
+        "field": "user.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "client.ip",
+      "displayName": "client.ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/GuardDuty  \n| json \"service.action.awsApiCallAction.remoteIpDetails.ipAddressV4\", \"service.action.networkConnectionAction.remoteIpDetails.ipAddressV4\" as awsCallActionIp, networkActionIp nodrop\n| if(isEmpty(awsCallActionIp), networkActionIp, awsCallActionIp) as client.ip",
+        "field": "client.ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}
