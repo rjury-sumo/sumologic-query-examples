@@ -17,6 +17,9 @@ In each app md file you can see:
 - a list of all searches found
 - a markdown table of each search with details such as search type and origionating file
 
+## exported_json
+This is raw json dumps of legacy app items in library - it could be either a app folder, subfolder or single item (dashboard, search etc). This is the data set boiled down to the examples db.
+
 ### final_searches_db.json
 This is a single json file for programmatic analysis of exported searches. Every search that was exported can be found here grouped by high level app name.
 
