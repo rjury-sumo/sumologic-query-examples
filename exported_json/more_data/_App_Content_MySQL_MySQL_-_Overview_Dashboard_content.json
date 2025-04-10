@@ -1,0 +1,574 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "MySQL - Overview",
+  "description": "The MySQL Overview dashboard gives you an at-a-glance view of the state of your database clusters by monitoring key cluster information such as errors, failed logins, errors, queries executed, slow queries, lock waits, uptime and more.",
+  "title": "MySQL - Overview",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-FEFE04F5AB0E9B49",
+        "structure": "{\"height\":4,\"width\":5,\"x\":5,\"y\":4}"
+      },
+      {
+        "key": "panelPANE-F1D48302A17FF945",
+        "structure": "{\"height\":4,\"width\":5,\"x\":5,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-151C7BBABE109A4D",
+        "structure": "{\"height\":4,\"width\":5,\"x\":10,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-340F31EC9F9FA841",
+        "structure": "{\"height\":4,\"width\":5,\"x\":15,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-DA42BEC29E64D946",
+        "structure": "{\"height\":4,\"width\":5,\"x\":10,\"y\":4}"
+      },
+      {
+        "key": "panelA90D81C199890940",
+        "structure": "{\"height\":4,\"width\":5,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-B7A5660AB817694C",
+        "structure": "{\"height\":4,\"width\":4,\"x\":20,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-58E67F0FBB318840",
+        "structure": "{\"height\":4,\"width\":5,\"x\":0,\"y\":4}"
+      },
+      {
+        "key": "panel639C9768A0D9CB47",
+        "structure": "{\"height\":4,\"width\":5,\"x\":15,\"y\":4}"
+      },
+      {
+        "key": "panelPANE-CB6D9CC095F51947",
+        "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panelPANE-C61473C1B201284C",
+        "structure": "{\"height\":6,\"width\":6,\"x\":6,\"y\":8}"
+      },
+      {
+        "key": "panelPANE-838A33C1B498984F",
+        "structure": "{\"height\":6,\"width\":6,\"x\":12,\"y\":8}"
+      },
+      {
+        "key": "panelPANE-876B399B979AFA46",
+        "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":8}"
+      },
+      {
+        "key": "panel738DF790B1FBC94C",
+        "structure": "{\"height\":4,\"width\":4,\"x\":20,\"y\":4}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-FEFE04F5AB0E9B49",
+      "title": "Excessive Slow Queries (>=15 secs)",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Queries\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":0,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":1,\"color\":\"#16943E\"},{\"from\":1,\"to\":5,\"color\":\"#DFBE2E\"},{\"from\":5,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"  \n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" // Pttrn2-vrtn4\n| fields -query_block\n| num(query_time)\n| 15 as threshold // customize if need different value. As an example query taking more than 15 Seconds is considered as Excessive Slow. \n| where query_time >= threshold | count as queries_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "WJB9Htc99LyQNxyKS3Pvz6wphzwAvuceex5Cthq0hDy7uxRzNiSWJjKUi1g6",
+          "relativePath": "../Logs/MySQL - Slow Queries",
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-F1D48302A17FF945",
+      "title": "Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Errors\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":0,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":1,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[ERROR]\"\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\"\n| where ErrorLogtype=\"ERROR\" | count as error_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "hjHr0rldqIK2JM2xfvzrCnJiUtBbdZAhliH5dpP2rSwIKhhoTCjtSfUzWthv",
+          "relativePath": "../Logs/MySQL - Error Logs",
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-151C7BBABE109A4D",
+      "title": "Replication Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Average\",\"label\":\"Errors\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":0,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":1,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} ((\"[ERROR]\" and (\"Slave I/O\" or \"Error reading packet from server\" or \"Slave SQL\")) or \"[Note] Error reading relay log event: slave SQL thread was killed\")\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| count as replication_failure_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "p335qmbTHXz9bb8mrttjldOSaJM50HgamRKDbnIOcRFE5HCDbo7GHlqNWSXH",
+          "relativePath": "../Logs/MySQL - Replication",
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-340F31EC9F9FA841",
+      "title": "Failed Login Attempts",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Failed Logins\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":0,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":1,\"color\":\"#16943E\"},{\"from\":1,\"to\":5,\"color\":\"#DFBE2E\"},{\"from\":5,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[Warning]\" Access denied for user\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Access denied for user '*'@'*' (using password: YES)\" as user, ip_address\n| count as failed_login_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "gYqdrEKaBm2ilMY781hYyIEHoOps8wHEsaYEzgcFjCOk93sdL7x6TNK4X8uu",
+          "relativePath": "../Logs/MySQL - Failed Logins",
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-DA42BEC29E64D946",
+      "title": "FSync Op Count",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"FSync Ops\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* metric=mysql_innodb_data_fsyncs db_cluster={{db_cluster}} | sum",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "9gP0H00s8KsZDVvZP6uvhm8v66eJHiD4Tqq9xAwLfHgAYz47rTK1Bdm8L0S8",
+          "relativePath": "../Metrics/MySQL - Performance and Resource Metrics",
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelA90D81C199890940",
+      "title": "Server Uptime",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Average\",\"label\":\"Days\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* metric=mysql_uptime db_cluster={{db_cluster}} | max | eval _value / 86400",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "9gP0H00s8KsZDVvZP6uvhm8v66eJHiD4Tqq9xAwLfHgAYz47rTK1Bdm8L0S8",
+          "relativePath": "../Metrics/MySQL - Performance and Resource Metrics",
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-B7A5660AB817694C",
+      "title": "Connection Errors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"Errors\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":0,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":1,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* metric=mysql_connection_errors_* db_cluster={{db_cluster}} | sum",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "9gP0H00s8KsZDVvZP6uvhm8v66eJHiD4Tqq9xAwLfHgAYz47rTK1Bdm8L0S8",
+          "relativePath": "../Metrics/MySQL - Performance and Resource Metrics",
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-58E67F0FBB318840",
+      "title": "Slow Queries",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"Queries\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":0,\"valueFontSize\":14,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* metric=mysql_slow_queries db_cluster={{db_cluster}} | sum",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "9gP0H00s8KsZDVvZP6uvhm8v66eJHiD4Tqq9xAwLfHgAYz47rTK1Bdm8L0S8",
+          "relativePath": "../Metrics/MySQL - Performance and Resource Metrics",
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panel639C9768A0D9CB47",
+      "title": "Avg Row Lock Rate",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"Events/Sec\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":0,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":1,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* metric=mysql_innodb_row_lock_waits db_cluster={{db_cluster}} | avg",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "9gP0H00s8KsZDVvZP6uvhm8v66eJHiD4Tqq9xAwLfHgAYz47rTK1Bdm8L0S8",
+          "relativePath": "../Metrics/MySQL - Performance and Resource Metrics",
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-CB6D9CC095F51947",
+      "title": "Queries Executed",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"Queries\"}},{\"series\":[],\"queries\":[\"B\"],\"properties\":{\"color\":\"#c55003\",\"name\":\"Slow Queries\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* metric=mysql_queries db_cluster={{db_cluster}} | sum",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        },
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* metric=mysql_slow_queries db_cluster={{db_cluster}} | sum",
+          "queryType": "Metrics",
+          "queryKey": "B",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-C61473C1B201284C",
+      "title": "Innodb Row Lock Waits",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"Rate\"},\"axisY2\":{\"hideLabels\":false,\"title\":\"Current Locks\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"Row Lock Waits (Rate)\"}},{\"series\":[],\"queries\":[\"B\"],\"properties\":{\"axisYType\":\"secondary\",\"name\":\"Row Lock Current Waits\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* metric=mysql_innodb_row_lock_waits db_cluster={{db_cluster}} | sum",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        },
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* metric=mysql_innodb_row_lock_current_waits db_cluster={{db_cluster}} | sum",
+          "queryType": "Metrics",
+          "queryKey": "B",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-838A33C1B498984F",
+      "title": "Replication Status Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"event_count\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"failed\"],\"queries\":[],\"properties\":{\"color\":\"#df3d3d\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} (\"[Note]\" or (\"[ERROR]\" (\"Slave I/O\" or \"Error reading packet from server\" or \"Slave SQL\")))\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Slave SQL thread initialized, * replication in log '*' at position *, relay log '*' position: *\" as State,ReplicationLog,ReplicationPosition,ReplayLog,RelayPosition nodrop\n| parse field=ErrorMsg \"Slave SQL thread * because it reached its UNTIL position *\" as State, StoppedUntilPosition nodrop\n| parse field=ErrorMsg \"Error reading relay log event: slave SQL thread was *\" as state nodrop\n| if(_raw matches \"*[ERROR] Slave I/O*\" or _raw matches \"*[ERROR] Error reading packet from server*\"  or _raw matches \"*[ERROR] Slave SQL*\",\"failed\",state) as state\n| where state in (\"starting\", \"stopped\", \"killed\", \"failed\")\n| timeslice 1h\n| count by _timeslice, state\n| transpose row _timeslice column state\n| fillmissing timeslice(1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-876B399B979AFA46",
+      "title": "Slow Queries Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| timeslice 1h\n| count as queries_count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel738DF790B1FBC94C",
+      "title": "Table Lock Waits",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"Count\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":0,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":1,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* metric=mysql_table_locks_waited db_cluster={{db_cluster}} | sum",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "9gP0H00s8KsZDVvZP6uvhm8v66eJHiD4Tqq9xAwLfHgAYz47rTK1Bdm8L0S8",
+          "relativePath": "../Metrics/MySQL - Performance and Resource Metrics",
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db_cluster",
+      "displayName": "db_cluster",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* \n| count by db_cluster",
+        "field": "db_cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

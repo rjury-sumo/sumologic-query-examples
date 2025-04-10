@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "EC2_Events",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail (DescribeInstanceAttribute or ModifyInstanceAttribute or DescribeRouteTables or (AuthorizeSecurityGroupIngress and \"0.0.0.0\\\\/0\") or DescribeImages or DescribeInstances or DescribeSecurityGroups or CreateTraffic*)\n| json \"eventSource\", \"eventName\", \"errorCode\", \"requestParameters.ipPermissions.items[*]\",\"requestParameters.attribute\", \"requestParameters.value\" as eventSource, eventName, errorCode, listIpPermissions, attribute, val nodrop \n| where eventSource=\"ec2.amazonaws.com\" and isBlank(errorCode) and eventName in (\"AuthorizeSecurityGroupIngress\",\"ModifyInstanceAttribute\",\"DescribeRouteTables\",\"DescribeImages\", \"DescribeInstances\",\"DescribeSecurityGroups\",\"CreateTrafficMirrorTarget\", \"CreateTrafficMirrorSession\", \"CreateTrafficMirrorFilter\", \"CreateTrafficMirrorFilterRule\")  \n| parse regex field=listIpPermissions \"\\\"cidrIp\\\".*?:.*?(?<cirdrIp>[^\\\"]+)\\\"\" multi nodrop\n| parse regex field=listIpPermissions \"\\\"ipProtocol\\\".*?:.*?(?<ipProtocol>[^\\\"]+)\\\"\" multi nodrop\n| \"\" as classification\n| if(eventName = \"ModifyInstanceAttribute\" and attribute=\"disableApiTermination\" and val=\"true\",concat(\"EC2_Disableterminationprotection,\",classification),classification) as classification\n| if(eventName = \"DescribeRouteTables\",concat(\"EC2_DescribeRouteTables,\",classification),classification) as classification\n| if(eventName = \"AuthorizeSecurityGroupIngress\" and cirdrIp=\"0.0.0.0\\\\/0\" and toString(ipProtocol)=\"-1\" ,concat(\"EC2_AuthorizeSecurityGroupIngressToPublic,\",classification),classification) as classification\n| if(eventName = \"DescribeImages\",concat(\"EC2_ListAMIs,\",classification),classification) as classification\n| if(eventName = \"DescribeInstances\",concat(\"EC2_ListInstances,\",classification),classification) as classification\n| if(eventName = \"DescribeSecurityGroups\",concat(\"EC2_ListSecurityGroups,\",classification),classification) as classification\n| if(eventName in (\"CreateTrafficMirrorTarget\", \"CreateTrafficMirrorSession\", \"CreateTrafficMirrorFilter\", \"CreateTrafficMirrorFilterRule\"),concat(\"EC2_TrafficMirroring,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| \"EventCount\" as type \n| count as count by benchmarkname,type\n| fillmissing values(\"EC2_Disableterminationprotection\",\"EC2_DescribeRouteTables\", \"EC2_AuthorizeSecurityGroupIngressToPublic\",\"EC2_ListAMIs\",\"EC2_ListInstances\",\"EC2_ListSecurityGroups\",\"EC2_TrafficMirroring\") in benchmarkname, values(\"EventCount\") in type \n| toInt(count) as count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-60m"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-60m",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1h"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_inc_v1_rnd4685946T96PXzbCsyGRaXAZRUmB"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": "CloudTrail events related to listing EC2 instances, AMIs, enabling security group ingress and more"
+}

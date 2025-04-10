@@ -1,0 +1,333 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Amazon VPC Flow Logs - PCI Req 02, 04 - Insecure Data In Transit - New",
+  "description": "Handles PCI Req 02, 04 (Monitor Insecure Data In Transit)",
+  "title": "Amazon VPC Flow Logs - PCI Req 02, 04 - Insecure Data In Transit - New",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel49c214c29463da46",
+        "structure": "{\"width\":24,\"height\":1,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelf5ada0748efca84c",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panel98d7affe9bf2f94f",
+        "structure": "{\"width\":12,\"height\":8,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panel659feca1ba5b9943",
+        "structure": "{\"width\":12,\"height\":8,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panel9e788f98b6bb9948",
+        "structure": "{\"width\":12,\"height\":9,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panel4c3c4bce8a7bba4d",
+        "structure": "{\"width\":12,\"height\":9,\"x\":12,\"y\":12}"
+      },
+      {
+        "key": "paneldc519d2fa1dbeb4b",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":19}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel9e788f98b6bb9948",
+      "title": "Insecure Allowed Traffic by Protocol",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n| if ((compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8))), dest_ip, src_ip) as %\"Cardholder Host\"\n| timeslice 5m\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{account_id}}\" = \"*\", true, account_id matches \"{{account_id}}\") AND if (\"{{interface_id}}\" = \"*\", true, interface_id matches \"{{interface_id}}\")\n|count as Incidents by _timeslice, Protocol | protocol as Protocol_Val\n| lookup Keyword from https://s3.amazonaws.com/sumologic-app-data/protocol-numbers.csv on Decimal=Protocol_val \n| if (isNull(keyword), Protocol_val, Keyword) as Protocol\n| fields -keyword, protocol_val \n| transpose row _timeslice column Protocol",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf5ada0748efca84c",
+      "title": "Insecure Transport Protocol to or from CDE",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n// 21 - FTP, 23 - Telnet, 513 - rlogin\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"513\")\n// Note - Its assumed that the CDE comprise of IP address from 172.16.0.0/12, 192.168.0.0/16 and 10.0.0.0/8. User can configure specific IP addresses  based on org CDE IP address range(s)\n| where (compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8)) or compareCIDRPrefix(\"172.16.0.0\", src_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", src_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", src_ip, toInt(8)) and (dest_port in (\"21\", \"23\", \"513\")))\n| timeslice 15m\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{account_id}}\" = \"*\", true, account_id matches \"{{account_id}}\") AND if (\"{{interface_id}}\" = \"*\", true, interface_id matches \"{{interface_id}}\")\n|count as eventCount by _timeslice, account_Id, dest_ip, dest_port, interface_Id, protocol, src_ip, src_port\n| \"High\" as Severity | \"Insecure Transport Protocol to or from CDE\" as message",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4c3c4bce8a7bba4d",
+      "title": "Insecure Denied Traffic by Protocol",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC REJECT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"REJECT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n| if ((compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8))), dest_ip, src_ip) as %\"Cardholder Host\"\n| timeslice 5m\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{account_id}}\" = \"*\", true, account_id matches \"{{account_id}}\") AND if (\"{{interface_id}}\" = \"*\", true, interface_id matches \"{{interface_id}}\")\n|count as Incidents by _timeslice, Protocol | protocol as Protocol_Val\n| lookup Keyword from https://s3.amazonaws.com/sumologic-app-data/protocol-numbers.csv on Decimal=Protocol_val \n| if (isNull(keyword), Protocol_val, Keyword) as Protocol\n| fields -keyword, protocol_val \n| transpose row _timeslice column Protocol",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel98d7affe9bf2f94f",
+      "title": "Insecure Allowed Traffic by Application and Involved Host",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n| if ((compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8))), dest_ip, src_ip) as %\"Cardholder Host\"\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{account_id}}\" = \"*\", true, account_id matches \"{{account_id}}\") AND if (\"{{interface_id}}\" = \"*\", true, interface_id matches \"{{interface_id}}\")\n|count as Incidents by %\"Cardholder Host\", dest_port\n| lookup Keyword from https://s3.amazonaws.com/sumologic-app-data/port-numbers.csv on Decimal=dest_port\n| if (isNull(keyword), dest_port, Keyword) as application\n| fields -keyword, dest_port \n| transpose row %\"Cardholder Host\" column application",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneldc519d2fa1dbeb4b",
+      "title": "Network Activity - Unencrypted Default Port",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n// Unencrypted traffic default ports (FTP - port 21, telnet - port 23, http - port 80, 8008, 8080, rlogin - port 513)\n| timeslice 1m\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{account_id}}\" = \"*\", true, account_id matches \"{{account_id}}\") AND if (\"{{interface_id}}\" = \"*\", true, interface_id matches \"{{interface_id}}\")\n|count by _timeslice, dest_port \n| transpose row _timeslice column dest_port",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel49c214c29463da46",
+      "title": "Cardholder Data in Transit",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panel659feca1ba5b9943",
+      "title": "Insecure Allowed Traffic by Target Port and Involved Host",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC* ACCEPT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n| if ((compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8))), dest_ip, src_ip) as %\"Cardholder Host\"\n| dest_port as %\"Destination Port\"\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{account_id}}\" = \"*\", true, account_id matches \"{{account_id}}\") AND if (\"{{interface_id}}\" = \"*\", true, interface_id matches \"{{interface_id}}\")\n|count as Incidents by %\"Cardholder Host\", %\"Destination Port\", Protocol | protocol as Protocol_Val\n| lookup Keyword from https://s3.amazonaws.com/sumologic-app-data/protocol-numbers.csv on Decimal=Protocol_val \n| if (isNull(keyword), Protocol_val, Keyword) as Protocol | protocol as %\"Protocol\"\n| fields -keyword, protocol_val \n| transpose row %\"Destination Port\", Protocol column %\"Cardholder Host\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "dest_ip",
+      "displayName": "dest_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n| if ((compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8))), dest_ip, src_ip) as %\"Cardholder Host\"\n| timeslice 5m",
+        "field": "dest_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_port",
+      "displayName": "dest_port",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n| if ((compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8))), dest_ip, src_ip) as %\"Cardholder Host\"\n| timeslice 5m",
+        "field": "dest_port"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "account_id",
+      "displayName": "account_id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n| if ((compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8))), dest_ip, src_ip) as %\"Cardholder Host\"\n| timeslice 5m",
+        "field": "account_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n| if ((compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8))), dest_ip, src_ip) as %\"Cardholder Host\"\n| timeslice 5m",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "interface_id",
+      "displayName": "interface_id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n| if ((compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8))), dest_ip, src_ip) as %\"Cardholder Host\"\n| timeslice 5m",
+        "field": "interface_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_port",
+      "displayName": "src_port",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n| if ((compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8))), dest_ip, src_ip) as %\"Cardholder Host\"\n| timeslice 5m",
+        "field": "src_port"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "protocol",
+      "displayName": "protocol",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC ACCEPT (21 or 23 or 80 or 8008 or 8080 or 513)\n| json \"logStream\", \"logGroup\", \"message\" as logStream, logGroup, msg\n| parse field=msg \"* * * * * * * * * * * * * *\" as version, account_id, interface_id, src_ip, dest_ip, src_port, dest_port, Protocol, packets, bytes, start, end, action, log_status\n| where Action=\"ACCEPT\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\")\n| if ((compareCIDRPrefix(\"172.16.0.0\", dest_ip, toInt(12)) or compareCIDRPrefix(\"192.168.0.0\", dest_ip, toInt(16)) or compareCIDRPrefix(\"10.0.0.0\", dest_ip, toInt(8))), dest_ip, src_ip) as %\"Cardholder Host\"\n| timeslice 5m",
+        "field": "protocol"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

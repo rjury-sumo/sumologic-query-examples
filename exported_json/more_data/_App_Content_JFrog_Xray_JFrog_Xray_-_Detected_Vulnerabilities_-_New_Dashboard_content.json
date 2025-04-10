@@ -1,0 +1,677 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "JFrog Xray - Detected Vulnerabilities - New",
+  "description": "The JFrog Xray - Detected Vulnerabilities dashboard provides insight around users and client IP addresses that both uploaded and downloaded vulnerable artifacts into Artifactory.",
+  "title": "JFrog Xray - Detected Vulnerabilities - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelf5dc63d7889fd94a",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelec113df6b907fb4a",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panela95478909d6e8a4a",
+        "structure": "{\"width\":12,\"height\":1,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel6fe8a6cfb868da45",
+        "structure": "{\"width\":12,\"height\":1,\"x\":12,\"y\":5}"
+      },
+      {
+        "key": "panel0ca8d39897755b44",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panel68c853f28045ab4d",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panel53a43dc198828b41",
+        "structure": "{\"width\":7,\"height\":6,\"x\":0,\"y\":11}"
+      },
+      {
+        "key": "panel1fced3708eb42a4d",
+        "structure": "{\"width\":5,\"height\":6,\"x\":7,\"y\":11}"
+      },
+      {
+        "key": "panel5a5f7ca983479942",
+        "structure": "{\"width\":7,\"height\":6,\"x\":12,\"y\":11}"
+      },
+      {
+        "key": "panela87545c1b4b16943",
+        "structure": "{\"width\":5,\"height\":6,\"x\":19,\"y\":11}"
+      },
+      {
+        "key": "panel70b41af2953c8b43",
+        "structure": "{\"width\":6,\"height\":6,\"x\":0,\"y\":16}"
+      },
+      {
+        "key": "panel6cfaf2baa6ce1b4c",
+        "structure": "{\"width\":6,\"height\":6,\"x\":6,\"y\":16}"
+      },
+      {
+        "key": "panel99c7b3948930d847",
+        "structure": "{\"width\":6,\"height\":6,\"x\":12,\"y\":16}"
+      },
+      {
+        "key": "panel951c829da9318b4e",
+        "structure": "{\"width\":6,\"height\":6,\"x\":18,\"y\":16}"
+      },
+      {
+        "key": "panel75c7d4c9ba292945",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":21}"
+      },
+      {
+        "key": "panelf6a37b30b7ca8b40",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":21}"
+      },
+      {
+        "key": "panele07b5381be8d2b46",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":26}"
+      },
+      {
+        "key": "paneled05f986ab623a47",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":26}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel0ca8d39897755b44",
+      "title": "Vulnerable Artifacts",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}}\n| timeslice 10m\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by ArtifactName, _timeslice | count as %\"Number of Artifacts\" by _timeslice\n| compare with timeshift {{TimeCompare}}\n| fillmissing timeslice(10m)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1fced3708eb42a4d",
+      "title": "Artifact Package Types",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}} \n\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count as Count by ArtifactPkgType\n| sort by Count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel70b41af2953c8b43",
+      "title": "Artifacts with Vulnerability by Severity",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}} and !isEmpty(CVE)\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by ArtifactName, CVE, Severity\n| count_distinct(ArtifactName) as Artifacts, count_distinct(CVE) as Vulnerabilities by Severity\n| sort by Artifacts, Vulnerabilities, Severity asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6cfaf2baa6ce1b4c",
+      "title": "Artifacts - Top CVE",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where !isEmpty(CVE) and Severity matches {{Severity}} and CVE matches \"{{CVE}}\"\n| tourl(concat(\"https://nvd.nist.gov/vuln/detail/\", CVE), CVE) as CVE\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by ArtifactName, CVE, Severity\n| count as Artifacts by CVE, Severity\n| sort by Artifacts, CVE",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf6a37b30b7ca8b40",
+      "title": "Components - Top Description",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}} and Description matches \"{{Description}}\"\n|where if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by ComponentName, CVE, Description\n| sum(_count) as Incidents, count_distinct(ComponentName) as Components, count_distinct(CVE) as Vulnerabilities by Description\n| sort by Incidents, Components, Description asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela87545c1b4b16943",
+      "title": "Components Package Types",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}}\n\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count as Count by ComponentPkgType\n| sort by Count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6fe8a6cfb868da45",
+      "title": "Vulnerable Components",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panele07b5381be8d2b46",
+      "title": "Recent Vulnerable Artifacts",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"created\", \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as IssueCreated, TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| if (isEmpty(Created), IssueCreated, Created) as Created\n| if(isEmpty(CVE), \"-\", tourl(concat(\"https://nvd.nist.gov/vuln/detail/\", CVE), CVE)) as CVE\n| where ArtifactName matches \"{{ArtifactName}}\" and PolicyType matches \"{{PolicyType}}\" and CVE matches \"{{CVE}}\"\n| ArtifactName as %\"Artifact Name\" | ArtifactPath as %\"Artifact Path\"\n| ArtifactPkgType as %\"Package Type\" | PolicyType as %\"Policy Type\"\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\")\n|count as Count by Created, %\"Artifact Name\", %\"Artifact Path\", Severity,  %\"Package Type\", %\"Policy Type\", CVE\n| sort by Created\n| limit 20",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel68c853f28045ab4d",
+      "title": "Vulnerable Components",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}}\n| timeslice 10m\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by ComponentName, _timeslice | count as %\"Number of Components\" by _timeslice\n| compare with timeshift {{TimeCompare}}\n| fillmissing timeslice(10m)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelec113df6b907fb4a",
+      "title": "Detected Vulnerabilities Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}}\n| if(isEmpty(CVE), \"-\", tourl(concat(\"https://nvd.nist.gov/vuln/detail/\", CVE), CVE)) as CVE\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by ArtifactName, ComponentName, Summary, CVE, Severity\n| count_distinct(ArtifactName) as %\"Unique Artifacts\", count_distinct(ComponentName) as %\"Unique Components\", sum(_count) as Count by Summary, CVE, Severity \n| sort by Count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel75c7d4c9ba292945",
+      "title": "Artifacts - Top Description",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}} and Description matches \"{{Description}}\"\n|where if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by ArtifactName, CVE, Description\n| sum(_count) as Incidents, count_distinct(ArtifactName) as Artifacts, count_distinct(CVE) as Vulnerabilities by Description\n| sort by Incidents, Artifacts, Description asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela95478909d6e8a4a",
+      "title": "Vulnerable Artifacts",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "paneled05f986ab623a47",
+      "title": "Recent Vulnerable Components",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"created\", \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as IssueCreated, TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| if (isEmpty(Created), IssueCreated, Created) as Created\n| if(isEmpty(CVE), \"-\", tourl(concat(\"https://nvd.nist.gov/vuln/detail/\", CVE), CVE)) as CVE\n| where ComponentName matches \"{{ComponentName}}\" and PolicyType matches \"{{PolicyType}}\" and CVE matches \"{{CVE}}\"\n| ComponentName as %\"Component Name\" | ComponentPath as %\"Component Path\"\n| ComponentPkgType as %\"Package Type\" | PolicyType as %\"Policy Type\"\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count as Count by Created, %\"Component Name\", %\"Component Path\", Severity, %\"Package Type\", %\"Policy Type\", CVE\n| sort by Created\n| limit 20",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel99c7b3948930d847",
+      "title": "Components with Vulnerability by Severity",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}} and !isEmpty(CVE)\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by ComponentName, CVE, Severity\n| count_distinct(ComponentName) as Components, count_distinct(CVE) as Vulnerabilities by Severity\n| sort by Components, Vulnerabilities, Severity asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf5dc63d7889fd94a",
+      "title": "Detected Vulnerabilities",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}}\n| timeslice 10m\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by Summary, _timeslice | count as %\"Number of Vulnerabilities\" by _timeslice\n| compare with timeshift {{TimeCompare}}\n| fillmissing timeslice(10m)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel53a43dc198828b41",
+      "title": "Top 10 Artifacts with Most CVEs",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}}\n| where !isEmpty(CVE)\n| ArtifactName as %\"Artifact Name\"\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by CVE, %\"Artifact Name\"\n| count as Vulnerabilities by %\"Artifact Name\"\n| sort by Vulnerabilities\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel951c829da9318b4e",
+      "title": "Components - Top CVE",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where !isEmpty(CVE) and Severity matches {{Severity}} and CVE matches \"{{CVE}}\"\n| tourl(concat(\"https://nvd.nist.gov/vuln/detail/\", CVE), CVE) as CVE\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by ComponentName, CVE, Severity\n| count as Components by CVE, Severity\n| sort by Components, CVE",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5a5f7ca983479942",
+      "title": "Top 10 Components with Most CVEs",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\", \"severity\", \"summary\", \"cve\", \"provider\", \"created\", \"description\", \"type\" as Artifacts, Severity, Summary, CVE, Provider, Created, Description, PolicyType nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"infected_files\", \"path\", \"name\", \"display_name\", \"pkg_type\" as Files, ArtifactPath, ArtifactName, ArtifactDisplayName, ArtifactPkgType nodrop\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"path\", \"name\", \"display_name\", \"pkg_type\" as ComponentPath, ComponentName, ComponentDisplayName, ComponentPkgType nodrop\n| where Severity matches {{Severity}}\n| where !isEmpty(CVE) and !isEmpty(ComponentName)\n| ComponentName as %\"Component Name\"\n|where if (\"{{Description}}\" = \"*\", true, Description matches \"{{Description}}\") AND if (\"{{ComponentName}}\" = \"*\", true, ComponentName matches \"{{ComponentName}}\") AND if (\"{{PolicyType}}\" = \"*\", true, PolicyType matches \"{{PolicyType}}\") AND if (\"{{ArtifactName}}\" = \"*\", true, ArtifactName matches \"{{ArtifactName}}\")\n|count by CVE, %\"Component Name\"\n| count as Vulnerabilities by %\"Component Name\"\n| sort by Vulnerabilities\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "CVE",
+      "displayName": "CVE",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "TimeCompare",
+      "displayName": "TimeCompare",
+      "defaultValue": "1d",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1d"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "ArtifactName",
+      "displayName": "ArtifactName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Description",
+      "displayName": "Description",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Severity",
+      "displayName": "Severity",
+      "defaultValue": "/.*/",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "/.*/"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "PolicyType",
+      "displayName": "PolicyType",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "ComponentName",
+      "displayName": "ComponentName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

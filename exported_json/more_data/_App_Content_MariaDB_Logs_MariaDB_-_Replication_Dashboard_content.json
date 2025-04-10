@@ -1,0 +1,137 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "MariaDB - Replication",
+  "description": "The MariaDB - Replication dashboard provides insights into the state of database replication.",
+  "title": "MariaDB - Replication",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-9ECB9CB8ADB09A41",
+        "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-13CAE2638A044847",
+        "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":13}"
+      },
+      {
+        "key": "panelPANE-2BC3F7EDBCB0AA41",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":7}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-9ECB9CB8ADB09A41",
+      "title": "Replication Start-Stop Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"halfway_count\"],\"queries\":[],\"properties\":{\"type\":\"line\",\"axisYType\":\"primary\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} \"[Note]\" \"SQL thread\"\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Slave SQL thread initialized, * replication in log '*' at position *, relay log '*' position: *\" as State,ReplicationLog,ReplicationPosition,ReplayLog,RelayPosition nodrop\n| parse field=ErrorMsg \"Slave SQL thread exiting, replication * in log '*' at position *\" as state,ReplicationLog,RelayPosition nodrop\n| where state in (\"starting\", \"stopped\")\n| timeslice 1h\n| count as event_count by _timeslice, state\n| transpose row _timeslice column state as starting, stopped\n| (starting+stopped)/2 as halfway_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-13CAE2638A044847",
+      "title": "Top Reasons for Replication Failures",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} ((\"[ERROR]\" and (\"Slave I/O\" or \"Error reading packet from server\" or \"Slave SQL\")) or (\"[Note] Error reading relay log event: slave SQL thread was killed\"))\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| ErrorMsg as error_message\n| count as frequency by error_message, db_cluster\n| sort by frequency | limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-2BC3F7EDBCB0AA41",
+      "title": "Replication Status Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"event_count\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"failed\"],\"queries\":[],\"properties\":{\"color\":\"#df3d3d\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/mariadb db_system=mariadb db_cluster={{db_cluster}} (\"[Note]\" or (\"[ERROR]\" (\"Slave I/O\" or \"Error reading packet from server\" or \"Slave SQL\")))\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Slave SQL thread initialized, * replication in log '*' at position *, relay log '*' position: *\" as State,ReplicationLog,ReplicationPosition,ReplayLog,RelayPosition nodrop\n| parse field=ErrorMsg \"Slave SQL thread * because it reached its UNTIL position *\" as State, StoppedUntilPosition nodrop\n| parse field=ErrorMsg \"Error reading relay log event: slave SQL thread was *\" as state nodrop\n| if(_raw matches \"*[ERROR] Slave I/O*\" or _raw matches \"*[ERROR] Error reading packet from server*\"  or _raw matches \"*[ERROR] Slave SQL*\",\"failed\",state) as state\n| where state in (\"starting\", \"stopped\", \"killed\", \"failed\")\n| timeslice 1h\n| count by _timeslice, state\n| transpose row _timeslice column state\n| fillmissing timeslice(1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db_cluster",
+      "displayName": "db_cluster",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "db_system=mariadb _sourceCategory = Labs/mariadb | count by db_cluster",
+        "field": "db_cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

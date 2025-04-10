@@ -1,0 +1,331 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Linux - PCI Req 02, 10 - Login Activity - New",
+  "description": "Handles PCI Req 02, 10 (Login activities)",
+  "title": "Linux - PCI Req 02, 10 - Login Activity - New",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panele74b5d9e9ecaeb43",
+        "structure": "{\"width\":24,\"height\":1,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel4f51f505863ddb4c",
+        "structure": "{\"width\":7,\"height\":6,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panel45bc016e8fe1cb44",
+        "structure": "{\"width\":17,\"height\":6,\"x\":7,\"y\":1}"
+      },
+      {
+        "key": "panel1f980721ab02194d",
+        "structure": "{\"width\":7,\"height\":8,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panele28b45deb8884949",
+        "structure": "{\"width\":17,\"height\":8,\"x\":7,\"y\":6}"
+      },
+      {
+        "key": "panel0f86d730ade33a42",
+        "structure": "{\"width\":24,\"height\":1,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panel8a7f5e41817cc945",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":13}"
+      },
+      {
+        "key": "panel677566f7b01e084e",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":18}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel45bc016e8fe1cb44",
+      "title": "Failed Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/Linux* (\"authentication failure\" or \"FAILED SU\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| if (message matches \"sshd[*\", \"ssh\", \"\") as protocol\n| where dest_user!=\"\"\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip\n| timeslice 1s\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_host}}\" = \"*\", true, src_host matches \"{{src_host}}\") AND if (\"{{dest_host}}\" = \"*\", true, dest_host matches \"{{dest_host}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as eventCount by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user\n| sort by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panele28b45deb8884949",
+      "title": "Successful Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/Linux* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| timeslice 1s\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_host}}\" = \"*\", true, src_host matches \"{{src_host}}\") AND if (\"{{dest_host}}\" = \"*\", true, dest_host matches \"{{dest_host}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as eventCount by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user\n| sort by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4f51f505863ddb4c",
+      "title": "Failed Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":true,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":\"5\",\"color\":\"#33ca34\"},{\"from\":\"5\",\"to\":\"10\",\"color\":\"#ffc508\"},{\"from\":\"10\",\"to\":null,\"color\":\"#ff4141\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/Linux* (\"authentication failure\" or \"FAILED SU\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| if (message matches \"sshd[*\", \"ssh\", \"\") as protocol\n| where dest_user!=\"\"\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_host}}\" = \"*\", true, src_host matches \"{{src_host}}\") AND if (\"{{dest_host}}\" = \"*\", true, dest_host matches \"{{dest_host}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8a7f5e41817cc945",
+      "title": "Default Login (root user) - Failure",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/Linux* (\"authentication failure\" or \"FAILED SU\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| where src_user=\"root\" or dest_user=\"root\"\n| if (message matches \"sshd[*\", \"ssh\", \"\") as protocol\n| where dest_user!=\"\"\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip\n| timeslice 1s\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_host}}\" = \"*\", true, src_host matches \"{{src_host}}\") AND if (\"{{dest_host}}\" = \"*\", true, dest_host matches \"{{dest_host}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as eventCount by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user\n| sort by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0f86d730ade33a42",
+      "title": "Default Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panel1f980721ab02194d",
+      "title": "Successful Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":\"5\",\"color\":\"#33ca34\"},{\"from\":\"5\",\"to\":\"10\",\"color\":\"#ffc508\"},{\"from\":\"10\",\"to\":null,\"color\":\"#ff4141\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/Linux* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_host}}\" = \"*\", true, src_host matches \"{{src_host}}\") AND if (\"{{dest_host}}\" = \"*\", true, dest_host matches \"{{dest_host}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panele74b5d9e9ecaeb43",
+      "title": "Login - Success or Failures",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panel677566f7b01e084e",
+      "title": "Default Login (root user) - Success",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/Linux* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| where src_user=\"root\" or dest_user=\"root\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| timeslice 1s\n|where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_host}}\" = \"*\", true, src_host matches \"{{src_host}}\") AND if (\"{{dest_host}}\" = \"*\", true, dest_host matches \"{{dest_host}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as eventCount by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user\n| sort by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "src_user",
+      "displayName": "src_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/Linux* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| where src_user=\"root\" or dest_user=\"root\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| timeslice 1s",
+        "field": "src_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/Linux* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| where src_user=\"root\" or dest_user=\"root\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| timeslice 1s",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_host",
+      "displayName": "src_host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/Linux* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| where src_user=\"root\" or dest_user=\"root\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| timeslice 1s",
+        "field": "src_host"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "protocol",
+      "displayName": "protocol",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/Linux* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| where src_user=\"root\" or dest_user=\"root\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| timeslice 1s",
+        "field": "protocol"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_user",
+      "displayName": "dest_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/Linux* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| where src_user=\"root\" or dest_user=\"root\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| timeslice 1s",
+        "field": "dest_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_host",
+      "displayName": "dest_host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/Linux* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| where src_user=\"root\" or dest_user=\"root\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| timeslice 1s",
+        "field": "dest_host"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

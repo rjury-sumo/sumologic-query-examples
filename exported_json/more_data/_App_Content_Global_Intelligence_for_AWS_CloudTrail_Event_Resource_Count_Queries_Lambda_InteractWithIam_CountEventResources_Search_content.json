@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Lambda_InteractWithIam_CountEventResources",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail lambda.amazonaws.com \n| json \"userIdentity.type\", \"userIdentity.invokedBy\", \"errorCode\" as userType, service, errorCode nodrop \n| where service=\"lambda.amazonaws.com\" and isBlank(errorCode) and !isBlank(service) and userType=\"IAMUser\" \n| parse regex \"\\\"(?<arn>arn:[^\\\"]+)\\\"\" multi \n| parse regex field=arn \".*?:.*?:(?<service>[^:]+):.*?:.*?:(?<resource>[^:]+$)\" \n| where service=\"lambda\" \n| where !isBlank(resource) \n| count_distinct(resource) as count \n| \"Lambda_InteractWithIam_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"Lambda_InteractWithIam_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-24h",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1d"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": ""
+}

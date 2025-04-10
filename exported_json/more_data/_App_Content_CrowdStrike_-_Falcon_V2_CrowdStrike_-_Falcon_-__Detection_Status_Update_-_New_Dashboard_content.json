@@ -1,0 +1,312 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "CrowdStrike - Falcon -  Detection Status Update - New",
+  "description": "The CrowdStrike - Falcon - Detection Status Update dashboard provides high-level and detailed insights into the status of severity event detection in your CrowdStrike environment. Panels display event geographic locations, event classification by operation, details on quarantined files, and updates on policies and groups.",
+  "title": "CrowdStrike - Falcon -  Detection Status Update - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel820534cf831eeb40",
+        "structure": "{\"width\":8,\"height\":10,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panela70768168122a842",
+        "structure": "{\"width\":8,\"height\":10,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panel121121048fe7ea45",
+        "structure": "{\"width\":8,\"height\":10,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel56ab240e89ea4a4e",
+        "structure": "{\"width\":8,\"height\":11,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panel85229d78a94e1b4b",
+        "structure": "{\"width\":8,\"height\":11,\"x\":8,\"y\":8}"
+      },
+      {
+        "key": "panelaf5b4351b2fc8940",
+        "structure": "{\"width\":8,\"height\":11,\"x\":16,\"y\":8}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel56ab240e89ea4a4e",
+      "title": "Geo Location of Detection Status Update Events",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent \n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, src_user, user_ip, service_name, audit_values\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = user_ip\n|where if (\"{{service_name}}\" = \"*\", true, service_name matches \"{{service_name}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{customer_id}}\" = \"*\", true, customer_id matches \"{{customer_id}}\") AND if (\"{{event_type}}\" = \"*\", true, event_type matches \"{{event_type}}\") AND if (\"{{operation_name}}\" = \"*\", true, operation_name matches \"{{operation_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel121121048fe7ea45",
+      "title": "Quarantined Files",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken\n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, user_id, src_user, service_name, audit_values\n| where operation_name=\"quarantined_file_update\"  \n| parse regex field=audit_values \"\\\"ValueString\\\":\\\"(?<file_id>.+)\\\",\\\"Key\\\":\\\"quarantined_file_id\\\"\"\n|where if (\"{{service_name}}\" = \"*\", true, service_name matches \"{{service_name}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{customer_id}}\" = \"*\", true, customer_id matches \"{{customer_id}}\") AND if (\"{{event_type}}\" = \"*\", true, event_type matches \"{{event_type}}\") AND if (\"{{operation_name}}\" = \"*\", true, operation_name matches \"{{operation_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count by file_id\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel85229d78a94e1b4b",
+      "title": "Update Policy",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent \n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, src_user, user_ip, service_name, changed_values\n| where operation_name=\"update_policy\"\n|where if (\"{{service_name}}\" = \"*\", true, service_name matches \"{{service_name}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{customer_id}}\" = \"*\", true, customer_id matches \"{{customer_id}}\") AND if (\"{{event_type}}\" = \"*\", true, event_type matches \"{{event_type}}\") AND if (\"{{operation_name}}\" = \"*\", true, operation_name matches \"{{operation_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count by event_time, operation_name, src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela70768168122a842",
+      "title": "Quarantined Files Count",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken\n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, user_id, src_user, service_name, audit_values\n| where operation_name=\"quarantined_file_update\"\n|where if (\"{{service_name}}\" = \"*\", true, service_name matches \"{{service_name}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{customer_id}}\" = \"*\", true, customer_id matches \"{{customer_id}}\") AND if (\"{{event_type}}\" = \"*\", true, event_type matches \"{{event_type}}\") AND if (\"{{operation_name}}\" = \"*\", true, operation_name matches \"{{operation_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel820534cf831eeb40",
+      "title": "Operation Name",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent\n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, user_id, src_user, service_name, audit_values\n|where if (\"{{service_name}}\" = \"*\", true, service_name matches \"{{service_name}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{customer_id}}\" = \"*\", true, customer_id matches \"{{customer_id}}\") AND if (\"{{event_type}}\" = \"*\", true, event_type matches \"{{event_type}}\") AND if (\"{{operation_name}}\" = \"*\", true, operation_name matches \"{{operation_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count by operation_name\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelaf5b4351b2fc8940",
+      "title": "Update Group",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent \n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, src_user, user_ip, service_name, changed_values\n| where operation_name=\"update_group\"\n|where if (\"{{service_name}}\" = \"*\", true, service_name matches \"{{service_name}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{customer_id}}\" = \"*\", true, customer_id matches \"{{customer_id}}\") AND if (\"{{event_type}}\" = \"*\", true, event_type matches \"{{event_type}}\") AND if (\"{{operation_name}}\" = \"*\", true, operation_name matches \"{{operation_name}}\") AND if (\"{{event_time}}\" = \"*\", true, event_time matches \"{{event_time}}\")\n|count by event_time, operation_name, src_user, changed_values",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "event_type",
+      "displayName": "event_type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken\n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, user_id, src_user, service_name, audit_values\n| where operation_name=\"quarantined_file_update\"  \n| parse regex field=audit_values \"\\\"ValueString\\\":\\\"(?<file_id>.+)\\\",\\\"Key\\\":\\\"quarantined_file_id\\\"\"",
+        "field": "event_type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "service_name",
+      "displayName": "service_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken\n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, user_id, src_user, service_name, audit_values\n| where operation_name=\"quarantined_file_update\"  \n| parse regex field=audit_values \"\\\"ValueString\\\":\\\"(?<file_id>.+)\\\",\\\"Key\\\":\\\"quarantined_file_id\\\"\"",
+        "field": "service_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "event_time",
+      "displayName": "event_time",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken\n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, user_id, src_user, service_name, audit_values\n| where operation_name=\"quarantined_file_update\"  \n| parse regex field=audit_values \"\\\"ValueString\\\":\\\"(?<file_id>.+)\\\",\\\"Key\\\":\\\"quarantined_file_id\\\"\"",
+        "field": "event_time"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_user",
+      "displayName": "src_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken\n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, user_id, src_user, service_name, audit_values\n| where operation_name=\"quarantined_file_update\"  \n| parse regex field=audit_values \"\\\"ValueString\\\":\\\"(?<file_id>.+)\\\",\\\"Key\\\":\\\"quarantined_file_id\\\"\"",
+        "field": "src_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "customer_id",
+      "displayName": "customer_id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken\n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, user_id, src_user, service_name, audit_values\n| where operation_name=\"quarantined_file_update\"  \n| parse regex field=audit_values \"\\\"ValueString\\\":\\\"(?<file_id>.+)\\\",\\\"Key\\\":\\\"quarantined_file_id\\\"\"",
+        "field": "customer_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "operation_name",
+      "displayName": "operation_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken\n| json \"metadata.eventType\", \"metadata.customerIDString\", \"metadata.eventCreationTime\" as event_type, customer_id, event_time\n| formatDate(fromMillis(event_time), \"MM/dd/yyyy HH:mm:ss:SSS\") as event_time\n| where event_type=\"UserActivityAuditEvent\"\n| json \"event.OperationName\",  \"event.UserId\", \"event.UserIp\", \"event.ServiceName\", \"event.AuditKeyValues\" as operation_name, user_id, src_user, service_name, audit_values\n| where operation_name=\"quarantined_file_update\"  \n| parse regex field=audit_values \"\\\"ValueString\\\":\\\"(?<file_id>.+)\\\",\\\"Key\\\":\\\"quarantined_file_id\\\"\"",
+        "field": "operation_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

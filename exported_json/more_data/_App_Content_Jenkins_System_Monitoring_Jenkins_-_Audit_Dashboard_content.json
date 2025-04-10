@@ -1,0 +1,337 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Jenkins - Audit",
+  "description": "The Jenkins - Audit dashboard provides insights into all authentication activities. Panels display information on Jenkins system and job configuration changes, as well as job run activities.",
+  "title": "Jenkins - Audit",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-81F2E816B3DE3B40",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":9}"
+      },
+      {
+        "key": "panelPANE-CA9BC4B998E1AA40",
+        "structure": "{\"height\":9,\"width\":6,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-8243B188B7729840",
+        "structure": "{\"height\":9,\"width\":6,\"x\":18,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-7560D16AB0B40843",
+        "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":9}"
+      },
+      {
+        "key": "panelPANE-3A9D57ABA1DB6844",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":17}"
+      },
+      {
+        "key": "panelPANE-C35611A4AD6A9B43",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":17}"
+      },
+      {
+        "key": "panelPANE-097EF46696995A40",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":23}"
+      },
+      {
+        "key": "panelPANE-8A2E06BF832FB844",
+        "structure": "{\"height\":9,\"width\":12,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-81F2E816B3DE3B40",
+      "title": "Jobs Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Audit_Event\n| _sourceHost as Master\n| json \"userName\", \"auditEventType\", \"userId\", \"message\", \"eventTime\" as UserName, Event, UserId, Message, Time nodrop\n| where Event in (\"Job_Started\", \"Job_Aborted\", \"Job_Finished\") and userName matches \"{{UserName}}\" and userId matches \"{{UserId}}\" and Master matches \"{{Master}}\"\n| timeslice 10m\n| count as Count by _timeslice, Event\n| transpose row _timeslice column Event\n| fillmissing timeslice(10m)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-CA9BC4B998E1AA40",
+      "title": "Most Changed Configuration",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"scheme3\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Audit_Event\n| _sourceHost as Master\n| json \"userName\", \"auditEventType\", \"userId\", \"message\", \"eventTime\" as UserName, Event, UserId, Message, Time nodrop\n| where Event in (\"Config_Change\") and userName matches \"{{UserName}}\" and userId matches \"{{UserId}}\" and Master matches \"{{Master}}\"\n| parse regex \"file (?<Item_Name>.*?).xml\"\n| concat(Item_Name, \".xml\") as ItemName\n| where !(ItemName matches \"jobs/*\")\n| count as Count by ItemName\n| sort by Count\n| limit 5",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-8243B188B7729840",
+      "title": "Most changed Configuration by Job",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Audit_Event\n| _sourceHost as Master\n| json \"userName\", \"auditEventType\", \"userId\", \"message\", \"eventTime\" as UserName, Event, UserId, Message, Time nodrop\n| where Event in (\"Config_Change\") and userName matches \"{{UserName}}\" and userId matches \"{{UserId}}\" and Master matches \"{{Master}}\"\n| parse regex \"file (?<ItemName>.*?).xml\"\n| concat(ItemName, \".xml\") as ItemName\n| where ItemName matches \"jobs/*\"\n| parse field=ItemName \"jobs/*/config.xml\" as JobName\n| count as Count by JobName\n| sort by Count\n| limit 5",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-7560D16AB0B40843",
+      "title": "Configuration Change",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Audit_Event\n| _sourceHost as Master\n| json \"userName\", \"auditEventType\", \"userId\", \"message\", \"eventTime\" as UserName, Event, UserId, Message, Time nodrop\n| where Event in (\"Config_Change\") and userName matches \"{{UserName}}\" and userId matches \"{{UserId}}\" and Master matches \"{{Master}}\"\n| json \"fileDetails.Current_File_Data\", \"fileDetails.Old_File_Data\" as Current_File_Data, Old_File_Data nodrop\n| base64Decode(Current_File_Data) as Current_File_Data\n| base64Decode(Old_File_Data) as Old_File_Data\n| count as Count by Time, Master, Event, UserName, UserId, Message\n| sort by Time\n| fields - Count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-3A9D57ABA1DB6844",
+      "title": "User Authentication",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Audit_Event\n| _sourceHost as Master\n| json \"userName\", \"auditEventType\", \"userId\", \"message\", \"eventTime\" as UserName, Event, UserId, Message, Time nodrop\n| where Event in (\"User_Login\", \"User_Logout\", \"User_Login_Failure\") and userName matches \"{{UserName}}\" and userId matches \"{{UserId}}\" and Master matches \"{{Master}}\"\n| count as Count by Time, Master, Event, UserName, UserId, Message\n| sort by Time\n| fields - Count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-C35611A4AD6A9B43",
+      "title": "Jenkins Item Change",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Audit_Event\n| _sourceHost as Master\n| json \"userName\", \"auditEventType\", \"userId\", \"message\", \"eventTime\" as UserName, Event, UserId, Message, Time nodrop\n| where Event in (\"Created\", \"Deleted\", \"Updated\", \"Copied\", \"Location_Changed\") and userName matches \"{{UserName}}\" and userId matches \"{{UserId}}\" and Master matches \"{{Master}}\"\n| count as Count by Time, Master, Event, UserName, UserId, Message\n| sort by Time\n| fields - Count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-097EF46696995A40",
+      "title": "Job Activities",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Audit_Event\n| _sourceHost as Master\n| json \"userName\", \"auditEventType\", \"userId\", \"message\", \"eventTime\" as UserName, Event, UserId, Message, Time nodrop\n| where Event in (\"Job_Started\", \"Job_Aborted\", \"Job_Finished\") and userName matches \"{{UserName}}\" and userId matches \"{{UserId}}\" and Master matches \"{{Master}}\"\n| count as Count by Time, Master, Event, UserName, UserId, Message\n| sort by Time\n| fields - Count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-8A2E06BF832FB844",
+      "title": "User Events",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Audit_Event\n| _sourceHost as Master\n| json \"userName\", \"auditEventType\", \"userId\", \"message\", \"eventTime\" as UserName, Event, UserId, Message, Time nodrop\n| where userName matches \"{{UserName}}\" and userId matches \"{{UserId}}\" and Event matches \"{{Event}}\" and Master matches \"{{Master}}\"\n| count as Count by UserId, Event\n| transpose row UserId column Event",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Master",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jenkins*\n| _sourceHost as Master",
+        "field": "Master"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "UserName",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jenkins*\n| json \"userName\", \"auditEventType\", \"userId\", \"message\", \"eventTime\" as UserName, Event, UserId, Message, Time ",
+        "field": "UserName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "UserId",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jenkins*\n| json \"userName\", \"auditEventType\", \"userId\", \"message\", \"eventTime\" as UserName, Event, UserId, Message, Time ",
+        "field": "UserId"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Event",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jenkins*\n| json \"userName\", \"auditEventType\", \"userId\", \"message\", \"eventTime\" as UserName, Event, UserId, Message, Time ",
+        "field": "Event"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

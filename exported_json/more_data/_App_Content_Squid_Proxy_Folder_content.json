@@ -1,0 +1,3018 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Squid Proxy",
+  "description": "The Squid Proxy app is a unified logs and metrics app that helps you monitor activity in Squid Proxy. The preconfigured dashboards provide insight into served and denied requests; performance metrics; IP domain DNS statistics; traffic details; HTTP response codes; URLs experiencing redirects, client errors, and server errors; and quality of service data that helps you understand your users’ experience.",
+  "children": [
+    {
+      "type": "FolderSyncDefinition",
+      "name": "Logs",
+      "description": "This folder contains Logs based dashboards for Squid Proxy App",
+      "children": [
+        {
+          "type": "DashboardV2SyncDefinition",
+          "name": "Squid Proxy - Activity Trend",
+          "description": "Squid Proxy - Activity Trend dashboard provides trends around denied request trend, action trend, time spent to serve, success and non-success response, remote hosts.",
+          "title": "Squid Proxy - Activity Trend",
+          "theme": "Dark",
+          "topologyLabelMap": {
+            "data": {}
+          },
+          "refreshInterval": 0,
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "layout": {
+            "layoutType": "Grid",
+            "layoutStructures": [
+              {
+                "key": "panel761CC05A95B6E842",
+                "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":21}"
+              },
+              {
+                "key": "panelDD3C10569E491841",
+                "structure": "{\"height\":8,\"width\":7,\"x\":9,\"y\":13}"
+              },
+              {
+                "key": "panelA768F398A278AA42",
+                "structure": "{\"height\":7,\"width\":7,\"x\":0,\"y\":6}"
+              },
+              {
+                "key": "panel5C8F36CFB2A70B4A",
+                "structure": "{\"height\":8,\"width\":8,\"x\":16,\"y\":13}"
+              },
+              {
+                "key": "panel47BAFB29B692DB49",
+                "structure": "{\"height\":8,\"width\":9,\"x\":0,\"y\":13}"
+              },
+              {
+                "key": "panel8A166AF1AAD4A848",
+                "structure": "{\"height\":6,\"width\":9,\"x\":7,\"y\":0}"
+              },
+              {
+                "key": "panel8ACF90E2A50F6B47",
+                "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":0}"
+              },
+              {
+                "key": "panelD3755F908F72184F",
+                "structure": "{\"height\":7,\"width\":17,\"x\":7,\"y\":6}"
+              },
+              {
+                "key": "panelCAFB7B51B465EA4C",
+                "structure": "{\"height\":6,\"width\":7,\"x\":0,\"y\":0}"
+              }
+            ]
+          },
+          "panels": [
+            {
+              "id": null,
+              "key": "panel761CC05A95B6E842",
+              "title": "Recent Denied Requests",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy *DENIED*\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| peerhost as dest_ip\n| where action matches \"*DENIED*\"\n| timeslice 1s\n| count as eventCount by _timeslice, remotehost, method, peerstatus, dest_ip, type, action, status_code, url\n| sort by _timeslice",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelDD3C10569E491841",
+              "title": "Remote Hosts Traffic by Requests",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\",\"decimals\":2},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[\\w]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| count as %\"Requests\", sum(bytes) as bytes by remotehost\n| bytes / (1024 * 1024) as MegaBytes\n| where !isEmpty(remotehost)\n| total %\"MegaBytes\" as total_MegaBytes\n| total %\"Requests\" as %\"Total_Requests\"\n| %\"MegaBytes\"/total_MegaBytes*100 as %\"% Total MegaBytes\"\n| %\"Requests\"/%\"Total_Requests\"*100 as %\"% Total_Requests\"\n| sort by %\"% Total_Requests\"\n| fields remotehost, %\"Requests\", %\"% Total_Requests\", %\"MegaBytes\", %\"% Total MegaBytes\"",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelA768F398A278AA42",
+              "title": "Bytes Served",
+              "visualSettings": "{\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"Bytes Served\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message  nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where !isEmpty(method)\n| sum(bytes) as %\"BytesServed\" by method\n| sort by %\"BytesServed\", method asc",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel5C8F36CFB2A70B4A",
+              "title": "Remote Hosts Traffic by Requests",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[\\w]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| count as %\"Requests\", sum(bytes) as bytes by remotehost\n| bytes / (1024 * 1024) as MegaBytes\n| where !isEmpty(remotehost)\n| total %\"MegaBytes\" as total_MegaBytes\n| total %\"Requests\" as %\"Total_Requests\"\n| %\"MegaBytes\"/total_MegaBytes*100 as %\"% Total MegaBytes\"\n| %\"Requests\"/%\"Total_Requests\"*100 as %\"% Total_Requests\"\n| sort by %\"% Total_Requests\"\n| fields remotehost, %\"Requests\", %\"% Total_Requests\", %\"MegaBytes\", %\"% Total MegaBytes\"",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel47BAFB29B692DB49",
+              "title": "Denied Request Trend",
+              "visualSettings": "{\"series\":{},\"overrides\":[],\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Diverging 2\"}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy *DENIED*\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where action matches \"*DENIED*\"\n| timeslice 15m\n| count as eventCount by _timeslice",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel8A166AF1AAD4A848",
+              "title": "Request Trend by Squid Action",
+              "visualSettings": "{\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| timeslice 1h\n| count as %\"Requests\" by _timeslice, action\n| transpose row _timeslice column action",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel8ACF90E2A50F6B47",
+              "title": "Success (2xx) Response Actions",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"default\"},\"series\":{},\"color\":{\"family\":\"Colorsafe\"},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\"},\"overrides\":[]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"2*\"\n| timeslice 1h\n| count by _timeslice, action, status_code\n| transpose row _timeslice column action, status_code",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelD3755F908F72184F",
+              "title": "Non 2xx Response actions",
+              "visualSettings": "{\"series\":{},\"general\":{\"type\":\"area\",\"displayType\":\"stacked\",\"markerSize\":5,\"lineDashType\":\"dash\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Diverging 2\"},\"overrides\":[]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where !(status_code matches \"2*\") and !isEmpty(status_code)\n| timeslice 1h\n| count by _timeslice, action, status_code\n| transpose row _timeslice column action, status_code",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelCAFB7B51B465EA4C",
+              "title": "Time Spent to Serve Request",
+              "visualSettings": "{\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\",\"decimals\":2},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"Seconds\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where !isEmpty(method)\n| avg(elapsed) as TimeSpent by method\n| TimeSpent / 1000 as %\"AvgTimeSpentInSec\"\n| fields - TimeSpent\n| sort by %\"AvgTimeSpentInSec\"",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            }
+          ],
+          "variables": [
+            {
+              "id": null,
+              "name": "proxy_cluster",
+              "displayName": "proxy_cluster",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "_sourceCategory = Labs/squid* component=proxy proxy_system=squidproxy",
+                "key": "proxy_cluster"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            },
+            {
+              "id": null,
+              "name": "host",
+              "displayName": "host",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "proxy_system=squidproxy proxy_cluster={{proxy_cluster}}",
+                "key": "host"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            }
+          ],
+          "coloringRules": []
+        },
+        {
+          "type": "DashboardV2SyncDefinition",
+          "name": "Squid Proxy - HTTP Response Analysis",
+          "description": "The Squid Proxy -  HTTP Response Analysis dashboard provides insights into HTTP response, HTTP code, the number of client errors, server errors, redirections outlier, URLs experiencing server errors.",
+          "title": "Squid Proxy - HTTP Response Analysis",
+          "theme": "Dark",
+          "topologyLabelMap": {
+            "data": {}
+          },
+          "refreshInterval": 0,
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "layout": {
+            "layoutType": "Grid",
+            "layoutStructures": [
+              {
+                "key": "panel5F289BAF9BFC8B43",
+                "structure": "{\"height\":7,\"width\":9,\"x\":0,\"y\":0}"
+              },
+              {
+                "key": "panel202B043B96D45A4B",
+                "structure": "{\"height\":7,\"width\":5,\"x\":9,\"y\":0}"
+              },
+              {
+                "key": "panel1FC8E42681462846",
+                "structure": "{\"height\":7,\"width\":5,\"x\":14,\"y\":0}"
+              },
+              {
+                "key": "panel3BF21689A52EAA46",
+                "structure": "{\"height\":7,\"width\":5,\"x\":19,\"y\":0}"
+              },
+              {
+                "key": "panelD757B3A98B76CB45",
+                "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":7}"
+              },
+              {
+                "key": "panel0DBE74CA9B223A4D",
+                "structure": "{\"height\":6,\"width\":9,\"x\":5,\"y\":7}"
+              },
+              {
+                "key": "panel920205A895665945",
+                "structure": "{\"height\":6,\"width\":10,\"x\":14,\"y\":7}"
+              },
+              {
+                "key": "panel7C69DDC2884C294B",
+                "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":13}"
+              },
+              {
+                "key": "panel19D2620A808E9B48",
+                "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":13}"
+              },
+              {
+                "key": "panel8E28D56E93B0C94D",
+                "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":19}"
+              },
+              {
+                "key": "panelD3A704658C2E984C",
+                "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":19}"
+              }
+            ]
+          },
+          "panels": [
+            {
+              "id": null,
+              "key": "panel5F289BAF9BFC8B43",
+              "title": "HTTP Response Trend",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"area\"},\"series\":{},\"overrides\":[]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where !isEmpty(status_code)\n| \"\" as status_code_type\n| if(status_code matches \"2*\", \"successes\", status_code_type) as status_code_type\n| if(status_code matches \"3*\", \"redirections\", status_code_type) as status_code_type\n| if(status_code matches \"4*\", \"clientErrors\", status_code_type) as status_code_type\n| if(status_code matches \"5*\", \"serverErrors\", status_code_type) as status_code_type \n| where status_code_type <> \"\"\n| timeslice 15m\n| count as eventCount by _timeslice, status_code_type\n| transpose row _timeslice column status_code_type",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel202B043B96D45A4B",
+              "title": "HTTP Response",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where !isEmpty(status_code)\n| \"\" as status_code_type\n| if(status_code matches \"2*\", \"successes\", status_code_type) as status_code_type\n| if(status_code matches \"3*\", \"redirections\", status_code_type) as status_code_type\n| if(status_code matches \"4*\", \"clientErrors\", status_code_type) as status_code_type\n| if(status_code matches \"5*\", \"serverErrors\", status_code_type) as status_code_type \n| where status_code_type <> \"\"\n| count as eventCount by status_code_type\n| sort by eventCount",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel1FC8E42681462846",
+              "title": "Redirections",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"3*\"\n| count as eventCount by status_code\n| sort by eventCount",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel3BF21689A52EAA46",
+              "title": "Client Errors",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"4*\"\n| count as eventCount by status_code\n| sort by eventCount",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelD757B3A98B76CB45",
+              "title": "Server Errors",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"5*\"\n| count as eventCount by status_code\n| sort by eventCount",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel0DBE74CA9B223A4D",
+              "title": "URLs Experiencing Redirections",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"3*\"\n| count as eventCount by url, status_Code\n| sort by status_code, eventCount, url",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel920205A895665945",
+              "title": "URLs Experiencing Client Errors",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"4*\"\n| count as eventCount by url, status_Code\n| sort by status_code, eventCount, url",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel7C69DDC2884C294B",
+              "title": "URLs Experiencing Server Errors",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"5*\"\n| count as eventCount by url, status_Code\n| sort by status_code, eventCount, url",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel19D2620A808E9B48",
+              "title": "Redirections (HTTP Response) - Outlier",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":1,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"series\":{},\"overrides\":[]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"3*\"\n| timeslice 15m \n| count as redirections by _timeslice \n| outlier redirections",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": {
+                "type": "BeginBoundedTimeRange",
+                "from": {
+                  "type": "RelativeTimeRangeBoundary",
+                  "relativeTime": "-1d"
+                },
+                "to": null
+              },
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel8E28D56E93B0C94D",
+              "title": "Client Errors (HTTP Response) - Outlier",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":1,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"series\":{},\"overrides\":[]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"4*\"\n| timeslice 15m \n| count as clientErrors by _timeslice \n| outlier clientErrors",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": {
+                "type": "BeginBoundedTimeRange",
+                "from": {
+                  "type": "RelativeTimeRangeBoundary",
+                  "relativeTime": "-1d"
+                },
+                "to": null
+              },
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelD3A704658C2E984C",
+              "title": "Server Errors (HTTP Response) - Outlier",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":1,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"series\":{},\"overrides\":[]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"5*\"\n| timeslice 15m \n| count as serverErrors by _timeslice \n| outlier serverErrors",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": {
+                "type": "BeginBoundedTimeRange",
+                "from": {
+                  "type": "RelativeTimeRangeBoundary",
+                  "relativeTime": "-1d"
+                },
+                "to": null
+              },
+              "coloringRules": null,
+              "linkedDashboards": []
+            }
+          ],
+          "variables": [
+            {
+              "id": null,
+              "name": "proxy_cluster",
+              "displayName": "proxy_cluster",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "_sourceCategory = Labs/squid* proxy_system=squidproxy",
+                "key": "proxy_cluster"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            },
+            {
+              "id": null,
+              "name": "host",
+              "displayName": "host",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "proxy_cluster={{proxy_cluster}} proxy_system=squidproxy",
+                "key": "host"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            }
+          ],
+          "coloringRules": []
+        },
+        {
+          "type": "DashboardV2SyncDefinition",
+          "name": "Squid Proxy - Quality of Service",
+          "description": "The Squid Proxy -  Quality of Service dashboard provides insights into latency, the response time of requests according to HTTP action, and the response time according to location.",
+          "title": "Squid Proxy - Quality of Service",
+          "theme": "Dark",
+          "topologyLabelMap": {
+            "data": {}
+          },
+          "refreshInterval": 0,
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "layout": {
+            "layoutType": "Grid",
+            "layoutStructures": [
+              {
+                "key": "panel501C9A18BD6E9A42",
+                "structure": "{\"height\":9,\"width\":11,\"x\":0,\"y\":0}"
+              },
+              {
+                "key": "panelAA81B48F9649394F",
+                "structure": "{\"height\":9,\"width\":13,\"x\":11,\"y\":0}"
+              },
+              {
+                "key": "panel230F0DCE9F3AA944",
+                "structure": "{\"height\":6,\"width\":11,\"x\":0,\"y\":9}"
+              },
+              {
+                "key": "panel0FAB921188C14A4E",
+                "structure": "{\"height\":6,\"width\":11,\"x\":0,\"y\":15}"
+              },
+              {
+                "key": "panel30F6E5F582D3AB41",
+                "structure": "{\"height\":6,\"width\":13,\"x\":11,\"y\":9}"
+              },
+              {
+                "key": "panelD7B64E828625A84E",
+                "structure": "{\"height\":6,\"width\":13,\"x\":11,\"y\":15}"
+              }
+            ]
+          },
+          "panels": [
+            {
+              "id": null,
+              "key": "panel501C9A18BD6E9A42",
+              "title": "Destination Experiencing avg response time more than 5 Seconds ",
+              "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| lookup latitude, longitude from geo://location on ip=peerhost\n| avg (elapsed) as avg_elapsed by latitude, longitude \n| round(avg_elapsed)\n| avg_elapsed/1000 as avg_elapsed\n| where  avg_elapsed> 0\n| sort by -  avg_elapsed \n| where !isNull(latitude)\n",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelAA81B48F9649394F",
+              "title": "Overall Content Response Time (ms)",
+              "visualSettings": "{\"series\":{},\"overrides\":[],\"legend\":{\"enabled\":false},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(elapsed/bucket_size)*bucket_size,ceil(elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n| count as requests by response_time \n| sort by + response_time",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel230F0DCE9F3AA944",
+              "title": "Cacheable Content Response Time (ms)",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\"},\"series\":{},\"color\":{\"family\":\"Categorical Dark\"},\"overrides\":[],\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where action matches \"*_HIT\" or action matches \"*_MISS\"\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(elapsed/bucket_size)*bucket_size,ceil(elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n| count as requests by response_time \n| sort by + response_time",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel0FAB921188C14A4E",
+              "title": "Response Time For TCP_TUNNEL Action (ms)",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where action matches \"*_TUNNEL\"\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(elapsed/bucket_size)*bucket_size,ceil(elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n| count as requests by response_time \n| sort by + response_time",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": {
+                "type": "BeginBoundedTimeRange",
+                "from": {
+                  "type": "RelativeTimeRangeBoundary",
+                  "relativeTime": "-1d"
+                },
+                "to": null
+              },
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel30F6E5F582D3AB41",
+              "title": "Response Time For TCP_MISS Action (ms) ",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\"},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Diverging 1\"},\"overrides\":[]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where action matches \"TCP_MISS\"\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(elapsed/bucket_size)*bucket_size,ceil(elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n| count as requests by response_time \n| sort by + response_time",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelD7B64E828625A84E",
+              "title": "Response Time For TCP_DENIED Action (ms) ",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\"},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Diverging 2\"},\"overrides\":[]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where action matches \"TCP_DENIED\"\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(elapsed/bucket_size)*bucket_size,ceil(elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n| count as requests by response_time \n| sort by + response_time",
+                  "queryType": "Logs",
+                  "queryKey": "A",
+                  "metricsQueryMode": null,
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Manual",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": {
+                "type": "BeginBoundedTimeRange",
+                "from": {
+                  "type": "RelativeTimeRangeBoundary",
+                  "relativeTime": "-1d"
+                },
+                "to": null
+              },
+              "coloringRules": null,
+              "linkedDashboards": []
+            }
+          ],
+          "variables": [
+            {
+              "id": null,
+              "name": "proxy_cluster",
+              "displayName": "proxy_cluster",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "_sourceCategory = Labs/squid* proxy_system=squidproxy component=proxy",
+                "key": "proxy_cluster"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            },
+            {
+              "id": null,
+              "name": "host",
+              "displayName": "host",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "proxy_system=squidproxy proxy_cluster={{proxy_cluster}}",
+                "key": "host"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            }
+          ],
+          "coloringRules": []
+        }
+      ]
+    },
+    {
+      "type": "FolderSyncDefinition",
+      "name": "Metrics",
+      "description": "This folder contains Metrics based dashboards for Squid Proxy App",
+      "children": [
+        {
+          "type": "DashboardV2SyncDefinition",
+          "name": "Squid Proxy - IP Domain DNS Statistics",
+          "description": "The Squid Proxy -  IP Domain DNS Statistics dashboard provides a high-level view of the number of IPs,  the number of FQDN, rate requests cache according to FQDN, rate requests cache according to IPs, the number of DNS queries, time for DNS query.",
+          "title": "Squid Proxy - IP Domain DNS Statistics",
+          "theme": "Dark",
+          "topologyLabelMap": {
+            "data": {}
+          },
+          "refreshInterval": 0,
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "layout": {
+            "layoutType": "Grid",
+            "layoutStructures": [
+              {
+                "key": "panelPANE-3EFCBEF6AD91D84D",
+                "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":3}"
+              },
+              {
+                "key": "panel06292E6A8F4F684A",
+                "structure": "{\"height\":6,\"width\":4,\"x\":4,\"y\":3}"
+              },
+              {
+                "key": "panelPANE-21229B4190E1284F",
+                "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":2}"
+              },
+              {
+                "key": "panel635E53D4B82F0842",
+                "structure": "{\"height\":6,\"width\":4,\"x\":8,\"y\":3}"
+              },
+              {
+                "key": "panel620100CF92101A44",
+                "structure": "{\"height\":6,\"width\":6,\"x\":12,\"y\":3}"
+              },
+              {
+                "key": "panel5D5AA082A4A3CA42",
+                "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":3}"
+              },
+              {
+                "key": "panelD3B180879A1B184F",
+                "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":9}"
+              },
+              {
+                "key": "panelD9E825C598257A4F",
+                "structure": "{\"height\":5,\"width\":4,\"x\":0,\"y\":10}"
+              },
+              {
+                "key": "panelF026478982EC284C",
+                "structure": "{\"height\":5,\"width\":4,\"x\":4,\"y\":10}"
+              },
+              {
+                "key": "panelE1C5528C80E3BB49",
+                "structure": "{\"height\":5,\"width\":4,\"x\":8,\"y\":10}"
+              },
+              {
+                "key": "panel5A210EA29DB91A4A",
+                "structure": "{\"height\":5,\"width\":5,\"x\":12,\"y\":10}"
+              },
+              {
+                "key": "panelBE4E76259F15BA41",
+                "structure": "{\"height\":5,\"width\":7,\"x\":17,\"y\":10}"
+              },
+              {
+                "key": "panelDD293D70B16F5849",
+                "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":15}"
+              },
+              {
+                "key": "panelPANE-9EB0E8668B10DA45",
+                "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":16}"
+              },
+              {
+                "key": "panelD1AAC4F3A759394B",
+                "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":16}"
+              },
+              {
+                "key": "panelPANE-5D81F200A586B844",
+                "structure": "{\"height\":2,\"width\":24,\"x\":0,\"y\":0}"
+              }
+            ]
+          },
+          "panels": [
+            {
+              "id": null,
+              "key": "panelPANE-3EFCBEF6AD91D84D",
+              "title": "Number of IP Cache Entries",
+              "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Maximum\",\"label\":\"IPs\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheIpEntries proxy_cluster={{proxy_cluster}} host={{host}} | sum",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel06292E6A8F4F684A",
+              "title": "Number of IP Cache Requests",
+              "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Requests\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheIpRequests proxy_cluster={{proxy_cluster}} host={{host}} | delta |filter sum>0| sum",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelPANE-21229B4190E1284F",
+              "title": "IP Address Cache Statistics ",
+              "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"text\":{\"format\":\"markdownV2\",\"verticalAlignment\":\"center\",\"horizontalAlignment\":\"center\",\"fontSize\":30},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "TextPanel",
+              "text": ""
+            },
+            {
+              "id": null,
+              "key": "panel635E53D4B82F0842",
+              "title": "\n  Number of IP Cache Hits",
+              "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Hits\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheIpHits proxy_cluster={{proxy_cluster}} host={{host}} | delta |filter sum >0| sum",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel620100CF92101A44",
+              "title": "\n  Rate of IP Cache Hits",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"req/s\",\"isCustom\":true}},\"axisY2\":{\"title\":\" \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheIpHits proxy_cluster={{proxy_cluster}} host={{host}} | rate ",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel5D5AA082A4A3CA42",
+              "title": "\n  Rate of IP Cache Requests",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"req/s\",\"isCustom\":true}},\"axisY2\":{\"title\":\" \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Colorsafe\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheIpRequests proxy_cluster={{proxy_cluster}} host={{host}} | rate ",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelD3B180879A1B184F",
+              "title": "Domain Name (FQDN) Cache Statistics",
+              "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"text\":{\"format\":\"markdownV2\",\"verticalAlignment\":\"center\",\"horizontalAlignment\":\"center\",\"fontSize\":30},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "TextPanel",
+              "text": ""
+            },
+            {
+              "id": null,
+              "key": "panelD9E825C598257A4F",
+              "title": "Number of \n  FQDN Cache Entries",
+              "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Maximum\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#116b25\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheFqdnEntries proxy_cluster={{proxy_cluster}} host={{host}} | sum",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelF026478982EC284C",
+              "title": "Number of FQDN Cache Requests",
+              "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#116b25\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheFqdnRequests proxy_cluster={{proxy_cluster}} host={{host}} | delta| filter sum>0 |sum",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelE1C5528C80E3BB49",
+              "title": "Number of FQDN Cache Misses",
+              "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#116b25\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheFqdnMisses proxy_cluster={{proxy_cluster}} host={{host}} |delta| filter sum>0 | sum",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel5A210EA29DB91A4A",
+              "title": "\n  Number of FQDN Cache Negative Hits",
+              "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#116b25\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheFqdnNegativeHits proxy_cluster={{proxy_cluster}} host={{host}} |delta|filter sum>0|  sum",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelBE4E76259F15BA41",
+              "title": "\n  Rate of FQDN Cache Requests",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"req/s\",\"isCustom\":true}},\"axisY2\":{\"title\":\" \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheFqdnRequests proxy_cluster={{proxy_cluster}} host={{host}} |rate",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelDD293D70B16F5849",
+              "title": "DNS Lookup Statistics",
+              "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"text\":{\"format\":\"markdownV2\",\"verticalAlignment\":\"center\",\"horizontalAlignment\":\"center\",\"fontSize\":30},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "TextPanel",
+              "text": ""
+            },
+            {
+              "id": null,
+              "key": "panelPANE-9EB0E8668B10DA45",
+              "title": "Number of External Dns Server Requests",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\" \",\"hideLabels\":true},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\" \"},\"axisY2\":{\"title\":\" \"}},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\",\"aggregationType\":\"sum\",\"groupBy\":[\"proxy_cluster\",\"host\"]},\"color\":{\"family\":\"Categorical Default\"},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheDnsRequests proxy_cluster={{proxy_cluster}} host={{host}} | avg by proxy_cluster,host|delta | filter sum >0",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelD1AAC4F3A759394B",
+              "title": "Average Time For  DNS Service",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"ms\",\"isCustom\":false}},\"axisY2\":{\"title\":\" \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}],\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\",\"aggregationType\":\"latest\"},\"color\":{\"family\":\"Categorical Dark\"}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheDnsSvcTime5 proxy_cluster={{proxy_cluster}} host={{host}}",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelPANE-5D81F200A586B844",
+              "title": "Filter Defintion:",
+              "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"text\":{\"format\":\"markdownV2\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "TextPanel",
+              "text": "###Host : Host is the hostname of Squid Proxy server\n\n"
+            }
+          ],
+          "variables": [
+            {
+              "id": null,
+              "name": "proxy_cluster",
+              "displayName": "proxy_cluster",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "_sourceCategory = Labs/squid* proxy_system=squidproxy",
+                "key": "proxy_cluster"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            },
+            {
+              "id": null,
+              "name": "host",
+              "displayName": "host",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "proxy_system=squidproxy proxy_cluster={{proxy_cluster}}",
+                "key": "host"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            }
+          ],
+          "coloringRules": []
+        },
+        {
+          "type": "DashboardV2SyncDefinition",
+          "name": "Squid Proxy - Performance",
+          "description": "The Squid Proxy -  Performance dashboard provides an insight into the workload of clusters, the number of page faults IO,  percent of file descriptor used, number of memory used, the time for all HTTP requests, the number of objects in the cache, the CPU time.",
+          "title": "Squid Proxy - Performance",
+          "theme": "Dark",
+          "topologyLabelMap": {
+            "data": {}
+          },
+          "refreshInterval": 0,
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "layout": {
+            "layoutType": "Grid",
+            "layoutStructures": [
+              {
+                "key": "panelPANE-9050EE97B491194D",
+                "structure": "{\"height\":7,\"width\":4,\"x\":0,\"y\":2}"
+              },
+              {
+                "key": "panelPANE-50FE96DC809FCB4E",
+                "structure": "{\"height\":7,\"width\":7,\"x\":8,\"y\":17}"
+              },
+              {
+                "key": "panelPANE-DFF6E28B9C9C5B45",
+                "structure": "{\"height\":7,\"width\":10,\"x\":14,\"y\":2}"
+              },
+              {
+                "key": "panelPANE-C7CEE92AAE579843",
+                "structure": "{\"height\":7,\"width\":10,\"x\":4,\"y\":2}"
+              },
+              {
+                "key": "panelPANE-D2F582A7AE843B4E",
+                "structure": "{\"height\":8,\"width\":9,\"x\":8,\"y\":9}"
+              },
+              {
+                "key": "panelPANE-21B4153188E01943",
+                "structure": "{\"height\":8,\"width\":7,\"x\":17,\"y\":9}"
+              },
+              {
+                "key": "panelPANE-433E19E99AA85B49",
+                "structure": "{\"height\":7,\"width\":9,\"x\":15,\"y\":17}"
+              },
+              {
+                "key": "panelPANE-4CAB3FEE950AE840",
+                "structure": "{\"height\":7,\"width\":8,\"x\":0,\"y\":17}"
+              },
+              {
+                "key": "panel099789FFBB5C8943",
+                "structure": "{\"height\":8,\"width\":8,\"x\":0,\"y\":9}"
+              },
+              {
+                "key": "panelPANE-3667E885AA02894D",
+                "structure": "{\"height\":2,\"width\":24,\"x\":0,\"y\":0}"
+              }
+            ]
+          },
+          "panels": [
+            {
+              "id": null,
+              "key": "panelPANE-9050EE97B491194D",
+              "title": "Page Faults IO",
+              "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Maximum\",\"label\":\"Faults\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheSysPageFaults proxy_cluster={{proxy_cluster}} host={{host}} | sum",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelPANE-50FE96DC809FCB4E",
+              "title": "HTTP I/O Number of Reads",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\" \",\"hideLabels\":true},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\" \",\"unit\":{\"value\":\"\",\"isCustom\":false}}},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\",\"aggregationType\":\"latest\",\"groupBy\":[\"proxy_cluster\",\"host\"]},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}],\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheSysNumReads proxy_cluster={{proxy_cluster}} host={{host}}| avg by proxy_cluster,host",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelPANE-DFF6E28B9C9C5B45",
+              "title": "Percentage Memory Usage Over Time",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":70,\"color\":\"#116b25\"},{\"from\":70,\"to\":80,\"color\":\"#f2da73\"},{\"from\":80,\"to\":100,\"color\":\"#bf2121\"}],\"shape\":\"hexagon\",\"groupBy\":[{\"label\":\"proxy_cluster\",\"value\":\"proxy_cluster\"}],\"aggregationType\":\"avg\"},\"hiddenQueryKeys\":[\"A\",\"B\"],\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"C\"],\"properties\":{\"name\":\"% proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheMemUsage proxy_cluster={{proxy_cluster}} host={{host}} | eval _value/1024",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                },
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheMemMaxSize proxy_cluster={{proxy_cluster}} host={{host}}",
+                  "queryType": "Metrics",
+                  "queryKey": "B",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                },
+                {
+                  "transient": false,
+                  "queryString": "(#A/#B)*100 along proxy_cluster,host",
+                  "queryType": "Metrics",
+                  "queryKey": "C",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelPANE-C7CEE92AAE579843",
+              "title": "Percent of  File Descriptors Used Over Time",
+              "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":70,\"color\":\"#116b25\"},{\"from\":70,\"to\":80,\"color\":\"#dfbe2e\"},{\"from\":80,\"to\":100,\"color\":\"#bf2121\"}],\"shape\":\"hexagon\",\"groupBy\":[{\"label\":\"proxy_cluster\",\"value\":\"proxy_cluster\"}],\"aggregationType\":\"avg\"},\"series\":{},\"hiddenQueryKeys\":[\"A\",\"B\"],\"overrides\":[{\"series\":[],\"queries\":[\"C\"],\"properties\":{\"name\":\"% proxy_cluster={{proxy_cluster}} host={{host}}\"}}],\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "(metric=squid_cacheCurrentFileDescrCnt or metric=squid_cacheCurrentUnusedFDescrCnt) and proxy_cluster={{proxy_cluster}} host={{host}}| sum by proxy_cluster,host",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                },
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheCurrentFileDescrCnt proxy_cluster={{proxy_cluster}} host={{host}}",
+                  "queryType": "Metrics",
+                  "queryKey": "B",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                },
+                {
+                  "transient": false,
+                  "queryString": "(#B/#A)*100 along host,proxy_cluster",
+                  "queryType": "Metrics",
+                  "queryKey": "C",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelPANE-D2F582A7AE843B4E",
+              "title": "\n  Number of Objects Stored",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\" \",\"hideLabels\":true},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\" \",\"hideLabels\":false}},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\",\"groupBy\":[\"proxy_cluster\",\"host\"]},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}],\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheNumObjCount proxy_cluster={{proxy_cluster}} host={{host}}| avg by proxy_cluster,host",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelPANE-21B4153188E01943",
+              "title": "Amount of CPU Seconds Consumed",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\",\"decimals\":2},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"Time (second)\"}}],\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheCpuTime proxy_cluster={{proxy_cluster}} host={{host}} | avg by proxy_cluster,host",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelPANE-433E19E99AA85B49",
+              "title": "Maximum Resident Size",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\",\"decimals\":2},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"Size(MB)\"}}],\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheMaxResSize proxy_cluster={{proxy_cluster}} host={{host}} | avg by proxy_cluster,host | eval _value/1024",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelPANE-4CAB3FEE950AE840",
+              "title": "\n  Reserved Number of File Descriptors",
+              "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\" \"}}],\"legend\":{\"enabled\":false,\"wrap\":true}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheCurrentResFileDescrCnt proxy_cluster={{proxy_cluster}} host={{host}} | avg by proxy_cluster,host",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel099789FFBB5C8943",
+              "title": "Average Time Served For All HTTP Requests",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"ms\",\"isCustom\":false}},\"axisY2\":{\"title\":\"  \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\",\"aggregationType\":\"latest\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheHttpAllSvcTime5 proxy_cluster=* host=*",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelPANE-3667E885AA02894D",
+              "title": "Filter Defintion:",
+              "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"text\":{\"format\":\"markdownV2\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "TextPanel",
+              "text": "###Host : Host is the hostname of Squid Proxy server\n\n"
+            }
+          ],
+          "variables": [
+            {
+              "id": null,
+              "name": "proxy_cluster",
+              "displayName": "proxy_cluster",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "_sourceCategory = Labs/squid* component=proxy proxy_system=squidproxy",
+                "key": "proxy_cluster"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            },
+            {
+              "id": null,
+              "name": "host",
+              "displayName": "host",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "component=proxy proxy_system=squidproxy proxy_cluster={{proxy_cluster}}",
+                "key": "host"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            }
+          ],
+          "coloringRules": []
+        },
+        {
+          "type": "DashboardV2SyncDefinition",
+          "name": "Squid Proxy - Protocol",
+          "description": "The Squid Proxy -  Protocol dashboard provides an insight into the protocols of clusters: the number of HTTP requests, HTTP errors, total bytes transferred, the number of HTTP requests per second, the number of HTTP's bytes per second.",
+          "title": "Squid Proxy - Protocol",
+          "theme": "Dark",
+          "topologyLabelMap": {
+            "data": {}
+          },
+          "refreshInterval": 0,
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-1d"
+            },
+            "to": null
+          },
+          "layout": {
+            "layoutType": "Grid",
+            "layoutStructures": [
+              {
+                "key": "panelPANE-117DA24FA0332B40",
+                "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":8}"
+              },
+              {
+                "key": "panelC7C464318BBD2940",
+                "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":2}"
+              },
+              {
+                "key": "panelF1B11E44B490D94B",
+                "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":8}"
+              },
+              {
+                "key": "panel420BBD068BB3184F",
+                "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":8}"
+              },
+              {
+                "key": "panelB5A6D62C9EB69A49",
+                "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":14}"
+              },
+              {
+                "key": "panelB4BFB7259054FB46",
+                "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":2}"
+              },
+              {
+                "key": "panel32AAD6538BBEDA42",
+                "structure": "{\"height\":6,\"width\":4,\"x\":4,\"y\":2}"
+              },
+              {
+                "key": "panelB450884F93181947",
+                "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":14}"
+              },
+              {
+                "key": "panelDB876476B1D4EB4D",
+                "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":14}"
+              },
+              {
+                "key": "panel7F8729418D72A940",
+                "structure": "{\"height\":6,\"width\":4,\"x\":8,\"y\":2}"
+              },
+              {
+                "key": "panel44A18E8CBEA76A4B",
+                "structure": "{\"height\":6,\"width\":4,\"x\":12,\"y\":2}"
+              },
+              {
+                "key": "panelPANE-9616A200BFC1F84F",
+                "structure": "{\"height\":2,\"width\":24,\"x\":0,\"y\":0}"
+              }
+            ]
+          },
+          "panels": [
+            {
+              "id": null,
+              "key": "panelPANE-117DA24FA0332B40",
+              "title": "HTTP Requests Received Per Second",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"hideLabels\":false},\"axisY\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"req/s\",\"isCustom\":true},\"hideLabels\":false},\"axisY2\":{\"title\":\" \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheProtoClientHttpRequests proxy_cluster={{proxy_cluster}} host={{host}} | delta",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelC7C464318BBD2940",
+              "title": "HTTP Requests Errors Sent to Clients per Second",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"hideLabels\":false},\"axisY\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"errors/s\",\"isCustom\":true},\"hideLabels\":false},\"axisY2\":{\"title\":\" \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Diverging 2\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheHttpErrors proxy_cluster={{proxy_cluster}} host={{host}} | delta",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelF1B11E44B490D94B",
+              "title": "HTTP KB's Received From Clients Per Second",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"hideLabels\":false},\"axisY\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"KB\",\"isCustom\":false},\"hideLabels\":false},\"axisY2\":{\"title\":\" \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Dark\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheHttpInKb proxy_cluster={{proxy_cluster}} host={{host}} | delta",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel420BBD068BB3184F",
+              "title": "HTTP KB's Sent to Clients Per Second",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"hideLabels\":false},\"axisY\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"KB\",\"isCustom\":false},\"hideLabels\":false},\"axisY2\":{\"title\":\" \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Light\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheHttpOutKb proxy_cluster={{proxy_cluster}} host={{host}} | delta",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelB5A6D62C9EB69A49",
+              "title": "All Requests From  Clients Per Second",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"hideLabels\":false},\"axisY\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"req/s\",\"isCustom\":true},\"hideLabels\":false},\"axisY2\":{\"title\":\" \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheServerRequests proxy_cluster={{proxy_cluster}} host={{host}} | delta",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelB4BFB7259054FB46",
+              "title": "Total of All Requests From  Clients",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"Requests\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheServerRequests proxy_cluster={{proxy_cluster}} host={{host}} | delta | filter sum>0|sum",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel32AAD6538BBEDA42",
+              "title": "Total of HTTP Errors Sent  Clients",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"Errors\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":0,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheHttpErrors proxy_cluster={{proxy_cluster}} host={{host}} | delta | filter sum>0 |sum",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelB450884F93181947",
+              "title": "KB's of Traffic Received From Servers Per Second",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"dash\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"hideLabels\":false},\"axisY\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"KB\",\"isCustom\":false},\"hideLabels\":false},\"axisY2\":{\"title\":\" \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Colorsafe\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheServerInKb proxy_cluster={{proxy_cluster}} host={{host}} | delta",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelDB876476B1D4EB4D",
+              "title": "KB's of Traffic Sent From Servers Per Second ",
+              "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"dot\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"hideLabels\":false},\"axisY\":{\"title\":\" \",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"KB\",\"isCustom\":false},\"hideLabels\":false},\"axisY2\":{\"title\":\" \"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Sequential 2\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"proxy_cluster={{proxy_cluster}} host={{host}}\"}}]}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheServerOutKb proxy_cluster={{proxy_cluster}} host={{host}} | delta",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel7F8729418D72A940",
+              "title": "Total HTTP KB's for Clients",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"MB\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#6f5acc\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* (metric=squid_cacheHttpInKb or metric=squid_cacheHttpOutKb ) proxy_cluster={{proxy_cluster}} host={{host}} | delta |filter sum>0| sum | eval _value/1024",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panel44A18E8CBEA76A4B",
+              "title": "Total HTTP KB's for Servers",
+              "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"MB\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#b4950c\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "SumoSearchPanel",
+              "queries": [
+                {
+                  "transient": false,
+                  "queryString": "_sourceCategory = Labs/squid* (metric=squid_cacheServerInKb or metric=squid_cacheServerOutKb ) proxy_cluster={{proxy_cluster}} host={{host}} | delta |filter sum>0| sum | eval _value/1024",
+                  "queryType": "Metrics",
+                  "queryKey": "A",
+                  "metricsQueryMode": "Advanced",
+                  "metricsQueryData": null,
+                  "tracesQueryData": null,
+                  "spansQueryData": null,
+                  "parseMode": "Auto",
+                  "timeSource": "Message",
+                  "outputCardinalityLimit": null
+                }
+              ],
+              "description": "",
+              "timeRange": null,
+              "coloringRules": null,
+              "linkedDashboards": []
+            },
+            {
+              "id": null,
+              "key": "panelPANE-9616A200BFC1F84F",
+              "title": "Filter Defintion:",
+              "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"text\":{\"format\":\"markdownV2\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+              "keepVisualSettingsConsistentWithParent": true,
+              "panelType": "TextPanel",
+              "text": "###Host : Host is the hostname of Squid Proxy server\n\n"
+            }
+          ],
+          "variables": [
+            {
+              "id": null,
+              "name": "proxy_cluster",
+              "displayName": "proxy_cluster",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "_sourceCategory = Labs/squid* proxy_system=squidproxy component=proxy",
+                "key": "proxy_cluster"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            },
+            {
+              "id": null,
+              "name": "host",
+              "displayName": "host",
+              "defaultValue": "*",
+              "sourceDefinition": {
+                "variableSourceType": "MetadataVariableSourceDefinition",
+                "filter": "component=proxy proxy_system=squidproxy proxy_cluster={{proxy_cluster}}",
+                "key": "host"
+              },
+              "allowMultiSelect": false,
+              "includeAllOption": true,
+              "hideFromUI": false,
+              "valueType": "Any"
+            }
+          ],
+          "coloringRules": []
+        }
+      ]
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Squid Proxy - Overview",
+      "description": "The Squid Proxy - Overview Dashboard provides an at-a-glance view of the activity and health of the SquidProxy clusters and servers by monitoring uptime, number of current clients, latency, bandwidth, destination locations, error and denied requests, URLs accessed.",
+      "title": "Squid Proxy - Overview",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-09802C778ECD5840",
+            "structure": "{\"height\":6,\"width\":7,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-B5240022A314FA45",
+            "structure": "{\"height\":6,\"width\":7,\"x\":10,\"y\":0}"
+          },
+          {
+            "key": "panel5DE708D89FB91948",
+            "structure": "{\"height\":6,\"width\":7,\"x\":17,\"y\":0}"
+          },
+          {
+            "key": "panel87083A5994A97B43",
+            "structure": "{\"height\":6,\"width\":4,\"x\":14,\"y\":6}"
+          },
+          {
+            "key": "panelFDF6C52F9C8A3B4E",
+            "structure": "{\"height\":6,\"width\":3,\"x\":11,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-406C10F4917A5B43",
+            "structure": "{\"height\":13,\"width\":11,\"x\":0,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-5A1A8BD5A12A7849",
+            "structure": "{\"height\":7,\"width\":5,\"x\":12,\"y\":26}"
+          },
+          {
+            "key": "panelPANE-CA9E55A6BAB8AA49",
+            "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-BF0C706E98092B47",
+            "structure": "{\"height\":7,\"width\":5,\"x\":19,\"y\":19}"
+          },
+          {
+            "key": "panelPANE-296BD9A49E4DBB4D",
+            "structure": "{\"height\":7,\"width\":7,\"x\":17,\"y\":26}"
+          },
+          {
+            "key": "panelEB06C839B09D3B44",
+            "structure": "{\"height\":6,\"width\":3,\"x\":7,\"y\":0}"
+          },
+          {
+            "key": "panelD16E683888DEEB48",
+            "structure": "{\"height\":7,\"width\":5,\"x\":14,\"y\":19}"
+          },
+          {
+            "key": "panelPANE-957B7D4EB5888A47",
+            "structure": "{\"height\":7,\"width\":6,\"x\":0,\"y\":26}"
+          },
+          {
+            "key": "panel46FF8AE585C06943",
+            "structure": "{\"height\":7,\"width\":6,\"x\":6,\"y\":26}"
+          },
+          {
+            "key": "panelPANE-E1EFA90883441940",
+            "structure": "{\"height\":7,\"width\":7,\"x\":11,\"y\":12}"
+          },
+          {
+            "key": "panelDE4D73DA84119949",
+            "structure": "{\"height\":7,\"width\":6,\"x\":18,\"y\":12}"
+          },
+          {
+            "key": "panelF85B8F6CA4D70B4B",
+            "structure": "{\"height\":7,\"width\":7,\"x\":0,\"y\":19}"
+          },
+          {
+            "key": "panelADC9742A93645941",
+            "structure": "{\"height\":7,\"width\":7,\"x\":7,\"y\":19}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-09802C778ECD5840",
+          "title": "Uptime",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\",\"decimals\":2},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"Uptime (Hours)\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* metric=squid_uptime proxy_cluster={{proxy_cluster}} | avg by host,version | eval _value/(100*3600)",
+              "queryType": "Metrics",
+              "queryKey": "A",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-B5240022A314FA45",
+          "title": "Requests Per Second",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[{\"label\":\"proxy_cluster\",\"value\":\"proxy_cluster\"}],\"aggregationType\":\"avg\"},\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"name\":\"req/s proxy_cluster={{proxy_cluster}}\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheProtoClientHttpRequests proxy_cluster={{proxy_cluster}}  | rate|avg by proxy_cluster ",
+              "queryType": "Metrics",
+              "queryKey": "A",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel5DE708D89FB91948",
+          "title": "Bytes Per Second ",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[{\"label\":\"proxy_cluster\",\"value\":\"proxy_cluster\"}],\"aggregationType\":\"avg\"},\"hiddenQueryKeys\":[\"B\",\"A\"],\"series\":{},\"overrides\":[{\"series\":[],\"queries\":[\"C\"],\"properties\":{\"name\":\"MB/s proxy_cluster={{proxy_cluster}}\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheServerInKb proxy_cluster={{proxy_cluster}}  | avg by proxy_cluster",
+              "queryType": "Metrics",
+              "queryKey": "A",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            },
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheServerOutKb proxy_cluster={{proxy_cluster}}  | avg by proxy_cluster ",
+              "queryType": "Metrics",
+              "queryKey": "B",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            },
+            {
+              "transient": false,
+              "queryString": "(#A + #B)/1024 along proxy_cluster | rate",
+              "queryType": "Metrics",
+              "queryKey": "C",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel87083A5994A97B43",
+          "title": "HTTP Error Per Second ",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Maximum\",\"label\":\"Errors/s\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":1,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":0,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false},\"hiddenQueryKeys\":[\"B\"]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheHttpErrors proxy_cluster={{proxy_cluster}} |rate |sum",
+              "queryType": "Metrics",
+              "queryKey": "A",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelFDF6C52F9C8A3B4E",
+          "title": "Latency",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Maximum\",\"label\":\"ms\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":4,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":100,\"color\":\"#16943E\"},{\"from\":100,\"to\":1000,\"color\":\"#DFBE2E\"},{\"from\":1000,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false},\"hiddenQueryKeys\":[\"A\",\"B\"]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheProtoClientHttpRequests proxy_cluster={{proxy_cluster}}  | rate | avg by metric",
+              "queryType": "Metrics",
+              "queryKey": "A",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            },
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheHttpAllSvcTime1 proxy_cluster={{proxy_cluster}} | avg by metric | eval _value/60",
+              "queryType": "Metrics",
+              "queryKey": "B",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            },
+            {
+              "transient": false,
+              "queryString": "#B / #A",
+              "queryType": "Metrics",
+              "queryKey": "C",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-406C10F4917A5B43",
+          "title": "\n          Destination Locations\n        ",
+          "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[\\w]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| peerhost as dest_ip\n| count by dest_ip\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = dest_ip\n| where !isNull(latitude)\n| sum(_count) as _count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort by _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-5A1A8BD5A12A7849",
+          "title": "Top Destination",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy\n| json \"message\" nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[\\w]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| peerhost as dest_ip\n| count as %\"Requests\" by dest_ip\n| where !isEmpty(dest_ip)\n| Top 10 dest_ip by %\"Requests\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-CA9E55A6BAB8AA49",
+          "title": "Denied Requests",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"Requests\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy *DENIED*\n| json \"message\" nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[\\w]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where action matches \"*DENIED*\"\n| count as %\"DeniedRequests\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-BF0C706E98092B47",
+          "title": "HTTP Method",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"color\":{\"family\":\"Categorical Default\"},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* proxy_cluster=* component=proxy proxy_system=squidproxy\n| json \"message\" nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[\\w]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| count as %\"Requests\" by method\n| where !isEmpty(method)\n| sort %\"Requests\", method asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-296BD9A49E4DBB4D",
+          "title": "Top URLs Accessed\n        ",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} proxy_system=squidproxy\n| json \"message\" nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[\\w]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| count as %\"Requests\" by url\n| where !isEmpty(url)\n| top 10 url by %\"Requests\", url asc\n| urldecode(url) as url",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelEB06C839B09D3B44",
+          "title": "Number of Current Clients",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Maximum\",\"label\":\"Clients\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":0,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheClients proxy_cluster={{proxy_cluster}} | sum",
+              "queryType": "Metrics",
+              "queryKey": "A",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelD16E683888DEEB48",
+          "title": "Top Access Denied URLs\n        ",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy\n| json \"message\" nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[\\w]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where action matches \"*_DENIED\"\n| count as %\"Requests\" by url\n| where !isEmpty(url)\n| top 10 url by %\"Requests\", url asc\n| urldecode(url) as url",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-957B7D4EB5888A47",
+          "title": "Memory Usage Percent",
+          "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":70,\"color\":\"#116b25\"},{\"from\":70,\"to\":80,\"color\":\"#dfbe2e\"},{\"from\":80,\"to\":100,\"color\":\"#bf2121\"}],\"shape\":\"hexagon\",\"groupBy\":[{\"label\":\"proxy_cluster\",\"value\":\"proxy_cluster\"}],\"aggregationType\":\"avg\"},\"series\":{},\"hiddenQueryKeys\":[\"A\",\"B\"],\"overrides\":[{\"series\":[],\"queries\":[\"C\"],\"properties\":{\"name\":\"% proxy_cluster={{proxy_cluster}} host={{host}}\"}}],\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheMemUsage proxy_cluster={{proxy_cluster}}",
+              "queryType": "Metrics",
+              "queryKey": "A",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            },
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* metric=squid_cacheMemMaxSize proxy_cluster={{proxy_cluster}}",
+              "queryType": "Metrics",
+              "queryKey": "B",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            },
+            {
+              "transient": false,
+              "queryString": "(#A / #B) along proxy_cluster,host",
+              "queryType": "Metrics",
+              "queryKey": "C",
+              "metricsQueryMode": "Advanced",
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel46FF8AE585C06943",
+          "title": "Top Remote Hosts\n        ",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy\n| json \"message\" nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[\\w]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| count as %\"Requests\" by remotehost\n| where !isEmpty(remotehost)\n| top 10 remotehost by %\"Requests\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-E1EFA90883441940",
+          "title": "5xx Status Codes by Server",
+          "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"honeyComb\":{\"thresholds\":[{\"from\":1,\"to\":5,\"color\":\"#005982\"},{\"from\":5,\"to\":20,\"color\":\"#f2da73\"},{\"from\":20,\"to\":null,\"color\":\"#bf2121\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| if (isEmpty(pod),_sourceHost,pod) as _sourceHost\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"5*\"\n| count as count by status_code,_sourceHost,proxy_cluster\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelDE4D73DA84119949",
+          "title": "4xx Status Codes by Server",
+          "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"honeyComb\":{\"thresholds\":[{\"from\":1,\"to\":5,\"color\":\"#005982\"},{\"from\":5,\"to\":20,\"color\":\"#f2da73\"},{\"from\":20,\"to\":null,\"color\":\"#bf2121\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| if (isEmpty(pod),_sourceHost,pod) as _sourceHost\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"4*\"\n| count as count by status_code,_sourceHost,proxy_cluster\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelF85B8F6CA4D70B4B",
+          "title": "Top 10 URLs with 5xx Errors",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"5*\"\n| count as eventCount by url, status_Code\n| sort by eventCount, url asc | limit 10",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelADC9742A93645941",
+          "title": "Top 10 URLs with 4XX Errors",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"4*\"\n| count as eventCount by url, status_Code\n| sort by eventCount, url asc | limit 10",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "proxy_cluster",
+          "displayName": "proxy_cluster",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "MetadataVariableSourceDefinition",
+            "filter": "_sourceCategory = Labs/squid* component=proxy proxy_system=squidproxy",
+            "key": "proxy_cluster"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    }
+  ]
+}

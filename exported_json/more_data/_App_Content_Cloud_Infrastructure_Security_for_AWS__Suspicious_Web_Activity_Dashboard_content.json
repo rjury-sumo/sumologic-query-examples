@@ -1,0 +1,234 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Suspicious Web Activity",
+  "description": "The Suspicious Web Activity dashboard shows suspicious activity on the Web. It shows suspicious blocked requests, including by trend and geo location.",
+  "title": "Suspicious Web Activity",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-7F195630A9D9094A",
+        "structure": "{\"height\":12,\"width\":24,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panelPANE-6DA00C7AA5DC7A4D",
+        "structure": "{\"height\":6,\"width\":18,\"x\":6,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-DB3BAD21B045F94B",
+        "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-C43907FC9D5F3949",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":6}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-7F195630A9D9094A",
+      "title": "Suspicious Blocked Web Requests by Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\",\"roundDataPoints\":true},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=Labs/AWS/WAF \n| json \"httpRequest.httpMethod\",\"httpRequest.httpVersion\",\"httpRequest.uri\",\"httpRequest.clientIp\",\"httpRequest.country\",\"action\",\"matchingNonTerminatingRules\",\"rateBasedRuleList\",\"ruleGroupList\",\"httpSourceId\",\"httpSourceName\",\"terminatingRuleType\",\"terminatingRuleId\",\"webaclId\" as http_method,http_version,url.path,client.ip,country,action,matching_non_terminating_rules,rate_based_rule_list,rule_group_list,http_source_id,http_source_name,terminating_rule_type,terminating_rule_id,webacl_id nodrop\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = client.ip\n\n| http_method as event.action\n| action as event.outcome\n\n// global filters\n| where if (\"{{url.path}}\" = \"*\", true, url.path matches \"{{url.path}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{event.action}}\" = \"*\", true, event.action matches \"{{event.action}}\") AND if (\"{{event.outcome}}\" = \"*\", true, event.outcome matches \"{{event.outcome}}\")\n\n// z-score calculation\n| timeslice 3h\n| if(event.outcome=\"BLOCK\",1,0) as Blocked_count\n| if(event.outcome=\"ALLOW\",1,0) as Allowed_count\n|sum(Blocked_count) as blocked, sum(Allowed_count) as allowed by _timeslice, client.ip,url.path, terminating_rule_type,terminating_rule_id,event.action,http_source_id,http_source_name, latitude, longitude, country_code\n| (blocked + allowed) as requests\n| if(requests > 0, blocked/requests, 0) as blocked_pct\n| blocked_pct as eventCount\n| sort + _timeslice\n\n| rollingstd eventCount as eventCount_std by client.ip,url.path,event.action,http_source_id,http_source_name, latitude, longitude, country_code\n| smooth eventCount as eventCount_mean by client.ip,url.path,event.action,http_source_id,http_source_name, latitude, longitude, country_code\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip,url.path,event.action,http_source_id,http_source_name, latitude, longitude, country_code\n| round(max_zscore, 2) as max_zscore \n| where max_zscore > \"{{risk.calculated_level}}\"\n| sort - max_zscore\n\n| count as event_location by latitude, longitude\n| sort by event_location",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the geo-locations of WAF hits.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-6DA00C7AA5DC7A4D",
+      "title": "Suspicious Blocked Web  Requests",
+      "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\",\"roundDataPoints\":true},\"title\":{\"fontSize\":14},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":1,\"color\":\"#98ECA9\"},{\"from\":1,\"to\":2,\"color\":\"#F2DA73\"},{\"from\":2,\"to\":10,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"latest\",\"noDataMessage\":\"\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=Labs/AWS/WAF \n| json \"httpRequest.httpMethod\",\"httpRequest.httpVersion\",\"httpRequest.uri\",\"httpRequest.clientIp\",\"httpRequest.country\",\"action\",\"matchingNonTerminatingRules\",\"rateBasedRuleList\",\"ruleGroupList\",\"httpSourceId\",\"httpSourceName\",\"terminatingRuleType\",\"terminatingRuleId\",\"webaclId\" as http_method,http_version,url.path,client.ip,country,action,matching_non_terminating_rules,rate_based_rule_list,rule_group_list,http_source_id,http_source_name,terminating_rule_type,terminating_rule_id,webacl_id nodrop\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = client.ip\n\n| http_method as event.action\n| action as event.outcome\n\n// global filters\n| where if (\"{{url.path}}\" = \"*\", true, url.path matches \"{{url.path}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{event.action}}\" = \"*\", true, event.action matches \"{{event.action}}\") AND if (\"{{event.outcome}}\" = \"*\", true, event.outcome matches \"{{event.outcome}}\")\n\n// z-score calculation\n| timeslice 3h\n| if(event.outcome=\"BLOCK\",1,0) as Blocked_count\n| if(event.outcome=\"ALLOW\",1,0) as Allowed_count\n|sum(Blocked_count) as blocked, sum(Allowed_count) as allowed by _timeslice, client.ip,url.path, terminating_rule_type,terminating_rule_id,event.action,http_source_id,http_source_name, latitude, longitude, country_code\n| (blocked + allowed) as requests\n| if(requests > 0, blocked/requests, 0) as blocked_pct\n| blocked_pct as eventCount\n| sort + _timeslice\n\n| rollingstd eventCount as eventCount_std by client.ip,url.path,event.action,http_source_id,http_source_name\n| smooth eventCount as eventCount_mean by client.ip,url.path,event.action,http_source_id,http_source_name\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip,url.path,event.action,http_source_id,http_source_name\n| round(max_zscore, 2) as max_zscore \n| where max_zscore > \"{{risk.calculated_level}}\"\n| sort - max_zscore",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-DB3BAD21B045F94B",
+      "title": "Suspicious Blocked Web Requests",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true,\"noDataMessage\":\"0\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"textColor\":\"\",\"backgroundColor\":\"\",\"label\":\"Label\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":true,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":100,\"color\":\"#16943E\"},{\"from\":100,\"to\":1000,\"color\":\"#DFBE2E\"},{\"from\":1000,\"to\":10000,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":10000}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=Labs/AWS/WAF \n| json \"httpRequest.httpMethod\",\"httpRequest.httpVersion\",\"httpRequest.uri\",\"httpRequest.clientIp\",\"httpRequest.country\",\"action\",\"matchingNonTerminatingRules\",\"rateBasedRuleList\",\"ruleGroupList\",\"httpSourceId\",\"httpSourceName\",\"terminatingRuleType\",\"terminatingRuleId\",\"webaclId\" as http_method,http_version,url.path,client.ip,country,action,matching_non_terminating_rules,rate_based_rule_list,rule_group_list,http_source_id,http_source_name,terminating_rule_type,terminating_rule_id,webacl_id nodrop\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = client.ip\n\n| http_method as event.action\n| action as event.outcome\n\n// global filters\n| where if (\"{{url.path}}\" = \"*\", true, url.path matches \"{{url.path}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{event.action}}\" = \"*\", true, event.action matches \"{{event.action}}\") AND if (\"{{event.outcome}}\" = \"*\", true, event.outcome matches \"{{event.outcome}}\")\n\n// z-score calculation\n| timeslice 3h\n| if(event.outcome=\"BLOCK\",1,0) as Blocked_count\n| if(event.outcome=\"ALLOW\",1,0) as Allowed_count\n|sum(Blocked_count) as blocked, sum(Allowed_count) as allowed by _timeslice, client.ip,url.path, terminating_rule_type,terminating_rule_id,event.action,http_source_id,http_source_name, latitude, longitude, country_code\n| (blocked + allowed) as requests\n| if(requests > 0, blocked/requests, 0) as blocked_pct\n| blocked_pct as eventCount\n| sort + _timeslice\n\n| rollingstd eventCount as eventCount_std by client.ip,url.path,event.action,http_source_id,http_source_name\n| smooth eventCount as eventCount_mean by client.ip,url.path,event.action,http_source_id,http_source_name\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip,url.path,event.action,http_source_id,http_source_name\n| round(max_zscore, 2) as max_zscore \n| where max_zscore > \"{{risk.calculated_level}}\"\n| sort - max_zscore\n\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-C43907FC9D5F3949",
+      "title": "Trend: Blocked Web Requests Percent",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"roundDataPoints\":true,\"markerSize\":10,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"hideLabels\":false},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"avg_blocked_pct\",\"unit\":{\"value\":\"%\",\"isCustom\":false}}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Diverging 1\"},\"series\":{},\"thresholdsSettings\":{\"type\":\"number\",\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=Labs/AWS/WAF \n| json \"httpRequest.httpMethod\",\"httpRequest.httpVersion\",\"httpRequest.uri\",\"httpRequest.clientIp\",\"httpRequest.country\",\"action\",\"matchingNonTerminatingRules\",\"rateBasedRuleList\",\"ruleGroupList\",\"httpSourceId\",\"httpSourceName\",\"terminatingRuleType\",\"terminatingRuleId\",\"webaclId\" as http_method,http_version,url.path,client.ip,country,action,matching_non_terminating_rules,rate_based_rule_list,rule_group_list,http_source_id,http_source_name,terminating_rule_type,terminating_rule_id,webacl_id nodrop\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = client.ip\n\n| http_method as event.action\n| action as event.outcome\n\n// global filters\n| where if (\"{{url.path}}\" = \"*\", true, url.path matches \"{{url.path}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{event.action}}\" = \"*\", true, event.action matches \"{{event.action}}\") AND if (\"{{event.outcome}}\" = \"*\", true, event.outcome matches \"{{event.outcome}}\")\n\n// z-score calculation\n| timeslice 3h\n| if(event.outcome=\"BLOCK\",1,0) as Blocked_count\n| if(event.outcome=\"ALLOW\",1,0) as Allowed_count\n|sum(Blocked_count) as blocked, sum(Allowed_count) as allowed by _timeslice, client.ip,url.path, terminating_rule_type,terminating_rule_id,event.action,http_source_id,http_source_name, latitude, longitude, country_code\n| (blocked + allowed) as requests\n| if(requests > 0, blocked/requests, 0) as blocked_pct\n| blocked_pct as eventCount\n| sort + _timeslice\n\n| avg(eventCount) as avg_blocked_pct by  _timeslice\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "url.path",
+      "displayName": "url.path",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=Labs/AWS/WAF  \n| json \"httpRequest.httpMethod\",\"httpRequest.httpVersion\",\"httpRequest.uri\",\"httpRequest.clientIp\",\"httpRequest.country\",\"action\",\"matchingNonTerminatingRules\",\"rateBasedRuleList\",\"ruleGroupList\",\"httpSourceId\",\"httpSourceName\",\"terminatingRuleType\",\"terminatingRuleId\",\"webaclId\" as http_method,http_version,uri,client_ip,country,action,matching_non_terminating_rules,rate_based_rule_list,rule_group_list,http_source_id,http_source_name,terminating_rule_type,terminating_rule_id,webacl_id ",
+        "field": "uri"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "client.ip",
+      "displayName": "client.ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=Labs/AWS/WAF  \n| json \"httpRequest.httpMethod\",\"httpRequest.httpVersion\",\"httpRequest.uri\",\"httpRequest.clientIp\",\"httpRequest.country\",\"action\",\"matchingNonTerminatingRules\",\"rateBasedRuleList\",\"ruleGroupList\",\"httpSourceId\",\"httpSourceName\",\"terminatingRuleType\",\"terminatingRuleId\",\"webaclId\" as http_method,http_version,uri,client_ip,country,action,matching_non_terminating_rules,rate_based_rule_list,rule_group_list,http_source_id,http_source_name,terminating_rule_type,terminating_rule_id,webacl_id ",
+        "field": "client_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "event.action",
+      "displayName": "event.action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=Labs/AWS/WAF  \n| json \"httpRequest.httpMethod\",\"httpRequest.httpVersion\",\"httpRequest.uri\",\"httpRequest.clientIp\",\"httpRequest.country\",\"action\",\"matchingNonTerminatingRules\",\"rateBasedRuleList\",\"ruleGroupList\",\"httpSourceId\",\"httpSourceName\",\"terminatingRuleType\",\"terminatingRuleId\",\"webaclId\" as http_method,http_version,uri,client_ip,country,action,matching_non_terminating_rules,rate_based_rule_list,rule_group_list,http_source_id,http_source_name,terminating_rule_type,terminating_rule_id,webacl_id",
+        "field": "http_method"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "event.outcome",
+      "displayName": "event.outcome",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=Labs/AWS/WAF  \n| json \"httpRequest.httpMethod\",\"httpRequest.httpVersion\",\"httpRequest.uri\",\"httpRequest.clientIp\",\"httpRequest.country\",\"action\",\"matchingNonTerminatingRules\",\"rateBasedRuleList\",\"ruleGroupList\",\"httpSourceId\",\"httpSourceName\",\"terminatingRuleType\",\"terminatingRuleId\",\"webaclId\" as http_method,http_version,uri,client_ip,country,action,matching_non_terminating_rules,rate_based_rule_list,rule_group_list,http_source_id,http_source_name,terminating_rule_type,terminating_rule_id,webacl_id",
+        "field": "action"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "risk.calculated_level",
+      "displayName": "risk.calculated_level",
+      "defaultValue": "1",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "0,1,2,3,4,5"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

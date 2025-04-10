@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Consecutive Logins",
+  "search": {
+    "queryText": "_sourceCategory = Labs/Salesforce \"\\\"EVENT_TYPE\\\":\\\"Login\\\"\" \n| json \"EVENT_TYPE\", \"CLIENT_IP\", \"USER_ID\"\n| where event_type=\"Login\"\n| lookup latitude, longitude from geo://location on ip=client_ip\n| where !isNull(latitude)\n| backshift _messagetime as t2 | backshift latitude as lat2 | backshift longitude as lon2\n| where !isNull(t2) and !isNull(lat2) and !isNull(lon2)\n| (t2 - _messagetime)/1000 as time_delta\n| lat2 - latitude as dlat | lon2 - longitude as dlon\n| (sin(dlat/2))*(sin(dlat/2)) + cos(latitude) * cos(lat2) * (sin(dlon/2)) * (sin(dlon/2)) as a\n| 2 * atan2(sqrt(a), sqrt(1-a)) as c\n| 3961 * c as distance\n| formatDate(_messagetime, \"MM/dd/yyyy HH:mm:ss.SSS\") as t1 \n| formatDate(toLong(t2), \"MM/dd/yyyy HH:mm:ss.SSS\") as t2 \n| first(t1) as time1, first(t2) as time2, first(time_delta) as time_delta, first(client_ip) as client_ip, first(distance) as distance by user_id",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

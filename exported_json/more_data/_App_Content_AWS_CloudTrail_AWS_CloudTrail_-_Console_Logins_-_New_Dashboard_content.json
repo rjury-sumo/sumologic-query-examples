@@ -1,0 +1,338 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "AWS CloudTrail - Console Logins - New",
+  "description": "See information about CloudTrail console logins, including location of users, login events by user, logins from multiple IP address, logins from outside the US, and logins without multi-factor authentication.",
+  "title": "AWS CloudTrail - Console Logins - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel75133329ad356b43",
+        "structure": "{\"width\":16,\"height\":13,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelc5a20d0e9d916848",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panelb06ea39b821a2940",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":5}"
+      },
+      {
+        "key": "panel13fccb7b9fd28a45",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "paneleffea62f8dc67a49",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":10}"
+      },
+      {
+        "key": "panel6599e9579d692b4a",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":10}"
+      },
+      {
+        "key": "panel56a71333a2675b47",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panel80de7af995800844",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":15}"
+      },
+      {
+        "key": "paneld085310ba2222a44",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":15}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel6599e9579d692b4a",
+      "title": "Outlier - Success Login",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail*  \"ConsoleLogin\" \"Success\"\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| where eventName=\"ConsoleLogin\"\n| parse \"\\\"sourceIPAddress\\\":\\\"*\\\"\" as sourceIPAddress nodrop\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| json field=_raw \"responseElements.ConsoleLogin\" as loginResult nodrop\n| where loginResult =\"Success\"\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfaUsed nodrop\n| timeslice 1h\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{loginresult}}\" = \"*\", true, loginresult matches \"{{loginresult}}\")\n|count by _timeslice\n| fillmissing timeslice(1h)\n| sort by _timeslice\n| outlier _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel56a71333a2675b47",
+      "title": "Login Results - One Day Time Comparison",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail*  \"ConsoleLogin\" \n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| where eventName=\"ConsoleLogin\"\n| parse \"\\\"sourceIPAddress\\\":\\\"*\\\"\" as sourceIPAddress nodrop\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| json field=_raw \"responseElements.ConsoleLogin\" as loginResult nodrop\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfaUsed nodrop\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{loginresult}}\" = \"*\", true, loginresult matches \"{{loginresult}}\")\n|count by loginResult\n| compare with timeshift 1d",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneld085310ba2222a44",
+      "title": "Outlier - Failed Login",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail*  \"ConsoleLogin\" \"Failure\"\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| where eventName=\"ConsoleLogin\"\n| parse \"\\\"sourceIPAddress\\\":\\\"*\\\"\" as sourceIPAddress nodrop\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| json field=_raw \"responseElements.ConsoleLogin\" as loginResult nodrop\n| where loginResult =\"Failure\"\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfaUsed nodrop\n| timeslice 1h\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{loginresult}}\" = \"*\", true, loginresult matches \"{{loginresult}}\")\n|count by _timeslice\n| fillmissing timeslice(1h)\n| sort by _timeslice\n| outlier _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb06ea39b821a2940",
+      "title": "Logins Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail*  \"ConsoleLogin\" \n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| where eventName=\"ConsoleLogin\"\n| parse \"\\\"sourceIPAddress\\\":\\\"*\\\"\" as sourceIPAddress nodrop\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| json field=_raw \"responseElements.ConsoleLogin\" as loginResult nodrop\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfaUsed nodrop\n| timeslice 1h\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{loginresult}}\" = \"*\", true, loginresult matches \"{{loginresult}}\")\n|count by _timeslice, loginResult\n| transpose row _timeslice column loginResult",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel75133329ad356b43",
+      "title": "Geo Location of All Users",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail \n| json \"sourceIPAddress\"\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| parse \"\\\"responseElements\\\":{\\\"ConsoleLogin\\\":\\\"*\\\"}\" as loginResult nodrop\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfaUsed nodrop\n| where eventName=\"ConsoleLogin\"\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\")\n|count by sourceIPAddress\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = sourceIPAddress\n| where !isNull(latitude)\n| sum(_count) as _count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc5a20d0e9d916848",
+      "title": "Login Events By User",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"ConsoleLogin\"\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| where eventName=\"ConsoleLogin\"\n| parse \"\\\"sourceIPAddress\\\":\\\"*\\\"\" as sourceIPAddress nodrop\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| json field=_raw \"responseElements.ConsoleLogin\" as loginResult nodrop\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfaUsed nodrop\n| timeslice 1h\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{loginresult}}\" = \"*\", true, loginresult matches \"{{loginresult}}\")\n|count by _timeslice, user\n| transpose row _timeslice column  user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel13fccb7b9fd28a45",
+      "title": "Logins from Multiple IP",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail*  \"ConsoleLogin\" \n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| where eventName=\"ConsoleLogin\"\n| parse \"\\\"sourceIPAddress\\\":\\\"*\\\"\" as sourceIPAddress nodrop\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| json field=_raw \"responseElements.ConsoleLogin\" as loginResult nodrop\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfaUsed nodrop\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{loginresult}}\" = \"*\", true, loginresult matches \"{{loginresult}}\")\n|count_distinct(sourceIPAddress) as instances by user\n| where instances > 1\n| sort by instances, user asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel80de7af995800844",
+      "title": "Logins without MFA",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail*  \"ConsoleLogin\" \"\\\"MFAUsed\\\":\\\"No\\\"\"\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| where eventName=\"ConsoleLogin\"\n| parse \"\\\"sourceIPAddress\\\":\\\"*\\\"\" as sourceIPAddress nodrop\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| json field=_raw \"responseElements.ConsoleLogin\" as loginResult nodrop\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfaUsed nodrop\n| where mfaUsed<>\"Yes\"\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{loginresult}}\" = \"*\", true, loginresult matches \"{{loginresult}}\")\n|count by user, loginresult\n| sort by _count, user, loginresult",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneleffea62f8dc67a49",
+      "title": "Logins from Outside the USA",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail*  \"ConsoleLogin\" \n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| where eventName=\"ConsoleLogin\"\n| json \"sourceIPAddress\"\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| json field=_raw \"responseElements.ConsoleLogin\" as loginResult nodrop\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfaUsed nodrop\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{loginresult}}\" = \"*\", true, loginresult matches \"{{loginresult}}\")\n|count by sourceIPAddress, user, loginresult\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = sourceIPAddress\n| where country_code<>\"US\" and !isNull(latitude)\n| fields user, country_code, loginresult, _count\n| sort by _count, country_code asc, user, loginresult",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "user",
+      "displayName": "user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  \"ConsoleLogin\" \"Failure\"\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| where eventName=\"ConsoleLogin\"\n| parse \"\\\"sourceIPAddress\\\":\\\"*\\\"\" as sourceIPAddress nodrop\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| json field=_raw \"responseElements.ConsoleLogin\" as loginResult nodrop\n| where loginResult =\"Failure\"\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfaUsed nodrop\n| timeslice 1h",
+        "field": "user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "loginresult",
+      "displayName": "loginresult",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail*  \"ConsoleLogin\" \"Failure\"\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| where eventName=\"ConsoleLogin\"\n| parse \"\\\"sourceIPAddress\\\":\\\"*\\\"\" as sourceIPAddress nodrop\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| json field=_raw \"responseElements.ConsoleLogin\" as loginResult nodrop\n| where loginResult =\"Failure\"\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfaUsed nodrop\n| timeslice 1h",
+        "field": "loginresult"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

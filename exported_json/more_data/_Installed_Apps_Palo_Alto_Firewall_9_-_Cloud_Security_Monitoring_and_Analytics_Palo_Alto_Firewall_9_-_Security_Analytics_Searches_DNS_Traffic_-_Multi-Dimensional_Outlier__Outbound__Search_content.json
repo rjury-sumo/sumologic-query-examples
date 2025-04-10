@@ -1,0 +1,38 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinitionV2",
+  "name": "DNS Traffic - Multi-Dimensional Outlier (Outbound)",
+  "search": {
+    "queryText": "_sourceCategory={{Logsdatasource}}   TRAFFIC dns\n | csv _raw extract 1 as f1, 2 as Receive_Time, 3 as serialNum, 4 as type, 5 as subtype, 6 as f2, 7 as LogGenerationTime, 8 as src_ip, 9 as dest_ip, 10 as NAT_src_ip, 11 as NAT_dest_ip, 12 as ruleName, 13 as src_user, 14 as dest_user, 15 as app, 16 as vsys, 17 as src_zone, 18 as dest_zone, 19 as inbound_interface, 20 as outbound_interface, 21 as LogAction, 22 as f3, 23 as SessonID, 24 as RepeatCount, 25 as src_port, 26 as dest_port, 27 as NAT_src_port, 28 as NAT_dest_port, 29 as flags, 30 as protocol, 31 as action, 32 as bytes, 33 as bytes_sent, 34 as bytes_recv, 35 as Packets, 36 as StartTime, 37 as ElapsedTime, 38 as Category, 39 as f4, 40 as seqNum, 41 as ActionFlags, 42 as src_Country, 43 as dest_country, 44 as f5, 45 as pkts_sent, 46 as pkts_received, 47 as session_end_reason, 48 as Device_Group_Hierarchy_l1, 49 as Device_Group_Hierarchy_l2, 50 as Device_Group_Hierarchy_l3, 51 as Device_Group_Hierarchy_l4, 52 as vsys_Name, 53 as DeviceName, 54 as action_source, 55 as Source_VM_UUID, 56 as Destination_VM_UUID, 57 as Tunnel_ID_IMSI, 58 as Monitor_Tag_IMEI, 59 as Parent_Session_ID, 60 as parent_start_time, 61 as Tunnel, 62 as SCTP_Association_ID, 63 as SCTP_Chunks, 64 as SCTP_Chunks_Sent, 65 as SCTP_Chunks_Received, 66 as UUIDforrule, 67 as HTTP2Connection\n| where type=\"TRAFFIC\"\n| where app = \"dns\"\n| timeslice 5m\n| isPrivateIP(src_ip) as private_src_ip\n| where private_src_ip\n| isPublicIP(dest_ip) as public_dest_ip\n| where public_dest_ip\n| sum(bytes_sent) as bytes_sent by _timeslice, src_ip\n| outlier bytes_sent by src_ip\n| fields _timeslice,src_ip, bytes_sent, bytes_sent_violation\n| where bytes_sent_violation > 0",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [
+      {
+        "name": "Logsdatasource",
+        "label": "Logsdatasource",
+        "description": "Logs data source",
+        "dataType": "QUERY_FRAGMENT",
+        "value": "*palo*",
+        "autoComplete": {
+          "autoCompleteType": "SKIP_AUTOCOMPLETE",
+          "autoCompleteKey": null,
+          "autoCompleteValues": [],
+          "lookupFileName": null,
+          "lookupLabelColumn": null,
+          "lookupValueColumn": null
+        }
+      }
+    ],
+    "parsingMode": "Manual",
+    "defaultTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1h"
+      },
+      "to": null
+    }
+  },
+  "searchSchedule": null,
+  "description": "Alerts when a single src_ip sends an abnormally high volume of data outbound."
+}

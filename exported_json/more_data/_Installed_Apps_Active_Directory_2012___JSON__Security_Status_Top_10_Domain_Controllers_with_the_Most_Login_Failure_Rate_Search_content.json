@@ -1,0 +1,38 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinitionV2",
+  "name": "Top 10 Domain Controllers with the Most Login Failure Rate",
+  "search": {
+    "queryText": "_sourceCategory={{_sourceCategory}}  \"\\\"Channel\\\":\\\"Security\\\"\" (4624 or 4625 or 4771 or 4776 or 4768 or 4769)  _sourceName=Security\n// 4624 - Login Success, 4625 or 4771 - Login Failures, 4776 - Domain Controller - Credential validation, 4768 - A Kerberos authentication ticket (TGT) was requested, 4769 - A Kerberos service ticket was requested\n| json \"EventID\", \"Computer\", \"Level\", \"Message\", \"Keywords\", \"Channel\" as event_id, host, event_type, msg_summary, Keywords, channel nodrop\n| where event_id in (\"4624\", \"4625\", \"4771\", \"4776\", \"4768\", \"4769\")\n| if (Keywords matches \"Audit Success\", 1, 0) as Success \n| if (Keywords matches \"Audit Failure\", 1, 0) as Failure \n| _sourceHost as ReportingDC \n| count as LoginAttempts, sum(Success) as SuccessLoginAttempts, sum(Failure) as FailureLoginAttempts by ReportingDC \n| FailureLoginAttempts / LoginAttempts as %\"LoginFailureRatio\" | sort - %\"LoginFailureRatio\" | limit 10",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [
+      {
+        "name": "_sourceCategory",
+        "label": "_sourceCategory",
+        "description": "config",
+        "dataType": "QUERY_FRAGMENT",
+        "value": "Labs/artifactory/request",
+        "autoComplete": {
+          "autoCompleteType": "SKIP_AUTOCOMPLETE",
+          "autoCompleteKey": null,
+          "autoCompleteValues": [],
+          "lookupFileName": null,
+          "lookupLabelColumn": null,
+          "lookupValueColumn": null
+        }
+      }
+    ],
+    "parsingMode": "Manual",
+    "defaultTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1d"
+      },
+      "to": null
+    }
+  },
+  "searchSchedule": null,
+  "description": ""
+}

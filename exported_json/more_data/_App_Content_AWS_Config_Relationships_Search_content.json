@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Relationships",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/Config Notification ConfigurationItemChangeNotification\n// Having a grouping expression moves results into the aggregates tab, where we have more control over its display.\n| count by _raw, _messageTime\n| json field=_raw \"Message\", \"Type\" \n| where type == \"Notification\"\n| json field=message \"messageType\",\"configurationItem\" as messageType, single_message \n| where messageType = \"ConfigurationItemChangeNotification\" \n| json field=single_message \"resourceId\", \"resourceType\", \"configurationItemStatus\", \"awsAccountId\", \"relationships\" as ResourceId, ResourceType, Status, AWSAccountID, Relationships nodrop\n// Use a where clause to filter by resourceType. Supported resource types can be found here: http://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html\n// | where resourceType = \"AWS::EC2::Instance\"\n// Use accum as a row numbering in order to select the most recent record\n| 1 as row_num \n| sort by _messageTime desc, status asc \n| accum row_num as row_num by ResourceId \n| where row_num = 1\n// If the most recent record is 'Deleted', the resource has been deleted and we do not want to display any \"current\" relationships\n| where Status != \"ResourceDeleted\"\n// Split out each relationship into a record\n| parse regex field=relationships \"(?<single_relationship>\\{\\\"resourceId\\\"\\:.*?\\})((?=,\\{\\\"resourceId\\\")|(?=\\]\\s*$))\" multi\n| json field=single_relationship \"resourceId\", \"name\", \"resourceType\" as relatedResourceId, relationship, relatedResourceType\n| sort by resourceType asc, resourceId asc, relationship asc \n| fields - _raw, _messageTime\n// Look up the Resource Name stored in a shared file via a scheduled query. Schedule the ‘ResourceNames Lookup Table Generator’ search to keep this file up to date.\n//| lookup idAndName from /shared/AWSConfig/ResourceNames on resourceType=relatedResourceType, resourceId=relatedResourceId | if(isNull(idAndName), relatedResourceId, idAndName) as relatedResourceId\n//| lookup idAndName from /shared/AWSConfig/ResourceNames on resourceType=resourceType, resourceId=resourceId | if(isNull(idAndName), resourceId, idAndName) as ResourceId\n| fields (resourceType, resourceId, relationship, relatedResourceType, relatedResourceId)",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-14d"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

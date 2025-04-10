@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "ResourceNames Lookup Table Generator",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/Config Notification ConfigurationItemChangeNotification\n| json \"Message\", \"Type\" \n| where type == \"Notification\"\n| json field=message \"messageType\",\"configurationItem\" as messageType, single_message \n| where messageType = \"ConfigurationItemChangeNotification\" \n| json field=single_message \"resourceId\", \"resourceType\", \"configurationItemStatus\", \"tags.Name\" as ResourceId, ResourceType, Status, Name nodrop\n// Use accum as a row numbering in order to select the most recent record\n| 1 as row_num \n| sort by _messageTime desc, status asc \n| accum row_num as row_num by ResourceId \n| where row_num = 1 | fields - row_num\n| concat (\" | \", Name, \" \") as idAndName \n| if(idAndName matches \" | * \", \"\", idAndName) as idAndName\n| concat (resourceId, idAndName) as idAndName\n| count by resourceId, resourceType, idAndName \n| fields - _count\n| save append /Shared/AWSConfig/ResourceNames",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-30d"
+  },
+  "searchSchedule": null,
+  "description": "Run or schedule this search on a regular basis to generate the ResourceNames lookup table."
+}

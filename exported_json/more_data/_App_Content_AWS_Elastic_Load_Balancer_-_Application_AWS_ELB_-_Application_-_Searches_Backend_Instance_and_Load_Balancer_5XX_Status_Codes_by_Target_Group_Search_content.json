@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Backend Instance and Load Balancer 5XX Status Codes by Target Group",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/ALB\n| parse \"* * * * * * * * * * * * \\\"*\\\" \\\"*\\\" * * * \\\"*\\\"\" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id\n| parse field=request \"* *://*:*/* HTTP\" as method, protocol, domain, server_port, uri\n| parse field=target_group_arn \"* \" as target_group_arn nodrop\n| parse field=client \"*:*\" as clientIP, port nodrop\n| parse field=backend \"*:*\" as backendIP, backend_port nodrop\n| fields - request, client, backend\n| where (elb_status_code matches \"5*\") or (target_status_code matches \"5*\") \n| timeslice 1m \n| if (elb_status_code matches \"5*\",1,0) as elb_flag\n| if (target_status_code matches \"5*\",1,0) as be_flag \n| sum(elb_flag) as load_balancer, sum(be_flag) as backend_instance by _timeslice,target_group_arn \n| fields _timeslice,target_group_arn,load_balancer, backend_instance \n| (load_balancer+backend_instance) as total_5xx \n| sort by total_5xx\n| limit 20",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-60m"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

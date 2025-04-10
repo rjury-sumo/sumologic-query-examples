@@ -1,0 +1,1108 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Logs",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "MySQL -  Slow Query Server Location",
+      "search": {
+        "queryText": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* \"User@Host\" \"Query_time\"\n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\" nodrop // Pttrn1-vrtn1\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @\\s+\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" nodrop // Pttrn1-vrtn2\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" // Pttrn1-vrtn3\n| count by db_cluster, ip_addr, host_name\n| where !isEmpty(ip_addr)\n| lookup latitude, longitude, country_name, state, city, postal_code from geo://location on ip=ip_addr\n| where !isNull(latitude)",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "MySQL - Crash Recovery Attempts by Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* \"Starting crash recovery\"\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| where mesg matches \"*Starting crash recovery*\"\n| _sourceHost as Host\n| count as recovery_attempts by Host, db_cluster \n| Sort by recovery_attempts",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "MySQL - Error Logs",
+      "description": "The MySQL - Error Logs dashboard provides insight into database error logs by specifically monitoring database shutdown/start events, errors over time, errors, warnings and crash recovery attempts.",
+      "title": "MySQL - Error Logs",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-DBD058BE88E90841",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-F79770F4A069EB45",
+            "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":13}"
+          },
+          {
+            "key": "panelPANE-D6C3F9C698DF3B46",
+            "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":13}"
+          },
+          {
+            "key": "panelPANE-7FA67CFCA74CAB4B",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-31139F5D8B2A3B43",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-7B48184880E6DA40",
+            "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":0}"
+          },
+          {
+            "key": "panelF405708196683841",
+            "structure": "{\"height\":9,\"width\":24,\"x\":0,\"y\":21}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-DBD058BE88E90841",
+          "title": "Error Log Type Over Time",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"ERROR\"],\"queries\":[],\"properties\":{\"color\":\"#df3d3d\"}},{\"series\":[\"Warning\"],\"queries\":[],\"properties\":{\"color\":\"#dfbe2e\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} (Error or Warning or Note or Info or Information or DEBUG or CRITICAL)\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| where touppercase(ErrorLogtype) in (\"ERROR\", \"WARNING\", \"NOTE\", \"INFO\", \"INFORMATION\", \"DEBUG\", \"CRITICAL\")\n| timeslice 1h\n| count by _timeslice, ErrorLogtype\n| transpose row _timeslice column ErrorLogType",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-F79770F4A069EB45",
+          "title": "Top Errors",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[ERROR]\"\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\"\n| where ErrorLogtype=\"ERROR\"\n| parse field=ErrorMsg \"[*] [*] *\" as err_code, subsystem, error_message nodrop\n| if (!isEmpty(error_message), error_message, ErrorMsg) as error_message\n| count as frequency by error_message, db_cluster, err_code, subsystem\n| sort by frequency, error_message asc\n| limit 30",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-D6C3F9C698DF3B46",
+          "title": "Top Warnings",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[Warning]\"\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\"\n| where ErrorLogtype=\"Warning\" \n| parse field=ErrorMsg \"[*] [*] *\" as err_code, subsystem, ErrorMessage nodrop\n| if (!isEmpty(ErrorMessage), ErrorMessage, ErrorMsg) as warning_message\n| count as frequency by warning_message, db_cluster, err_code, subsystem\n| sort by frequency, warning_message asc\n| limit 30",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-7FA67CFCA74CAB4B",
+          "title": "Server Start and Shutdown Events Over Time",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"Down\"],\"queries\":[],\"properties\":{\"color\":\"#df3d3d\"}},{\"series\":[\"Shutting Down\"],\"queries\":[],\"properties\":{\"color\":\"#dfbe2e\"}},{\"series\":[\"Up\"],\"queries\":[],\"properties\":{\"color\":\"#16943e\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} mysqld (\"ready for connections.\" or \"Shutdown complete\" or \"Terminated.\" or \"Normal shutdown\" or \"Shutting down\" or \"starting as process\")\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| if (ErrorMsg matches \"*ready for connections.*\", \"Up\",\"Unknown\") as server_status\n| if (ErrorMsg matches \"*Terminated.*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Normal shutdown*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutting down*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutdown complete*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*starting as process*\", \"Starting\",server_status) as server_status\n| timeslice 15m\n| count by _timeslice, server_status\n| transpose row _timeslice column server_status",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-31139F5D8B2A3B43",
+          "title": "Crash Recovery Attempts Over Time",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"Starting crash recovery\"\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| _sourceHost as Host\n| timeslice 1h\n| count as recovery_attempts by _timeslice",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-7B48184880E6DA40",
+          "title": "Stopped Servers",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} mysqld (\"ready for connections.\"  or \"Terminated.\" or \"Shutdown complete\" or \"Normal shutdown\")\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| if (ErrorMsg matches \"*ready for connections.*\", \"Up\",\"Unknown\") as server_status\n| if (ErrorMsg matches \"*Terminated.*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Normal shutdown*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutdown complete*\", \"Down\", server_status) as server_status\n| _sourceHost as Host\n| timeslice 100s\n| withtime server_status | withtime _messagetime\n| most_recent(server_status_withtime) as server_status, most_recent(_messagetime_withtime) as m_time by Host, db_cluster\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS Z\") as event_time\n| ((toMillis(now())-m_time)/(1000*60)) as since_mins | format(\"%.2f\", since_mins) as since_minutes\n| concat (\"Since \", since_minutes, \" minutes\") as remark\n| where server_status != \"Up\"\n| fields - m_time, since_mins, since_minutes \n| fields Host, event_time, server_status, remark, db_cluster",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelF405708196683841",
+          "title": "Log Reduce",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} (\"ERROR\" or \"CRITICAL\") \n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| logreduce(mesg) by db_cluster limit=20\n| _count as count | fields -_count | sort by count, signature asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "db_cluster",
+          "displayName": "db_cluster",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* | count by db_cluster",
+            "field": "db_cluster"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "MySQL - Failed Logins",
+      "description": "The MySQL - Failed Logins dashboard provides insights into all failed login attempts by location, users and hosts.",
+      "title": "MySQL - Failed Logins",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-29111F90B6820B4C",
+            "structure": "{\"height\":8,\"width\":4,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-FE6E62E1BCAACB47",
+            "structure": "{\"height\":9,\"width\":10,\"x\":14,\"y\":15}"
+          },
+          {
+            "key": "panelPANE-DCF1866CB4B5AA47",
+            "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":8}"
+          },
+          {
+            "key": "panelPANE-2691632B88D02943",
+            "structure": "{\"height\":9,\"width\":8,\"x\":0,\"y\":15}"
+          },
+          {
+            "key": "panelPANE-3EBB43EE9D682942",
+            "structure": "{\"height\":9,\"width\":6,\"x\":8,\"y\":15}"
+          },
+          {
+            "key": "panelPANE-AD4AFFB4AF36084C",
+            "structure": "{\"height\":8,\"width\":20,\"x\":4,\"y\":0}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-29111F90B6820B4C",
+          "title": "Failed Login Attempts",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Failed Logins\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":0,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":1,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[Warning]\" Access denied for user\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Access denied for user '*'@'*' (using password: YES)\" as user, ip_address\n| count as failed_login_event_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-FE6E62E1BCAACB47",
+          "title": "Failed Login Attempts - Details",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[Warning]\" Access denied for user\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Access denied for user '*'@'*' (using password: YES)\" as user, ip_address\n| timeslice 1s\n| count as event_count by _timeslice, user, ip_address, db_cluster\n| sort by _timeslice",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-DCF1866CB4B5AA47",
+          "title": "Failed Login Attempts Trend",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[Warning]\" Access denied for user\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Access denied for user '*'@'*' (using password: YES)\" as user, ip_address\n| timeslice 1h\n| count as event_count by _timeslice",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-2691632B88D02943",
+          "title": "Top 10 Failed Login Attempts by Users",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[Warning]\" Access denied for user\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Access denied for user '*'@'*' (using password: YES)\" as user, ip_address\n| count as event_count by user\n| top 10 user by event_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-3EBB43EE9D682942",
+          "title": "Top 10 Failed Login Attempts by Hosts",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[Warning]\" Access denied for user\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Access denied for user '*'@'*' (using password: YES)\" as user, ip_address\n| count as event_count by ip_address\n| top 10 ip_address by event_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-AD4AFFB4AF36084C",
+          "title": "Failed Login Attempts - Location",
+          "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[Warning]\" Access denied for user\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Access denied for user '*'@'*' (using password: YES)\" as user, ip_address\n| count as event_count by ip_address\n| lookup latitude, longitude, country_name, state, city from geo://location on ip = ip_address\n| where !isNull(latitude)",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "db_cluster",
+          "displayName": "db_cluster",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* | count by db_cluster",
+            "field": "db_cluster"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "MySQL - Number of Replication Completion Events by Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* \"Slave SQL thread\" \"because it reached its UNTIL position\"\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Slave SQL thread * because it reached its UNTIL position *\" as State, StoppedUntilPosition\n| timeslice 3h\n| count by _timeslice, _sourceHost, db_cluster\n| transpose row _timeslice column _sourceHost, db_cluster",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "MySQL - Replication",
+      "description": "The MySQL - Replication dashboard provides insights into the state of database replication.",
+      "title": "MySQL - Replication",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-9ECB9CB8ADB09A41",
+            "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-13CAE2638A044847",
+            "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":13}"
+          },
+          {
+            "key": "panelPANE-2BC3F7EDBCB0AA41",
+            "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":7}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-9ECB9CB8ADB09A41",
+          "title": "Replication Start-Stop Events",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"halfway_count\"],\"queries\":[],\"properties\":{\"type\":\"line\",\"axisYType\":\"primary\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[Note]\" \"SQL thread\"\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Slave SQL thread initialized, * replication in log '*' at position *, relay log '*' position: *\" as State,ReplicationLog,ReplicationPosition,ReplayLog,RelayPosition nodrop\n| parse field=ErrorMsg \"Slave SQL thread * because it reached its UNTIL position *\" as State, StoppedUntilPosition nodrop\n| where state in (\"starting\", \"stopped\")\n| timeslice 1h\n| count as event_count by _timeslice, state\n| transpose row _timeslice column state as starting, stopped\n| (starting+stopped)/2 as halfway_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-13CAE2638A044847",
+          "title": "Top Reasons for Replication Failures",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} ((\"[ERROR]\" and (\"Slave I/O\" or \"Error reading packet from server\" or \"Slave SQL\")) or (\"[Note] Error reading relay log event: slave SQL thread was killed\"))\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| ErrorMsg as error_message\n| count as frequency by error_message, db_cluster\n| sort by frequency",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-2BC3F7EDBCB0AA41",
+          "title": "Replication Status Over Time",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"event_count\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"failed\"],\"queries\":[],\"properties\":{\"color\":\"#df3d3d\"}}]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} (\"[Note]\" or (\"[ERROR]\" (\"Slave I/O\" or \"Error reading packet from server\" or \"Slave SQL\")))\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Slave SQL thread initialized, * replication in log '*' at position *, relay log '*' position: *\" as State,ReplicationLog,ReplicationPosition,ReplayLog,RelayPosition nodrop\n| parse field=ErrorMsg \"Slave SQL thread * because it reached its UNTIL position *\" as State, StoppedUntilPosition nodrop\n| parse field=ErrorMsg \"Error reading relay log event: slave SQL thread was *\" as state nodrop\n| if(_raw matches \"*[ERROR] Slave I/O*\" or _raw matches \"*[ERROR] Error reading packet from server*\"  or _raw matches \"*[ERROR] Slave SQL*\",\"failed\",state) as state\n| where state in (\"starting\", \"stopped\", \"killed\", \"failed\")\n| timeslice 1h\n| count by _timeslice, state\n| transpose row _timeslice column state\n| fillmissing timeslice(1h)",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "db_cluster",
+          "displayName": "db_cluster",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* | count by db_cluster",
+            "field": "db_cluster"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "MySQL - Replication Failures by Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* \"[ERROR]\" (\"Slave I/O\" or \"Error reading packet from server\" or \"Slave SQL\")\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| where ErrorLogtype=\"ERROR\"\n| parse field=ErrorMsg \"*: error * to master '*' - retry-time: * retries: *, Error_code: *\" as subsystem, action, Master, Retry_time, Retries, Error_code nodrop\n| parse field=ErrorMsg \"*: Got fatal error *, Error_code: *\" as subsystem, Error_Msg, Error_code nodrop\n| parse field=ErrorMsg \"*: * ( server_errno=*)\" as subsystem, Error_Msg, Error_code nodrop\n| parse field=ErrorMsg \"*: The slave I/O thread stops because *. Error:*, Error_code: *\" as subsystem, Error_Msg_details, Error_Msg, Error_code nodrop\n| parse field=ErrorMsg \"*: * Default database: '*'. Query: '*', Error_code: *\" as subsystem, Error_Msg, Default_Database, Query, Error_code nodrop\n| parse field=ErrorMsg \"*: Cou*d not execute *\" as subsystem, f1, Error_Msg nodrop\n| parse field=ErrorMsg \"*: Master command *, Error_code: *\" as subsystem, Error_Msg, Error_code nodrop\n| parse field=ErrorMsg \"* thread couldn't register on master\" as subsystem nodrop\n| timeslice 1h\n| _sourceHost as host\n| count by _timeslice, host, db_cluster\n| transpose row _timeslice column host, db_cluster",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-3d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "MySQL - Server Latest Replication State",
+      "search": {
+        "queryText": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* (\"[Note]\" or (\"[ERROR]\" (\"Slave I/O\" or \"Error reading packet from server\" or \"Slave SQL\")))\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| parse field=ErrorMsg \"Slave SQL thread initialized, * replication in log '*' at position *, relay log '*' position: *\" as replication_state, ReplicationLog, ReplicationPosition, ReplayLog, RelayPosition nodrop\n| parse field=ErrorMsg \"Slave SQL thread * because it reached its UNTIL position *\" as replication_state, StoppedUntilPosition nodrop\n| parse field=ErrorMsg \"Error reading relay log event: slave SQL thread was *\" as replication_state nodrop\n| if(_raw matches \"*[ERROR] Slave I/O*\" or _raw matches \"*[ERROR] Error reading packet from server*\"  or _raw matches \"*[ERROR] Slave SQL*\",\"failed\", replication_state) as replication_state\n| where replication_state in (\"starting\", \"stopped\", \"killed\", \"failed\")\n| if (replication_state in (\"starting\", \"stopped\"), \"Up\", \"Down\") as replication_state\n| _sourceHost as Host\n| withtime replication_state | withtime _messagetime\n| most_recent(replication_state_withtime) as replication_state, most_recent(_messagetime_withtime) as m_time by host, db_cluster\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS Z\") as event_time\n| ((toMillis(now())-m_time)/(1000*60*60)) as since_hours | format(\"%.2f\", since_hours) as since_hours\n| concat (\"Since \", since_hours, \" hours\") as remark\n| fields - m_time \n| fields db_cluster, host, event_time, replication_state, remark",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "MySQL - Server Latest Running State",
+      "search": {
+        "queryText": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* mysqld (\"ready for connections.\" or \"Shutdown complete\" or \"Terminated.\" or \"Normal shutdown\" or \"Shutting down\" or \"starting as process\")\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| if (ErrorMsg matches \"*ready for connections.*\", \"Up\",\"Unknown\") as server_status\n| if (ErrorMsg matches \"*Terminated.*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Normal shutdown*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutting down*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutdown complete*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*starting as process*\", \"Starting\",server_status) as server_status\n| _sourceHost as host\n| timeslice 15m\n| withtime server_status | withtime _messagetime\n| most_recent(server_status_withtime) as server_status, most_recent(_messagetime_withtime) as m_time by host, db_cluster\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS Z\") as event_time\n| ((toMillis(now())-m_time)/(1000*60*60)) as since_hours | format(\"%.2f\", since_hours) as since_hours\n| concat (\"Since \", since_hours, \" hours\") as remark\n| fields - m_time \n| fields host, event_time, server_status, remark, db_cluster",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-3d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "MySQL - Server Up-Down Events by Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* mysqld (\"ready for connections.\" or \"Shutdown complete\" or \"Terminated.\" or \"Normal shutdown\" or \"Shutting down\" or \"starting as process\")\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| if (ErrorMsg matches \"*ready for connections.*\", \"Up\",\"Unknown\") as server_status\n| if (ErrorMsg matches \"*Terminated.*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Normal shutdown*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutting down*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutdown complete*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*starting as process*\", \"Starting\",server_status) as server_status\n| _sourceHost as Host\n| formatDate(fromMillis(_messagetime), \"MM-dd-yyyy HH:mm:ss.SSS Z\")  as event_time\n| count by host, event_time, server_status, db_cluster\n| sort by host, event_time, server_status, db_cluster\n| fields - _count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-3d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "MySQL - Slow Queries",
+      "description": "The MySQL Slow Queries dashboard provides insights into all slow queries executed on the database.",
+      "title": "MySQL - Slow Queries",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-4115EF1DA0D50946",
+            "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-A1CE58559B2E9848",
+            "structure": "{\"height\":6,\"width\":6,\"x\":6,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-65697D668EA1B849",
+            "structure": "{\"height\":6,\"width\":6,\"x\":12,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-AD632F719E07D941",
+            "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-3B45E40B93F1284C",
+            "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-69AAED31AB872A4B",
+            "structure": "{\"height\":6,\"width\":6,\"x\":6,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-4916AA24B9B0584D",
+            "structure": "{\"height\":6,\"width\":6,\"x\":12,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-58765E1C8240F84A",
+            "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-5E3DA792B6147A42",
+            "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":12}"
+          },
+          {
+            "key": "panelPANE-6CD850EDA2E53845",
+            "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":19}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-4115EF1DA0D50946",
+          "title": "Top IP Firing Slow Queries",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"  \n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\" nodrop // Pttrn1-vrtn1\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @\\s+\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" nodrop // Pttrn1-vrtn2\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" // Pttrn1-vrtn3\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" nodrop // Pttrn2-vrtn4\n| num(query_time) as query_time\n| where query_time >= {{slow_query_latency}}\n| fields -query_block\n| count as frequency by ip_addr \n| where !isEmpty(ip_addr)\n| sort by frequency",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-A1CE58559B2E9848",
+          "title": "Top Users Firing Slow Queries",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\" nodrop // Pttrn1-vrtn1\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @\\s+\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" nodrop // Pttrn1-vrtn2\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" // Pttrn1-vrtn3\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" nodrop // Pttrn2-vrtn4\n| num(query_time) as query_time\n| where query_time >= {{slow_query_latency}}\n| fields -query_block\n| count as frequency by user | sort by frequency",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-65697D668EA1B849",
+          "title": "Slow Queries by Hosts",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" nodrop // Pttrn2-vrtn4\n| num(query_time) as query_time\n| where query_time >= {{slow_query_latency}}\n| _sourceHost as Host\n| fields -query_block\n| count as queries_count by Host \n| sort by queries_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-AD632F719E07D941",
+          "title": "Excessive Slow Queries by Host",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" // Pttrn2-vrtn4\n| num(query_time)\n| 15 as threshold // customize if need different value. As an example query taking more than 15 Seconds is considered as Excessive Slow. \n| where (query_time >= threshold)\n| _sourceHost as Host\n| fields -query_block\n| count as queries_count by Host | sort by queries_count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-3B45E40B93F1284C",
+          "title": "Slow Query by Cmd Type",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"SET timestamp=(?<set_timestamp>\\d*);(?:\\\\n|\\n)(?<sql_cmd>[\\s\\S]*);\" nodrop\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" nodrop // Pttrn2-vrtn4\n| num(query_time) as query_time\n| where query_time >= {{slow_query_latency}}\n| parse regex field=sql_cmd \"[^a-zA-Z]*(?<sql_cmd_type>[a-zA-Z]+)(?:\\s|\\\\n|\\n)\" nodrop\n| parse field=sql_cmd \"# administrator command: *\" as admn_sql_cmd\n| if (sql_cmd matches \"# administrator command: *\", admn_sql_cmd, sql_cmd_type) as sql_cmd_type\n| toUpperCase(sql_cmd_type)\n| fields -query_block\n| count as frequency group by sql_cmd_type | sort by frequency",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-69AAED31AB872A4B",
+          "title": "Avg Execution Time by Slow SQL Cmds",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" // Pttrn2-vrtn4\n| parse regex field=query_block \"SET timestamp=(?<set_timestamp>\\d*);(?:\\\\n|\\n)(?<sql_cmd>[\\s\\S]*);\" nodrop\n| parse regex field=sql_cmd \"[^a-zA-Z]*(?<sql_cmd_type>[a-zA-Z]+)(?:\\s|\\\\n|\\n)\" nodrop\n| parse field=sql_cmd \"# administrator command: *\" as admn_sql_cmd\n| if (sql_cmd matches \"# administrator command: *\", admn_sql_cmd, sql_cmd_type) as sql_cmd_type\n| toUpperCase(sql_cmd_type)\n| fields -query_block\n| timeslice 1h\n| avg(query_time) as avg_query_time group by _timeslice, sql_cmd_type\n| transpose row _timeslice column sql_cmd_type",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-4916AA24B9B0584D",
+          "title": "Slow Queries Over Time",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[],\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" nodrop // Pttrn2-vrtn4\n| num(query_time) as query_time\n| where query_time >= {{slow_query_latency}}\n| timeslice 1h\n| count as queries_count by _timeslice",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-58765E1C8240F84A",
+          "title": "Excessive Slow Queries Over Time",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" // Pttrn2-vrtn4\n| num(query_time)\n| 15 as threshold // customize if need different value. As an example query taking more than 15 Seconds is considered as Excessive Slow. \n| where query_time >= threshold \n| timeslice 1h\n| count as queries_count by _timeslice",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-5E3DA792B6147A42",
+          "title": "Top 10 Slow Queries by Average Execution Time",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\",\"decimals\":2},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"  \n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\" nodrop // Pttrn1-vrtn1\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @\\s+\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" nodrop // Pttrn1-vrtn2\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" // Pttrn1-vrtn3\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" // Pttrn2-vrtn4\n| parse regex field=query_block \"# Bytes_sent:\\s+(?<bytes_sent>\\d*)\\s+Tmp_tables:\\s+(?<tmp_tables>\\d*)\\s+Tmp_disk_tables:\\s+(?<temp_disk_tables>\\d*)\\s+Tmp_table_sizes:\\s+(?<tmp_table_sizes>\\d*)\\n\" nodrop // Pttrn3-vrtn1\n| parse regex field=query_block \"# Bytes_sent:\\s+(?<bytes_sent>\\d*)\\n\" nodrop // Pttrn3-vrtn2\n| parse regex field=query_block \"SET timestamp=(?<set_timestamp>\\d*);(?:\\\\n|\\n)(?<sql_cmd>[\\s\\S]*);\" nodrop\n| fields -query_block\n| avg(query_time) as avg_time, sum(query_time) as total_time, min(query_time) as min_time, max(query_time) as max_time, avg(rows_examined) as avg_rows_examined, avg(rows_sent) as avg_rows_sent, avg(Lock_Time) as avg_lock_time, count as frequency group by sql_cmd, db_cluster\n| where avg_time >= {{slow_query_latency}}\n| sort by avg_time | limit 10",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-6CD850EDA2E53845",
+          "title": "Top 10 Excessive Slow Queries by Frequency",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\",\"decimals\":2},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"User@Host\" \"Query_time\"\n| parse regex \"(?<query_block># User@Host:[\\S\\s]+?SET timestamp=\\d+;[\\S\\s]+?;)\" multi\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\" nodrop // Pttrn1-vrtn1\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @\\s+\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" nodrop // Pttrn1-vrtn2\n| parse regex field=query_block \"# User@Host: \\S+?\\[(?<user>\\S*?)\\] @ (?<host_name>\\S+)\\s\\[(?<ip_addr>\\S*?)\\]\\s+Id:\\s+(?<Id>\\d{1,10})\" // Pttrn1-vrtn3\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d.]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d.]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d.]*)\\s+Rows_read:\\s+(?<rows_read>[\\d.]*)\\n\" nodrop // Pttrn2-vrtn1\n| parse regex field=query_block \"Schema: (?<schema>(?:\\S*|\\s)?)\\s*Last_errno[\\s\\S]+?\\s+Killed:\\s+\\d+\\n\" nodrop // Pttrn2-vrtn2\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\\s+Rows_affected:\\s+(?<rows_affected>[\\d]*)\\s+\" nodrop // Pttrn2-vrtn3\n| parse regex field=query_block \"Query_time:\\s+(?<query_time>[\\d.]*)\\s+Lock_time:\\s+(?<lock_time>[\\d.]*)\\s+Rows_sent:\\s+(?<rows_sent>[\\d]*)\\s+Rows_examined:\\s+(?<rows_examined>[\\d]*)\" // Pttrn2-vrtn4\n| parse regex field=query_block \"# Bytes_sent:\\s+(?<bytes_sent>\\d*)\\s+Tmp_tables:\\s+(?<tmp_tables>\\d*)\\s+Tmp_disk_tables:\\s+(?<temp_disk_tables>\\d*)\\s+Tmp_table_sizes:\\s+(?<tmp_table_sizes>\\d*)\\n\" nodrop // Pttrn3-vrtn1\n| parse regex field=query_block \"# Bytes_sent:\\s+(?<bytes_sent>\\d*)\\n\" nodrop // Pttrn3-vrtn2\n| parse regex field=query_block \"SET timestamp=(?<set_timestamp>\\d*);(?:\\\\n|\\n)(?<sql_cmd>[\\s\\S]*);\" nodrop\n| fields -query_block\n| count as frequency, sum(query_time) as total_time, min(query_time) as min_time, max(query_time) as max_time, avg(query_time) as avg_time, avg(rows_examined) as avg_rows_examined, avg(rows_sent) as avg_rows_sent, avg(Lock_Time) as avg_lock_time group by sql_cmd, db_cluster\n| where avg_time >= {{slow_query_latency}}\n| sort by frequency | limit 10",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "db_cluster",
+          "displayName": "db_cluster",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* | count by db_cluster",
+            "field": "db_cluster"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        },
+        {
+          "id": null,
+          "name": "slow_query_latency",
+          "displayName": "slow_query_latency",
+          "defaultValue": "10",
+          "sourceDefinition": {
+            "variableSourceType": "CsvVariableSourceDefinition",
+            "values": "0,1,2,3,4,5,6,7,8,9,10,15,20,25,30"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": false,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    }
+  ]
+}

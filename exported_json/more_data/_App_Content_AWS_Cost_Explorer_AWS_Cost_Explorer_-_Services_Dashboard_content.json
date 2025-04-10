@@ -1,0 +1,379 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "AWS Cost Explorer - Services",
+  "description": "This dashboard provides detailed information about cost and usage by operations performed by various Services in AWS accounts.",
+  "title": "AWS Cost Explorer - Services",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {
+      "84a9fbc6b75fa49a244112c89865bee5": [
+        "*"
+      ],
+      "region": [
+        "*"
+      ],
+      "account": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1w"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-4193A94196FC1B4C",
+        "structure": "{\"height\":9,\"width\":24,\"x\":0,\"y\":28}"
+      },
+      {
+        "key": "panelE344A45EB23F5B48",
+        "structure": "{\"height\":9,\"width\":8,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panel20C07C84B943884D",
+        "structure": "{\"height\":9,\"width\":8,\"x\":16,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-2629DF4DB6E0184D",
+        "structure": "{\"height\":9,\"width\":8,\"x\":8,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-4986726F8308994D",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel8D5C8EA9AC9ECA48",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panelPANE-F1D0C25294DE7B47",
+        "structure": "{\"height\":12,\"width\":12,\"x\":0,\"y\":16}"
+      },
+      {
+        "key": "panelPANE-0007DA72ADAC7945",
+        "structure": "{\"height\":12,\"width\":12,\"x\":12,\"y\":16}"
+      },
+      {
+        "key": "panelPANE-6BA5CE7A8F539A40",
+        "structure": "{\"height\":5,\"width\":24,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-4193A94196FC1B4C",
+      "title": "Cost of Service by Account - Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"showLabels\":true,\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"showLabels\":true,\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"$\",\"isCustom\":false}}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily\n| json \"region\", \"CostUsd\", \"CostType\", \"StartDate\", \"EndDate\", \"MetricType\", \"Granularity\", \"Estimated\", \"Service\"\n| json \"LinkedAccount\" as linkedAccountNumber\n| where MetricType matches \"{{MetricType}}\" and region matches \"{{region}}\" and estimated matches \"{{estimated}}\" and Service matches \"{{service}}\"\n| where Granularity = \"Daily\" and CostType = \"cost_account_region_service_{{MetricType}}_Daily\"\n| if(isBlank(LinkedAccount), linkedAccountNumber , LinkedAccount) as LinkedAccount\n| timeslice 1d\n| last(CostUsd) as total_cost by _timeslice, account, region, CostType, Metrictype, Granularity, Estimated, Service, LinkedAccount\n| sum(total_cost) as total_cost by _timeslice, Estimated, LinkedAccount\n| if (Estimated matches \"true\" ,\"Estimated\",\"Actual\") as Estimated\n| transpose row _timeslice column LinkedAccount, Estimated",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-4w4d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE344A45EB23F5B48",
+      "title": "Total Cost",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Daily\n| json \"region\", \"CostUsd\", \"CostType\", \"StartDate\", \"EndDate\", \"MetricType\", \"Granularity\", \"Estimated\", \"Service\", \"Operation\"\n| where region matches \"{{region}}\" and Service matches \"{{service}}\" and MetricType matches \"{{MetricType}}\"\n| where Granularity = \"Daily\" and CostType = \"cost_service_operation_region_{{MetricType}}_Daily\" and estimated matches \"{{estimated}}\"\n| last(CostUsd) as total_cost by StartDate, EndDate, account, region, CostType, Metrictype, Granularity, Estimated, service, operation\n| sum(total_cost) as total_cost by StartDate\n| sort by StartDate asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel20C07C84B943884D",
+      "title": "Cost of Service by Account - Distribution",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily\n| json \"region\", \"CostUsd\", \"CostType\", \"StartDate\", \"EndDate\", \"MetricType\", \"Granularity\", \"Estimated\", \"Service\"\n| json \"LinkedAccount\" as linkedAccountNumber\n| where MetricType matches \"{{MetricType}}\" and region matches \"{{region}}\" and estimated matches \"{{estimated}}\" and Service matches \"{{service}}\"\n| where Granularity = \"Daily\" and CostType = \"cost_account_region_service_{{MetricType}}_Daily\"\n| if(isBlank(LinkedAccount), linkedAccountNumber , LinkedAccount) as LinkedAccount\n| last(CostUsd) as CostUsd by StartDate, EndDate, account, region, CostType, MetricType, Granularity, Estimated, LinkedAccount\n| sum(CostUsd) as total_cost by LinkedAccount\n| sort by total_cost, LinkedAccount asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-2629DF4DB6E0184D",
+      "title": "Top 10 Services by Cost Change in Weekly Costs",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"showLabels\":true,\"title\":\"Service\",\"titleFontSize\":11,\"labelFontSize\":10,\"hideLabels\":false},\"axisY\":{\"showLabels\":true,\"title\":\"Percentage_spike\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"unit\":{\"value\":\"%100\",\"isCustom\":false},\"hideLabels\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Daily\n| json \"region\", \"CostUsd\", \"CostType\", \"StartDate\", \"EndDate\", \"MetricType\", \"Granularity\", \"Estimated\", \"Service\", \"Operation\"\n| where MetricType matches \"{{MetricType}}\" and region matches \"{{region}}\" and Service matches \"{{service}}\" and estimated matches \"{{estimated}}\"\n| where Granularity = \"Daily\" and CostType = \"cost_service_operation_region_{{MetricType}}_Daily\"\n| first(CostUsd) as current, last(CostUsd) as last_week by account, region, Service, Operation, Estimated\n| sum(current) as current,sum(last_week) as last_week by Service\n| (current-last_week)*100/last_week as Percentage_spike \n| where Percentage_spike != 0\n| fields Service, Percentage_spike\n| sort by Percentage_spike\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-4986726F8308994D",
+      "title": "Weekly Costs",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"text\":{\"format\":\"markdownV2\",\"backgroundColor\":\"#dfe5e9\",\"textColor\":\"black\",\"verticalAlignment\":\"center\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panel8D5C8EA9AC9ECA48",
+      "title": "Monthly Costs",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"text\":{\"format\":\"markdownV2\",\"backgroundColor\":\"#dfe5e9\",\"textColor\":\"black\",\"verticalAlignment\":\"center\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelPANE-F1D0C25294DE7B47",
+      "title": "Monthly Cost by Service",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"Service\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"\",\"unit\":{\"value\":\"$\",\"isCustom\":false}}},\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Monthly\n| json \"region\", \"CostUsd\", \"CostType\", \"StartDate\", \"EndDate\", \"MetricType\", \"Granularity\", \"Estimated\", \"Service\"\n| json \"LinkedAccount\" as linkedAccountNumber\n| where MetricType matches \"{{MetricType}}\" and region matches \"{{region}}\" and estimated matches \"{{estimated}}\" and Service matches \"{{service}}\"\n| where Granularity = \"Monthly\" and CostType = \"cost_account_region_service_{{MetricType}}_Monthly\"\n| if(isBlank(LinkedAccount), linkedAccountNumber , LinkedAccount) as LinkedAccount\n| last(CostUsd) as CostUsd by StartDate, EndDate, account, region, CostType, MetricType, Granularity, Estimated, Service, LinkedAccount\n| sum(CostUsd) as total_cost by Service,LinkedAccount\n| sort by total_cost, Service asc\n| limit 10\n| transpose row Service column LinkedAccount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-4w4d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-0007DA72ADAC7945",
+      "title": "Monthly Cost by Operation",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"Operation\"},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"total_cost\",\"unit\":{\"value\":\"$\",\"isCustom\":false}}},\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Monthly\n| json \"region\", \"CostUsd\", \"CostType\", \"StartDate\", \"EndDate\", \"MetricType\", \"Granularity\", \"Estimated\", \"Service\", \"Operation\"\n| where MetricType matches \"{{MetricType}}\" and region matches \"{{region}}\" and Service matches \"{{service}}\" and estimated matches \"{{estimated}}\"\n| where Granularity = \"Monthly\" and CostType = \"cost_service_operation_region_{{MetricType}}_Monthly\"\n| last(CostUsd) as CostUsd by StartDate, EndDate, account, region, CostType, MetricType, Granularity, Estimated, Service, Operation\n| sum(CostUsd) as total_cost by Operation\n| sort by total_cost, Operation\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-4w4d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-6BA5CE7A8F539A40",
+      "title": "Note",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"series\":{},\"legend\":{\"enabled\":false},\"title\":{\"fontSize\":20},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14,\"backgroundColor\":\"#dfe5e9\",\"textColor\":\"black\",\"showTitle\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "## Note\n* MetricType\n  * Refer [AWS cost cheatsheet](https://aws.amazon.com/blogs/aws-cloud-financial-management/understanding-your-aws-cost-datasets-a-cheat-sheet)\n* Estimated\n  * Use **true** to monitor estimated / forecasted cost. \n  * Use **false** to monitor actual cost. Actual cost is available once in a month after invoice is generated.\n* It can take up to 48 hours for [AWS](https://docs.aws.amazon.com/cost-management/latest/userguide/ce-what-is.html) to generate your billing data. For accuracy Sumo Logic does not present any billing analysis for the last 48-60 hours."
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "account",
+      "displayName": "account",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "account=* region CostUsd CostType MetricType Granularity | count by account",
+        "field": "account"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "region",
+      "displayName": "region",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "account=* region CostUsd CostType MetricType Granularity\n| json \"region\" \n| count by region\n| sort by region asc",
+        "field": "Region"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "service",
+      "displayName": "service",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "account=* region CostUsd CostType MetricType Granularity Service\n| json \"Service\"\n| count by service\n| sort by service",
+        "field": "service"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "MetricType",
+      "displayName": "MetricType",
+      "defaultValue": "AmortizedCost",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "AmortizedCost,BlendedCost,NetAmortizedCost,NetUnblendedCost,UnblendedCost"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "estimated",
+      "displayName": "estimated",
+      "defaultValue": "true",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "true,false"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

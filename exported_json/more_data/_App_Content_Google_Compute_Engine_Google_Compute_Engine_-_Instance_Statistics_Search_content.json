@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Google Compute Engine - Instance Statistics",
+  "search": {
+    "queryText": "_sourceCategory = Labs/Gcp/ComputeEngine* logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"gce_instance\" and log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json \"message.data.protoPayload.resourceName\" as resourceName \n| parse regex field=resourcename \"projects/\\S+/zones/(?<zone>\\S+)/instances/(?<instance>\\S+)\"\n| json \"message.data.resource.labels.project_id\", \"message.data.protoPayload.methodName\", \"message.data.severity\" as project, method, severity\n\n| if (method matches \"*compute.instances.insert\", 1, 0) as insert\n| if (method matches \"*compute.instances.delete\", 1, 0) as delete\n| if (method matches \"*compute.instances.start\", 1, 0) as start\n| if (method matches \"*compute.instances.stop\", 1, 0) as stop\n| if (method matches \"*compute.instances.reset\", 1, 0) as reset\n| if (severity matches \"WARNING\", 1, 0) as warning\n| if (severity matches \"ERROR\", 1, 0) as error\n| if (severity matches \"CRITICAL\", 1, 0) as critical\n| if (severity matches \"ALERT\", 1, 0) as alert\n| if (severity matches \"EMERGENCY\", 1, 0) as emergency\n\n| sum(insert) as inserts, sum(delete) as deletes, sum(start) as starts, sum(stop) as stops, sum(reset) as resets, sum(warning) as warnings, sum(error) as errors, sum(critical) as criticals, sum(alert) as alerts, sum(emergency) as emergencies by instance, zone, project\n| inserts+deletes+starts+stops+resets as total_activity\n| warnings+errors+criticals+alerts+emergencies as total_severity\n| fields project, zone, instance, total_activity, inserts, deletes, starts, stops, resets, total_severity, emergencies, alerts, criticals, errors, warnings\n| sort by total_activity",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

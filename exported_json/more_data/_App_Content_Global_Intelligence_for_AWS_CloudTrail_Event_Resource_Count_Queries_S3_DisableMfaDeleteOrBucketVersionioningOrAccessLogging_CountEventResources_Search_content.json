@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "S3_DisableMfaDeleteOrBucketVersionioningOrAccessLogging_CountEventResources",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail (PutBucketLogging  or Suspended or MfaDelete)\n\n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| json \"requestParameters.bucketName\" as bucketName\n| where isBlank(errorCode) and eventSource=\"s3.amazonaws.com\" and (eventName=\"PutBucketLogging\"  or eventName=\"PutBucketVersioning\") \n| json \"requestParameters.BucketLoggingStatus.LoggingEnabled\" ,\"requestParameters.VersioningConfiguration.Status\",  \"requestParameters.VersioningConfiguration.MfaDelete\" as loggingEnabled, versioningStatus, mfaDelete nodrop\n| where (isNull(loggingEnabled)  or versioningStatus=\"Suspended\" or mfaDelete=\"Disabled\") \n| \"\" as classification\n| if (eventName=\"PutBucketLogging\" and isNull(loggingEnabled),concat(\"S3_DisableAccessLogging_CountEventResources,\",classification),classification) as classification\n| if (eventName=\"PutBucketVersioning\" and versioningStatus=\"Suspended\" ,concat(\"S3_DisableBucketVersioning_CountEventResources,\",classification),classification) as classification\n| if(eventName=\"PutBucketVersioning\" and mfaDelete=\"Disabled\",concat(\"S3_DisableMfaDelete_CountEventResources,\",classification),classification) as classification \n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| \"EventResourceCount\" as type \n| count_distinct(bucketName) as count by benchmarkname, type\n| fillmissing values(\"S3_DisableAccessLogging_CountEventResources\",\"S3_DisableBucketVersioning_CountEventResources\",\"S3_DisableMfaDelete_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "AutoParse",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-24h",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1d"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": "Scheduled search to count buckets for which access logging, versioning or MFA was deleted"
+}

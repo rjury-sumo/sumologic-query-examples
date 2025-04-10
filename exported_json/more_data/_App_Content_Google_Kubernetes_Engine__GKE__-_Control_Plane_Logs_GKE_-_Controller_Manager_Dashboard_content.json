@@ -1,0 +1,237 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "GKE - Controller Manager",
+  "description": "The GKE - Controller Manager dashboard displays information on the  controller manager, providing visibility into the core control loops for Kubernetes.",
+  "title": "GKE - Controller Manager",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {
+      "cluster": [
+        "*"
+      ],
+      "9f7828636226654e6dc8c7b6edd1589c": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-15m"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelpane-62c3937fb8e2aa48",
+        "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelpane-01ada86e8e507a4f",
+        "structure": "{\"height\":6,\"width\":6,\"x\":6,\"y\":0}"
+      },
+      {
+        "key": "panelpane-67fc23779966d945",
+        "structure": "{\"height\":14,\"width\":12,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelpane-d1af840cb071094a",
+        "structure": "{\"height\":6,\"width\":6,\"x\":18,\"y\":0}"
+      },
+      {
+        "key": "panelpane-224e6626bc313843",
+        "structure": "{\"height\":6,\"width\":6,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelpane-84117bbaa48e2a4b",
+        "structure": "{\"height\":14,\"width\":12,\"x\":12,\"y\":6}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelpane-62c3937fb8e2aa48",
+      "title": "Severity Over Time",
+      "visualSettings": "{}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* \"\\\"kind\\\":\\\"Event\\\"\"\n| json \"message.data.resource.labels\", \"message.data.severity\" as labels, severity\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n| where cluster matches \"{{cluster}}\"\n| timeslice 1h\n| count by _timeslice, severity\n| transpose row _timeslice column severity\n| fillmissing timeslice(1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-01ada86e8e507a4f",
+      "title": "Severity Breakdown",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* \"\\\"kind\\\":\\\"Event\\\"\"\n| json \"message.data.resource.labels\", \"message.data.severity\" as labels, severity\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n| where cluster matches \"{{cluster}}\"\n| count by severity\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-67fc23779966d945",
+      "title": "Scale Operations",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* logName resource Scaled\n| json field=_raw \"message.data.jsonPayload.message\" as log\n| json field=_raw \"message.data.severity\" as severity\n| where severity = \"INFO\"\n| parse field=log \"Scaled * replica set * to *\" as direction,replica_set,scaled_to\n| first(scaled_to) as scaled_to by  replica_set ",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-d1af840cb071094a",
+      "title": "Pods Deleted",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* \"Deleted pod\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/events\"\n| json field=_raw \"message.data.jsonPayload.message\" as message\n| parse field=message \"Deleted pod: *\" as pod_name\n| json field=_raw \"message.data.timestamp\" as time\n| count by time, pod_name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-224e6626bc313843",
+      "title": "Pods Created",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* \"Created pod\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where log_name matches \"projects/*/logs/events\"\n| json field=_raw \"message.data.jsonPayload.message\" as message\n| parse field=message \"Created pod: *\" as pod_name\n| json field=_raw \"message.data.timestamp\" as time\n| count by time, pod_name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-84117bbaa48e2a4b",
+      "title": "Severe Messages",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/gcp/kubernetes* error\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| json field=_raw \"message.data.jsonPayload.message\" as message\n| json \"message.data.resource.labels\" as labels\n| json field=labels \"project_id\", \"cluster_name\" as project, cluster\n| json field=_raw \"message.data.timestamp\" as timestamp\n| count by timestamp, project, cluster,log_name, message\n| limit 500",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": "Advanced",
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "cluster",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "_origin=kubernetes",
+        "key": "cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

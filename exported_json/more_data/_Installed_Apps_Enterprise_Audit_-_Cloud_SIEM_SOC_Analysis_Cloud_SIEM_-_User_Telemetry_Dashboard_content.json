@@ -1,0 +1,468 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Cloud SIEM - User Telemetry",
+  "description": "This dashboard provides User Telemetry related metrics.",
+  "title": "Cloud SIEM - User Telemetry",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel1DC1A3C2ABE1BA45",
+        "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":20}"
+      },
+      {
+        "key": "panel1E1E0DDCBE056B48",
+        "structure": "{\"height\":10,\"width\":10,\"x\":8,\"y\":4}"
+      },
+      {
+        "key": "panel3F5B52CA97135B4C",
+        "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":20}"
+      },
+      {
+        "key": "panel7CD87983BCD87847",
+        "structure": "{\"height\":5,\"width\":4,\"x\":0,\"y\":4}"
+      },
+      {
+        "key": "panel92F9DB3B86EC8940",
+        "structure": "{\"height\":5,\"width\":4,\"x\":4,\"y\":4}"
+      },
+      {
+        "key": "panelB9BD0501BCE26B4D",
+        "structure": "{\"height\":5,\"width\":4,\"x\":0,\"y\":9}"
+      },
+      {
+        "key": "panelBBDFD7F68D72A845",
+        "structure": "{\"height\":5,\"width\":4,\"x\":4,\"y\":9}"
+      },
+      {
+        "key": "panelDF28B479B1F61A41",
+        "structure": "{\"height\":4,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelE7A485C3A40EB846",
+        "structure": "{\"height\":10,\"width\":6,\"x\":18,\"y\":4}"
+      },
+      {
+        "key": "panelPANE-1D9B8D9590A61849",
+        "structure": "{\"height\":9,\"width\":24,\"x\":0,\"y\":43}"
+      },
+      {
+        "key": "panelPANE-58480773A8106B42",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":37}"
+      },
+      {
+        "key": "panelPANE-93C40606BD76A84B",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panelPANE-BB9B4FB0A51E7A40",
+        "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":30}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel1DC1A3C2ABE1BA45",
+      "title": "User Activity Timeline Details",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_index=sec_record_*) \n| formatDate(_messagetime, \"yyyy-MM-dd hh a\") as today \n| concat (action, description) as description\n| concat (device_hostname, device_ip) as device\n| concat (description,\" from user \",user_username,\" on \",device) as activity\n| where user_username matches \"{{user_username}}\"\n| count by activity,today\n| sort by today asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1E1E0DDCBE056B48",
+      "title": "Countries",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_index=sec_record_*) \n| formatDate(_messagetime, \"yyyy-MM-dd hh a\") as today \n| concat (description,\" from user \",user_username,\" on IP \",device_ip,\" and host \",device_hostname) as activity\n| where user_username matches \"{{user_username}}\"\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = device_ip\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel3F5B52CA97135B4C",
+      "title": "Signal Timeline",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sec_signal\n| formatDate(toLong(createdTimestamp), \"yyyy-MM-dd HH:mm:ss\") as timestamp\n| json field=entities \"[0].type\" as entity_type nodrop\n| where entity_type matches \"*username\"\n| json field=entities \"[0].value\" as user_username nodrop\n| where user_username matches \"{{user_username}}\"\n| urlencode(id) as signalId\n| concat(\"https://\",\"{{service_endpoint}}\",\".sumologic.com/sec/signal/\",signalId,\"\") as url\n| tourl(url,name) as ruleName\n| concat (\"User \",user_username,\" triggered an alert on the Signal: \",ruleName) as activity\n| count by activity,timestamp\n| sort by timestamp asc\n| fields -_count\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7CD87983BCD87847",
+      "title": "Distinct Addresses",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\"},\"series\":{},\"svp\":{\"hideLabel\":false,\"label\":\"Address(es)\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_index=sec_record_*) \n| formatDate(_messagetime, \"yyyy-MM-dd hh a\") as today \n| concat (description,\" from user \",user_username,\" on IP \",device_ip,\" and host \",device_hostname) as activity\n| where user_username matches \"{{user_username}}\"\n| count_distinct(device_ip)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel92F9DB3B86EC8940",
+      "title": "Distinct Hosts",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\"},\"series\":{},\"svp\":{\"hideLabel\":false,\"label\":\"Host(s)\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_index=sec_record_*) \n| formatDate(_messagetime, \"yyyy-MM-dd hh a\") as today \n| concat (description,\" from user \",user_username,\" on IP \",device_ip,\" and host \",device_hostname) as activity\n| where user_username matches \"{{user_username}}\"\n| count_distinct(device_hostname)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelB9BD0501BCE26B4D",
+      "title": "Distinct Addresses List",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_index=sec_record_*) \n| formatDate(_messagetime, \"yyyy-MM-dd hh a\") as today \n| concat (description,\" from user \",user_username,\" on IP \",device_ip,\" and host \",device_hostname) as activity\n| where user_username matches \"{{user_username}}\" AND !(isBlank(device_ip))\n| count by device_ip | fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelBBDFD7F68D72A845",
+      "title": "Distinct Hosts",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"table\"},\"series\":{},\"svp\":{\"hideLabel\":false,\"label\":\"Host(s)\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_index=sec_record_*) \n| formatDate(_messagetime, \"yyyy-MM-dd hh a\") as today \n| concat (description,\" from user \",user_username,\" on IP \",device_ip,\" and host \",device_hostname) as activity\n| where user_username matches \"{{user_username}}\" AND !(isBlank(device_hostname))\n| count by device_hostname | fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelDF28B479B1F61A41",
+      "title": "HR Profile",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*cse/windows/inventory \n| json field=_raw \"whenCreated\" nodrop\n| json field=_raw \"userAccountControl\" nodrop\n| json field=_raw \"manager\" nodrop\n| json field=_raw \"mail\" nodrop\n| json field=_raw \"department\" nodrop\n| json field=_raw \"givenName\" nodrop\n| json field=_raw \"sn\" nodrop\n| json field=_raw \"title\" nodrop\n| json field=_raw \"sAMAccountName\" as user_username nodrop\n| \"514\" as userAccountControl\n| where !(isBlank(lastlogon)) \n| where user_username matches \"{{user_username}}\"\n| if(user_username matches \"will.smith\" AND isBlank(mail), \"will.smith@windomain.local\", mail) as mail\n| if(user_username matches \"will.smith\" AND isBlank(manager), \"CN=Napolean J. Dynamite,CN=Users,DC=windomain,DC=local\", manager) as manager\n| count as summ1 by user_username,department,givenName,sn,title,manager,physicalDeliveryOfficeName,mail,userAccountControl\n| fields -summ1\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE7A485C3A40EB846",
+      "title": "Last Logon",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_index=sec_record_*) \n| formatDate(_messagetime, \"yyyy-MM-dd HH:mm:ss:SSS\") as today \n| concat (description,\" from user \",user_username,\" on IP \",device_ip,\" and host \",device_hostname) as activity\n| where user_username matches \"{{user_username}}\"\n| first(today) as lastlogon\n| count by lastlogon\n| fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-1D9B8D9590A61849",
+      "title": "Signal Details",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sec_signal\n| json field=fullRecords \"[0].dstDevice_hostname\" as dstDevice_hostname nodrop\n| json field=fullRecords \"length()\" as length nodrop\n| formatDate(toLong(timestamp), \"MM-dd-yyyy HH:mm:ss\") as date_time\n| \"■\" as sev\n| if(severity = 1, \"■\", sev) as sev\n| if(severity = 2, \"■■\", sev) as sev\n| if(severity = 3, \"■■■\", sev) as sev\n| if(severity = 4, \"■■■■\", sev) as sev\n| if(severity = 5, \"■■■■■\", sev) as sev\n| if(severity = 6, \"■■■■■■\", sev) as sev\n| if(severity = 7, \"■■■■■■■\", sev) as sev\n| if(severity = 8, \"■■■■■■■■\", sev) as sev\n| if(severity = 9, \"■■■■■■■■■\", sev) as sev\n| if(severity = 10,\"■■■■■■■■■■\", sev) as sev\n| format(\"%s\\n\\n“%s”\", name, description) as alert\n| json field=fullRecords \"[0].objectType\" as objectType nodrop\n| json field=fullRecords \"[0].metadata_vendor\" as vendor nodrop\n| json field=fullRecords \"[0].metadata_product\" as product nodrop\n| json field=fullRecords \"[0].metadata_orgId\" as org_id nodrop\n\n\n| json field=fullRecords \"[0].dstDevice_hostname\" as dst_device_hostname nodrop\n| json field=fullRecords \"[0].dstDevice_ip\" as dst_device_ip nodrop\n| json field=fullRecords \"[0].user_username\" as user_username nodrop\n| json field=fullRecords \"[0].srcDevice_ip\" as src_device_ip nodrop\n| json field=fullRecords \"[0].srcPort\" as src_port nodrop\n| json field=fullRecords \"[0].srcDevice_ip_region\" as srcDevice_ip_region nodrop\n| json field=fullRecords \"[0].dstDevice_ip_city\" as dstDevice_ip_city nodrop\n\n| json field=fullRecords \"[0].dstPort\" as dst_port nodrop\n| json field=fullRecords \"[0].ipProtocol\" as ip_protocol nodrop\n| \"\" as details\n| concat(details, \"\\n dst_device_hostname : \", dst_device_hostname, \"\\n\") as details\n| concat(details, \"\\n dst_device_ip : \", dst_device_ip, \"\\n\") as details\n| concat(details, \"\\n dst_port : \", dst_port, \"\\n\") as details\n| concat(details, \"\\n dstDevice_ip_city : \", dstDevice_ip_city, \"\\n\") as details\n| concat(details, \"\\n user_username : \", user_username, \"\\n\") as details\n| concat(details, \"\\n src_device_ip : \", src_device_ip, \"\\n\") as details\n| concat(details, \"\\n srcDevice_ip_region : \", srcDevice_ip_region, \"\\n\") as details\n| concat(details, \"\\n src_port : \", src_port, \"\\n\") as details\n| concat(details, \"\\n ip_protocol : \", ip_protocol, \"\\n\") as details\n| count by  date_time, sev, alert, ruleName , objectType, vendor, org_id, product, details\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-58480773A8106B42",
+      "title": "Windows Audit Activity",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sec_record_* {{user_username}}\n| where metadata_product=\"Windows\"\n| count by description,device_hostname, user_username, changeType, changeTarget, metadata_deviceEventId\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-93C40606BD76A84B",
+      "title": "User Login Failures",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sec_record_authentication (fail* or challenge*) \n| timeslice 1d\n| count as login_failures by _timeslice\n| fillmissing timeslice(1h) with 0 for login_failures\n| outlier login_failures window=5, threshold=3",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-2w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-BB9B4FB0A51E7A40",
+      "title": "Data Source Telemetry",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sec_record_* AND !(objectType=FailedRecord) {{user_username}}\n\n| count as Total by metadata_vendor, metadata_product, objectType\n| total(Total) by metadata_vendor, metadata_product\n| transpose row metadata_vendor, metadata_product, _total column objectType\n| order by _total\n| ToInt(_total) as Total\n| fields -_total\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "user_username",
+      "displayName": "user_username",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sec_record_*\n| count by user_username",
+        "field": "user_username"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "service_endpoint",
+      "displayName": "service_endpoint",
+      "defaultValue": "service.us2",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "service.us2,service.au,service.eu,service.jp,service.in,service"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,209 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Infrequent Data Tier - Query Analysis - New",
+  "description": "The Infrequent Data Tier - Query Analysis dashboard provides visibility into the Infrequent Data Tier queries that are most expensive, as well as detailed information on the queries.",
+  "title": "Infrequent Data Tier - Query Analysis - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-4w2d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel3f6d22fb9442eb45",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel31f0fb9b8ce7284b",
+        "structure": "{\"width\":24,\"height\":8,\"x\":0,\"y\":5}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel3f6d22fb9442eb45",
+      "title": "Top 50 Expensive Queries",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_view=sumologic_search_usage_per_query analytics_tier = \"Infrequent\" !(user_name=*sumologic.com) !(status_message=\"Query Failed\")\t\n| fields data_scanned_bytes, query, is_aggregate, query_type, remote_ip, retrieved_message_count, scanned_message_count, scanned_partition_count, session_id, status_message, user_name, query_start_time, query_end_time\n| query_end_time - query_start_time as query_time_range_hrs\n| query_time_range_hrs / 3600000 as query_time_range_hrs\n|data_scanned_bytes / 1Gi as sizeInGB\n|where if (\"{{query_time_range_hrs}}\" = \"> -2147483648\", true, query_time_range_hrs {{query_time_range_hrs}}) AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{session_id}}\" = \"*\", true, session_id matches \"{{session_id}}\") AND if (\"{{is_aggregate}}\" = \"*\", true, toString(is_aggregate) matches \"{{is_aggregate}}\") AND if (\"{{sizeInGB}}\" = \"> -2147483648\", true, sizeInGB {{sizeInGB}}) AND if (\"{{status_message}}\" = \"*\", true, status_message matches \"{{status_message}}\") AND if (\"{{query}}\" = \"*\", true, query matches \"{{query}}\") AND if (\"{{query_type}}\" = \"*\", true, query_type matches \"{{query_type}}\")\n|count (query) as query_count, sum(sizeInGB) as total_data_scanned_GB by query\n| total_data_scanned_GB/query_count as %\"Average Data Scanned per Query\"\n| fields query, query_count, %\"Average Data Scanned per Query\", total_data_scanned_GB\n| sort by total_data_scanned_GB\n| limit 50",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel31f0fb9b8ce7284b",
+      "title": "Query Analysis",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_view=sumologic_search_usage_per_query analytics_tier = \"Infrequent\" !(user_name=*sumologic.com) !(status_message=\"Query Failed\")\t\n| fields data_scanned_bytes, query, is_aggregate, query_type, remote_ip, retrieved_message_count, scanned_message_count, scanned_partition_count, session_id, status_message, user_name,query_start_time, query_end_time\n| query_end_time - query_start_time as query_time_range_hrs\n| query_time_range_hrs / 3600000 as query_time_range_hrs\n|data_scanned_bytes / 1Gi as sizeInGB\n|where if (\"{{query_time_range_hrs}}\" = \"> -2147483648\", true, query_time_range_hrs {{query_time_range_hrs}}) AND if (\"{{user_name}}\" = \"*\", true, user_name matches \"{{user_name}}\") AND if (\"{{session_id}}\" = \"*\", true, session_id matches \"{{session_id}}\") AND if (\"{{is_aggregate}}\" = \"*\", true, toString(is_aggregate) matches \"{{is_aggregate}}\") AND if (\"{{sizeInGB}}\" = \"> -2147483648\", true, sizeInGB {{sizeInGB}}) AND if (\"{{status_message}}\" = \"*\", true, status_message matches \"{{status_message}}\") AND if (\"{{query}}\" = \"*\", true, query matches \"{{query}}\") AND if (\"{{query_type}}\" = \"*\", true, query_type matches \"{{query_type}}\")\n|sum(sizeInGB) as total_data_scanned_GB by query, is_aggregate, query_type, status_message, user_name, session_id, query_time_range_hrs\n| sort by total_data_scanned_GB",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "query",
+      "displayName": "query",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_view=sumologic_search_usage_per_query analytics_tier = \"Infrequent\" !(user_name=*sumologic.com) !(status_message=\"Query Failed\")\t\n| fields data_scanned_bytes, query, is_aggregate, query_type, remote_ip, retrieved_message_count, scanned_message_count, scanned_partition_count, session_id, status_message, user_name, query_start_time, query_end_time\n| query_end_time - query_start_time as query_time_range_hrs\n| query_time_range_hrs / 3600000 as query_time_range_hrs\n|data_scanned_bytes / 1Gi as sizeInGB",
+        "field": "query"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "session_id",
+      "displayName": "session_id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_view=sumologic_search_usage_per_query analytics_tier = \"Infrequent\" !(user_name=*sumologic.com) !(status_message=\"Query Failed\")\t\n| fields data_scanned_bytes, query, is_aggregate, query_type, remote_ip, retrieved_message_count, scanned_message_count, scanned_partition_count, session_id, status_message, user_name, query_start_time, query_end_time\n| query_end_time - query_start_time as query_time_range_hrs\n| query_time_range_hrs / 3600000 as query_time_range_hrs\n|data_scanned_bytes / 1Gi as sizeInGB",
+        "field": "session_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user_name",
+      "displayName": "user_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_view=sumologic_search_usage_per_query analytics_tier = \"Infrequent\" !(user_name=*sumologic.com) !(status_message=\"Query Failed\")\t\n| fields data_scanned_bytes, query, is_aggregate, query_type, remote_ip, retrieved_message_count, scanned_message_count, scanned_partition_count, session_id, status_message, user_name, query_start_time, query_end_time\n| query_end_time - query_start_time as query_time_range_hrs\n| query_time_range_hrs / 3600000 as query_time_range_hrs\n|data_scanned_bytes / 1Gi as sizeInGB",
+        "field": "user_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "status_message",
+      "displayName": "status_message",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_view=sumologic_search_usage_per_query analytics_tier = \"Infrequent\" !(user_name=*sumologic.com) !(status_message=\"Query Failed\")\t\n| fields data_scanned_bytes, query, is_aggregate, query_type, remote_ip, retrieved_message_count, scanned_message_count, scanned_partition_count, session_id, status_message, user_name, query_start_time, query_end_time\n| query_end_time - query_start_time as query_time_range_hrs\n| query_time_range_hrs / 3600000 as query_time_range_hrs\n|data_scanned_bytes / 1Gi as sizeInGB",
+        "field": "status_message"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "is_aggregate",
+      "displayName": "is_aggregate",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_view=sumologic_search_usage_per_query analytics_tier = \"Infrequent\" !(user_name=*sumologic.com) !(status_message=\"Query Failed\")\t\n| fields data_scanned_bytes, query, is_aggregate, query_type, remote_ip, retrieved_message_count, scanned_message_count, scanned_partition_count, session_id, status_message, user_name, query_start_time, query_end_time\n| query_end_time - query_start_time as query_time_range_hrs\n| query_time_range_hrs / 3600000 as query_time_range_hrs\n|data_scanned_bytes / 1Gi as sizeInGB",
+        "field": "is_aggregate"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Boolean"
+    },
+    {
+      "id": null,
+      "name": "query_time_range_hrs",
+      "displayName": "query_time_range_hrs",
+      "defaultValue": "> -2147483648",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "> -2147483648"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Numeric"
+    },
+    {
+      "id": null,
+      "name": "query_type",
+      "displayName": "query_type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_view=sumologic_search_usage_per_query analytics_tier = \"Infrequent\" !(user_name=*sumologic.com) !(status_message=\"Query Failed\")\t\n| fields data_scanned_bytes, query, is_aggregate, query_type, remote_ip, retrieved_message_count, scanned_message_count, scanned_partition_count, session_id, status_message, user_name, query_start_time, query_end_time\n| query_end_time - query_start_time as query_time_range_hrs\n| query_time_range_hrs / 3600000 as query_time_range_hrs\n|data_scanned_bytes / 1Gi as sizeInGB",
+        "field": "query_type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "sizeInGB",
+      "displayName": "sizeInGB",
+      "defaultValue": "> -2147483648",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "> -2147483648"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Numeric"
+    }
+  ],
+  "coloringRules": []
+}

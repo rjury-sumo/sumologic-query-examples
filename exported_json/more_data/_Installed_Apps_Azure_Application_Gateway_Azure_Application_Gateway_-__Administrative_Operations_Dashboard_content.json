@@ -1,0 +1,305 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Azure Application Gateway -  Administrative Operations",
+  "description": "The Azure Application Gateway Administrative Operations dashboard provides details like Changes, Read/Write/Delete specific changes, different operations used, top 10 operations that caused most errors and most common errors etc.",
+  "title": "Azure Application Gateway -  Administrative Operations",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel299787A2A4C56841",
+        "structure": "{\"height\":9,\"width\":17,\"x\":0,\"y\":18}"
+      },
+      {
+        "key": "panel344BB5C8AC1CEB4E",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panel42208A7A90CF9B45",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel50AAD52E969C9943",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panel58DF064DA0C68A4C",
+        "structure": "{\"height\":9,\"width\":7,\"x\":17,\"y\":18}"
+      },
+      {
+        "key": "panelPANE-892B0B888CE75948",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":6}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel299787A2A4C56841",
+      "title": "Top 10 operations that caused the most errors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"roundDataPoints\":true,\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}}   provider_name={{provider_name}} resource_type={{resource_type}}  Administrative \n| json \"resultType\", \"operationName\", \"properties.statusMessage\", \"category\"  as resultType, operationName, failureMessage, category\n| parse field=operationname \"*/*/*\" as provider_name, resource_type, operation nodrop\n| where category=\"Administrative\" and resultType=\"Failure\"\n| count as Count by resource_name, operation, failureMessage\n| order by Count \n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel344BB5C8AC1CEB4E",
+      "title": "Recent Delete Operations",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"roundDataPoints\":true,\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}}\nprovider_name={{provider_name}} resource_type={{resource_type}}  Administrative \n| JSON \"properties.statusCode\", \"properties.message\", \"resultType\", \"category\", \"operationName\", \"callerIpAddress\", \"resultSignature\", \"level\", \"identity.claims.idtyp\", \"identity.claims.name\", \"identity.claims.appid\", \"properties.entity\", \"$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']\",\"$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']\" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop\n| where resultType in (\"Accept\", \"Success\") and category=\"Administrative\" and toUppercase(operationName) matches /DELETE/ \n| if (idtyp ==\"user\", name, appid) as name\n| formatDate(_messageTime, \"MM/dd/yyyy HH:mm:ss\") as time\n| count by _messageTime, time, resource_name, callerIpAddress, name, identity_claims_name, authmethods, resultSignature, statusCode, message, entity\n| sort by _messageTime desc\n| limit 20 \n| fields -_count,_messageTime",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel42208A7A90CF9B45",
+      "title": "Distribution  by Operation Type (Read, Write and Delete)",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"roundDataPoints\":true,\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} \n provider_name={{provider_name}} resource_type={{resource_type}} Administrative \n| json \"resultType\", \"category\", \"operationName\", \"resourceId\" as resultType, category, operationName, resourceid\n| where (resultType=\"Accept\" or resultType=\"Success\") and category=\"Administrative\"\n| \"OTHERS\" as operationType\n| if (toUppercase(operationName) matches /WRITE/, \"WRITE\", operationType) as operationType \n| if (toUppercase(operationName) matches /READ/, \"READ\", operationType) as operationType \n| if (toUppercase(operationName) matches /DELETE/, \"DELETE\", operationType) as operationType \n| count by operationType\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel50AAD52E969C9943",
+      "title": "Distribution by Operations",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"roundDataPoints\":true,\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}\nprovider_name={{provider_name}} resource_type={{resource_type}} Administrative \n| json \"resultType\", \"category\", \"operationName\", \"resourceId\" as resultType, category, operationName, resourceid\n| where (resultType=\"Accept\" or resultType=\"Success\") and category=\"Administrative\" \n| count by operationName\n| order by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel58DF064DA0C68A4C",
+      "title": "Users / Applications by Operation type",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"roundDataPoints\":true,\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}\nprovider_name={{provider_name}} resource_type={{resource_type}} Administrative \n| JSON \"properties.statusCode\", \"properties.message\", \"resultType\", \"category\", \"operationName\", \"callerIpAddress\", \"resultSignature\", \"level\", \"identity.claims.idtyp\", \"identity.claims.name\", \"identity.claims.appid\" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop\n| where resultType in (\"Accept\", \"Success\") and category=\"Administrative\" \n| if (idtyp ==\"user\", name, appid) as name\n| \"Others\" as operationType\n| if (toUppercase(operationName) matches /WRITE/, \"WRITE\", operationType) as operationType \n| if (toUppercase(operationName) matches /READ/, \"READ\", operationType) as operationType \n| if (toUppercase(operationName) matches /DELETE/, \"DELETE\", operationType) as operationType \n| count by name, operationType\n| transpose row name column operationType",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-892B0B888CE75948",
+      "title": "Recent Write Operations",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"roundDataPoints\":true,\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}}\nprovider_name={{provider_name}} resource_type={{resource_type}}  Administrative \n| JSON \"properties.statusCode\", \"properties.message\", \"resultType\", \"category\", \"operationName\", \"callerIpAddress\", \"resultSignature\", \"level\", \"identity.claims.idtyp\", \"identity.claims.name\", \"identity.claims.appid\", \"$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']\",\"$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']\"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop\n| where category=\"Administrative\" and resultType in (\"Accept\", \"Success\") and toUppercase(operationName) matches /WRITE/\n| if (idtyp ==\"user\", name, appid) as name\n| formatDate(_messageTime, \"MM/dd/yyyy HH:mm:ss\") as time\n| count by _messageTime, time, resource_name, callerIpAddress, name, identity_claims_name, authmethods, resultSignature, statusCode, message\n| sort by _messageTime desc\n| limit 20 \n| fields -_count,_messageTime",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "resource_group",
+      "displayName": "resource_group",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "tenant_name={{tenant_name}} subscription_id={{subscription_id}}",
+        "key": "resource_group"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "resource_name",
+      "displayName": "resource_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}}",
+        "key": "resource_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "subscription_id",
+      "displayName": "subscription_id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "tenant_name={{tenant_name}}",
+        "key": "subscription_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "tenant_name",
+      "displayName": "tenant_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "tenant_name=*",
+        "key": "tenant_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "resource_type",
+      "displayName": "resource_type",
+      "defaultValue": "APPLICATIONGATEWAYS",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "subscription_id={{subscription_id}} tenant_name={{tenant_name}} resource_group={{resource_group}} location={{location}} provider_name={{provider_name}}",
+        "key": "resource_type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "provider_name",
+      "displayName": "provider_name",
+      "defaultValue": "MICROSOFT.NETWORK",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} location={{location}}",
+        "key": "provider_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

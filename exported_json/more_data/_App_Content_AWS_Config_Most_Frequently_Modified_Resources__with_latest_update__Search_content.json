@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Most Frequently Modified Resources (with latest update)",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/Config Notification ConfigurationItemChangeNotification\n// Accum must be used after the first grouping expression in a dashboard\n| count by _raw, _messageTime\n| json field=_raw \"Message\", \"Type\" \n| where type == \"Notification\"\n| json field=message \"messageType\",\"configurationItem\" as messageType, single_message \n| where messageType = \"ConfigurationItemChangeNotification\" \n| json field=single_message \"resourceId\", \"resourceType\", \"configurationItemStatus\", \"awsAccountId\" as ResourceId, ResourceType, LastModifiedStatus, LastModifiedAccountID\n// Count the number of records per resource ID\n| 1 as modifications \n| total modifications as modifications by resourceId\n// Use accum as a row numbering in order to select the most recent record\n| 1 as row_num \n| sort by _messageTime desc, lastmodifiedstatus asc \n| accum row_num as row_num by ResourceId \n| where row_num = 1\n| formatDate(_messageTime) as LastModifiedTime \n| floor(Modifications)\n| sort by modifications desc, _messageTime desc\n| fields - _messageTime, _raw\n// Look up Name stored in tag with key “Name” for each resource. Schedule the ‘ResourceNames Lookup Table Generator’ search to keep this file up to date.\n//| lookup idAndName from /shared/AWSConfig/ResourceNames on resourceType=resourceType, resourceId=resourceId | if(isNull(idAndName), resourceId, idAndName) as resourceId | fields - idAndName\n| fields resourceType, resourceId, Modifications, LastModifiedTime, LastModifiedAccountId, LastModifiedStatus",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-14d"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

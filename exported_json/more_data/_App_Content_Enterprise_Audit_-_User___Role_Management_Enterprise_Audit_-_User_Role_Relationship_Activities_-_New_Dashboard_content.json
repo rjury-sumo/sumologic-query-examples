@@ -1,0 +1,397 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Enterprise Audit - User Role Relationship Activities - New",
+  "description": "User Role Relationship Activities DashBoard provides detailed information on activities for user and role modification. You can review the top users that were added to and removed from roles, the top roles from which users were added and removed, and the top admins.",
+  "title": "Enterprise Audit - User Role Relationship Activities - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel00a5955a96b4484e",
+        "structure": "{\"width\":6,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelb5fb1edab9cec849",
+        "structure": "{\"width\":6,\"height\":6,\"x\":6,\"y\":0}"
+      },
+      {
+        "key": "panele0c0938fa80f5847",
+        "structure": "{\"width\":6,\"height\":6,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panel02feba7ba190b948",
+        "structure": "{\"width\":6,\"height\":6,\"x\":18,\"y\":0}"
+      },
+      {
+        "key": "panel455019a5a48c5848",
+        "structure": "{\"width\":10,\"height\":14,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel0dfd1407985cfb41",
+        "structure": "{\"width\":6,\"height\":8,\"x\":10,\"y\":5}"
+      },
+      {
+        "key": "panel1f28151081a3fb48",
+        "structure": "{\"width\":8,\"height\":8,\"x\":16,\"y\":5}"
+      },
+      {
+        "key": "panel95fe9417a94d7a49",
+        "structure": "{\"width\":14,\"height\":6,\"x\":10,\"y\":11}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel00a5955a96b4484e",
+      "title": "Top Roles Added To Users",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=users RolesAssignedToUserUpdated\n| json \"eventName\", \"eventTime\", \"rolesAdded[*]\" as EventName, EventTime, RolesAdded nodrop\n| where EventName=\"RolesAssignedToUserUpdated\"\n| parse regex field=RolesAdded \"\\\"roleName\\\":\\\"(?<RoleName>.*?)\\\"\" multi\n|where if (\"{{RoleName}}\" = \"*\", true, RoleName matches \"{{RoleName}}\") AND if (\"{{RolesAdded}}\" = \"*\", true, RolesAdded matches \"{{RolesAdded}}\")\n|count as Count by RoleName\n| sort by Count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel455019a5a48c5848",
+      "title": "Geo Location of Admins",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events (_sourceCategory=users OR _sourceCategory=roles) (RolesAssignedToUserUpdated OR UsersAssignedToRoleUpdated)\n| json \"eventName\", \"eventTime\", \"operator.sourceIp\" as EventName, EventTime, AdminIp nodrop\n| where EventName in (\"RolesAssignedToUserUpdated\",\"UsersAssignedToRoleUpdated\")\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = AdminIp\n|where if (\"{{AdminIp}}\" = \"*\", true, AdminIp matches \"{{AdminIp}}\")\n|count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel95fe9417a94d7a49",
+      "title": "Recent - Roles Assigned/Removed from User",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=users RolesAssignedToUserUpdated\n| json \"eventName\", \"eventTime\", \"operator.email\",\"operator.id\",\"operator.sourceIp\", \"userIdentity.userId\",\"userIdentity.userEmail\", \"rolesAdded[*].roleName\", \"rolesDeleted[*].roleName\" as EventName, EventTime, Admin, AdminId, AdminIp, TargetUserId, TargetUserEmail, RolesAdded, RolesRemoved nodrop\n| where EventName=\"RolesAssignedToUserUpdated\"\n| parse field=RolesAdded \"[*]\" as RolesAdded nodrop\n| replace(RolesAdded, \"\\\"\", \"\") as RolesAdded\n| replace(RolesAdded, \"[]\", \"-\") as RolesAdded\n| parse field=RolesRemoved \"[*]\" as RolesRemoved nodrop\n| replace(RolesRemoved, \"\\\"\", \"\") as RolesRemoved\n| replace(RolesRemoved, \"[]\", \"-\") as RolesRemoved\n|where if (\"{{Admin}}\" = \"*\", true, Admin matches \"{{Admin}}\") AND if (\"{{RolesRemoved}}\" = \"*\", true, RolesRemoved matches \"{{RolesRemoved}}\") AND if (\"{{AdminIp}}\" = \"*\", true, AdminIp matches \"{{AdminIp}}\") AND if (\"{{TargetUserEmail}}\" = \"*\", true, TargetUserEmail matches \"{{TargetUserEmail}}\") AND if (\"{{RolesAdded}}\" = \"*\", true, RolesAdded matches \"{{RolesAdded}}\")\n|count by EventName, EventTime, Admin, AdminId, AdminIp, TargetUserId, TargetUserEmail, RolesAdded, RolesRemoved\n| sort by EventTime\n| fields - _count, EventTime, EventName, AdminId, TargetUserId",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0dfd1407985cfb41",
+      "title": "Active Admins",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"bottom\",\"showAsTable\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events (_sourceCategory=users OR _sourceCategory=roles) (RolesAssignedToUserUpdated OR UsersAssignedToRoleUpdated)\n| json \"eventName\", \"eventTime\", \"operator.email\",\"operator.id\",\"operator.sourceIp\" as EventName, EventTime, Admin, AdminId, AdminIp nodrop\n| where EventName in (\"RolesAssignedToUserUpdated\",\"UsersAssignedToRoleUpdated\")\n|where if (\"{{Admin}}\" = \"*\", true, Admin matches \"{{Admin}}\") AND if (\"{{AdminIp}}\" = \"*\", true, AdminIp matches \"{{AdminIp}}\")\n|count as Count by Admin \n| sort by Count\n| limit 5",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1f28151081a3fb48",
+      "title": "Recent - Users Assigned/Removed from Roles",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=roles UsersAssignedToRoleUpdated\n| json \"eventName\", \"eventTime\", \"operator.email\",\"operator.id\",\"operator.sourceIp\", \"roleIdentity.roleId\",\"roleIdentity.roleName\", \"usersAdded[*].userEmail\", \"usersDeleted[*].userEmail\" as EventName, EventTime, Admin, AdminId, AdminIp, RoleId, RoleName, UsersAdded, UsersRemoved nodrop\n| where EventName=\"UsersAssignedToRoleUpdated\"\n| parse field=UsersAdded \"[*]\" as UsersAdded nodrop\n| replace(UsersAdded, \"\\\"\", \"\") as UsersAdded\n| replace(UsersAdded, \"[]\", \"-\") as UsersAdded\n| parse field=UsersRemoved \"[*]\" as UsersRemoved nodrop\n| replace(UsersRemoved, \"\\\"\", \"\") as UsersRemoved\n| replace(UsersRemoved, \"[]\", \"-\") as UsersRemoved\n|where if (\"{{UsersRemoved}}\" = \"*\", true, UsersRemoved matches \"{{UsersRemoved}}\") AND if (\"{{Admin}}\" = \"*\", true, Admin matches \"{{Admin}}\") AND if (\"{{RoleName}}\" = \"*\", true, RoleName matches \"{{RoleName}}\") AND if (\"{{UsersAdded}}\" = \"*\", true, UsersAdded matches \"{{UsersAdded}}\") AND if (\"{{AdminIp}}\" = \"*\", true, AdminIp matches \"{{AdminIp}}\")\n|count by EventName, EventTime, Admin, AdminId, AdminIp, RoleId, RoleName, UsersAdded, UsersRemoved\n| sort by EventTime\n| fields - _count, EventTime, EventName, AdminId, RoleId",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel02feba7ba190b948",
+      "title": "Top Users Removed From Roles",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=roles UsersAssignedToRoleUpdated\n| json \"eventName\", \"eventTime\", \"usersDeleted[*]\" as EventName, EventTime, UsersRemoved nodrop\n| where EventName=\"UsersAssignedToRoleUpdated\"\n| parse regex field=UsersRemoved \"\\\"userEmail\\\":\\\"(?<TargetUserEmail>.*?)\\\"\" multi\n|where if (\"{{UsersRemoved}}\" = \"*\", true, UsersRemoved matches \"{{UsersRemoved}}\") AND if (\"{{TargetUserEmail}}\" = \"*\", true, TargetUserEmail matches \"{{TargetUserEmail}}\")\n|count as Count by TargetUserEmail\n| sort by Count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb5fb1edab9cec849",
+      "title": "Top Roles Removed From Users",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=users RolesAssignedToUserUpdated\n| json \"eventName\", \"eventTime\", \"rolesDeleted[*]\" as EventName, EventTime, RolesRemoved nodrop\n| where EventName=\"RolesAssignedToUserUpdated\"\n| parse regex field=RolesRemoved \"\\\"roleName\\\":\\\"(?<RoleName>.*?)\\\"\" multi\n|where if (\"{{RoleName}}\" = \"*\", true, RoleName matches \"{{RoleName}}\") AND if (\"{{RolesRemoved}}\" = \"*\", true, RolesRemoved matches \"{{RolesRemoved}}\")\n|count as Count by RoleName\n| sort by Count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panele0c0938fa80f5847",
+      "title": "Top Users Added To Roles",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=roles UsersAssignedToRoleUpdated\n| json \"eventName\", \"eventTime\", \"usersAdded[*]\" as EventName, EventTime, UsersAdded nodrop\n| where EventName=\"UsersAssignedToRoleUpdated\"\n| parse regex field=UsersAdded \"\\\"userEmail\\\":\\\"(?<TargetUserEmail>.*?)\\\"\" multi\n|where if (\"{{UsersAdded}}\" = \"*\", true, UsersAdded matches \"{{UsersAdded}}\") AND if (\"{{TargetUserEmail}}\" = \"*\", true, TargetUserEmail matches \"{{TargetUserEmail}}\")\n|count as Count by TargetUserEmail\n| sort by Count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "RoleName",
+      "displayName": "RoleName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=roles UsersAssignedToRoleUpdated\n| json \"eventName\", \"eventTime\", \"operator.email\",\"operator.id\",\"operator.sourceIp\", \"roleIdentity.roleId\",\"roleIdentity.roleName\", \"usersAdded[*].userEmail\", \"usersDeleted[*].userEmail\" as EventName, EventTime, Admin, AdminId, AdminIp, RoleId, RoleName, UsersAdded, UsersRemoved nodrop\n| where EventName=\"UsersAssignedToRoleUpdated\"\n| parse field=UsersAdded \"[*]\" as UsersAdded nodrop\n| replace(UsersAdded, \"\\\"\", \"\") as UsersAdded\n| replace(UsersAdded, \"[]\", \"-\") as UsersAdded\n| parse field=UsersRemoved \"[*]\" as UsersRemoved nodrop\n| replace(UsersRemoved, \"\\\"\", \"\") as UsersRemoved\n| replace(UsersRemoved, \"[]\", \"-\") as UsersRemoved",
+        "field": "RoleName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "TargetUserEmail",
+      "displayName": "TargetUserEmail",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=roles UsersAssignedToRoleUpdated\n| json \"eventName\", \"eventTime\", \"usersAdded[*]\" as EventName, EventTime, UsersAdded nodrop\n| where EventName=\"UsersAssignedToRoleUpdated\"\n| parse regex field=UsersAdded \"\\\"userEmail\\\":\\\"(?<TargetUserEmail>.*?)\\\"\" multi",
+        "field": "TargetUserEmail"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "UsersAdded",
+      "displayName": "UsersAdded",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=roles UsersAssignedToRoleUpdated\n| json \"eventName\", \"eventTime\", \"operator.email\",\"operator.id\",\"operator.sourceIp\", \"roleIdentity.roleId\",\"roleIdentity.roleName\", \"usersAdded[*].userEmail\", \"usersDeleted[*].userEmail\" as EventName, EventTime, Admin, AdminId, AdminIp, RoleId, RoleName, UsersAdded, UsersRemoved nodrop\n| where EventName=\"UsersAssignedToRoleUpdated\"\n| parse field=UsersAdded \"[*]\" as UsersAdded nodrop\n| replace(UsersAdded, \"\\\"\", \"\") as UsersAdded\n| replace(UsersAdded, \"[]\", \"-\") as UsersAdded\n| parse field=UsersRemoved \"[*]\" as UsersRemoved nodrop\n| replace(UsersRemoved, \"\\\"\", \"\") as UsersRemoved\n| replace(UsersRemoved, \"[]\", \"-\") as UsersRemoved",
+        "field": "UsersAdded"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "UsersRemoved",
+      "displayName": "UsersRemoved",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=roles UsersAssignedToRoleUpdated\n| json \"eventName\", \"eventTime\", \"operator.email\",\"operator.id\",\"operator.sourceIp\", \"roleIdentity.roleId\",\"roleIdentity.roleName\", \"usersAdded[*].userEmail\", \"usersDeleted[*].userEmail\" as EventName, EventTime, Admin, AdminId, AdminIp, RoleId, RoleName, UsersAdded, UsersRemoved nodrop\n| where EventName=\"UsersAssignedToRoleUpdated\"\n| parse field=UsersAdded \"[*]\" as UsersAdded nodrop\n| replace(UsersAdded, \"\\\"\", \"\") as UsersAdded\n| replace(UsersAdded, \"[]\", \"-\") as UsersAdded\n| parse field=UsersRemoved \"[*]\" as UsersRemoved nodrop\n| replace(UsersRemoved, \"\\\"\", \"\") as UsersRemoved\n| replace(UsersRemoved, \"[]\", \"-\") as UsersRemoved",
+        "field": "UsersRemoved"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "AdminIp",
+      "displayName": "AdminIp",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events (_sourceCategory=users OR _sourceCategory=roles) (RolesAssignedToUserUpdated OR UsersAssignedToRoleUpdated)\n| json \"eventName\", \"eventTime\", \"operator.email\",\"operator.id\",\"operator.sourceIp\" as EventName, EventTime, Admin, AdminId, AdminIp nodrop\n| where EventName in (\"RolesAssignedToUserUpdated\",\"UsersAssignedToRoleUpdated\")",
+        "field": "AdminIp"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "RolesAdded",
+      "displayName": "RolesAdded",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=users RolesAssignedToUserUpdated\n| json \"eventName\", \"eventTime\", \"rolesAdded[*]\" as EventName, EventTime, RolesAdded nodrop\n| where EventName=\"RolesAssignedToUserUpdated\"\n| parse regex field=RolesAdded \"\\\"roleName\\\":\\\"(?<RoleName>.*?)\\\"\" multi",
+        "field": "RolesAdded"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "RolesRemoved",
+      "displayName": "RolesRemoved",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=users RolesAssignedToUserUpdated\n| json \"eventName\", \"eventTime\", \"rolesDeleted[*]\" as EventName, EventTime, RolesRemoved nodrop\n| where EventName=\"RolesAssignedToUserUpdated\"\n| parse regex field=RolesRemoved \"\\\"roleName\\\":\\\"(?<RoleName>.*?)\\\"\" multi",
+        "field": "RolesRemoved"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Admin",
+      "displayName": "Admin",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events (_sourceCategory=users OR _sourceCategory=roles) (RolesAssignedToUserUpdated OR UsersAssignedToRoleUpdated)\n| json \"eventName\", \"eventTime\", \"operator.email\",\"operator.id\",\"operator.sourceIp\" as EventName, EventTime, Admin, AdminId, AdminIp nodrop\n| where EventName in (\"RolesAssignedToUserUpdated\",\"UsersAssignedToRoleUpdated\")",
+        "field": "Admin"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,698 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Data Volume - Credits",
+  "description": "The Data Volume - Credits Dashboard helps you understand how your credits are being used across Logs , Metrics and Traces.",
+  "title": "Data Volume - Credits",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel927A2207B1C3AB4D",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-7EC3747EB3DC4944",
+        "structure": "{\"height\":4,\"width\":4,\"x\":0,\"y\":2}"
+      },
+      {
+        "key": "panelA8A1CD8C947F7A4C",
+        "structure": "{\"height\":4,\"width\":4,\"x\":4,\"y\":2}"
+      },
+      {
+        "key": "panel7160F8F0BB05C945",
+        "structure": "{\"height\":4,\"width\":4,\"x\":8,\"y\":2}"
+      },
+      {
+        "key": "panel38736082A0C2184B",
+        "structure": "{\"height\":4,\"width\":4,\"x\":16,\"y\":2}"
+      },
+      {
+        "key": "panelPANE-A3229F83B2CE6840",
+        "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panel8F966E778230DB4B",
+        "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":19}"
+      },
+      {
+        "key": "panel25643539B2FAF84E",
+        "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":26}"
+      },
+      {
+        "key": "panel9890756AB3A42A4A",
+        "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":40}"
+      },
+      {
+        "key": "panel2E86C2FEA7764A41",
+        "structure": "{\"height\":4,\"width\":4,\"x\":12,\"y\":2}"
+      },
+      {
+        "key": "panel5E57DFCBA604884D",
+        "structure": "{\"height\":4,\"width\":4,\"x\":20,\"y\":2}"
+      },
+      {
+        "key": "panel76D50D8FAF3C5A4D",
+        "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":33}"
+      },
+      {
+        "key": "panel755E92C1B147B94A",
+        "structure": "{\"height\":7,\"width\":24,\"x\":0,\"y\":47}"
+      },
+      {
+        "key": "panelPANE-6DE3FF3FA742594C",
+        "structure": "{\"height\":2,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel3C26C34F87E79944",
+        "structure": "{\"height\":9,\"width\":24,\"x\":0,\"y\":54}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel927A2207B1C3AB4D",
+      "title": "Credits Usage Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\",\"title\":\"Credits\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"hiddenQueryKeys\":[\"H\",\"J\"],\"series\":{\"C_collector_metrics_volume\":{\"visible\":true},\"B_Continuous\":{\"visible\":true},\"B_Frequent\":{\"visible\":true},\"B_Infrequent\":{\"visible\":true}},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[{\"series\":[],\"queries\":[\"C\"],\"properties\":{\"name\":\"Metrics ingest\"}},{\"series\":[],\"queries\":[\"D\"],\"properties\":{\"name\":\"Tracing Ingest\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data  \"dataTier\",\"sizeInBytes\" as  dataTier, bytes\n|where  dataTier matches \"Frequent\"\n|timeslice {{timeslice}}\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes by _timeslice,dataTier\n| gbytes*{{FrequentTierBurndownRate}} as gbytes\n|transpose row _timeslice  column dataTier",
+          "queryType": "Logs",
+          "queryKey": "B",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        },
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{MetricsView}}_metrics_volume\n| parse regex \"\\\"(?<collector>[^\\\"]+)\\\"\\:\\{\\\"dataPoints\\\"\\:(?<datapoints>\\d+)\\}\" multi\n|timeslice {{timeslice}}\n| datapoints/1000/1440 as datapoints \n| sum(dataPoints) as dataPoints by _timeslice , _sourceCategory\n| dataPoints*{{MetricsBurndownRate}} as credits \n| fields -dataPoints\n| transpose row _timeslice column _sourceCategory",
+          "queryType": "Logs",
+          "queryKey": "C",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        },
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{TracingView}}_tracing_volume\n| parse regex \"\\\"(?<collector>[^\\\"]+)\\\"\\:\\{\\\"billedBytes\\\"\\:(?<billedBytes>\\d+)\\,\\\"spansCount\\\"\\:(?<spansCount>\\d+)\\}\" multi\n| timeslice {{timeslice}}\n| billedBytes/1Gi as gbytes \n| sum(gbytes) as gbytes by _timeslice , _sourceCategory\n| gbytes*{{TracingBurndownRate}} as credits \n| fields -gbytes\n| transpose row _timeslice column _sourceCategory",
+          "queryType": "Logs",
+          "queryKey": "D",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        },
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data  \"dataTier\",\"sizeInBytes\" as  dataTier, bytes\n|where  dataTier matches \"Infrequent\"\n|timeslice {{timeslice}}\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes by _timeslice,dataTier\n| gbytes*{{InfrequentTierBurndownRate}} as gbytes\n|transpose row _timeslice  column dataTier",
+          "queryType": "Logs",
+          "queryKey": "E",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        },
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data  \"dataTier\",\"sizeInBytes\" as  dataTier, bytes\n|where dataTier matches \"Continuous\"\n|timeslice {{timeslice}}\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes by _timeslice,dataTier\n| gbytes*{{ContinuousTierBurndownRate}} as gbytes\n|transpose row _timeslice  column dataTier",
+          "queryType": "Logs",
+          "queryKey": "F",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        },
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data  \"dataTier\",\"sizeInBytes\" as  dataTier, bytes\n|where dataTier matches \"CSE\"\n|timeslice {{timeslice}}\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes by _timeslice,dataTier\n| gbytes*{{CSETierBurndownRate}} as gbytes\n|transpose row _timeslice  column dataTier",
+          "queryType": "Logs",
+          "queryKey": "G",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-7EC3747EB3DC4944",
+      "title": "Infrequent Tier",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Sum\",\"label\":\"Credits Used\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"dataTier\",\"sizeInBytes\" as  dataTier, bytes\n|where dataTier matches \"Infrequent\"\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes \n| gbytes*{{InfrequentTierBurndownRate}} as credits \n|fields -gbytes",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelA8A1CD8C947F7A4C",
+      "title": "Frequent Tier",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Credits Used\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"dataTier\",\"sizeInBytes\" as  dataTier, bytes\n|where dataTier matches \"Frequent\"\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes \n| gbytes*{{FrequentTierBurndownRate}} as credits \n|fields -gbytes",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7160F8F0BB05C945",
+      "title": "Continuous Tier",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Credits Used\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"dataTier\",\"sizeInBytes\" as  dataTier, bytes\n|where dataTier matches \"Continuous\"\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes \n| gbytes*{{ContinuousTierBurndownRate}} as credits \n|fields -gbytes",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel38736082A0C2184B",
+      "title": "Metrics Ingestion",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Credits Used\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{MetricsView}}_metrics_volume\n| parse regex \"\\\"(?<collector>[^\\\"]+)\\\"\\:\\{\\\"dataPoints\\\"\\:(?<datapoints>\\d+)\\}\" multi\n| datapoints/1000/1440 as datapoints \n| sum(dataPoints) as dataPoints \n| dataPoints*{{MetricsBurndownRate}} as credits \n|fields -dataPoints",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-A3229F83B2CE6840",
+      "title": "Top 10 {{LogView}} by Credits used in Frequent Tier",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\",\"title\":\"Credits\",\"minimum\":0}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{\"remix\":{\"visible\":false},\"dashboard\":{\"visible\":false},\"docker-log-source\":{\"visible\":false},\"stream\":{\"visible\":false},\"autoview\":{\"visible\":false},\"remix-fallback-shadow\":{\"visible\":false},\"view-metrics\":{\"visible\":false},\"bill\":{\"visible\":false},\"assembly-logs\":{\"visible\":false},\"org-service\":{\"visible\":false}},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"field\",\"dataTier\",\"sizeInBytes\" as sourceCategory, dataTier, bytes\n| where  dataTier matches \"Frequent\"\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes by sourceCategory\n| gbytes*{{FrequentTierBurndownRate}} as credits \n|fields -gbytes\n| top 10 sourceCategory by credits\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8F966E778230DB4B",
+      "title": "Top 10 {{LogView}} by Credits used in Infrequent Tier",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\",\"title\":\"Credits\",\"minimum\":0}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"field\",\"dataTier\",\"sizeInBytes\" as sourceCategory, dataTier, bytes\n| where  dataTier matches \"Infrequent\"\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes by sourceCategory\n| gbytes*{{InfrequentTierBurndownRate}} as credits \n|fields -gbytes\n| top 10 sourceCategory by credits\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel25643539B2FAF84E",
+      "title": "Top 10 {{LogView}} by Credits used in Continuous Tier",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\",\"title\":\"Credits\",\"minimum\":0}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"field\",\"dataTier\",\"sizeInBytes\" as sourceCategory, dataTier, bytes\n| where dataTier matches \"Continuous\"\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes by sourceCategory\n| gbytes*{{ContinuousTierBurndownRate}} as credits \n|fields -gbytes\n| top 10 sourceCategory by credits\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9890756AB3A42A4A",
+      "title": "Top 10 {{MetricsView}} by Credits used in Metrics Ingestion",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\",\"title\":\"Credits\",\"minimum\":0}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{MetricsView}}_metrics_volume\n| parse regex \"\\\"(?<sourceCategory>[^\\\"]+)\\\"\\:\\{\\\"dataPoints\\\"\\:(?<datapoints>\\d+)\\}\" multi\n| datapoints/1000/1440 as datapoints \n| sum(dataPoints) as dataPoints by sourceCategory\n| dataPoints*{{MetricsBurndownRate}} as credits \n|fields -dataPoints\n| top 10 sourceCategory by credits",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2E86C2FEA7764A41",
+      "title": "CSE Tier",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Credits Used\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"dataTier\",\"sizeInBytes\" as  dataTier, bytes\n|where dataTier matches \"CSE\"\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes \n| gbytes*{{CSETierBurndownRate}} as credits \n|fields -gbytes",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5E57DFCBA604884D",
+      "title": "Tracing Ingestion by BilledBytes",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\"Credits Used\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{TracingView}}_tracing_volume \n| parse regex \"\\\"(?<collector>[^\\\"]+)\\\"\\:\\{\\\"billedBytes\\\"\\:(?<billedBytes>\\d+)\\,\\\"spansCount\\\"\\:(?<spansCount>\\d+)\\}\" multi\n|sum(billedBytes) as billedBytes\n| billedBytes/1Gi as gbytes \n| sum(gbytes) as gbytes \n| gbytes*{{TracingBurndownRate}} as credits \n|fields -gbytes",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel76D50D8FAF3C5A4D",
+      "title": "Top 10 {{LogView}} by Credits used in CSE Tier",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\",\"title\":\"Credits\",\"minimum\":0}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{LogView}}_and_tier_volume\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"field\",\"dataTier\",\"sizeInBytes\" as sourceCategory, dataTier, bytes\n| where  dataTier matches \"CSE\"\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes by sourceCategory\n| gbytes*{{CSETierBurndownRate}} as credits \n|fields -gbytes\n| top 10 sourceCategory by credits\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel755E92C1B147B94A",
+      "title": "Top 10 {{TracingView}} by Credits used in Tracing Ingestion ",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\",\"title\":\"Credits\",\"minimum\":0}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourcecategory={{TracingView}}_tracing_volume\n| parse regex \"\\\"(?<sourceCategory>[^\\\"]+)\\\"\\:\\{\\\"billedBytes\\\"\\:(?<billedBytes>\\d+)\\,\\\"spansCount\\\"\\:(?<spansCount>\\d+)\\}\" multi\n| billedBytes/1Gi as gbytes \n| sum(gbytes) as gbytes by sourceCategory\n| gbytes*{{TracingBurndownRate}} as credits \n| fields -gbytes\n| top 10 sourceCategory by credits",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-6DE3FF3FA742594C",
+      "title": "Note",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"text\":{\"format\":\"markdownV2\",\"fontSize\":15},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "This dashboard assumes a default  set of credit burn down rates. However, these may not apply to you based on your contract with Sumo Logic. Please check with your account executive on burn down rates for your account. "
+    },
+    {
+      "id": null,
+      "key": "panel3C26C34F87E79944",
+      "title": "Top Sources  (Other < {{other_pct}}%)",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\",\"decimals\":0}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourceCategory=\"{{LogView}}_and_tier_volume\"\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"field\",\"dataTier\",\"sizeInBytes\",\"count\" as value, dataTier, bytes, count\n\n| sum(count) as events,sum(bytes) as bytes by datatier,value,_sourceCategory\n| bytes /1Gi as gb | sort gb\n| parse field=_sourcecategory \"*_and_tier_volume\" as dimension \n| fields -_sourcecategory,bytes\n\n| if (length(value) > 50,concat(substring(value,0,50),\"...\"),value) as value \n| sum(events) as events,sum(gb) as gbytes by dimension,value,dataTier\n| total gbytes as tgb \n| total gbytes as tgbs by value\n| tgbs / tgb as fraction\n\n// *** THIS LINE rolls up small sources into 'other' ***\n| if(( fraction * 100 )> {{other_pct}},value,\"other\" ) as value\n| fraction * 100 as percent\n| if (datatier=\"Frequent\",gbytes * {{FrequentTierBurndownRate}},if(datatier=\"Infrequent\",gbytes * {{InfrequentTierBurndownRate}},if(datatier=\"Continuous\",gbytes * {{ContinuousTierBurndownRate}},gbytes * {{CSETierBurndownRate}}))) as credits\n|sum(credits) as credits,count as rows, sum(events) as events,sum(gbytes) as gbytes, sum(percent) as percent by datatier,dimension,value\n| sort percent",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "FrequentTierBurndownRate",
+      "displayName": null,
+      "defaultValue": "9",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "9"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "InfrequentTierBurndownRate",
+      "displayName": null,
+      "defaultValue": "0.40",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "0.40"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "ContinuousTierBurndownRate",
+      "displayName": null,
+      "defaultValue": "20",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "20"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "CSETierBurndownRate",
+      "displayName": "CSETierBurndownRate",
+      "defaultValue": "25",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "25"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "MetricsBurndownRate",
+      "displayName": null,
+      "defaultValue": "3",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "3"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "TracingBurndownRate",
+      "displayName": "TracingBurndownRate",
+      "defaultValue": "14",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "14"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "other_pct",
+      "displayName": "other_pct",
+      "defaultValue": "0.5",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "0,0.5,1,2,3,10"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "LogView",
+      "displayName": "LogView",
+      "defaultValue": "sourcecategory",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_volume _sourcecategory=*_and_tier_volume | parse field=_sourcecategory \"*_and_tier_volume\" as logview\n| count by logview",
+        "field": "logview"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "MetricsView",
+      "displayName": "MetricsView",
+      "defaultValue": "sourcecategory",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_volume _sourcecategory=*_metrics_volume | parse field=_sourcecategory \"*_metrics_volume\" as metricsview\n| count by metricsview\n",
+        "field": "metricsview"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "TracingView",
+      "displayName": "TracingView",
+      "defaultValue": "sourcecategory",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_volume _sourcecategory=*_tracing_volume | parse field=_sourcecategory \"*_tracing_volume\" as tracingview\n| count by tracingview\n",
+        "field": "tracingview"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "timeslice",
+      "displayName": "timeslice",
+      "defaultValue": "15m",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1m,5m,15m,1h,6h,24h"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

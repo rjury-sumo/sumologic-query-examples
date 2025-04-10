@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "RDS_ModifyingAdminPwd,RestoreFromBackup_CountEventResources",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail (ModifyDBInstance or AuthorizeDBSecurityGroupIngress or Restore*From*Snapshot)\n| json \"eventName\", \"errorCode\", \"eventSource\", \"responseElements.pendingModifiedValues.masterUserPassword\" as eventName, errorCode, eventSource,setPassword nodrop\n| where isBlank(errorCode) and ((eventSource=\"rds.amazonaws.com\" and eventName=\"ModifyDBInstance\") or eventName matches \"Restore*From*Snapshot\" )\n| \"\" as classification\n| if (eventSource=\"rds.amazonaws.com\" and eventName=\"ModifyDBInstance\" and !isBlank(setPassword),concat(\"RDS_ModifyingAdminPassword_CountEventResources,\",classification),classification) as classification\n| if(eventName matches \"Restore*From*Snapshot\",concat(\"RDS_RestoreFromBackup_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| json \"requestParameters.dBInstanceIdentifier\" as rdsId \n| \"EventResourceCount\" as type \n| count_distinct(rdsId) as count by benchmarkname, type\n| fillmissing values(\"RDS_ModifyingAdminPassword_CountEventResources\",\"RDS_RestoreFromBackup_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "AutoParse",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-24h",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1d"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": ""
+}

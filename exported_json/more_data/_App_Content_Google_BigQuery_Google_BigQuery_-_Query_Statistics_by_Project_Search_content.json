@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Google BigQuery - Query Statistics by Project",
+  "search": {
+    "queryText": "_sourceCategory = Labs/GCP/bigquery logName resource severity startTime endTime \"\\\"jobCompletedEvent\\\":\" \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.severity\", \"message.data.protoPayload.serviceData.jobCompletedEvent.job\" as labels, project, severity, job\n| json field=job \"jobStatistics.totalBilledBytes\", \"jobConfiguration.query.query\" as billed_bytes, query nodrop\n| if(isNull(billed_bytes), 0, billed_bytes) as billed_bytes\n| billed_bytes / 1073741824.f as billed_gbytes\n| parse regex \"\\\"startTime\\\":\\\"(?<start_day>\\d{4}-\\d{2}-\\d{2})T(?<start_time>\\d{2}:\\d{2}:\\d{2})\\.(?<start_millis>\\d{3})[^\\\"]+\\\"\"\n| parse regex \"\\\"endTime\\\":\\\"(?<end_day>\\d{4}-\\d{2}-\\d{2})T(?<end_time>\\d{2}:\\d{2}:\\d{2})\\.(?<end_millis>\\d{3})[^\\\"]+\\\"\"\n| start_millis + toMillis(parseDate(concat(start_day, start_time),\"yyyy-MM-ddHH:mm:ss\")) as start_num\n| end_millis + toMillis(parseDate(concat(end_day, end_time),\"yyyy-MM-ddHH:mm:ss\")) as end_num\n| (end_num - start_num) / 1000 as latency_s\n| if(severity in (\"WARNING\", \"ERROR\",\"CRITICAL\", \"ALERT\", \"EMERGENCY\"), 1, 0) as error\n| sum(billed_gbytes) as billed_gbytes, sum(latency_s) as tot_s, avg(latency_s) as avg_s, count as executions, sum(error) as errors by project\n| errors / executions * 100 as error_pct",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

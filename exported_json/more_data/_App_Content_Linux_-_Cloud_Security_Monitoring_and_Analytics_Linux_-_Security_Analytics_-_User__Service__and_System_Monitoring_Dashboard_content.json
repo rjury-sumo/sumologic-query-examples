@@ -1,0 +1,438 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Linux - Security Analytics - User, Service, and System Monitoring",
+  "description": "Dashboard showing analytics for account modifications, service usage, and other system activity.",
+  "title": "Linux - Security Analytics - User, Service, and System Monitoring",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel46D8AFC7AF381B4E",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panel2442DC5DA4CC394E",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":1}"
+      },
+      {
+        "key": "panel3E6301749A5EB940",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":26}"
+      },
+      {
+        "key": "panel74B49ED691821848",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":20}"
+      },
+      {
+        "key": "panelE36AE3B59CB87A4E",
+        "structure": "{\"height\":6,\"width\":19,\"x\":5,\"y\":14}"
+      },
+      {
+        "key": "panel9E0E908FB0EFB944",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":26}"
+      },
+      {
+        "key": "panel2BEE7221B13C9A4D",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":33}"
+      },
+      {
+        "key": "panel41B6DB999A58584A",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":33}"
+      },
+      {
+        "key": "panelC2952F36B5D40B41",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":20}"
+      },
+      {
+        "key": "panelPANE-753A1DF2AA8C6946",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-DE60234DBACF8843",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":13}"
+      },
+      {
+        "key": "panelPANE-7660ABBC97886A46",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":32}"
+      },
+      {
+        "key": "panel59C3B20F8A15F94A",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":14}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel46D8AFC7AF381B4E",
+      "title": "User Account Created",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* \"useradd\" and (\"new user\" or \"new account\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S+)\\s+\\w*\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<msg>.+)$\" nodrop\n| parse field=msg \"name=*, UID=\" as dest_user nodrop\n| parse field=msg \"name=*, UID=*, GID=*, home=*, shell=*\" as dest_user, UID, GID, home, shell nodrop\n| parse field=msg \", shell=*\\\"\" as shell nodrop\n| parse field=msg \"account=*, uid=*, gid=*, home=*, shell=*\" as dest_user, UID, GID, home, shell nodrop\n| parse field=msg \"account=*, uid=\" as dest_user nodrop\n| \"Local Server\" as type\n| _sourceHost as dest_ip\n| where dest_ip matches \"{{dest_ip}}\"\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where process matches \"{{process}}\"\n| timeslice 1s\n| count as eventCount by _timeslice, dest_host, dest_user, process, UID, GID, home, shell, type\n| fields -eventCount\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2442DC5DA4CC394E",
+      "title": "User Account Deleted",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* ((\"userdel\" and \"delete user\") or \"account deleted\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S+)\\s+\\w*\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<msg>.+)$\" nodrop\n| dest_host as dest_ip\n| parse field=msg \"delete user '*'\" as dest_user nodrop\n| parse \"account=*, group=*, gid=\" as dest_user, dest_group nodrop\n| parse \"account=*, uid=\" as dest_user nodrop \n| where dest_ip matches \"{{dest_ip}}\"\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where process matches \"{{process}}\"\n| timeslice 1s\n| count as eventCount by _timeslice, dest_host, dest_user, process, dest_group\n| fields -eventCount\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel3E6301749A5EB940",
+      "title": "Stopped Services",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (rsyslog or rsyslogd or syslog or ossec or ntpd) and (stopped or \"exiting on signal 15\" or start*)\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<service>\\w*)\\[\\d+\\]:\\s+ntpd (?<state>[\\s\\S]*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<service>\\w*):\\s+\\[[\\s\\S]*\\] (?<state>[\\s\\S]*)$\" nodrop\n| if (state in (\"exiting on signal 15\", \"exiting on signal 15.\"), \"stopped\", if (state in (\"start\"), \"running\", if (state in (\"(re)start\"), \"restarted\",\"unknown\"))) as state\n| where state != \"unknown\"\n| _sourceHost as src_host | src_host as dest_host\n| where dest_ip matches \"{{dest_ip}}\"\n| where dest_host matches \"{{dest_host}}\"\n| count as eventCount, first(_messagetime) as latest, last(_messagetime) as earliest by dest_host, service, state\n| formatDate(fromMillis(latest),\"MM/dd/yyyy HH:mm:ss Z\") as %\"LatestTime\" \n| formatDate(fromMillis(earliest),\"MM/dd/yyyy HH:mm:ss Z\") as %\"EarliestTime\" \n| fields -latest, earliest, eventCount\n| where state=\"stopped\"\n| sort by - %\"LatestTime\" ",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel74B49ED691821848",
+      "title": "Running Services (Daemons)",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<message>.+)$\" nodrop\n| if (isEmpty(dest_host), _sourceHost, dest_host) as dest_host\n| parse regex \"(?<service>\\w*)\\[\\d+\\]:\\s+\" \n| where !isEmpty(service)\n| where dest_host matches \"{{dest_host}}\"\n| where process matches \"{{process}}\"\n| count as eventCount, first(_messagetime) as latest, last(_messagetime) as earliest by service, dest_host \n| formatDate(fromMillis(latest),\"MM/dd/yyyy HH:mm:ss Z\") as %\"LatestTime\" \n| formatDate(fromMillis(earliest),\"MM/dd/yyyy HH:mm:ss Z\") as %\"EarliestTime\" \n| fields -latest, earliest, eventCount\n| sort by %\"LatestTime\" ",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE36AE3B59CB87A4E",
+      "title": "Active Services Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<message>.+)$\" nodrop\n| if (isEmpty(dest_host), _sourceHost, dest_host) as dest_host\n| parse regex \"(?<service>\\w*)\\[\\d+\\]:\\s+\" \n| where !isEmpty(service)\n| where dest_host matches \"{{dest_host}}\"\n| where process matches \"{{process}}\"\n| timeslice 15m\n| count as eventCount by _timeslice, service\n| transpose row _timeslice column service",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9E0E908FB0EFB944",
+      "title": "Total Services Running by Host",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<message>.+)$\" nodrop\n| if (isEmpty(dest_host), _sourceHost, dest_host) as dest_host\n| parse regex \"(?<service>\\w*)\\[\\d+\\]:\\s+\" \n| where !isEmpty(service)\n| where dest_host matches \"{{dest_host}}\"\n| where process matches \"{{process}}\"\n| count dest_host, service | count as %\"ServiceRunningCount\" by dest_host\n| sort by %\"ServiceRunningCount\", dest_host",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2BEE7221B13C9A4D",
+      "title": "System Stopped",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* \"kernel: Kernel logging (proc) stopped.\" \n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+\" nodrop\n| if (isEmpty(dest_host), _sourceHost, dest_host) as dest_host\n| \"Linux OS Stopped\" as msg_summary \n| msg_summary as message | fields -msg_summary\n| where dest_host matches \"{{dest_host}}\"\n| timeslice 1s\n| count as eventCount by _timeslice, dest_host, message\n| fields -eventCount\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel41B6DB999A58584A",
+      "title": "System Time Change Attempt",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (sudo and ((COMMAND date) or \"ntpd stop\" or (ntpd synchronized) or (ln and localtime)))\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S+)\\s+\\w*\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?<message>.+)$\" nodrop\n| extract \"sudo:\\s+(?<src_user>[^ ]+?)\\s:.+?USER=(?<dest_user>[^ ]+?)\\s+\" nodrop\n| parse \"synchronized to *,\" as src_host nodrop \n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip | src_host as dest_host\n| where (message matches \"*date *\") or (message matches \"*date*\") or (message matches \"*synchronized to*\") or (message matches \"*ntpd stop*\") or (message matches \"*ln*localtime\")\n| if (message matches \"*synchronized to*\",\"Change/Configuration/SystemTime/Success\",\"Change/Configuration/SystemTime/Attempt\") as classification \n| if (message matches \"*synchronized to*\",\"System Time Synchronized\", \"System Time Change attempt\") as message\n| where message=\"System Time Change attempt\"\n| where dest_ip matches \"{{dest_ip}}\"\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| timeslice 1s\n| count as eventCount by _timeslice, src_host, src_user, dest_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelC2952F36B5D40B41",
+      "title": "Events by Service",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<message>.+)$\" nodrop\n| if (isEmpty(dest_host), _sourceHost, dest_host) as dest_host\n| parse regex \"(?<service>\\w*)\\[\\d+\\]:\\s+\" \n| where !isEmpty(service)\n| where dest_host matches \"{{dest_host}}\"\n| where process matches \"{{process}}\"\n| count as eventCount by service\n| sort by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-753A1DF2AA8C6946",
+      "title": "Untitled",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"showTitle\":false,\"backgroundColor\":\"#005982\",\"textColor\":\"white\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "User Account Modifications"
+    },
+    {
+      "id": null,
+      "key": "panelPANE-DE60234DBACF8843",
+      "title": "Untitled",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"showTitle\":false,\"backgroundColor\":\"#005982\",\"textColor\":\"white\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Services"
+    },
+    {
+      "id": null,
+      "key": "panelPANE-7660ABBC97886A46",
+      "title": "Untitled",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"showTitle\":false,\"backgroundColor\":\"#005982\",\"textColor\":\"white\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Other System Activity"
+    },
+    {
+      "id": null,
+      "key": "panel59C3B20F8A15F94A",
+      "title": "Total Services",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\"},\"series\":{},\"svp\":{\"label\":\"Services\",\"sparkline\":{\"show\":false},\"gauge\":{\"show\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<message>.+)$\" nodrop\n| if (isEmpty(dest_host), _sourceHost, dest_host) as dest_host\n| parse regex \"(?<service>\\w*)\\[\\d+\\]:\\s+\" \n| where !isEmpty(service)\n| where dest_host matches \"{{dest_host}}\"\n| where process matches \"{{process}}\"\n| count as eventCount by service | count as services",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "dest_ip",
+      "displayName": "dest_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S+)\\s+\\w*\" nodrop",
+        "field": "_sourcehost"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_host",
+      "displayName": "dest_host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<msg>.+)$\" nodrop",
+        "field": "dest_host"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_user",
+      "displayName": "dest_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/linux/Security*\n| parse field=msg \"name=*, UID=\" as dest_user nodrop\n| parse field=msg \"name=*, UID=*, GID=*, home=*, shell=*\" as dest_user, UID, GID, home, shell nodrop\n| parse field=msg \"account=*, uid=*, gid=*, home=*, shell=*\" as dest_user, UID, GID, home, shell nodrop\n| parse field=msg \"account=*, uid=\" as dest_user nodrop",
+        "field": "dest_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "process",
+      "displayName": "process",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<msg>.+)$\" nodrop",
+        "field": "process"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

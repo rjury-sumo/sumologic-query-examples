@@ -1,0 +1,337 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Amazon CloudTrail - Security Analytics Searches",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - ACL or Route Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (CreateNetworkAclEntry OR CreateRoute)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name in (\"CreateNetworkAclEntry\",\"CreateRoute\")\n//EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "New ACL entries and routes in your route tables can expose new attack vectors to your infrastructure and are handy for your SecOps team to monitor."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Attempt to create a publicly accessible database",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (CreateDBInstance)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name=\"CreateDBInstance\"\n| parse \"\\\"publiclyAccessible\\\":\\\"*\\\"\" as publicly_accessible | where publicly_accessible=\"true\"\n//EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-14d"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for the creation of a database that has been granted public access."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Authorisation Failures",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail errorCode (*UnauthorizedOperation OR AccessDenied*)\n| parse \"\\\"errorCode\\\":\\\"*\\\"\" as error_code | where error_code matches \"*UnauthorizedOperation\" OR error_code matches \"AccessDenied*\"\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for unauthorised API calls made within your AWS account."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - CMK Disabled or Scheduled for Deletion",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (DisableKey OR ScheduleKeyDeletion)\n| parse \"\\\"eventSource\\\":\\\"*\\\"\" as event_source | where event_source=\"kms.amazonaws.com\"\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name in (\"DisableKey\",\"ScheduleKeyDeletion\")\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for AWS CMK configuration changes."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - CloudTrail Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (*Trail OR *Logging)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name in (\"CreateTrail\",\"UpdateTrail\",\"DeleteTrail\",\"StartLogging\",\"StopLogging\")\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for AWS CloudTrail configuration changes."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Configuration Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (*Channel OR *Recorder)\n| parse \"\\\"eventSource\\\":\\\"*\\\"\" as event_source | where event_source=\"config.amazonaws.com\"\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name \n| where event_name in (\"DeleteDeliveryChannel\",\"PutDeliveryChannel\",\"PutConfigurationRecorder\",\"StopConfigurationRecorder\")\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for AWS configuration changes."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Console Sign-In Failures",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (ConsoleLogin Failure)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name=\"ConsoleLogin\"\n| json field=_raw \"userIdentity.principalId\",\"responseElements.ConsoleLogin\" as principal_id,action nodrop\n| toLowerCase(action)\n| where action=\"failure\"\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user nodrop\n| parse regex field=principal_id \":(?<user_principal>.*)\" nodrop\n| if(user=\"\",user_principal,user) as user | fields - event_name,principal_id,user_principal\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for AWS Console authentication failures."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Console Sign-In Without MFA",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (ConsoleLogin)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name\n| parse \"\\\"MFAUsed\\\":\\\"*\\\"\" as mfa_used\n| where (event_name=\"ConsoleLogin\" AND mfa_used=\"No\")\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user nodrop\n| json field=_raw \"userIdentity.principalId\",\"responseElements.ConsoleLogin\" as principal_id,action nodrop\n| parse regex field=principal_id \":(?<user_principal>.*)\" nodrop\n| if(user=\"\",user_principal,user) as user | fields - event_name,principal_id,user_principal\n| toLowerCase(action)\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for AWS Console Sign-In Requests Without Multi-Factor Authentication."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Default Policy Version Set",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (SetDefaultPolicyVersion)\n| parse \"\\\"eventSource\\\":\\\"*\\\"\" as eventSource | where eventSource=\"iam.amazonaws.com\"\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName | where eventName=\"SetDefaultPolicyVersion\"\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "This search looks for CloudTrail events where a user has set a default policy versions. Attackers have been know to use this technique for Privilege Escalation in case the previous versions of the policy had permissions to access more resources than."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Detect Permanent Key Creation",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (CreateAccessKey IAMUser)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name=\"CreateAccessKey\"\n| parse \"\\\"userIdentity\\\":{\\\"type\\\":\\\"*\\\"\" as type | where type=\"IAMUser\"\n// EOQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for accounts that create permanent keys. Permanent keys are not created by default and are only needed for programmatic calls."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Detect Sts Get Session Token Abuse",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (GetSessionToken IAMUser)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name=\"GetSessionToken\"\n| parse \"\\\"userIdentity\\\":{\\\"type\\\":\\\"*\\\"\" as type | where type=\"IAMUser\"\n// EOQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-14d"
+      },
+      "searchSchedule": null,
+      "description": "This search provides detection of suspicious use of sts:GetSessionToken. These tokens can be created on the go and used by attackers to move laterally and escalate privileges."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - EC2 Instance Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (*Instances)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name\n| where event_name in (\"RunInstances\",\"RebootInstances\",\"StartInstances\",\"StopInstances\",\"TerminateInstances\")\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for AWS API calls being performed to create, terminate, start, stop, or reboot an EC2 instance."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - EC2 Large Instance Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail \n (RunInstances)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name=\"RunInstances\"\n| parse \"\\\"instanceType\\\":\\\"*\\\"\" as instance_type | where instance_type matches \"*.8xlarge\" OR instance_type matches \"*.4xlarge\"\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for AWS EC2 large instance changes."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - IAM Policy Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail  (*Policy*)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name in (\"DeleteGroupPolicy\",\"DeleteRolePolicy\",\"DeleteUserPolicy\",\"PutGroupPolicy\",\"PutRolePolicy\",\"PutUserPolicy\",\"CreatePolicy\",\"DeletePolicy\",\"CreatePolicyVersion\",\"DeletePolicyVersion\",\"AttachRolePolicy\",\"DetachRolePolicy\",\"AttachUserPolicy\",\"DetachUserPolicy\",\"AttachGroupPolicy\",\"DetachGroupPolicy\")\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for IAM policy configuration changes."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Internet Gateway Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail  (*Gateway)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name \n| where event_name in (\"CreateCustomerGateway\",\"DeleteCustomerGateway\",\"AttachInternetGateway\",\"CreateInternetGateway\",\"DeleteInternetGateway\",\"DetachInternetGateway\")\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for AWS VPC Customer/Internet Gateway configuration change."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Network ACL Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail  (*AclEntry OR *NetworkAcl*)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name \n| where event_name in (\"CreateNetworkAcl\",\"CreateNetworkAclEntry\",\"DeleteNetworkAcl\",\"DeleteNetworkAclEntry\",\"ReplaceNetworkAclEntry\",\"ReplaceNetworkAclAssociation\")\n//EOQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor AWS network access control list configuration changes."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Organisation Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (AcceptHandshake OR AttachPolicy OR CancelHandshake OR CreateAccount OR CreateOrganization OR CreateOrganizationalUnit OR CreatePolicy OR DeclineHandshake OR DeleteOrganization OR DeleteOrganizationalUnit OR DeletePolicy OR EnableAllFeatures OR EnablePolicyType OR InviteAccountToOrganization OR LeaveOrganization OR DetachPolicy OR DisablePolicyType OR MoveAccount OR RemoveAccountFromOrganization OR UpdateOrganizationalUnit OR UpdatePolicy)\n| parse \"\\\"eventSource\\\":\\\"*\\\"\" as event_source\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name\n| where event_name in (\"AttachPolicy\",\"CancelHandshake\",\"CreateAccount\",\"CreateOrganization\",\"CreateOrganizationalUnit\",\"CreatePolicy\",\"DeclineHandshake\",\"DeleteOrganization\",\"DeleteOrganizationalUnit\",\"DeletePolicy\",\"EnableAllFeatures\",\"EnablePolicyType\",\"InviteAccountToOrganization\",\"LeaveOrganization\",\"DetachPolicy\",\"DisablePolicyType\",\"MoveAccount\",\"RemoveAccountFromOrganization\",\"UpdateOrganizationalUnit\",\"UpdatePolicy\") OR (event_source=\"organizations.amazonaws.com\" AND event_name=\"AcceptHandshake\")\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for administrator-specific actions occuring within your AWS Organisations."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Root Account Usage",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail  (Root)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where !(event_name=\"AwsServiceEvent\")\n| json \"userIdentity.type\",\"userIdentity.invokedBy\" as type,invoked_by nodrop \n| where isEmpty(invoked_by) AND type=\"Root\"\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for 'Root' usage account within an AWS environment."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Route Table Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail  (ReplaceRouteTableAssociation OR *Route OR *RouteTable)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name in (\"CreateRoute\",\"CreateRouteTable\",\"ReplaceRoute\",\"ReplaceRouteTableAssociation\",\"DeleteRouteTable\",\"DeleteRoute\",\"DisassociateRouteTable\")\n// EOQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for route table configuration changes."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - S3 Bucket Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail  (*Bucket*)\n| parse \"\\\"eventSource\\\":\\\"*\\\"\" as event_source | where event_source=\"s3.amazonaws.com\"\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name \n| where event_name in (\"PutBucketAcl\",\"PutBucketPolicy\",\"PutBucketCors\",\"PutBucketLifecycle\",\"PutBucketReplication\",\"DeleteBucketPolicy\",\"DeleteBucketCors\",\"DeleteBucketLifecycle\",\"DeleteBucketReplication\")\n// EOQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for changes to S3 bucket configuration."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - Security Group Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail  (*GroupIngress OR *GroupEgress OR *SecurityGroup)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name in (\"AuthorizeSecurityGroupIngress\",\"AuthorizeSecurityGroupEgress\",\"RevokeSecurityGroupIngress\",\"RevokeSecurityGroupEgress\",\"CreateSecurityGroup\",\"DeleteSecurityGroup\")\n// EoQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for the security group configuration changes."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "AWS CloudTrail - VPC Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail  (*Vpc*)\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name | where event_name in (\"CreateVpc\",\"DeleteVpc\",\"ModifyVpcAttribute\",\"AcceptVpcPeeringConnection\",\"CreateVpcPeeringConnection\",\"DeleteVpcPeeringConnection\",\"RejectVpcPeeringConnection\",\"AttachClassicLinkVpc\",\"DetachClassicLinkVpc\",\"DisableVpcClassicLink\",\"EnableVpcClassicLinkCreateVpc\",\"DeleteVpc\",\"ModifyVpcAttribute\",\"AcceptVpcPeeringConnection\",\"CreateVpcPeeringConnection\",\"DeleteVpcPeeringConnection\",\"RejectVpcPeeringConnection\",\"AttachClassicLinkVpc\",\"DetachClassicLinkVpc\",\"DisableVpcClassicLink\",\"EnableVpcClassicLink\")\n// EOQ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": "Monitor for when Virtual Private Cloud (VPC) environment configuration changes are made."
+    }
+  ]
+}

@@ -1,0 +1,172 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Security Status",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Account Lock Out Events",
+      "search": {
+        "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4740\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\", \"keywords\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel, keywords nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id = \"4740\" \n| fields host, event_id, msg_summary, src_user, src_domain, dest_user, dest_domain",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Directory Service Object Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (5136 or 5137 or 5138 or 5139 or 5141)  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectLogonId\", \"EventData.DSName\", \"EventData.DSType\", \"EventData.ObjectDN\", \"EventData.ObjectClass\", \"EventData.AttributeValue\", \"Task\", \"Keywords\", \"Channel\", \"Level\" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, AttributeValue, task, Keywords, channel, level nodrop\n| where event_id in (\"5136\", \"5137\", \"5138\", \"5139\", \"5141\") and channel = \"Security\"\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| count by event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, AttributeValue, task, Keywords, channel, level",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Login attempts to disabled accounts",
+      "search": {
+        "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"Audit Failure\" (\"\\\"EventID\\\":\\\"4625\\\"\" or \"\\\"EventID\\\":\\\"4768\\\"\" or \"\\\"EventID\\\":\\\"4771\\\"\" or \"\\\"EventID\\\":\\\"4776\\\"\" or \"\\\"EventID\\\":\\\"4769\\\"\") (\"currently disabled\" or 0xc0000072)  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.LogonType\", \"EventData.FailureReason\", \"EventData.IpAddress\", \"EventData.IpPort\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.WorkstationName\", \"Channel\", \"EventData.Status\", \"EventData.SubStatus\", \"EventData.Workstation\", \"Keywords\" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop\n| parse regex field=msg_summary \"Failure Information:\\s+Failure Reason:\\s+(?<failure_reason>[^.\\r]+?)[.\\r]\" nodrop\n| parse regex field=msg_summary \"Failure Information:\\s+(?<test>.*)\" nodrop\n| parse regex field=msg_summary \"Result Code:\\s+(?<result_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"Failure Code:\\s+(?<failure_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id in (\"4625\", \"4771\") or (event_id = \"4768\" and result_code != \"0x0\") or (event_id = \"4769\" and failure_code != \"0x0\") or (event_id = \"4776\" and status != \"0x0\") and (failure_reason = \"Account currently disabled\" or sub_status = \"0xc0000072\")\n| fields host, event_id, msg_summary, src_user, src_ip, src_port, src_domain, dest_user, dest_domain, fail_reason, logon_type, result_code, failure_code, src_host, failure_reason, status, sub_status",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "New Account Creation",
+      "search": {
+        "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4720\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id = \"4720\" and channel = \"Security\"\n| fields host, event_id, msg_summary, src_user, dest_user, src_domain, dest_domain",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "New Computer Account Creation",
+      "search": {
+        "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4741\\\"\" \"computer account was created\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.SamAccountName\", \"EventData.HomeDirectory\", \"Channel\", \"Task\", \"Keywords\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, SamAccountName, HomeDirectory, channel, task, Keywords nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id = \"4741\" \n| fields event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, SamAccountName, HomeDirectory, channel, task, Keywords",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "New Group Creation",
+      "search": {
+        "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (\"\\\"EventID\\\":\\\"4727\\\"\" or \"\\\"EventID\\\":\\\"4731\\\"\" or \"\\\"EventID\\\":\\\"4754\\\"\")  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id in (\"4727\", \"4731\", \"4754\")\n| dest_user as group_name | dest_domain as group_domain\n| fields host, event_id, msg_summary, src_user, src_domain, group_name, group_domain",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-14d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "OU Creation",
+      "search": {
+        "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"5137\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectLogonId\", \"EventData.DSName\", \"EventData.DSType\", \"EventData.ObjectDN\", \"EventData.ObjectClass\", \"Task\", \"Keywords\", \"Channel\", \"Level\" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level nodrop\n| where event_id = \"5137\" and channel = \"Security\"\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| count by event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "OU Deletion",
+      "search": {
+        "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"5141\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectLogonId\", \"EventData.DSName\", \"EventData.DSType\", \"EventData.ObjectDN\", \"EventData.ObjectClass\", \"Task\", \"Keywords\", \"Channel\", \"Level\" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level nodrop\n| where event_id = \"5141\" and channel = \"Security\"\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| fields event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level ",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Policy Changes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (4902 or 4904 or 4905 or 4906 or 4907 or 4912 or 4715 or 4719 or 4739 or \"Audit Policy Change\" or \"System audit policy was changed\" or *policy*change* or \"Policy Change\")  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\", \"Task\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel, task nodrop\n| where event_id in (\"4902\", \"4904\", \"4905\", \"4906\", \"4907\", \"4912\", \"4715\", \"4719\", \"4739\") or msg_summary matches \"System audit policy was changed\" or msg_summary matches \"*policy*change*\"\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| count as num_changes, first(_messageTime) as last_change by src_domain, host, task, msg_summary\n| sort by last_change \n| formatDate(fromMillis(last_change), \"MM-dd-yyyy HH:mm:ss z\") as last_change",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Trend of new users and disabled users over time",
+      "search": {
+        "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (\"\\\"EventID\\\":\\\"4720\\\"\" or \"\\\"EventID\\\":\\\"4725\\\"\")  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id in (\"4720\", \"4725\") \n| if (event_id = \"4720\", \"New Users\", \"Disabled Users\") as type \n| timeslice by 1d \n| count by _timeslice, type \n| sort by _timeslice asc \n| transpose row _timeslice column type",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-14d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "User added to group",
+      "search": {
+        "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (4728 or 4732 or 4746 or 4751 or 4756 or 4761)  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.GroupName\", \"EventData.GroupDomain\", \"Channel\", \"EventData.MemberName\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, group_name, group_domain, channel, MemberName nodrop\n| parse regex field=msg_summary \"Subject:[\\s\\S]+?Account Name:[\\s\\S]+?Member:[\\s\\S]+?Security ID:\\s+(?<member_user_name>[^\\r\\\"]+?)\\r[\\s\\S]+?Account Name:[\\s\\S]+?Group:[\\s\\S]+?(?:Account|Group) Name:\\s+(?<group_name>[^\\r\\\"]+?)\\r\\s+?(?:Account|Group) Domain:\\s+(?<group_domain>[^\\r\\\"]+?)(?:\\r|\\\")\" nodrop \n| where event_id in (\"4728\", \"4732\", \"4746\", \"4751\", \"4756\", \"4761\")\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| fields host, event_id, msg_summary, src_user, src_domain, group_name, group_domain, member_user_name",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-7d"
+      },
+      "searchSchedule": null,
+      "description": ""
+    }
+  ]
+}

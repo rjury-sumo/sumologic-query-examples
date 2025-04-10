@@ -1,0 +1,258 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Amazon S3 Audit - Threat Intel",
+  "description": "Amazon S3 Audit - Threat Intel dashboard provides high-level views of threats throughout your S3 Service. Dashboard panels display visual graphs and detailed information on Threats by Client IP, Threats by Actors, and Threat by Malicious Confidence.",
+  "title": "Amazon S3 Audit - Threat Intel",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-15m"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel0A5E839A9DB54A49",
+        "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":7}"
+      },
+      {
+        "key": "panel4B02530FB49B3840",
+        "structure": "{\"height\":11,\"width\":24,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panel92A79A74B482B949",
+        "structure": "{\"height\":7,\"width\":6,\"x\":18,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-6AC2E56899E85942",
+        "structure": "{\"height\":14,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-9DA61A9E9A481948",
+        "structure": "{\"height\":7,\"width\":6,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-F705136D88439940",
+        "structure": "{\"height\":10,\"width\":24,\"x\":0,\"y\":25}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel0A5E839A9DB54A49",
+      "title": "Threat by Malicious Confidence",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   \n| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| where bucket matches \"{{S3_Bucket}}\"\n| count by remoteIP\n| where !isPrivateIP(remoteIP)\n\n| threatlookup singleIndicator remoteIP\n\n// normalize confidence level to a string \n| if (_threatlookup.confidence >= 85, \"high\", if (_threatlookup.confidence >= 50, \"medium\", if (_threatlookup.confidence >= 15, \"low\", if (_threatlookup.confidence >= 0, \"unverified\", \"unknown\")))) as threat_confidence\n\n| where threat_confidence matches \"{{threat_confidence}}\"\n\n//rename to match threat_<foo> convention\n| %\"_threatlookup.actors\" as threat_actors\n| %\"_threatlookup.type\" as type\n| %\"_threatlookup.threat_type\" as threat_type\n\n//convert threat valid from to human readable time\n| toLong(%\"_threatlookup.valid_from\" * 1000) as %\"_threatlookup.valid_from\"\n| formatDate(%\"_threatlookup.valid_from\", \"MM-dd-yyyy\") as threat_valid_from\n\n| where type matches \"ipv4-addr*\" and !isNull(threat_confidence)\n\n| if (isEmpty(threat_actors), \"Unassigned\", threat_actors) as threat_actors\n\n| sum(_count) as threatCount by threat_confidence\n| sort by threatCount, threat_confidence asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4B02530FB49B3840",
+      "title": "Highly Malicious Threat Table",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   \n| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| where bucket matches \"{{S3_Bucket}}\"\n| count remoteIP, bucket, operation, requester, status_code, user_agent\n| where !isPrivateIP(remoteIP)\n\n| threatlookup singleIndicator remoteIP\n\n// normalize confidence level to a string \n| if (_threatlookup.confidence >= 85, \"high\", if (_threatlookup.confidence >= 50, \"medium\", if (_threatlookup.confidence >= 15, \"low\", if (_threatlookup.confidence >= 0, \"unverified\", \"unknown\")))) as threat_confidence\n\n| where threat_confidence matches \"high\"\n\n//rename to match threat_<foo> convention\n| %\"_threatlookup.actors\" as threat_actors\n| %\"_threatlookup.type\" as type\n| %\"_threatlookup.threat_type\" as threat_type\n\n//convert threat valid from to human readable time\n| toLong(%\"_threatlookup.valid_from\" * 1000) as %\"_threatlookup.valid_from\"\n| formatDate(%\"_threatlookup.valid_from\", \"MM-dd-yyyy\") as threat_valid_from\n\n| where type matches \"ipv4-addr*\" and !isNull(threat_confidence)\n\n| if (isEmpty(threat_actors), \"Unassigned\", threat_actors) as threat_actors\n\n| count by remoteIP, type, threat_actors, threat_confidence, threat_type,threat_valid_from, bucket, operation, requester, status_code, user_agent\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel92A79A74B482B949",
+      "title": "Threat by Actors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   \n| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| where bucket matches \"{{S3_Bucket}}\"\n| count by remoteIP\n| where !isPrivateIP(remoteIP)\n\n| threatlookup singleIndicator remoteIP\n\n// normalize confidence level to a string \n| if (_threatlookup.confidence >= 85, \"high\", if (_threatlookup.confidence >= 50, \"medium\", if (_threatlookup.confidence >= 15, \"low\", if (_threatlookup.confidence >= 0, \"unverified\", \"unknown\")))) as threat_confidence\n\n| where threat_confidence matches \"{{threat_confidence}}\"\n\n//rename to match threat_<foo> convention\n| %\"_threatlookup.actors\" as threat_actors\n| %\"_threatlookup.type\" as type\n| %\"_threatlookup.threat_type\" as threat_type\n\n//convert threat valid from to human readable time\n| toLong(%\"_threatlookup.valid_from\" * 1000) as %\"_threatlookup.valid_from\"\n| formatDate(%\"_threatlookup.valid_from\", \"MM-dd-yyyy\") as threat_valid_from\n\n| where type matches \"ipv4-addr*\" and !isNull(threat_confidence)\n\n| if (isEmpty(threat_actors), \"Unassigned\", threat_actors) as threat_actors\n\n| sum(_count) as threatCount by threat_actors\n| sort by threatCount, threat_actors asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-6AC2E56899E85942",
+      "title": "Threat Locations",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   \n| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| where bucket matches \"{{S3_Bucket}}\"\n| where !isBlank(remoteIP)\n\n| threatlookup singleIndicator remoteIP\n\n// normalize confidence level to a string \n| if (_threatlookup.confidence >= 85, \"high\", if (_threatlookup.confidence >= 50, \"medium\", if (_threatlookup.confidence >= 15, \"low\", if (_threatlookup.confidence >= 0, \"unverified\", \"unknown\")))) as threat_confidence\n\n| where threat_confidence matches \"{{threat_confidence}}\"\n\n//rename to match threat_<foo> convention\n| %\"_threatlookup.actors\" as threat_actors\n| %\"_threatlookup.type\" as type\n| %\"_threatlookup.threat_type\" as threat_type\n\n//convert threat valid from to human readable time\n| toLong(%\"_threatlookup.valid_from\" * 1000) as %\"_threatlookup.valid_from\"\n| formatDate(%\"_threatlookup.valid_from\", \"MM-dd-yyyy\") as threat_valid_from\n\n| where type matches \"ipv4-addr*\" and !isNull(threat_confidence)\n\n| if (isEmpty(threat_actors), \"Unassigned\", threat_actors) as threat_actors\n\n| lookup latitude, longitude, country_code, country_name, city from geo://location on ip = remoteIP\n| count by remoteIP, country_coude, country_name, city, type, actor, threat_confidence, bucket, operation, requester, status_code, user_agent, latitude, longitude\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-9DA61A9E9A481948",
+      "title": "Threat Count",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"label\":\"Threats\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0.001,\"to\":null,\"color\":\"#bf2121\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   \n| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| where bucket matches \"{{S3_Bucket}}\"\n| where !isPrivateIP(remoteIP)\n\n| threatlookup singleIndicator remoteIP\n\n// normalize confidence level to a string \n| if (_threatlookup.confidence >= 85, \"high\", if (_threatlookup.confidence >= 50, \"medium\", if (_threatlookup.confidence >= 15, \"low\", if (_threatlookup.confidence >= 0, \"unverified\", \"unknown\")))) as threat_confidence\n\n| where threat_confidence matches \"{{threat_confidence}}\"\n\n//rename to match threat_<foo> convention\n| %\"_threatlookup.actors\" as threat_actors\n| %\"_threatlookup.type\" as type\n| %\"_threatlookup.threat_type\" as threat_type\n\n//convert threat valid from to human readable time\n| toLong(%\"_threatlookup.valid_from\" * 1000) as %\"_threatlookup.valid_from\"\n| formatDate(%\"_threatlookup.valid_from\", \"MM-dd-yyyy\") as threat_valid_from\n\n| where type matches \"ipv4-addr*\" and !isNull(threat_confidence)\n\n| if (isEmpty(threat_actors), \"Unassigned\", threat_actors) as threat_actors\n\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-F705136D88439940",
+      "title": "Threat Table",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{S3ServerAccessLogsSource}}   \n| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| where bucket matches \"{{S3_Bucket}}\"\n| count remoteIP, bucket, operation, requester, status_code, user_agent\n| where !isPrivateIP(remoteIP)\n\n| threatlookup singleIndicator remoteIP\n\n// normalize confidence level to a string \n| if (_threatlookup.confidence >= 85, \"high\", if (_threatlookup.confidence >= 50, \"medium\", if (_threatlookup.confidence >= 15, \"low\", if (_threatlookup.confidence >= 0, \"unverified\", \"unknown\")))) as threat_confidence\n\n| where threat_confidence matches \"{{threat_confidence}}\"\n\n//rename to match threat_<foo> convention\n| %\"_threatlookup.actors\" as threat_actors\n| %\"_threatlookup.type\" as type\n| %\"_threatlookup.threat_type\" as threat_type\n\n//convert threat valid from to human readable time\n| toLong(%\"_threatlookup.valid_from\" * 1000) as %\"_threatlookup.valid_from\"\n| formatDate(%\"_threatlookup.valid_from\", \"MM-dd-yyyy\") as threat_valid_from\n\n| where type matches \"ipv4-addr*\" and !isNull(threat_confidence)\n\n| if (isEmpty(threat_actors), \"Unassigned\", threat_actors) as threat_actors\n\n| count by remoteIP, type, threat_actors, threat_confidence, threat_type,threat_valid_from, bucket, operation, requester, status_code, user_agent\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "S3ServerAccessLogsSource",
+      "displayName": "S3ServerAccessLogsSource",
+      "defaultValue": "Labs/Microsoft/Office365",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Microsoft/Office365"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "S3_Bucket",
+      "displayName": "S3_Bucket",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{S3ServerAccessLogsSource}}   \n| parse \"* * [*] * * * * * \\\"* HTTP/1.1\\\" * * * * * * * \\\"*\\\" *\" as bucket_owner, bucket, time, remoteIP, requester, request_ID, operation, key, request_URI, status_code, error_code, bytes_sent, object_size, total_time, turn_time, referrer, user_agent, version_ID\n| count by bucket",
+        "field": "bucket"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "threat_confidence",
+      "displayName": "threat_confidence",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "high,medium,low,unverified,unknown"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

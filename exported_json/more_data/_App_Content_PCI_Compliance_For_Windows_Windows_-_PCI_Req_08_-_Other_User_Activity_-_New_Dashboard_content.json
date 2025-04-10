@@ -1,0 +1,334 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Windows - PCI Req 08 - Other User Activity - New",
+  "description": "Handles PCI Req 08",
+  "title": "Windows - PCI Req 08 - Other User Activity - New",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-4w2d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel2167a8678b81da47",
+        "structure": "{\"width\":12,\"height\":5,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel889ea06ba2d97b40",
+        "structure": "{\"width\":12,\"height\":5,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelb2870edfb8701b4b",
+        "structure": "{\"width\":12,\"height\":10,\"x\":0,\"y\":4}"
+      },
+      {
+        "key": "panel6e7f3ddc8f261b4c",
+        "structure": "{\"width\":12,\"height\":5,\"x\":12,\"y\":4}"
+      },
+      {
+        "key": "panel2003e2e98af37844",
+        "structure": "{\"width\":12,\"height\":5,\"x\":12,\"y\":8}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel6e7f3ddc8f261b4c",
+      "title": "User Account UnLocked",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4767 \"EventCode = 4767;\"\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop \n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+?)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+?)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\\"]*)\\\";\" nodrop\n| where eventCode=\"4767\"\n| comp_name as dest_host\n| timeslice 1s\n|where if (\"{{eventcode}}\" = \"*\", true, eventcode matches \"{{eventcode}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_domain}}\" = \"*\", true, src_domain matches \"{{src_domain}}\") AND if (\"{{dest_domain}}\" = \"*\", true, dest_domain matches \"{{dest_domain}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_host}}\" = \"*\", true, dest_host matches \"{{dest_host}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as eventCount by _timeslice, dest_host, src_user, src_domain, dest_user, dest_domain, msg_summary, eventCode\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb2870edfb8701b4b",
+      "title": "Excessive Failed Access Attempts",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4625 or 4768 or 4771 or 4776) (\"EventCode = 4625;\" or \"EventCode = 4768;\" or \"EventCode = 4771;\" or \"EventCode = 4776;\")\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop | parse regex \"Logon Type:\\s+(?<logon_type>\\d+)*\" nodrop | parse regex \"Failure Information:\\s+Failure Reason:\\s+(?<fail_reason>[^.\\r]+?)[.\\r]\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Client Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Client Port:\\s+?(?<src_port>[\\d-]+)\" nodrop \n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Source Network Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Source Port:\\s+?(?<src_port>[\\d-]+)\" nodrop \n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Workstation Name:\\s+(?<src_host>[^\\r]+?)\\r[\\s\\S]+?Source Network Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Source Port:\\s+?(?<src_port>[\\d-]+)\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Subject[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r\\\"]+?)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)\\r\" nodrop | parse regex \"Result Code:\\s+(?<result_code>[^\\r]+)\\r\" nodrop | parse \"Type = \\\"*\\\";\" as type | parse regex \"Logon Account:\\s+(?<src_user>[^\\r]*?)\\r[\\s\\S]+?Source Workstation:\\s+(?<src_host>[^\\r]+?)\\r[\\s\\S]+?Error Code:\\s+(?<error_code>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop | parse regex \"Failure Code:\\s+(?<failure_code>[^\\r]+)\\r\" nodrop \n| where eventCode in (\"4625\", \"4771\") or (eventCode=\"4768\" and result_code !=\"0x0\") or (eventCode=\"4776\" and error_code !=\"0x0\")\n| comp_name as dest_host\n| if (dest_domain=\"Failure Information:\", \"\", dest_domain) as dest_domain\n| if (isEmpty(src_host), src_ip, src_host) as src_host\n| src_user as %\"Source User\" | dest_host as %\"Target Host\" | dest_user as %\"Target User\" | src_host as %\"Source Host\" \n| timeslice 5m\n|where if (\"{{eventcode}}\" = \"*\", true, eventcode matches \"{{eventcode}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_domain}}\" = \"*\", true, src_domain matches \"{{src_domain}}\") AND if (\"{{dest_domain}}\" = \"*\", true, dest_domain matches \"{{dest_domain}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{src_host}}\" = \"*\", true, src_host matches \"{{src_host}}\") AND if (\"{{dest_host}}\" = \"*\", true, dest_host matches \"{{dest_host}}\") AND if (\"{{logon_type}}\" = \"*\", true, logon_type matches \"{{logon_type}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as %\"Attempts\" by _timeslice, %\"Source Host\", %\"Source User\", src_domain, %\"Target Host\", %\"Target User\", dest_domain\n| format(\"Excessive (%d) login failures observed\", %\"Attempts\") as message\n| 3 as threshold\n| where %\"Attempts\" > threshold\n| sort by _timeslice, %\"Attempts\"\n| fields -threshold, %\"Attempts\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2167a8678b81da47",
+      "title": "User Account Password Changes",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4723 \"EventCode = 4723;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+?)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r]+?)\\r\" nodrop\n| where eventCode=\"4723\"\n| timeslice 1s\n|where if (\"{{eventcode}}\" = \"*\", true, eventcode matches \"{{eventcode}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_domain}}\" = \"*\", true, src_domain matches \"{{src_domain}}\") AND if (\"{{dest_domain}}\" = \"*\", true, dest_domain matches \"{{dest_domain}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as eventCount by _timeslice, dest_user, dest_domain, src_user, src_domain, msg_summary, eventCode\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2003e2e98af37844",
+      "title": "User Account disabled but not deleted",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security ((4726 \"EventCode = 4726;\") or (4725 \"EventCode = 4725;\"))\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse regex \"Message = \\\"(?<msg_summary>[^\\r\\.]+?)(?:\\r|\\.|\\\";)\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Subject[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r\\\"]+?)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\")\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+?)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r]+?)\\r\" nodrop\n| comp_name as dest_host\n| where eventCode=\"4725\" or eventCode=\"4726\"\n| withtime msg_summary | withtime _messagetime\n|where if (\"{{eventcode}}\" = \"*\", true, eventcode matches \"{{eventcode}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_domain}}\" = \"*\", true, src_domain matches \"{{src_domain}}\") AND if (\"{{dest_domain}}\" = \"*\", true, dest_domain matches \"{{dest_domain}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_host}}\" = \"*\", true, dest_host matches \"{{dest_host}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|most_recent(msg_summary_withtime) as action, most_recent(_messagetime_withtime) as m_time by dest_host, dest_user\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS z\") as event_time\n| 1000*60*60*24 as Oneday\n| 1 as threshold \n| num(threshold) as threshold\n| ((toMillis(now())-m_time)/oneday) as since_days | format(\"%.2f\", since_days) as since_days_str\n| concat (\"User account was disabled since \", since_days_str, \" days but not yet deleted.\") as Remark\n| where (action  != \"A user account was deleted\")\n| where since_days >= threshold\n| sort by since_days\n| fields - m_time, Oneday, since_days_str, action, since_days, threshold",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel889ea06ba2d97b40",
+      "title": "User Account Password Reset",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 \"EventCode = 4724;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where eventCode=\"4724\"\n| comp_name as dest_host\n| timeslice 1s\n|where if (\"{{eventcode}}\" = \"*\", true, eventcode matches \"{{eventcode}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_domain}}\" = \"*\", true, src_domain matches \"{{src_domain}}\") AND if (\"{{dest_domain}}\" = \"*\", true, dest_domain matches \"{{dest_domain}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_host}}\" = \"*\", true, dest_host matches \"{{dest_host}}\") AND if (\"{{dest_user}}\" = \"*\", true, dest_user matches \"{{dest_user}}\")\n|count as eventCount by _timeslice, dest_host, dest_user, dest_domain, src_user, src_domain, msg_summary, eventCode\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "src_host",
+      "displayName": "src_host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 \"EventCode = 4724;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where eventCode=\"4724\"\n| comp_name as dest_host\n| timeslice 1s",
+        "field": "src_host"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "eventcode",
+      "displayName": "eventcode",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 \"EventCode = 4724;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where eventCode=\"4724\"\n| comp_name as dest_host\n| timeslice 1s",
+        "field": "eventcode"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_user",
+      "displayName": "dest_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 \"EventCode = 4724;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where eventCode=\"4724\"\n| comp_name as dest_host\n| timeslice 1s",
+        "field": "dest_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_domain",
+      "displayName": "src_domain",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 \"EventCode = 4724;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where eventCode=\"4724\"\n| comp_name as dest_host\n| timeslice 1s",
+        "field": "src_domain"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_domain",
+      "displayName": "dest_domain",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 \"EventCode = 4724;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where eventCode=\"4724\"\n| comp_name as dest_host\n| timeslice 1s",
+        "field": "dest_domain"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_user",
+      "displayName": "src_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 \"EventCode = 4724;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where eventCode=\"4724\"\n| comp_name as dest_host\n| timeslice 1s",
+        "field": "src_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "logon_type",
+      "displayName": "logon_type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 \"EventCode = 4724;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where eventCode=\"4724\"\n| comp_name as dest_host\n| timeslice 1s",
+        "field": "logon_type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 \"EventCode = 4724;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where eventCode=\"4724\"\n| comp_name as dest_host\n| timeslice 1s",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_host",
+      "displayName": "dest_host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 \"EventCode = 4724;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where eventCode=\"4724\"\n| comp_name as dest_host\n| timeslice 1s",
+        "field": "dest_host"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_port",
+      "displayName": "src_port",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 \"EventCode = 4724;\"\n| parse \"EventCode = *;\" as eventCode nodrop\n| parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop\n| parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop\n| parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r]+)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop\n| where eventCode=\"4724\"\n| comp_name as dest_host\n| timeslice 1s",
+        "field": "src_port"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

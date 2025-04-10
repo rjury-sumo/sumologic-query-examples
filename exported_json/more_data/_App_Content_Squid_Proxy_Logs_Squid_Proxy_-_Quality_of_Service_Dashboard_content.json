@@ -1,0 +1,259 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Squid Proxy - Quality of Service",
+  "description": "The Squid Proxy -  Quality of Service dashboard provides insights into latency, the response time of requests according to HTTP action, and the response time according to location.",
+  "title": "Squid Proxy - Quality of Service",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel501C9A18BD6E9A42",
+        "structure": "{\"height\":9,\"width\":11,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelAA81B48F9649394F",
+        "structure": "{\"height\":9,\"width\":13,\"x\":11,\"y\":0}"
+      },
+      {
+        "key": "panel230F0DCE9F3AA944",
+        "structure": "{\"height\":6,\"width\":11,\"x\":0,\"y\":9}"
+      },
+      {
+        "key": "panel0FAB921188C14A4E",
+        "structure": "{\"height\":6,\"width\":11,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panel30F6E5F582D3AB41",
+        "structure": "{\"height\":6,\"width\":13,\"x\":11,\"y\":9}"
+      },
+      {
+        "key": "panelD7B64E828625A84E",
+        "structure": "{\"height\":6,\"width\":13,\"x\":11,\"y\":15}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel501C9A18BD6E9A42",
+      "title": "Destination Experiencing avg response time more than 5 Seconds ",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| lookup latitude, longitude from geo://location on ip=peerhost\n| avg (elapsed) as avg_elapsed by latitude, longitude \n| round(avg_elapsed)\n| avg_elapsed/1000 as avg_elapsed\n| where  avg_elapsed> 0\n| sort by -  avg_elapsed \n| where !isNull(latitude)\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelAA81B48F9649394F",
+      "title": "Overall Content Response Time (ms)",
+      "visualSettings": "{\"series\":{},\"overrides\":[],\"legend\":{\"enabled\":false},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(elapsed/bucket_size)*bucket_size,ceil(elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n| count as requests by response_time \n| sort by + response_time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel230F0DCE9F3AA944",
+      "title": "Cacheable Content Response Time (ms)",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\"},\"series\":{},\"color\":{\"family\":\"Categorical Dark\"},\"overrides\":[],\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where action matches \"*_HIT\" or action matches \"*_MISS\"\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(elapsed/bucket_size)*bucket_size,ceil(elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n| count as requests by response_time \n| sort by + response_time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0FAB921188C14A4E",
+      "title": "Response Time For TCP_TUNNEL Action (ms)",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where action matches \"*_TUNNEL\"\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(elapsed/bucket_size)*bucket_size,ceil(elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n| count as requests by response_time \n| sort by + response_time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel30F6E5F582D3AB41",
+      "title": "Response Time For TCP_MISS Action (ms) ",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\"},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Diverging 1\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where action matches \"TCP_MISS\"\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(elapsed/bucket_size)*bucket_size,ceil(elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n| count as requests by response_time \n| sort by + response_time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelD7B64E828625A84E",
+      "title": "Response Time For TCP_DENIED Action (ms) ",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\"},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Diverging 2\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where action matches \"TCP_DENIED\"\n| 100 as bucket_size // use 0.1 second as the bucket size\n| floor(elapsed/bucket_size)*bucket_size as response_time\n| format(\"%.0f-%.0f\",floor(elapsed/bucket_size)*bucket_size,ceil(elapsed/bucket_size)*bucket_size) as response_time_str\n| if (response_time > 10*bucket_size, format(\">%.0f\",10*bucket_size),response_time_str) as response_time\n| count as requests by response_time \n| sort by + response_time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "proxy_cluster",
+      "displayName": "proxy_cluster",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "_sourceCategory = Labs/squid* proxy_system=squidproxy component=proxy",
+        "key": "proxy_cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host",
+      "displayName": "host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "proxy_system=squidproxy proxy_cluster={{proxy_cluster}}",
+        "key": "host"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

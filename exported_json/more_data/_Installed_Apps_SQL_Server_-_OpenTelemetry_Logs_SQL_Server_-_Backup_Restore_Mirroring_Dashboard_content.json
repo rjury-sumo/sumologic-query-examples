@@ -1,0 +1,276 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "SQL Server - Backup Restore Mirroring",
+  "description": "SQL Server - Backup Restore Mirroring provides information about : \n- Transaction log backup events\n- Database backup events\n- Restore activities\n- Backup failures and reasons\n- Mirroring errors",
+  "title": "SQL Server - Backup Restore Mirroring",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "9e35882821c4dc1d083f5c8d5dce08c9": [
+        "*"
+      ],
+      "a67e9617e48c787b5fb4386c66af65a8": [
+        "*"
+      ],
+      "8de51f6232363b0f1a6883b3f8c7ee06": [
+        "*"
+      ],
+      "c79f9332f8522d1aea2ed19166f505e5": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "databases"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel0A47DDB58FCEFB4D",
+        "structure": "{\"height\":9,\"width\":8,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel4457699B93435A45",
+        "structure": "{\"height\":8,\"width\":8,\"x\":16,\"y\":9}"
+      },
+      {
+        "key": "panel6FB49074949CEA43",
+        "structure": "{\"height\":8,\"width\":8,\"x\":0,\"y\":9}"
+      },
+      {
+        "key": "panel85C99F32BBD09A4E",
+        "structure": "{\"height\":9,\"width\":8,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panelDDC1EC7BA9EC984F",
+        "structure": "{\"height\":8,\"width\":8,\"x\":8,\"y\":9}"
+      },
+      {
+        "key": "panelFBB590F8AEDCDB4D",
+        "structure": "{\"height\":9,\"width\":8,\"x\":16,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel0A47DDB58FCEFB4D",
+      "title": "Transaction Log Backed Up",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\"},\"series\":{},\"legend\":{\"enabled\":false},\"axes\":{\"axisX\":{\"title\":\"\"},\"axisY\":{\"title\":\"count\"}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}}  sumo.datasource=sqlserver backup | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse \"Backup      Database backed up. Database: *, creation date(time): *, first LSN: *, last LSN: *, number of dump devices: *, device information: *. This is an informational message only. No user action is required.\" as database, creation_time, first_lsn, last_lsn, dump_devices, device_info\n| timeslice 1d\n| count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4457699B93435A45",
+      "title": "Mirroring Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\"},\"series\":{},\"overrides\":[],\"color\":{\"family\":\"Diverging 2\"},\"axes\":{\"axisX\":{\"title\":\"\"},\"axisY\":{\"title\":\"count\"}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver mirror* | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse \"A * has occurred while attempting to establish a connection to availability replica '*' with id [*].\" as reason, replica, replicaID nodrop\n| parse \"An error occurred in a Service Broker/Database Mirroring transport connection endpoint, Error: *, State: *. (Near endpoint role: *, far endpoint address: *)\" as error, state, near_endpoint, far_endpoint\n| timeslice 1d\n| count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6FB49074949CEA43",
+      "title": "Backup Failures",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\"},\"series\":{},\"color\":{\"family\":\"Diverging 2\"},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver backup !Restore !\"[180] Job\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse \"BackupDiskFile::*: Backup device '*' * to *. Operating system error *(*).\" as media, backup_path, backup_status, operation, error_code, reason nodrop\n| parse \"Backup      BackupIoRequest::ReportIoError: * * on backup device '*'. Operating system error *(*).\" as operation, backup_status, backup_path, error_code, reason nodrop\n| parse \"Extend Disk Backup:  * on backup device '*'. Operating system error *(*).\" as backup_status, backup_path, error_code, reason nodrop\n| parse \"BackupVirtualDeviceFile::RequestDurableMedia: * * on backup device '*'. Operating system error *(*).\" as operation, backup_status, backup_path, error_code, reason nodrop\n| parse \"Backup      BACKUP * to complete the command BACKUP DATABASE *. Check the backup application log for detailed messages.\" as backup_status, database\n| if (backup_status in (\"failed\", \"failure\"), \"Failure\", backup_status) as backup_status\n| timeslice 1d\n| count by _timeslice, backup_status\n| transpose row _timeslice column backup_status",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel85C99F32BBD09A4E",
+      "title": "Database Backed Up",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"fillOpacity\":1,\"displayType\":\"default\"},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"title\":\"\"},\"axisY\":{\"title\":\"count\"}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}}  sumo.datasource=sqlserver backup | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse \"Backup      Database backed up. Database: *, creation date(time): *, pages dumped: *, first LSN: *, last LSN: *, number of dump devices: *, device information: *. This is an informational message only. No user action is required.\" as database, creation_time, pages_dumped, first_lsn, last_lsn,dump_devices, device_info\n| timeslice 1d\n| count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelDDC1EC7BA9EC984F",
+      "title": "Backup Failure Reasons",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}} sumo.datasource=sqlserver !Restore !\"[180] Job\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse \"BackupDiskFile::*: Backup device '*' * to *. Operating system error *(*).\" as media, backup_path, backup_status, operation, error_code, reason nodrop\n| parse \"Backup      BackupIoRequest::ReportIoError: * * on backup device '*'. Operating system error *(*).\" as operation, backup_status, backup_path, error_code, reason nodrop\n| parse \"Extend Disk Backup:  * on backup device '*'. Operating system error *(*).\" as backup_status, backup_path, error_code, reason nodrop\n| parse \"BackupVirtualDeviceFile::RequestDurableMedia: * * on backup device '*'. Operating system error *(*).\" as operation, backup_status, backup_path, error_code, reason nodrop\n| parse \"Backup      BACKUP * to complete the command BACKUP DATABASE *. Check the backup application log for detailed messages.\" as backup_status, database\n| if (backup_status in (\"failed\", \"failure\"), \"Failure\", backup_status) as backup_status\n| if (reason = \"\" or isNull(reason), \"Unknown\", reason) as reason \n| count as count by reason | sort by count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelFBB590F8AEDCDB4D",
+      "title": "Restore Activity",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"overrides\":[],\"color\":{\"family\":\"Colorsafe\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} db.node.name={{db.node.name}}  sumo.datasource=sqlserver (restore or restoring) | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as _raw \n| parse \"Backup      Restore is * on database '*'.  The database is now available.\" as restore_status, database nodrop\n| parse \"The database * is marked * and is in a state that does not allow recovery to be run.\" as database, restore_status\n| timeslice 1d\n| count by _timeslice, restore_status\n| transpose row _timeslice column restore_status",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "sumo.datasource=sqlserver",
+        "key": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "deployment.environment={{deployment.environment}} sumo.datasource=sqlserver",
+        "key": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "db.node.name",
+      "displayName": "db.node.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "sumo.datasource=sqlserver deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}}",
+        "key": "db.node.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

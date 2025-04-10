@@ -1,0 +1,181 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Trend Micro - Deep Security - Web Reputation",
+  "description": "Trend Micro - Deep Security - Web Reputation visualizes the last 24 hours of web reputation events in a timeline column chart. Also highlights top 5 computers and URLs with web reputation events through concise table charts.",
+  "title": "Trend Micro - Deep Security - Web Reputation",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel4ce6489caf400b48",
+        "structure": "{\"width\":16,\"height\":19,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel52e7688cae5d5949",
+        "structure": "{\"width\":8,\"height\":9,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel9bc9b0f694ecd94b",
+        "structure": "{\"width\":8,\"height\":10,\"x\":16,\"y\":7}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel4ce6489caf400b48",
+      "title": "Web Reputation Event History",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[{\"series\":[\"blocked by administrator\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"dangerous\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"suspicious\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"highly suspicious\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"untested\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| extract \"CEF:\\s*0\\|(?<Device_Vendor>.*)\\|(?<Device_Product>.*)\\|(?<Device_Version>.*)\\|(?<Signature_ID>.*)\\|(?<Name>.*)\\|(?<Severity>.*)\\|(?<Extension>.*)\" \n| where signature_id >= 5000000 AND signature_id <= 5999999 | \"Web Reputation\" as deepsecuritysource\n| parse regex field=extension \"msg=(?<Message>.+?)$\" nodrop \n| if (message matches \"Blocked By Administrator\", \"Blocked\", message) as message\n| timeslice 30m\n|where if (\"{{severity}}\" = \"*\", true, severity matches \"{{severity}}\") AND if (\"{{signature_id}}\" = \"*\", true, signature_id matches \"{{signature_id}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n|count _timeslice, message | transpose row _timeslice column message",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel52e7688cae5d5949",
+      "title": "Top 5 Computers for Web Reputation Events",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}} \n| extract \"CEF:\\s*0\\|(?<Device_Vendor>.*)\\|(?<Device_Product>.*)\\|(?<Device_Version>.*)\\|(?<Signature_ID>.*)\\|(?<Name>.*)\\|(?<Severity>.*)\\|(?<Extension>.*)\"\n| where signature_id >= 5000000 AND signature_id <= 5999999\n| parse regex field=extension \"dvchost=(?<Device_Hostname>.+?)\\s\\w+?=\" nodrop\n|where if (\"{{severity}}\" = \"*\", true, severity matches \"{{severity}}\") AND if (\"{{signature_id}}\" = \"*\", true, signature_id matches \"{{signature_id}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n|count Device_Hostname | top 5 Device_Hostname  by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9bc9b0f694ecd94b",
+      "title": "Top 5 URLs for Web Reputation Events",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \n| extract \"CEF:\\s*0\\|(?<Device_Vendor>.*)\\|(?<Device_Product>.*)\\|(?<Device_Version>.*)\\|(?<Signature_ID>.*)\\|(?<Name>.*)\\|(?<Severity>.*)\\|(?<Extension>.*)\"\n| where signature_id >= 5000000 AND signature_id <= 5999999\n| parse regex field=extension \"request=(?<URL>.+?)\\s\\w+?=\" nodrop\n|where if (\"{{severity}}\" = \"*\", true, severity matches \"{{severity}}\") AND if (\"{{signature_id}}\" = \"*\", true, signature_id matches \"{{signature_id}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n|count URL | top 5 URL  by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "name",
+      "displayName": "name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}} \n| extract \"CEF:\\s*0\\|(?<Device_Vendor>.*)\\|(?<Device_Product>.*)\\|(?<Device_Version>.*)\\|(?<Signature_ID>.*)\\|(?<Name>.*)\\|(?<Severity>.*)\\|(?<Extension>.*)\"\n| count by name",
+        "field": "name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "severity",
+      "displayName": "severity",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}} \n| extract \"CEF:\\s*0\\|(?<Device_Vendor>.*)\\|(?<Device_Product>.*)\\|(?<Device_Version>.*)\\|(?<Signature_ID>.*)\\|(?<Name>.*)\\|(?<Severity>.*)\\|(?<Extension>.*)\"\n| count by Severity",
+        "field": "severity"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "signature_id",
+      "displayName": "signature_id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}} \n| extract \"CEF:\\s*0\\|(?<Device_Vendor>.*)\\|(?<Device_Product>.*)\\|(?<Device_Version>.*)\\|(?<Signature_ID>.*)\\|(?<Name>.*)\\|(?<Severity>.*)\\|(?<Extension>.*)\"\n| count by Signature_ID",
+        "field": "signature_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

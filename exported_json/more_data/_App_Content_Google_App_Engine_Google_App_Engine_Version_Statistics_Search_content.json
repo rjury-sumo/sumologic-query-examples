@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Google App Engine Version Statistics",
+  "search": {
+    "queryText": "_sourceCategory = Labs/GCP/appengine logName resource timestamp\n| json \"message.data.resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"gae_app\" and log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| parse regex \"\\s+\\\"resourceName\\\":\\\"apps/(?<project>\\S+)/services/(?<service>\\S+)/versions/(?<version>\\S+)\\\"\"\n| json \"message.data.protoPayload.methodName\", \"message.data.severity\" as method, severity\n\n| if (method matches \"*UpdateVersion\", 1, 0) as updte\n| if (method matches \"*CreateVersion\", 1, 0) as create\n| if (method matches \"*DeleteVersion\", 1, 0) as delete\n| if (severity matches \"WARNING\", 1, 0) as warning\n| if (severity matches \"ERROR\", 1, 0) as error\n| if (severity matches \"CRITICAL\", 1, 0) as critical\n| if (severity matches \"ALERT\", 1, 0) as alert\n| if (severity matches \"EMERGENCY\", 1, 0) as emergency\n\n| sum(updte) as updates, sum(delete) as deletes, sum(create) as creates, sum(warning) as warnings, sum(error) as errors, sum(critical) as criticals, sum(alert) as alerts, sum(emergency) as emergencies by version, service, project\n| updates+deletes+creates as total_activity\n| warnings+errors+criticals+alerts+emergencies as total_severity\n| fields project, service, version, total_activity, creates, updates, deletes, total_severity, emergencies, alerts, criticals, errors, warnings\n| sort by total_activity",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-60m"
+  },
+  "searchSchedule": null,
+  "description": "Gives the application lifecycle and severe message activity over the last hour on  a per app basis."
+}

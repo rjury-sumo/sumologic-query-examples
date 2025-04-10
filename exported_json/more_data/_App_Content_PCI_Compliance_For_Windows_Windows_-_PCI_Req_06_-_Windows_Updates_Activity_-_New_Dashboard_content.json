@@ -1,0 +1,266 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Windows - PCI Req 06 - Windows Updates Activity - New",
+  "description": "Handles PCI Req 06 (Windows Updates)",
+  "title": "Windows - PCI Req 06 - Windows Updates Activity - New",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1w"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel323665d48fd3fb4a",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panela4c1ff82ae156a47",
+        "structure": "{\"width\":12,\"height\":5,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel83d53ce39e86284c",
+        "structure": "{\"width\":12,\"height\":5,\"x\":12,\"y\":5}"
+      },
+      {
+        "key": "panel52fe444db7e15b49",
+        "structure": "{\"width\":12,\"height\":5,\"x\":0,\"y\":9}"
+      },
+      {
+        "key": "panelce4d765e8706684b",
+        "structure": "{\"width\":12,\"height\":5,\"x\":12,\"y\":9}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel52fe444db7e15b49",
+      "title": "Windows Update Summary by Host",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System (19 or 20) (\"EventCode = 19;\" or \"EventCode = 20;\")\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse \"Message = \\\"*\\\";\" as msg_summary nodrop\n| parse field=msg_summary \"Installation Successful: Windows successfully installed the following update: *\" as Update nodrop\n| parse field=msg_summary \"Installation Failure: Windows failed to install the following update with error *: *\" as errorCode, Update nodrop\n| if(msg_summary matches \"Installation Failure*\", \"Update/Failure\", if (msg_summary matches \"Installation Successful*\", \"Update/Success\", \"Update/Attempt\")) as %\"Installation Status\"\n| comp_name as %\"Destination Host\"\n| withtime %\"Installation Status\"\n|where if (\"{{destinationhost}}\" = \"*\", true, destination host matches \"{{destinationhost}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{update}}\" = \"*\", true, update matches \"{{update}}\") AND if (\"{{installationstatus}}\" = \"*\", true, installation status matches \"{{installationstatus}}\")\n|most_recent(%\"Installation Status_withtime\") as %\"LastStatus\" by %\"Destination Host\", update\n| count by %\"Destination Host\", %\"LastStatus\"\n| transpose row %\"Destination Host\" column %\"LastStatus\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela4c1ff82ae156a47",
+      "title": "Recent Windows Update Failures",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System (19 or 20) (\"EventCode = 19;\" or \"EventCode = 20;\")\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse \"Message = \\\"*\\\";\" as msg_summary nodrop | parse \"User = \\\"*\\\";\" as src_user nodrop | parse field=src_user \"*\\\\*\" as src_domain, src_user nodrop \n| parse field=msg_summary \"Installation Successful: Windows successfully installed the following update: *\" as Update nodrop\n| parse field=msg_summary \"Installation Failure: Windows failed to install the following update with error *: *\" as errorCode, Update nodrop\n| if(msg_summary matches \"Installation Failure*\", \"Update/Failure\", if (msg_summary matches \"Installation Successful*\", \"Update/Success\", \"Update/Attempt\")) as %\"Installation Status\"\n| fields -_raw | comp_name as %\"Destination Host\"\n| timeslice 1s\n| withtime %\"Installation Status\"\n|where if (\"{{destinationhost}}\" = \"*\", true, destination host matches \"{{destinationhost}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_domain}}\" = \"*\", true, src_domain matches \"{{src_domain}}\") AND if (\"{{update}}\" = \"*\", true, update matches \"{{update}}\") AND if (\"{{installationstatus}}\" = \"*\", true, installation status matches \"{{installationstatus}}\")\n|most_recent(%\"Installation Status_withtime\") as %\"LastStatus\" by %\"Destination Host\", update, _timeslice\n| where %\"LastStatus\"=\"Update/Failure\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelce4d765e8706684b",
+      "title": "Windows Update Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System (19 or 20) (\"EventCode = 19;\" or \"EventCode = 20;\")\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse \"Message = \\\"*\\\";\" as msg_summary nodrop\n| parse field=msg_summary \"Installation Successful: Windows successfully installed the following update: *\" as Update nodrop\n| parse field=msg_summary \"Installation Failure: Windows failed to install the following update with error *: *\" as errorCode, Update nodrop\n| where !isEmpty(Update)\n| if(msg_summary matches \"Installation Failure*\", \"Update/Failure\", if (msg_summary matches \"Installation Successful*\", \"Update/Success\", \"Update/Attempt\")) as %\"Installation Status\"\n| comp_name as %\"Destination Host\"\n| withtime %\"Installation Status\"\n|where if (\"{{destinationhost}}\" = \"*\", true, destination host matches \"{{destinationhost}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{update}}\" = \"*\", true, update matches \"{{update}}\") AND if (\"{{installationstatus}}\" = \"*\", true, installation status matches \"{{installationstatus}}\")\n|most_recent(%\"Installation Status_withtime\") as %\"LastStatus\" by %\"Destination Host\", update\n| count_distinct(%\"Destination Host\") as %\"Hosts\" by LastStatus, update\n| transpose row update column LastStatus",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel83d53ce39e86284c",
+      "title": "Windows Update Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[{\"series\":[\"update/success\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"update/failure\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System (19 or 20) (\"EventCode = 19;\" or \"EventCode = 20;\")\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse \"Message = \\\"*\\\";\" as msg_summary nodrop\n| parse field=msg_summary \"Installation Successful: Windows successfully installed the following update: *\" as Update nodrop\n| parse field=msg_summary \"Installation Failure: Windows failed to install the following update with error *: *\" as errorCode, Update nodrop\n| if(msg_summary matches \"Installation Failure*\", \"Update/Failure\", if (msg_summary matches \"Installation Successful*\", \"Update/Success\", \"Update/Attempt\")) as %\"Installation Status\"\n| comp_name as %\"Destination Host\"\n| timeslice 1h\n| withtime %\"Installation Status\"\n|where if (\"{{destinationhost}}\" = \"*\", true, destination host matches \"{{destinationhost}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{update}}\" = \"*\", true, update matches \"{{update}}\") AND if (\"{{installationstatus}}\" = \"*\", true, installation status matches \"{{installationstatus}}\")\n|most_recent(%\"Installation Status_withtime\") as %\"LastStatus\" by %\"Destination Host\", update, _timeslice\n| count_distinct(%\"Destination Host\") by LastStatus, _timeslice\n| transpose row _timeslice column LastStatus",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel323665d48fd3fb4a",
+      "title": "All Windows Updates",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System (19 or 20) (\"EventCode = 19;\" or \"EventCode = 20;\")\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse \"Message = \\\"*\\\";\" as msg_summary nodrop | parse \"User = \\\"*\\\";\" as src_user nodrop | parse field=src_user \"*\\\\*\" as src_domain, src_user nodrop \n| parse field=msg_summary \"Installation Successful: Windows successfully installed the following update: *\" as Update nodrop\n| parse field=msg_summary \"Installation Failure: Windows failed to install the following update with error *: *\" as errorCode, Update nodrop\n| if(msg_summary matches \"Installation Failure*\", \"Update/Failure\", if (msg_summary matches \"Installation Successful*\", \"Update/Success\", \"Update/Attempt\")) as %\"Installation Status\"\n| fields -_raw | comp_name as %\"Destination Host\"\n| timeslice 1s\n|where if (\"{{destinationhost}}\" = \"*\", true, destination host matches \"{{destinationhost}}\") AND if (\"{{src_user}}\" = \"*\", true, src_user matches \"{{src_user}}\") AND if (\"{{src_domain}}\" = \"*\", true, src_domain matches \"{{src_domain}}\") AND if (\"{{update}}\" = \"*\", true, update matches \"{{update}}\") AND if (\"{{installationstatus}}\" = \"*\", true, installation status matches \"{{installationstatus}}\")\n|count by _timeslice, %\"Destination Host\", update, %\"Installation Status\", errorCode, src_user, src_domain, eventCode",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "src_domain",
+      "displayName": "src_domain",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System (19 or 20) (\"EventCode = 19;\" or \"EventCode = 20;\")\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse \"Message = \\\"*\\\";\" as msg_summary nodrop\n| parse field=msg_summary \"Installation Successful: Windows successfully installed the following update: *\" as Update nodrop\n| parse field=msg_summary \"Installation Failure: Windows failed to install the following update with error *: *\" as errorCode, Update nodrop\n| if(msg_summary matches \"Installation Failure*\", \"Update/Failure\", if (msg_summary matches \"Installation Successful*\", \"Update/Success\", \"Update/Attempt\")) as %\"Installation Status\"\n| comp_name as %\"Destination Host\"\n| timeslice 1h\n| withtime %\"Installation Status\"",
+        "field": "src_domain"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "destinationhost",
+      "displayName": "destinationhost",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System (19 or 20) (\"EventCode = 19;\" or \"EventCode = 20;\")\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse \"Message = \\\"*\\\";\" as msg_summary nodrop\n| parse field=msg_summary \"Installation Successful: Windows successfully installed the following update: *\" as Update nodrop\n| parse field=msg_summary \"Installation Failure: Windows failed to install the following update with error *: *\" as errorCode, Update nodrop\n| if(msg_summary matches \"Installation Failure*\", \"Update/Failure\", if (msg_summary matches \"Installation Successful*\", \"Update/Success\", \"Update/Attempt\")) as %\"Installation Status\"\n| comp_name as %\"Destination Host\"\n| timeslice 1h\n| withtime %\"Installation Status\"",
+        "field": "destination host"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_user",
+      "displayName": "src_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System (19 or 20) (\"EventCode = 19;\" or \"EventCode = 20;\")\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse \"Message = \\\"*\\\";\" as msg_summary nodrop\n| parse field=msg_summary \"Installation Successful: Windows successfully installed the following update: *\" as Update nodrop\n| parse field=msg_summary \"Installation Failure: Windows failed to install the following update with error *: *\" as errorCode, Update nodrop\n| if(msg_summary matches \"Installation Failure*\", \"Update/Failure\", if (msg_summary matches \"Installation Successful*\", \"Update/Success\", \"Update/Attempt\")) as %\"Installation Status\"\n| comp_name as %\"Destination Host\"\n| timeslice 1h\n| withtime %\"Installation Status\"",
+        "field": "src_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "installationstatus",
+      "displayName": "installationstatus",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System (19 or 20) (\"EventCode = 19;\" or \"EventCode = 20;\")\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse \"Message = \\\"*\\\";\" as msg_summary nodrop\n| parse field=msg_summary \"Installation Successful: Windows successfully installed the following update: *\" as Update nodrop\n| parse field=msg_summary \"Installation Failure: Windows failed to install the following update with error *: *\" as errorCode, Update nodrop\n| if(msg_summary matches \"Installation Failure*\", \"Update/Failure\", if (msg_summary matches \"Installation Successful*\", \"Update/Success\", \"Update/Attempt\")) as %\"Installation Status\"\n| comp_name as %\"Destination Host\"\n| timeslice 1h\n| withtime %\"Installation Status\"",
+        "field": "installation status"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "update",
+      "displayName": "update",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=System (19 or 20) (\"EventCode = 19;\" or \"EventCode = 20;\")\n| parse \"EventCode = *;\" as eventCode nodrop | parse \"Computer = \\\"*\\\";\" as comp_name nodrop | parse \"ComputerName = \\\"*\\\";\" as comp_name nodrop | parse \"Message = \\\"*\\\";\" as msg_summary nodrop\n| parse field=msg_summary \"Installation Successful: Windows successfully installed the following update: *\" as Update nodrop\n| parse field=msg_summary \"Installation Failure: Windows failed to install the following update with error *: *\" as errorCode, Update nodrop\n| if(msg_summary matches \"Installation Failure*\", \"Update/Failure\", if (msg_summary matches \"Installation Successful*\", \"Update/Success\", \"Update/Attempt\")) as %\"Installation Status\"\n| comp_name as %\"Destination Host\"\n| timeslice 1h\n| withtime %\"Installation Status\"",
+        "field": "update"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

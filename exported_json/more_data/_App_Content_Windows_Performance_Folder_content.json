@@ -1,0 +1,909 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Windows Performance",
+  "description": "The Sumo Logic application for Windows Performance provides insight into your system's operation and events so that you can better manage and maintain your Windows systems. The app uses predefined Dashboards and Searches that provide visibility into your environment for real time analysis of overall usage: CPU Performance, Disk Performance, Memory Performance, Network Performance, and Generic IO Performance.",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Alert - Hosts with High CPU during Last 15 mins",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfOS_Processor\" \"_Total\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PercentProcessorTime\" as procTime\n| timeslice 1m \n| avg(procTime) as AvgProcTime by host,_timeslice \n// High CPU Threshold: 80%\n| where AvgProcTime>= 80\n| count as DataPoints by host \n// Second threshold: The cpu is high for at least 10 minutes within the last 15mins\n| where DataPoints >= 10",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": "Schedule this alert to run for every 15 mins and for the last 15 minutes. Alert thresholds can be changed in the query."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Alert - Hosts with Low Available Memory in Last 15 Minutes",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfOS_Memory\" \"AvailableBytes\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"AvailableBytes\" as aBytes\n| timeslice 1m\n| avg(aBytes) as AvgAvailableBytes by host,_timeslice \n| int(AvgAvailableBytes/(1024*1024)) as AvgAvailMBytes \n// 100MB is the threshold for this alert\n| where AvgAvailMBytes < 100 \n| count as DataPoints by host \n// another threshold: more than 10 minutes where the limit drops under the above threshold\n| where DataPoints >10",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": "Schedule this alert to run for every 15 mins and for the last 15 minutes. Alert thresholds can be changed inside the query."
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Avg IO Reads (per Second) per Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" \"_Total\" \"IOReadOperationsPersec\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"IOReadOperationsPersec\",\"Name\" as ioReads,procName | where procName = \"_Total\"\n| timeslice 1m \n| avg(ioReads) as AvgIOReads by host, _timeslice | sort - _timeslice\n| transpose row _timeslice column host",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Avg IO Reads (per Second) per Process and Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" !\"_Total\" \"IOReadOperationsPersec\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"IOReadOperationsPersec\",\"Name\" as ioReads,procName | where procName != \"_Total\"\n| avg(ioReads) as AvgIOReads by host, procName\n| transpose row host column procName",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Avg IO Writes (per Second) per Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" \"_Total\" \"IOWriteOperationsPersec\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"IOWriteOperationsPersec\",\"Name\" as ioWrites,procName | where procName = \"_Total\"\n| timeslice 1m \n| avg(ioWrites) as AvgIOWrites by host, _timeslice | sort - _timeslice\n| transpose row _timeslice column host",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Avg IO Writes (per Second) per Process and Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" !\"_Total\" \"IOWriteOperationsPersec\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"IOWriteOperationsPersec\",\"Name\" as ioWrites,procName | where procName != \"_Total\"\n| avg(ioWrites) as AvgIOWrites by host, procName\n| transpose row host column procName",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Avg MBytes Read by Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" \"_Total\" \"IOReadBytesPersec\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"IOReadBytesPersec\",\"Name\" as ioReadBytes,procName | where procName = \"_Total\"\n| timeslice 1m \n| avg(ioReadBytes) as AvgIOReadBytes by host, _timeslice | sort - _timeslice | int(AvgIOReadBytes/(1025*1024)) as AvgIOReadMBytes | fields - AvgIOReadBytes\n| transpose row _timeslice column host",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Avg MBytes Written by Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" \"_Total\" \"IOWriteBytesPersec\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"IOWriteBytesPersec\",\"Name\" as ioWriteBytes,procName | where procName = \"_Total\"\n| timeslice 1m \n| avg(ioWriteBytes) as AvgIOWriteBytes by host, _timeslice | sort - _timeslice | int(AvgIOWriteBytes/(1025*1024)) as AvgIOWriteMBytes | fields - AvgIOWriteBytes\n| transpose row _timeslice column host",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Avg Other IO Operations (per Second) per Process and Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" !\"_Total\" \"IOOtherOperationsPersec\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"IOOtherOperationsPersec\",\"Name\" as ioOthers,procName | where procName != \"_Total\"\n| avg(ioOthers) as AvgIOOther by host, procName\n| transpose row host column procName",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Avg Other IO Operations per Host",
+      "search": {
+        "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" \"_Total\" \"IOOtherOperationsPersec\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"IOOtherOperationsPersec\",\"Name\" as ioOthers,procName | where procName = \"_Total\"\n| timeslice 1m \n| avg(ioOthers) as AvgIOOthers by host, _timeslice | sort - _timeslice\n| transpose row _timeslice column host",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "DashboardSyncDefinition",
+      "name": "CPU Performance",
+      "description": "",
+      "detailLevel": 2,
+      "properties": "{\"showColumnTitles\":false,\"layoutType\":\"gridster\",\"colorFamily\":2}",
+      "panels": [
+        {
+          "name": "Avg CPU Usage (%) by Host",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfOS_Processor\" \"_Total\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PercentProcessorTime\" as procTime\n| timeslice 1m\n| avg(procTime) as AvgProcTime by host,_timeslice | sort - _timeslice | transpose row _timeslice column host ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":9,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925733",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Privileged and User CPU Time (%) per Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfOS_Processor\" \"_Total\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop\n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PercentPrivilegedTime\",\"PercentUserTime\" as privTime,userTime\n| avg(userTime) as AvgUserTime, avg(privTime) as AvgPrivTime by host ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 13,
+          "y": 1,
+          "width": 12,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"3\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925732",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Top 10 Processes by Avg Processor Time (%) per Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" !\"_Total\" \"PercentProcessorTime\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PercentProcessorTime\",\"CreatingProcessID\",\"Name\" as procTime,procID,procName\n| avg(procTime) as AvgProcTime by host,procName,procID | sort by -AvgProcTime \n| 1 as dummy | accum dummy by host\n| where _accum<11 \n| fields - procID, dummy, _accum | transpose row host column procName",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 7,
+          "width": 8,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":2,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925731",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Top 10 Processes by Avg Privileged Time (%) per Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" !\"_Total\" \"PercentPrivilegedTime\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PercentPrivilegedTime\",\"CreatingProcessID\", \"Name\" as procUserTime,procID,procName\n| avg(procUserTime) as AvgProcUserTime by host,procID,procName | sort by -AvgProcUserTime\n| 1 as dummy | accum dummy by host\n| where _accum<11 \n| fields - procID, dummy, _accum | transpose row host column procname ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 9,
+          "y": 7,
+          "width": 8,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":6,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925735",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Top 10 Processes by Avg User Time (%) per Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" !\"_Total\" \"PercentUserTime\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PercentUserTime\",\"CreatingProcessID\", \"Name\" as procUserTime,procID,procName\n| avg(procUserTime) as AvgProcUserTime by host,procID,procName | sort by -AvgProcUserTime\n| 1 as dummy | accum dummy by host\n| where _accum<11 \n| fields - procID, dummy, _accum | transpose row host column procname ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 17,
+          "y": 7,
+          "width": 8,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":8,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925734",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        }
+      ],
+      "filters": []
+    },
+    {
+      "type": "DashboardSyncDefinition",
+      "name": "Disk Performance",
+      "description": "",
+      "detailLevel": 2,
+      "properties": "{\"showColumnTitles\":false,\"layoutType\":\"gridster\",\"colorFamily\":2}",
+      "panels": [
+        {
+          "name": "Avg Disk Time (%) by Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfDisk_PhysicalDisk\" \"_Total\"  \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PercentIdleTime\",\"PercentDiskReadTime\",\"PercentDiskWriteTime\",\"Name\" as pctDiskIdleTime,pctDiskReadTime,pctDiskWriteTime,procName | where procName = \"_Total\" \n| avg(pctDiskIdleTime) as AvgPctDiskIdleTime, avg(pctDiskReadTime) as AvgPctDiskReadTime, avg(pctDiskWriteTime) as AvgPctDiskWriteTime by host\n| int(AvgPctDiskIdleTime) as IdleTime |  int(AvgPctDiskReadTime) as ReadTime | int(AvgPctDiskWriteTime) as WriteTime | fields - AvgPctDiskIdleTime,AvgPctDiskReadTime,AvgPctDiskWriteTime",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 8,
+          "properties": "{\"version\":2,\"settings\":{\"table\":{\"small\":{\"detailLevel\":\"small\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"bar\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"column\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"line\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"area\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"pie\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"map\":{\"small\":{\"detailLevel\":\"small\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}}}}",
+          "id": "2925739",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Disk Queue Length per Physical Disk per Host",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfDisk_PhysicalDisk\" \"_Total\"  \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"CurrentDiskQueueLength\" as diskQueueLength\n| timeslice 1m \n| avg(diskQueueLength) as AvgDiskQueueLength by host,_timeslice\n| int(AvgDiskQueueLength) as AvgDiskQueueLength \n| transpose row _timeslice column host ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 13,
+          "y": 1,
+          "width": 12,
+          "height": 8,
+          "properties": "{\"version\":2,\"settings\":{\"table\":{\"small\":{\"detailLevel\":\"small\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"bar\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"column\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"line\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"area\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"pie\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"map\":{\"small\":{\"detailLevel\":\"small\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}}}}",
+          "id": "2925741",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Bytes Read and Written per Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfDisk_PhysicalDisk\" \"_Total\"  \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"DiskWriteBytesPersec\",\"DiskReadBytesPersec\" as diskWriteBytes,diskReadBytes \n| avg(diskWriteBytes) as AvgDiskWriteBytes,avg(diskReadBytes) as AvgDiskReadBytes by host\n| int(AvgDiskWriteBytes) as AvgDiskWriteBytes | int(AvgDiskReadBytes) as AvgDiskReadBytes ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 9,
+          "width": 6,
+          "height": 7,
+          "properties": "{\"version\":2,\"settings\":{\"table\":{\"small\":{\"detailLevel\":\"small\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"bar\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"column\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"line\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"area\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"pie\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"map\":{\"small\":{\"detailLevel\":\"small\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}}}}",
+          "id": "2925737",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Read and Write Counts per Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfDisk_PhysicalDisk\" \"_Total\"  \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"DiskReadsPersec\",\"DiskWritesPersec\" as diskReads,diskWrites \n| avg(diskReads) as AvgDiskReads, avg(diskWrites) as AvgDiskWrites by host\n| int(AvgDiskReads) as AvgDiskReads | int(AvgDiskWrites) as AvgDiskWrites ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 7,
+          "y": 9,
+          "width": 6,
+          "height": 7,
+          "properties": "{\"version\":2,\"settings\":{\"table\":{\"small\":{\"detailLevel\":\"small\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"bar\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"column\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"2\",\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"2\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"2\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"line\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"area\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"pie\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"boxplot\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"map\":{\"small\":{\"detailLevel\":\"small\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"svv\":{\"small\":{\"detailLevel\":\"small\",\"version\":1,\"configuration\":{\"colorOverride\":null,\"colorForNoData\":\"#cccccc\",\"valueType\":{\"number\":{\"showNumber\":true,\"valueForNoData\":null,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"},\"string\":{\"valueForNoData\":null}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#595959\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#191919\",\"align\":\"right\"}},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":1,\"configuration\":{\"colorOverride\":null,\"colorForNoData\":\"#cccccc\",\"valueType\":{\"number\":{\"showNumber\":true,\"valueForNoData\":null,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"},\"string\":{\"valueForNoData\":null}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#595959\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#191919\",\"align\":\"right\"}},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":1,\"configuration\":{\"colorOverride\":null,\"colorForNoData\":\"#cccccc\",\"valueType\":{\"number\":{\"showNumber\":true,\"valueForNoData\":null,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"},\"string\":{\"valueForNoData\":null}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#595959\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#191919\",\"align\":\"right\"}},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}}}}",
+          "id": "2925736",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Total RW Operations (per Second) by Physical Disk per Host",
+          "viewerType": "table",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfDisk_PhysicalDisk\" !\"_Total\"  \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"DiskReadsPersec\",\"DiskWritesPersec\",\"Name\" as diskReadsPersec,diskWritesPersec,hddName | where hddName != \"_Total\" \n| (diskReadsPersec+diskWritesPersec) as diskReadsWritesPersec\n| avg(diskReadsWritesPersec) as AvgDiskReadsWrites by host,hddName\n| int(AvgDiskReadsWrites) as AvgDiskReadsWrites  | transpose row host column hddname",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 13,
+          "y": 9,
+          "width": 6,
+          "height": 7,
+          "properties": "{\"version\":2,\"settings\":{\"table\":{\"small\":{\"detailLevel\":\"small\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"bar\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"column\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"line\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"area\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"pie\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"map\":{\"small\":{\"detailLevel\":\"small\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}}}}",
+          "id": "2925740",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Total Bytes (per Second) by Physical Disk per Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfDisk_PhysicalDisk\" !\"_Total\"  \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"DiskBytesPersec\",\"Name\" as diskBytes,hddName | where hddName != \"_Total\" \n| avg(diskBytes) as AvgDiskBytes by host,hddName\n| int(AvgDiskBytes) as AvgDiskBytes | transpose row host column hddname",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 19,
+          "y": 9,
+          "width": 6,
+          "height": 7,
+          "properties": "{\"version\":2,\"settings\":{\"table\":{\"small\":{\"detailLevel\":\"small\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null,\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"bar\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"column\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":1,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":1,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":1,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"line\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"area\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}},\"seriesInfo\":{}}}},\"pie\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":false,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"pie\",\"version\":1,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"boxplot\":{\"small\":{\"detailLevel\":\"small\",\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"map\":{\"small\":{\"detailLevel\":\"small\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}},\"svv\":{\"small\":{\"detailLevel\":\"small\",\"version\":1,\"configuration\":{\"colorOverride\":null,\"colorForNoData\":\"#cccccc\",\"valueType\":{\"number\":{\"showNumber\":true,\"valueForNoData\":null,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"},\"string\":{\"valueForNoData\":null}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#595959\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#191919\",\"align\":\"right\"}},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"medium\":{\"detailLevel\":\"medium\",\"version\":1,\"configuration\":{\"colorOverride\":null,\"colorForNoData\":\"#cccccc\",\"valueType\":{\"number\":{\"showNumber\":true,\"valueForNoData\":null,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"},\"string\":{\"valueForNoData\":null}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#595959\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#191919\",\"align\":\"right\"}},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}},\"large\":{\"detailLevel\":\"large\",\"version\":1,\"configuration\":{\"colorOverride\":null,\"colorForNoData\":\"#cccccc\",\"valueType\":{\"number\":{\"showNumber\":true,\"valueForNoData\":null,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"},\"string\":{\"valueForNoData\":null}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#595959\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"color\":\"#191919\",\"align\":\"right\"}},\"drilldown\":{\"fallback\":{\"target\":{\"name\":null}}}}}}}}",
+          "id": "2925738",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        }
+      ],
+      "filters": []
+    },
+    {
+      "type": "DashboardSyncDefinition",
+      "name": "Memory Performance",
+      "description": "",
+      "detailLevel": 2,
+      "properties": "{\"showColumnTitles\":false,\"layoutType\":\"gridster\",\"colorFamily\":3}",
+      "panels": [
+        {
+          "name": "Available Memory (MB) by Host",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfOS_Memory\" \"AvailableBytes\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"AvailableBytes\" as aBytes\n| timeslice 1m\n| avg(aBytes) as AvgAvailableBytes by host,_timeslice \n| int(AvgAvailableBytes/(1024*1024)) as AvgAvailMBytes | fields - AvgAvailableBytes | sort - _timeslice | transpose row _timeslice column host ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 1,
+          "width": 13,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":0,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925742",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg PageFaults per Second by Host",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfOS_Memory\" \"PageFaultsPersec\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PageFaultsPersec\" as pageFaultsPerSec\n| timeslice 1m \n| avg(pageFaultsPersec) as AvgPageFaults by host, _timeslice\n| transpose row _timeslice column host",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 14,
+          "y": 1,
+          "width": 11,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":2,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925744",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Virtual Memory (MB) per Large Process by Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" !\"_Total\" \"VirtualBytes\" \"Name\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"VirtualBytes\",\"Name\" as vBytes, procName\n| avg(vBytes) as AvgVirtualBytes by host,procName \n| int(AvgVirtualBytes/(1024*1024)) as AvgVirtualMBytes\n| if (AvgVirtualMBytes>100, procName,\"Others\") as procName\n| fields - AvgVirtualBytes \n| avg(AvgVirtualMBytes) as AvgVirtualMBytes by host,procName\n| transpose row host column procName",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 7,
+          "width": 8,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":0,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925743",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Top 10 Virtual Memory Consumers per Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" !\"_Total\" \"VirtualBytes\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"VirtualBytes\",\"Name\" as vBytes,procName\n| avg(vBytes) as AvgVirtualBytes by host,procName \n| int(AvgVirtualBytes/(1024*1024)) as AvgVirtualMBytes\n| sort -AvgVirtualMBytes | 1 as dummy | accum dummy by host | where _accum<11\n| fields - dummy,_accum,avgvirtualbytes\n| transpose row host column procname \n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 9,
+          "y": 7,
+          "width": 8,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"2\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925746",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Top 10 Processes with Largest Resident Memory",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" !\"_Total\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PrivateBytes\",\"Name\" as residentBytes,procName\n| avg(residentBytes) as AvgResidentBytes by host,procName\n| int(AvgResidentBytes/1048576) as AvgResidentMBytes | sort -AvgResidentMBytes \n| 1 as dummy | accum dummy by host | where _accum<11\n| fields - AvgResidentBytes,dummy,_accum \n| transpose row host column procName",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 17,
+          "y": 7,
+          "width": 8,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"0\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925745",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        }
+      ],
+      "filters": []
+    },
+    {
+      "type": "DashboardSyncDefinition",
+      "name": "Network Performance",
+      "description": "",
+      "detailLevel": 2,
+      "properties": "{\"showColumnTitles\":false,\"layoutType\":\"gridster\",\"colorFamily\":0}",
+      "panels": [
+        {
+          "name": "Avg Bytes Received per Second per Host",
+          "viewerType": "area",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_Tcpip_NetworkInterface\" \"BytesReceivedPersec\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"BytesReceivedPersec\",\"Name\" as bytesReceivedPersec,interface \n| timeslice 1m \n| avg(bytesReceivedPersec) as AvgBytesRcvPersec by host, interface, _timeslice | sum(AvgBytesRcvPersec) as AvgBytesRcvPersec by host,_timeslice\n| sort - _timeslice\n// this is a comment\n| transpose row _timeslice column host",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 8,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":5,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925750",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Bytes Sent per Second per Host",
+          "viewerType": "area",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_Tcpip_NetworkInterface\" \"BytesSentPersec\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"BytesSentPersec\",\"Name\" as bytesSentPersec,interface \n| timeslice 1m \n| avg(bytesSentPersec) as AvgBytesSndPersec by host,interface, _timeslice| sum(AvgBytesSndPersec) as AvgBytesSndPersec by host, _timeslice | sort - _timeslice\n// this is a comment\n| transpose row _timeslice column host",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 13,
+          "y": 1,
+          "width": 12,
+          "height": 8,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":3,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925748",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Inbound Packets per Second",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_Tcpip_NetworkInterface\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"Name\", \"PacketsReceivedDiscarded\",\"PacketsReceivedErrors\",\"PacketsReceivedPersec\" as interface, pktRcvDiscarded,pktRcvError,pktRcv\n| timeslice 1m\n| avg(pktRcvDiscarded) as AvgPacketReceiveDiscarded, avg(pktRcvError) as AvgReceiveError, avg(pktRcv) as AvgReceived by host,interface,_timeslice\n| sum(AvgPacketReceiveDiscarded) as PktRcvDiscarded, sum(AvgReceiveError) as PktRcvError, sum(AvgReceived) as PktReceived by host,_timeslice \n| sort - _timeslice\n| transpose row _timeslice column host\n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 9,
+          "width": 6,
+          "height": 7,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":4,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925751",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Outbound Packets per Second",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_Tcpip_NetworkInterface\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"Name\",\"PacketsOutboundDiscarded\",\"PacketsOutboundErrors\",\"PacketsSentPersec\" as interface, pktSndDiscarded,pktSndError, pktSnd\n| timeslice 1m\n| avg(pktSndDiscarded) as AvgPacketSendDiscarded, avg(pktSndError) as AvgPacketSendError, avg(pktSnd) as AvgSend by host,interface, _timeslice\n| sum(AvgPacketSendDiscarded) as PktSendDiscarded, sum(AvgPacketSendError) as PktSendError, sum(AvgSend) as PktSent by host, _timeslice\n| sort - _timeslice\n| transpose  row _timeslice column host\n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 7,
+          "y": 9,
+          "width": 6,
+          "height": 7,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":8,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925749",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Current Bandwidth by Interface per Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_Tcpip_NetworkInterface\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"CurrentBandwidth\",\"Name\" as currentBW,interface\n| avg(currentBW) as AvgCurrentBandwidth by host, interface | transpose row host column interface\n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 13,
+          "y": 9,
+          "width": 6,
+          "height": 7,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":9,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925752",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Output Queue Length",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_Tcpip_NetworkInterface\" \"OutputQueueLength\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"OutputQueueLength\",\"Name\" as outputQueueLength,interface \n| timeslice 1m \n| avg(outputQueueLength) as AvgOutQueueLen by host, _timeslice | sort - _timeslice\n| transpose row _timeslice column host",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 19,
+          "y": 9,
+          "width": 6,
+          "height": 7,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":9,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"},\"minorTickInterval\":null},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null,\"minorTickInterval\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"id\":null,\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925747",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        }
+      ],
+      "filters": []
+    },
+    {
+      "type": "DashboardSyncDefinition",
+      "name": "Windows Performance Overview",
+      "description": "",
+      "detailLevel": 2,
+      "properties": "{\"layoutType\":\"gridster\"}",
+      "panels": [
+        {
+          "name": "Top 10 Processes by Avg Processor Time (%) per Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" !\"_Total\" \"PercentProcessorTime\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PercentProcessorTime\",\"CreatingProcessID\",\"Name\" as procTime,procID,procName\n| avg(procTime) as AvgProcTime by host,procName,procID | sort by -AvgProcTime \n| 1 as dummy | accum dummy by host\n| where _accum<11 \n| fields - procID, dummy, _accum | transpose row host column procName",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 1,
+          "width": 13,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":2,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925754",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg CPU Usage (%) by Host",
+          "viewerType": "line",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfOS_Processor\" \"_Total\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PercentProcessorTime\" as procTime\n| timeslice 1m\n| avg(procTime) as AvgProcTime by host,_timeslice | sort - _timeslice | transpose row _timeslice column host ",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 14,
+          "y": 1,
+          "width": 11,
+          "height": 6,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":9,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925757",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Top 10 Virtual Memory Consumers per Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfProc_Process\" !\"_Total\" \"VirtualBytes\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"VirtualBytes\",\"Name\" as vBytes,procName\n| avg(vBytes) as AvgVirtualBytes by host,procName \n| int(AvgVirtualBytes/(1024*1024)) as AvgVirtualMBytes\n| sort -AvgVirtualMBytes | 1 as dummy | accum dummy by host | where _accum<11\n| fields - dummy,_accum,avgvirtualbytes\n| transpose row host column procname \n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 1,
+          "y": 7,
+          "width": 9,
+          "height": 7,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"2\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":false},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925753",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Avg Disk Time (%) by Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfDisk_PhysicalDisk\" \"_Total\"  \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PercentIdleTime\",\"PercentDiskReadTime\",\"PercentDiskWriteTime\",\"Name\" as pctDiskIdleTime,pctDiskReadTime,pctDiskWriteTime,procName | where procName = \"_Total\" \n| avg(pctDiskIdleTime) as AvgPctDiskIdleTime, avg(pctDiskReadTime) as AvgPctDiskReadTime, avg(pctDiskWriteTime) as AvgPctDiskWriteTime by host\n| int(AvgPctDiskIdleTime) as IdleTime |  int(AvgPctDiskReadTime) as ReadTime | int(AvgPctDiskWriteTime) as WriteTime | fields - AvgPctDiskIdleTime,AvgPctDiskReadTime,AvgPctDiskWriteTime",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 10,
+          "y": 7,
+          "width": 8,
+          "height": 7,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":9,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":\"normal\",\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925756",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        },
+        {
+          "name": "Total Bandwidth (Bytes) by Host",
+          "viewerType": "column",
+          "detailLevel": 2,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_Tcpip_NetworkInterface\" \n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop  \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"BytesReceivedPersec\",\"BytesSentPersec\",\"Name\" as bytesReceived, bytesSent,interface\n| sum(bytesReceived) as bytesReceived , sum(bytesSent) as bytesSent group by host\n| (bytesSent + bytesReceived) as total_Bandwidth //| transpose row host column interface\n| fields host,total_Bandwidth\n",
+          "metricsQueries": [],
+          "timeRange": {
+            "type": "BeginBoundedTimeRange",
+            "from": {
+              "type": "RelativeTimeRangeBoundary",
+              "relativeTime": "-15m"
+            },
+            "to": null
+          },
+          "x": 18,
+          "y": 7,
+          "width": 7,
+          "height": 7,
+          "properties": "{\"version\":3,\"settings\":{\"table\":{\"version\":2,\"configuration\":{\"textTruncationMode\":\"none\",\"fontSize\":\"medium\",\"fontSizeOverride\":null}},\"bar\":{\"chartType\":\"bar\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"column\":{\"chartType\":\"column\",\"version\":2,\"configuration\":{\"colors\":{\"index\":\"0\",\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"line\":{\"chartType\":\"line\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"area\":{\"chartType\":\"area\",\"version\":2,\"configuration\":{\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"stacking\":null,\"lineToArea\":false},\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":[{\"title\":null,\"logScale\":false,\"min\":null,\"max\":null,\"bands\":null}],\"seriesInfo\":{}}},\"pie\":{\"chartType\":\"pie\",\"version\":3,\"configuration\":{\"donutMode\":true,\"colors\":{\"index\":null,\"overrides\":null},\"legend\":{\"enabled\":true,\"position\":\"right\"},\"plotOptions\":{\"label\":{\"truncationMode\":\"middle\"},\"showSliceBorders\":true,\"maxNumOfPieSlices\":\"10\"}}},\"boxplot\":{\"chartType\":\"boxplot\",\"version\":1,\"configuration\":{\"xAxis\":{\"title\":null,\"label\":{\"truncationMode\":\"middle\"}},\"yAxis\":{\"title\":null,\"min\":null,\"max\":null}}},\"map\":{\"version\":1,\"configuration\":{}},\"svv\":{\"version\":2,\"configuration\":{\"colorOverride\":null,\"backgroundColorEnabled\":false,\"noDataBehavior\":{\"enabled\":false,\"color\":\"#cccccc\",\"value\":null,\"isString\":null},\"valueType\":{\"number\":{\"showNumber\":true,\"unit\":null,\"colorsByValueRange\":null},\"boolean\":{\"trueColor\":\"#6aa84f\",\"falseColor\":\"#cc0000\"}},\"labels\":{\"prefix\":{\"enabled\":false,\"text\":\"\",\"align\":\"left\"},\"postfix\":{\"enabled\":false,\"text\":\"\",\"align\":\"right\"}}}},\"sankey\":{\"version\":1,\"configuration\":{}},\"text\":{\"version\":1,\"configuration\":{\"text\":null}},\"common\":{\"version\":1,\"configuration\":{\"drilldown\":{\"fallback\":{\"target\":{\"name\":null,\"enabled\":null}}}}}}}",
+          "id": "2925755",
+          "desiredQuantizationInSecs": null,
+          "queryParameters": [],
+          "autoParsingInfo": {
+            "mode": "performance"
+          }
+        }
+      ],
+      "filters": []
+    }
+  ]
+}

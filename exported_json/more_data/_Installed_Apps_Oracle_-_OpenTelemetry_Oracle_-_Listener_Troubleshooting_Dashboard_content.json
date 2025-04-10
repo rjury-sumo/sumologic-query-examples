@@ -1,0 +1,320 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Oracle - Listener Troubleshooting",
+  "description": "See details of Oracle listener process activity, including database connections by host and application, connection failures, command execution status and trends and other data derived from the Oracle Listener log.",
+  "title": "Oracle - Listener Troubleshooting",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "sumo.datasource": [
+        "oracle"
+      ],
+      "db.cluster.name": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "databases"
+      ],
+      "deployment.environment": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel3039DD90A2E65949",
+        "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":12}"
+      },
+      {
+        "key": "panel336942A68714F84E",
+        "structure": "{\"height\":6,\"width\":16,\"x\":8,\"y\":6}"
+      },
+      {
+        "key": "panel5E30FD42976BF94D",
+        "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panel91C51F00B621AA49",
+        "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":12}"
+      },
+      {
+        "key": "panelC3CCE5E183381841",
+        "structure": "{\"height\":10,\"width\":24,\"x\":0,\"y\":18}"
+      },
+      {
+        "key": "panelC70223CDB3D86841",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelCFCA3E98B8231B4F",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelE1FBEA8C93AAB844",
+        "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":6}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel3039DD90A2E65949",
+      "title": "Last 10 Listener Stopped Events",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle COMMAND stop \"COMMAND=stop\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse field=oracle_log_message \"(CONNECT_DATA=(CID=(PROGRAM=)(HOST=*)(USER=*))(COMMAND=*)(ARGUMENTS=*)(SERVICE=*)(VERSION=*))\" as userHost, databaseUser, connect_data_command, connect_data_arguments, connect_data_service, connect_data_version nodrop\n| parse regex field=oracle_log_message \"\\* \\(CONNECT_DATA[\\s\\S]+?COMMAND=(?<connect_data_command>[^)]*)\\)[\\s\\S]+?\\* (?<command>[^\\s]+)\\s+\\*\\s+(?<status>\\d+)\"\n| where connect_data_command=\"stop\"\n| if (status=\"0\", \"Success\", \"Failure\") as %\"CommandExecutionStatus\"\n| timeslice 1s\n| count as eventCount by _timeslice, userHost, databaseUser, connect_data_service, %\"CommandExecutionStatus\", status\n| sort by _timeslice | limit 10| fields -eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel336942A68714F84E",
+      "title": "Last 10 Failed Connection Attempts",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle establish \"PROGRAM=\" (\"SID=\" or \"SERVICE_NAME=\") TNS-*\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"\\* \\(CONNECT_DATA[\\s\\S]+?\\* establish \\* \\S+ \\* (?<status>\\d+)\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?SERVICE_NAME=(?<serviceName>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?service_name=(?<serviceName>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?SID=(?<SID>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?sid=(?<SID>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?PROGRAM=(?<userProgramName>[^)]*)\\)[\\s\\S]+?HOST=(?<userHost>[^)]*)\\)[\\s\\S]+?USER=(?<databaseUser>[^)]*)\\)\" nodrop\n| parse field=oracle_log_message \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| parse regex field=oracle_log_message \"(?<TNSerr>TNS-\\d{5}): (?<tnsmsg>.*)\" nodrop\n| where status != \"0\"\n| timeslice 1s\n| count as eventCount by _timeslice, SID, serviceName, status, userProgramName, userHost, databaseUser, clientProtocol, clientHost, clientPort, TNSerr, tnsmsg\n| sort by _timeslice\n| limit 10\n| fields -eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5E30FD42976BF94D",
+      "title": "Command Execution Status",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"COMMAND=\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"\\* \\(CONNECT_DATA[\\s\\S]+?COMMAND=(?<connect_data_command>[^)]*)\\)[\\s\\S]+?\\* (?<command>[^\\s]+)\\s+\\*\\s+(?<status>\\d+)\"\n| tolowercase(connect_data_command) as connect_data_command\n| if (status=\"0\", \"Success\", \"Failure\") as CommandExecutionStatus\n| count as eventCount by connect_data_command, CommandExecutionStatus\n| transpose row connect_data_command column CommandExecutionStatus",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel91C51F00B621AA49",
+      "title": "Command Execution Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"Categorical Light\"},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"COMMAND=\" | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex  field=oracle_log_message \"\\* \\(CONNECT_DATA[\\s\\S]+?COMMAND=(?<connect_data_command>[^)]*)\\)[\\s\\S]+?\\* (?<command>[^\\s]+)\\s+\\*\\s+(?<status>\\d+)\"\n| tolowercase(connect_data_command) as connect_data_command\n| timeslice 1d\n| count as eventCount by _timeslice, connect_data_command\n| transpose row _timeslice column connect_data_command",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelC3CCE5E183381841",
+      "title": "SID or Service Name Connections",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle establish \"PROGRAM=\" (\"SID=\" or \"SERVICE_NAME=\") | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?SERVICE_NAME=(?<serviceName>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?service_name=(?<serviceName>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?SID=(?<SID>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?sid=(?<SID>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?PROGRAM=(?<userProgramName>[^)]*)\\)[\\s\\S]+?HOST=(?<userHost>[^)]*)\\)[\\s\\S]+?USER=(?<databaseUser>[^)]*)\\)\" nodrop\n| parse field=oracle_log_message \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| count as %\"ConnectionCount\" by SID, serviceName, userHost, clientHost, databaseUser\n| sort by SID, serviceName, userHost, clientHost, databaseUser, %\"ConnectionCount\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelC70223CDB3D86841",
+      "title": "DB Connections By Host",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"area\"},\"series\":{},\"axes\":{\"axisX\":{\"title\":\"\"},\"axisY\":{\"title\":\" \"}},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle establish \"PROGRAM=\" (\"SID=\" or \"SERVICE_NAME=\") | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message \n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?SERVICE_NAME=(?<serviceName>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?service_name=(?<serviceName>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?SID=(?<SID>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?sid=(?<SID>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?PROGRAM=(?<userProgramName>[^)]*)\\)[\\s\\S]+?HOST=(?<userHost>[^)]*)\\)[\\s\\S]+?USER=(?<databaseUser>[^)]*)\\)\" nodrop\n| parse field=oracle_log_message \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort  nodrop\n| timeslice 5m\n| count as %\"ConnectionCount\" by _timeslice, clientHost\n| transpose row _timeslice column clientHost",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelCFCA3E98B8231B4F",
+      "title": "DB Connections by Applications",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"axes\":{\"axisX\":{\"title\":\"\"},\"axisY\":{\"title\":\" \"}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle establish \"PROGRAM=\" (\"SID=\" or \"SERVICE_NAME=\") | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex  field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?SERVICE_NAME=(?<serviceName>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex  field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?service_name=(?<serviceName>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex  field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?SID=(?<SID>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex  field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?sid=(?<SID>[^)]*)\\)[\\s\\S]+establish\" nodrop\n| parse regex  field=oracle_log_message \"CONNECT_DATA[\\s\\S]+?PROGRAM=(?<userProgramName>[^)]*)\\)[\\s\\S]+?HOST=(?<userHost>[^)]*)\\)[\\s\\S]+?USER=(?<databaseUser>[^)]*)\\)\" nodrop\n| timeslice 1d\n| count as %\"ConnectionCount\" by _timeslice, userProgramName\n| transpose row _timeslice column userProgramName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE1FBEA8C93AAB844",
+      "title": "Failed to Success Connection Ratio - Outlier",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":1,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"series\":{},\"color\":{\"family\":\"Categorical Light\"},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle establish | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"\\* \\(CONNECT_DATA[\\s\\S]+?\\* establish \\* \\S+ \\* (?<status>\\d+)\" nodrop\n| if (status=\"0\", 1, 0) as Connected\n| if (status!=\"0\",1, 0) as NotConnected\n| timeslice 1d\n| sum(Connected) as Connected, sum(NotConnected) as NotConnected by _timeslice\n| (NotConnected/Connected)*100 as ratio\n| outlier ratio",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\nsumo.datasource=oracle|count by db.cluster.name",
+        "field": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\nsumo.datasource=oracle|count by deployment.environment",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

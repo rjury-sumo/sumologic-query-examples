@@ -1,0 +1,536 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Google Workspace - Admin",
+  "description": "The Google Workspace - Admin Dashboard provides at-a-glance graphs pared with detailed analytics give you a comprehensive view of administrative activities in Google Workspace. This includes information on users and groups that have been created or deleted, app token actions, admin action count, and actions by admins and users.",
+  "title": "Google Workspace - Admin",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1w"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel072c576f8a1f9a41",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panel3044c692a2dec948",
+        "structure": "{\"width\":10,\"height\":6,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panel462440a6bafffa48",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panel489e09db8e3e0a46",
+        "structure": "{\"width\":6,\"height\":6,\"x\":18,\"y\":5}"
+      },
+      {
+        "key": "panel74c8488f8d3aca41",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panela0e8f0c1a8ef5948",
+        "structure": "{\"width\":6,\"height\":6,\"x\":12,\"y\":5}"
+      },
+      {
+        "key": "panelaea3e5ce8f64ca4c",
+        "structure": "{\"width\":6,\"height\":6,\"x\":18,\"y\":0}"
+      },
+      {
+        "key": "panelaf0a0d4da19c594d",
+        "structure": "{\"width\":16,\"height\":6,\"x\":8,\"y\":10}"
+      },
+      {
+        "key": "panelf42af246b1dc9a40",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel072c576f8a1f9a41",
+      "title": "Action by Admin - Distribution",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"\n|where if (\"{{admin_action}}\" = \"*\", true, admin_action matches \"{{admin_action}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{admin_action_type}}\" = \"*\", true, admin_action_type matches \"{{admin_action_type}}\") AND if (\"{{user_email}}\" = \"*\", true, user_email matches \"{{user_email}}\") AND if (\"{{recipient_email}}\" = \"*\", true, recipient_email matches \"{{recipient_email}}\") AND if (\"{{admin_email}}\" = \"*\", true, admin_email matches \"{{admin_email}}\") AND if (\"{{group_email}}\" = \"*\", true, group_email matches \"{{group_email}}\")\n|count as eventCount by admin_email\n| sort by eventCount, admin_email asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel3044c692a2dec948",
+      "title": "Groups - Users Added or Removed",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL AND (ADD_GROUP_MEMBER OR REMOVE_GROUP_MEMBER) \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"\n|where if (\"{{admin_action}}\" = \"*\", true, admin_action matches \"{{admin_action}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{admin_action_type}}\" = \"*\", true, admin_action_type matches \"{{admin_action_type}}\") AND if (\"{{user_email}}\" = \"*\", true, user_email matches \"{{user_email}}\") AND if (\"{{recipient_email}}\" = \"*\", true, recipient_email matches \"{{recipient_email}}\") AND if (\"{{admin_email}}\" = \"*\", true, admin_email matches \"{{admin_email}}\") AND if (\"{{group_email}}\" = \"*\", true, group_email matches \"{{group_email}}\")\n|count by user_email, admin_action, group_email, admin_email\n| sort by user_email asc\n| fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel462440a6bafffa48",
+      "title": "Alerts by Administrators",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAlertsDataSource}} \n| json \"alertId\",\"customerId\",\"source\",\"type\",\"data\", \"securityInvestigationToolLink\" as alert_id, customer_id, source, type, data, investigation_url nodrop\n| json field=data \"email\" as admin_email\n|where if (\"{{alert_id}}\" = \"*\", true, alert_id matches \"{{alert_id}}\") AND if (\"{{admin_email}}\" = \"*\", true, admin_email matches \"{{admin_email}}\")\n|count by admin_email, alert_id, customer_id, source, type, data, investigation_url, _messageTime\n| where [subquery:_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  \"admin\"\n | json \"actor\", \"id\" nodrop\n | json field=id \"applicationName\"   \n | where applicationName=\"admin\"\n | json field=actor \"email\" as admin_email\n | count by admin_email\n | compose admin_email  \n]\n| where source matches \"{{source}}\" and type matches \"{{type}}\"\n| if(isNull(investigation_url), \"https://admin.google.com/ac/ic/investigate\", concat(\"https://\",investigation_url)) as investigation_url\n| sort by _messageTime\n| formatDate(_messageTime,\"MM-dd-yyyy HH:mm:ss:SSS\") as create_time\n| fields -_messageTime, _count\n| fields create_time, customer_id, alert_id, admin_email, source, type, investigation_url, data",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel489e09db8e3e0a46",
+      "title": "App Token Actions",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  \"\\\"applicationName\\\": \\\"token\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"(?<token_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"app_name\\\",\\\"value\\\":\\\"(?<app_name>.*)\\\"\\}\" nodrop\n| where applicationName=\"token\"\n|where if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{token_action}}\" = \"*\", true, token_action matches \"{{token_action}}\") AND if (\"{{app_name}}\" = \"*\", true, app_name matches \"{{app_name}}\")\n|count as eventCount by token_action\n| sort by eventCount, token_action",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel74c8488f8d3aca41",
+      "title": "User Content Transfered",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL CREATE_DATA_TRANSFER_REQUEST \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"\n|where if (\"{{admin_action}}\" = \"*\", true, admin_action matches \"{{admin_action}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{admin_action_type}}\" = \"*\", true, admin_action_type matches \"{{admin_action_type}}\") AND if (\"{{user_email}}\" = \"*\", true, user_email matches \"{{user_email}}\") AND if (\"{{recipient_email}}\" = \"*\", true, recipient_email matches \"{{recipient_email}}\") AND if (\"{{admin_email}}\" = \"*\", true, admin_email matches \"{{admin_email}}\")\n|count by user_email, admin_action, recipient_email, application_name, admin_email\n| sort by user_email asc\n| fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela0e8f0c1a8ef5948",
+      "title": "Top Admin Action",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"\n|where if (\"{{admin_action}}\" = \"*\", true, admin_action matches \"{{admin_action}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{admin_action_type}}\" = \"*\", true, admin_action_type matches \"{{admin_action_type}}\") AND if (\"{{user_email}}\" = \"*\", true, user_email matches \"{{user_email}}\") AND if (\"{{recipient_email}}\" = \"*\", true, recipient_email matches \"{{recipient_email}}\") AND if (\"{{admin_email}}\" = \"*\", true, admin_email matches \"{{admin_email}}\") AND if (\"{{group_email}}\" = \"*\", true, group_email matches \"{{group_email}}\")\n|count as eventCount by admin_action\n| sort by eventCount desc, admin_action asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelaea3e5ce8f64ca4c",
+      "title": "App Token Count",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  \"\\\"applicationName\\\": \\\"token\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"(?<token_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"app_name\\\",\\\"value\\\":\\\"(?<app_name>.*?)\\\"\\}\" nodrop\n| where applicationName=\"token\"\n|where if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{token_action}}\" = \"*\", true, token_action matches \"{{token_action}}\") AND if (\"{{app_name}}\" = \"*\", true, app_name matches \"{{app_name}}\")\n|count as eventCount by app_name\n| sort by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelaf0a0d4da19c594d",
+      "title": "User Actions Details",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"\n|where if (\"{{admin_action}}\" = \"*\", true, admin_action matches \"{{admin_action}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{application_name}}\" = \"*\", true, application_name matches \"{{application_name}}\") AND if (\"{{admin_action_type}}\" = \"*\", true, admin_action_type matches \"{{admin_action_type}}\") AND if (\"{{user_email}}\" = \"*\", true, user_email matches \"{{user_email}}\") AND if (\"{{recipient_email}}\" = \"*\", true, recipient_email matches \"{{recipient_email}}\") AND if (\"{{admin_email}}\" = \"*\", true, admin_email matches \"{{admin_email}}\") AND if (\"{{group_email}}\" = \"*\", true, group_email matches \"{{group_email}}\")\n|count by user_email, admin_action, group_email, recipient_email, application_name, admin_email\n| sort by user_email asc\n| fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf42af246b1dc9a40",
+      "title": "Users - Created or Deleted",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL AND (CREATE_USER OR DELETE_USER) \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"\n|where if (\"{{admin_action}}\" = \"*\", true, admin_action matches \"{{admin_action}}\") AND if (\"{{applicationName}}\" = \"*\", true, applicationName matches \"{{applicationName}}\") AND if (\"{{admin_action_type}}\" = \"*\", true, admin_action_type matches \"{{admin_action_type}}\") AND if (\"{{user_email}}\" = \"*\", true, user_email matches \"{{user_email}}\") AND if (\"{{admin_email}}\" = \"*\", true, admin_email matches \"{{admin_email}}\")\n|count by user_email, admin_action, admin_email\n| sort by user_email asc\n| fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "GoogleWorkspaceAlertsDataSource",
+      "displayName": "GoogleWorkspaceAlertsDataSource",
+      "defaultValue": "Labs/gsuite/alerts",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/gsuite/alerts"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "GoogleWorkspaceAuditLogsSource",
+      "displayName": "GoogleWorkspaceAuditLogsSource",
+      "defaultValue": "Labs/gsuite/apps",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/gsuite/apps"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "admin_action",
+      "displayName": "admin_action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"",
+        "field": "admin_action"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "admin_action_type",
+      "displayName": "admin_action_type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"",
+        "field": "admin_action_type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "admin_email",
+      "displayName": "admin_email",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"",
+        "field": "admin_email"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "alert_id",
+      "displayName": "alert_id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAlertsDataSource}} \n| json \"alertId\",\"customerId\",\"source\",\"type\",\"data\", \"securityInvestigationToolLink\" as alert_id, customer_id, source, type, data, investigation_url nodrop\n| json field=data \"email\" as admin_email",
+        "field": "alert_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "app_name",
+      "displayName": "app_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  \"\\\"applicationName\\\": \\\"token\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"(?<token_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"app_name\\\",\\\"value\\\":\\\"(?<app_name>.*)\\\"\\}\" nodrop\n| where applicationName=\"token\"",
+        "field": "app_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "applicationName",
+      "displayName": "applicationName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"",
+        "field": "applicationName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "application_name",
+      "displayName": "application_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"",
+        "field": "application_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "group_email",
+      "displayName": "group_email",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"",
+        "field": "group_email"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "recipient_email",
+      "displayName": "recipient_email",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"",
+        "field": "recipient_email"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "source",
+      "displayName": "source",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "token_action",
+      "displayName": "token_action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  \"\\\"applicationName\\\": \\\"token\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"(?<token_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"app_name\\\",\\\"value\\\":\\\"(?<app_name>.*)\\\"\\}\" nodrop\n| where applicationName=\"token\"",
+        "field": "token_action"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "type",
+      "displayName": "type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user_email",
+      "displayName": "user_email",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}}  USER_EMAIL \"\\\"applicationName\\\": \\\"admin\\\"\"\n| json \"id\", \"actor\", \"events\"\n| json field=id \"applicationName\"\n| json field=actor \"email\" as admin_email\n| parse regex field=events \"\\[\\{\\\"type\\\":\\\"(?<admin_action_type>.*?)\\\",\\\"name\\\":\\\"(?<admin_action>.*?)\\\",\\\"parameters\\\"\" nodrop\n| parse regex field=events \"\\[\\{\\\"name\\\":\\\"USER_EMAIL\\\",\\\"value\\\":\\\"(?<user_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"DESTINATION_USER_EMAIL\\\",\\\"value\\\":\\\"(?<recipient_email>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"APPLICATION_NAME\\\",\\\"value\\\":\\\"(?<application_name>.*?)\\\"\" nodrop\n| parse regex field=events \"\\{\\\"name\\\":\\\"GROUP_EMAIL\\\",\\\"value\\\":\\\"(?<group_email>.*?)\\\"\" nodrop\n| where applicationName=\"admin\"",
+        "field": "user_email"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

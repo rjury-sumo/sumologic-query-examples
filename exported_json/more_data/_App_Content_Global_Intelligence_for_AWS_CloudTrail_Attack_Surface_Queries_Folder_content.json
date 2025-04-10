@@ -1,0 +1,147 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Attack Surface Queries",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Attack Surface: Create,Delete,Update",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail eventName\n| json \"eventName\", \"errorCode\" nodrop \n| where isBlank(errorCode) and (\n    (eventName matches \"Modify*\" or eventName matches \"Disassociate*\" or eventName matches \"Disable*\" or eventName matches \"Enable*\" or eventName matches \"Detach*\" or eventName matches \"Unassign*\" or eventName matches \"Revoke*\" or eventName matches \"Reset*\" or eventName matches \"Update*\" or eventName matches \"Put*\" or eventName matches \"Add*\" or eventName matches \"Remove*\" or eventName matches \"Change*\")  \nor (eventName matches \"Create*\") \nor (eventName matches \"Delete*\"))\n| \"\" as classification\n| if (eventName matches \"Create*\",concat(\"ResourcesCount_Create,\",classification),classification) as classification\n| if (eventName matches \"Delete*\",concat(\"ResourcesCount_Delete,\",classification),classification) as classification\n| if (eventName matches \"Modify*\" or eventName matches \"Disassociate*\" or eventName matches \"Disable*\" or eventName matches \"Enable*\" or eventName matches \"Detach*\" or eventName matches \"Unassign*\" or eventName matches \"Revoke*\" or eventName matches \"Reset*\" or eventName matches \"Update*\" or eventName matches \"Put*\" or eventName matches \"Add*\" or eventName matches \"Remove*\" or eventName matches \"Change*\",concat(\"ResourcesCount_Update,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| \"ActionEventCount\" as type \n| count as count by benchmarkname, type\n| fillmissing values(\"ResourcesCount_Create\",\"ResourcesCount_Update\",\"ResourcesCount_Delete\") in benchmarkname, values(\"ActionEventCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Attack Surface: EC2,Redshift,S3",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (instanceId or clusterIdentifier or bucketName)\n| json \"eventSource\", \"errorCode\" nodrop \n| where isBlank(errorCode) and (eventSource=\"ec2.amazonaws.com\"  or eventSource=\"redshift.amazonaws.com\" or eventSource=\"s3.amazonaws.com\")\n| parse regex \"\\\"(?<objectType>instanceId|clusterIdentifier|bucketName)\\\".*?:.*?(?<objectId>[^\\\"]+)\\\"\" multi \n| \"\" as classification\n| if (objectType=\"instanceId\" and eventSource=\"ec2.amazonaws.com\",concat(\"ResourcesCount_EC2,\",classification),classification) as classification\n| if (objectType=\"clusterIdentifier\" and eventSource=\"redshift.amazonaws.com\",concat(\"ResourcesCount_Redshift,\",classification),classification) as classification\n| if (objectType=\"bucketName\" and eventSource=\"s3.amazonaws.com\",concat(\"ResourcesCount_S3,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| \"ResourceCount\" as type \n| count_distinct(objectId) as count by benchmarkName, type\n| fillmissing values(\"ResourcesCount_EC2\",\"ResourcesCount_Redshift\",\"ResourcesCount_S3\") in benchmarkname, values(\"ResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Attack Surface: IAM,KMS,Lambda,RDS",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (arn:aws:iam or arn:aws:kms  or arn:aws:lambda  or arn:aws:rds)\n| json \"errorCode\" nodrop \n| where isBlank(errorCode) \n| parse regex \"\\\"(?<arn>arn:[^\\\"]+)\\\"\" multi \n| parse regex field=arn \".*?:.*?:(?<service>[^:]+):.*?:.*?:(?<resource>[^:]+$)\" \n| where service in (\"iam\",\"rds\",\"lambda\",\"kms\")\n| \"\" as classification\n| if (service=\"iam\",concat(\"ResourcesCount_IAM,\",classification),classification) as classification\n| if (service=\"rds\",concat(\"ResourcesCount_RDS,\",classification),classification) as classification\n| if (service=\"lambda\",concat(\"ResourcesCount_Lambda,\",classification),classification) as classification\n| if (service=\"kms\",concat(\"ResourcesCount_KMS,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| \"ResourceCount\" as type \n| count_distinct(arn) as count by benchmarkname,type\n| fillmissing values(\"ResourcesCount_IAM\",\"ResourcesCount_KMS\",\"ResourcesCount_Lambda\",\"ResourcesCount_RDS\") in benchmarkname, values(\"ResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Attack Surface: Service",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail \n| json \"eventSource\", \"errorCode\" nodrop \n| where isBlank(errorCode) \n| count_distinct(eventSource) as count \n| \"ResourcesCount_Service\" as benchmarkname \n| \"ResourceCount\" as type \n| fillmissing values(\"ResourcesCount_Service\") in benchmarkname, values(\"ResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    }
+  ]
+}

@@ -1,0 +1,422 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Suspicious Network Activity",
+  "description": "The Suspicious Network Activity dashboard shows suspicious activity on networks. It shows suspicious blocked source-destination pairs, suspicious traffic, trends for blocked activity and traffic, and geo locations for suspicious blocked destinations and traffic.",
+  "title": "Suspicious Network Activity",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-7F195630A9D9094A",
+        "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panelPANE-6DA00C7AA5DC7A4D",
+        "structure": "{\"height\":6,\"width\":8,\"x\":4,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-DB3BAD21B045F94B",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-C43907FC9D5F3949",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panel363A6E0297C7D94A",
+        "structure": "{\"height\":6,\"width\":4,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panel17CD46D2947B8B44",
+        "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel8F30068C974F1947",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panelB836F80D8FB34A4C",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":12}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-7F195630A9D9094A",
+      "title": "Suspicious Blocked Destinations by Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\",\"roundDataPoints\":true},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"alert\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, alert nodrop\n| where event.type=\"alert\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop\n\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = client.ip\n\n// filters\n| where if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.availability_zone}}\" = \"*\", true, cloud.availability_zone matches \"{{cloud.availability_zone}}\") AND if (\"{{cloud.instance.name}}\" = \"*\", true, cloud.instance.name matches \"{{cloud.instance.name}}\") AND if (\"{{network.protocol}}\" = \"*\", true, network.protocol matches \"{{network.protocol}}\")\n\n// z-score calculation\n| timeslice 3h\n| if(event.outcome=\"blocked\",1,0) as Blocked_count\n| if(event.outcome=\"allowed\",1,0) as Allowed_count\n|sum(Blocked_count) as blocked, sum(Allowed_count) as allowed by _timeslice, server.ip, client.ip, latitude, longitude, country_code\n| (blocked + allowed) as requests\n| if(requests > 0, blocked/requests, 0) as blocked_pct\n| blocked_pct as eventCount\n| sort + _timeslice\n\n| rollingstd eventCount as eventCount_std by server.ip, client.ip, latitude, longitude, country_code\n| smooth eventCount as eventCount_mean by server.ip, client.ip, latitude, longitude, country_code\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by server.ip, client.ip, latitude, longitude, country_code\n| round(max_zscore, 2) as max_zscore \n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore\n\n| count as event_location by latitude, longitude\n| sort by event_location",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the geo-locations of WAF hits.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-6DA00C7AA5DC7A4D",
+      "title": "Suspicious Blocked Source-Destination Pairs",
+      "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\",\"roundDataPoints\":true},\"title\":{\"fontSize\":14},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":1,\"color\":\"#98ECA9\"},{\"from\":1,\"to\":2,\"color\":\"#F2DA73\"},{\"from\":2,\"to\":10,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"latest\",\"noDataMessage\":\"\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"alert\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, alert nodrop\n| where event.type=\"alert\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop\n\n// filters\n| where if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.availability_zone}}\" = \"*\", true, cloud.availability_zone matches \"{{cloud.availability_zone}}\") AND if (\"{{cloud.instance.name}}\" = \"*\", true, cloud.instance.name matches \"{{cloud.instance.name}}\") AND if (\"{{network.protocol}}\" = \"*\", true, network.protocol matches \"{{network.protocol}}\")\n\n// z-score calculation\n| timeslice 3h\n| if(event.outcome=\"blocked\",1,0) as Blocked_count\n| if(event.outcome=\"allowed\",1,0) as Allowed_count\n|sum(Blocked_count) as blocked, sum(Allowed_count) as allowed by _timeslice, server.ip, client.ip\n| (blocked + allowed) as requests\n| if(requests > 0, blocked/requests, 0) as blocked_pct\n| blocked_pct as eventCount\n| sort + _timeslice\n\n| rollingstd eventCount as eventCount_std by server.ip, client.ip\n| smooth eventCount as eventCount_mean by server.ip, client.ip\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by server.ip, client.ip\n| round(max_zscore, 2) as max_zscore \n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-DB3BAD21B045F94B",
+      "title": "Suspicious Blocked Source-Destination Pairs",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true,\"noDataMessage\":\"0\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"textColor\":\"\",\"backgroundColor\":\"\",\"label\":\"Label\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":true,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":10,\"color\":\"#16943E\"},{\"from\":10,\"to\":100,\"color\":\"#DFBE2E\"},{\"from\":100,\"to\":1000,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":1000}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"alert\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, alert nodrop\n| where event.type=\"alert\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop\n\n// filters\n| where if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.availability_zone}}\" = \"*\", true, cloud.availability_zone matches \"{{cloud.availability_zone}}\") AND if (\"{{cloud.instance.name}}\" = \"*\", true, cloud.instance.name matches \"{{cloud.instance.name}}\") AND if (\"{{network.protocol}}\" = \"*\", true, network.protocol matches \"{{network.protocol}}\")\n\n// z-score calculation\n| timeslice 3h\n| if(event.outcome=\"blocked\",1,0) as Blocked_count\n| if(event.outcome=\"allowed\",1,0) as Allowed_count\n|sum(Blocked_count) as blocked, sum(Allowed_count) as allowed by _timeslice, server.ip, client.ip\n| (blocked + allowed) as requests\n| if(requests > 0, blocked/requests, 0) as blocked_pct\n| blocked_pct as eventCount\n| sort + _timeslice\n\n| rollingstd eventCount as eventCount_std by server.ip, client.ip\n| smooth eventCount as eventCount_mean by server.ip, client.ip\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by server.ip, client.ip\n| round(max_zscore, 2) as max_zscore \n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore\n\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-C43907FC9D5F3949",
+      "title": "Trend: Blocked Activity Percent",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"roundDataPoints\":true,\"markerSize\":10,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"hideLabels\":false},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"avg_blocked_pct\",\"unit\":{\"value\":\"%\",\"isCustom\":false}}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Diverging 1\"},\"series\":{},\"thresholdsSettings\":{\"type\":\"number\",\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"alert\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, alert nodrop\n| where event.type=\"alert\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop\n\n// filters\n| where if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.availability_zone}}\" = \"*\", true, cloud.availability_zone matches \"{{cloud.availability_zone}}\") AND if (\"{{cloud.instance.name}}\" = \"*\", true, cloud.instance.name matches \"{{cloud.instance.name}}\") AND if (\"{{network.protocol}}\" = \"*\", true, network.protocol matches \"{{network.protocol}}\")\n\n// z-score calculation\n| timeslice 3h\n| if(event.outcome=\"blocked\",1,0) as Blocked_count\n| if(event.outcome=\"allowed\",1,0) as Allowed_count\n|sum(Blocked_count) as blocked, sum(Allowed_count) as allowed by _timeslice, server.ip, client.ip\n| (blocked + allowed) as requests\n| if(requests > 0, blocked/requests, 0) as blocked_pct\n| blocked_pct as eventCount\n| sort + _timeslice\n\n| avg(eventCount) as avg_blocked_pct by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panel363A6E0297C7D94A",
+      "title": "Suspicious Traffic (Megabytes)",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true,\"noDataMessage\":\"0\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"textColor\":\"\",\"backgroundColor\":\"\",\"label\":\"Label\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":true,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":100,\"color\":\"#16943E\"},{\"from\":100,\"to\":1000,\"color\":\"#DFBE2E\"},{\"from\":1000,\"to\":10000,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":10000}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"app_proto\", \"netflow\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, app_proto, netflow nodrop\n| where event.type=\"netflow\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop\n| json field=netflow \"bytes\", \"pkts\" as network.bytes, packets nodrop\n\n// filters\n| where if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.availability_zone}}\" = \"*\", true, cloud.availability_zone matches \"{{cloud.availability_zone}}\") AND if (\"{{cloud.instance.name}}\" = \"*\", true, cloud.instance.name matches \"{{cloud.instance.name}}\") AND if (\"{{network.protocol}}\" = \"*\", true, network.protocol matches \"{{network.protocol}}\")\n\n// z-score calculation\n| timeslice 3h\n| network.bytes/1Mi as m_bytes\n| sum(m_bytes) as total_mega_bytes by _timeslice, server.ip, client.ip\n| total_mega_bytes as eventCount\n| sort + _timeslice\n\n| rollingstd eventCount as eventCount_std by server.ip, client.ip\n| smooth eventCount as eventCount_mean by server.ip, client.ip\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by server.ip, client.ip\n| round(max_zscore, 2) as max_zscore \n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore\n\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panel17CD46D2947B8B44",
+      "title": "Suspicious Megabytes Source-Destination Pairs",
+      "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\",\"roundDataPoints\":true},\"title\":{\"fontSize\":14},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":1,\"color\":\"#98ECA9\"},{\"from\":1,\"to\":2,\"color\":\"#F2DA73\"},{\"from\":2,\"to\":10,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"latest\",\"noDataMessage\":\"\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"app_proto\", \"netflow\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, app_proto, netflow nodrop\n| where event.type=\"netflow\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop\n| json field=netflow \"bytes\", \"pkts\" as network.bytes, packets nodrop\n\n// filters\n| where if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.availability_zone}}\" = \"*\", true, cloud.availability_zone matches \"{{cloud.availability_zone}}\") AND if (\"{{cloud.instance.name}}\" = \"*\", true, cloud.instance.name matches \"{{cloud.instance.name}}\") AND if (\"{{network.protocol}}\" = \"*\", true, network.protocol matches \"{{network.protocol}}\")\n\n// z-score calculation\n| timeslice 3h\n| network.bytes/1Mi as m_bytes\n| sum(m_bytes) as total_mega_bytes by _timeslice, server.ip, client.ip\n| total_mega_bytes as eventCount\n| sort + _timeslice\n\n| rollingstd eventCount as eventCount_std by server.ip, client.ip\n| smooth eventCount as eventCount_mean by server.ip, client.ip\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by server.ip, client.ip\n| round(max_zscore, 2) as max_zscore \n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panel8F30068C974F1947",
+      "title": "Trend: Suspicious Traffic (Megabytes)",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"roundDataPoints\":true,\"markerSize\":10,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"hideLabels\":false},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"title\":\"avg_blocked_pct\",\"unit\":{\"value\":\"MB\",\"isCustom\":false}}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Diverging 1\"},\"series\":{},\"thresholdsSettings\":{\"type\":\"number\",\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"app_proto\", \"netflow\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, app_proto, netflow nodrop\n| where event.type=\"netflow\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop\n| json field=netflow \"bytes\", \"pkts\" as network.bytes, packets nodrop\n\n// filters\n| where if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.availability_zone}}\" = \"*\", true, cloud.availability_zone matches \"{{cloud.availability_zone}}\") AND if (\"{{cloud.instance.name}}\" = \"*\", true, cloud.instance.name matches \"{{cloud.instance.name}}\") AND if (\"{{network.protocol}}\" = \"*\", true, network.protocol matches \"{{network.protocol}}\")\n\n// z-score calculation\n| timeslice 3h\n| network.bytes/1Mi as m_bytes\n| sum(m_bytes) as total_mega_bytes by _timeslice\n| total_mega_bytes as eventCount\n| sort + _timeslice\n\n| avg(total_mega_bytes) as avg_outbound_megabytes by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelB836F80D8FB34A4C",
+      "title": "Suspicious Destinations by Traffic (Megabytes)",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\",\"roundDataPoints\":true},\"title\":{\"fontSize\":14},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"app_proto\", \"netflow\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, app_proto, netflow nodrop\n| where event.type=\"netflow\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop\n| json field=netflow \"bytes\", \"pkts\" as network.bytes, packets nodrop\n\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = client.ip \n\n// filters\n| where if (\"{{server.ip}}\" = \"*\", true, server.ip matches \"{{server.ip}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if (\"{{cloud.availability_zone}}\" = \"*\", true, cloud.availability_zone matches \"{{cloud.availability_zone}}\") AND if (\"{{cloud.instance.name}}\" = \"*\", true, cloud.instance.name matches \"{{cloud.instance.name}}\") AND if (\"{{network.protocol}}\" = \"*\", true, network.protocol matches \"{{network.protocol}}\")\n\n// z-score calculation\n| timeslice 3h\n| network.bytes/1Mi as m_bytes\n| sum(m_bytes) as total_mega_bytes by _timeslice, server.ip, client.ip, latitude, longitude, country_code\n| total_mega_bytes as eventCount\n| sort + _timeslice\n\n| rollingstd eventCount as eventCount_std by server.ip, client.ip, latitude, longitude, country_code\n| smooth eventCount as eventCount_mean by server.ip, client.ip, latitude, longitude, country_code \n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by server.ip, client.ip, latitude, longitude, country_code\n| round(max_zscore, 2) as max_zscore \n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore\n\n| count as event_location by latitude, longitude\n| sort by event_location",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the geo-locations of WAF hits.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "cloud.availability_zone",
+      "displayName": "cloud.availability_zone",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"alert\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, alert nodrop\n| where event.type=\"alert\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop",
+        "field": "cloud.availability_zone"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "cloud.instance.name",
+      "displayName": "cloud.instance.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"alert\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, alert nodrop\n| where event.type=\"alert\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop",
+        "field": "cloud.instance.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "server.ip",
+      "displayName": "server.ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"alert\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, alert nodrop\n| where event.type=\"alert\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop",
+        "field": "server.ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "client.ip",
+      "displayName": "client.ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"alert\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, alert nodrop\n| where event.type=\"alert\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop",
+        "field": "client.ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "risk.static_level",
+      "displayName": "risk.static_level",
+      "defaultValue": "1",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "0,1,2,3"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "network.protocol",
+      "displayName": "network.protocol",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=PDET/CIS/AWS/Vanta/Flow \n| json \"firewall_name\", \"availability_zone\", \"event\" as cloud.instance.name, cloud.availability_zone, event nodrop\n| json field=event \"event_type\", \"src_ip\", \"src_port\", \"dest_ip\", \"dest_port\", \"proto\", \"alert\" as event.type, server.ip, server.port, client.ip, client.port, network.protocol, alert nodrop\n| where event.type=\"alert\"\n| json field=alert \"severity\", \"signature\", \"action\", \"category\" as risk.static_level, signature, event.outcome, category nodrop",
+        "field": "network.protocol"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

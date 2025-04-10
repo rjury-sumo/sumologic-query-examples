@@ -1,0 +1,620 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Cisco Meraki - Flows Allowed and Rejected",
+  "description": "The Cisco Meraki - Flows Allowed and Rejected dashboard provides insights into geographic locations and outlier graphs for allowed and denied traffic. Panels also show allowed and denied insecure traffic by protocol, allowed insecure traffic by application and host, allowed network activity on unencrypted ports, and a graph of flows by pattern.",
+  "title": "Cisco Meraki - Flows Allowed and Rejected",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-3h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel00bdb404bcd06b42",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panel08eb0fad8241794e",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":33}"
+      },
+      {
+        "key": "panel363bea25a5e78a4f",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":9}"
+      },
+      {
+        "key": "panel513150e8b3d15b4d",
+        "structure": "{\"width\":12,\"height\":1,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panel6321bd9492cee941",
+        "structure": "{\"width\":12,\"height\":10,\"x\":12,\"y\":1}"
+      },
+      {
+        "key": "panel6d3d9c3e80dc9945",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":14}"
+      },
+      {
+        "key": "panel7bc9ea49ae8d9b46",
+        "structure": "{\"width\":12,\"height\":10,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panel9354276cabdc8b44",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":19}"
+      },
+      {
+        "key": "panel93bee4f29ee7e948",
+        "structure": "{\"width\":12,\"height\":1,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelaa039cdc82ed3b48",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":19}"
+      },
+      {
+        "key": "paneld0508e0a8ffafb4e",
+        "structure": "{\"width\":12,\"height\":11,\"x\":12,\"y\":24}"
+      },
+      {
+        "key": "paneld947468385dd3b42",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":9}"
+      },
+      {
+        "key": "paneledb61b76955ef94e",
+        "structure": "{\"width\":12,\"height\":11,\"x\":0,\"y\":24}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel00bdb404bcd06b42",
+      "title": "Allowed Insecure  Traffic by Protocol",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  firewall (allow or \"Group Policy Allow\" or 0) (21 or 23 or 80 or 8008 or 8080 or 513 or 69) // 21 - FTP, 23 - Telnet, 513 - rlogin, 80, 8008, 8080 - HTTP, 69 - TFTP\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\" and action = \"allow\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\", \"69\")\n// Note - Its assumed that the CDE comprise of private IP address from 172.16.0.0/12, 192.168.0.0/16 and 10.0.0.0/8. User can configure specific IP addresses based on org CDE IP address range(s)\n| if (isPrivateIP(src_ip) and isPrivateIP(dest_ip), \"internal\", if (isPrivateIP(src_ip) and !isPrivateIP(dest_ip), \"outbound\",\"inbound\")) as direction\n| where direction in (\"inbound\", \"outbound\")\n| if (direction=\"inbound\", dest_ip, src_ip) as %\"Host\"\n| timeslice 1m\n| where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{direction}}\" = \"*\", true, direction matches \"{{direction}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{pattern}}\" = \"*\", true, pattern matches \"{{pattern}}\") AND if (\"{{Host}}\" = \"*\", true, Host matches \"{{Host}}\")\n| count as Incidents by _timeslice, Protocol | protocol as Protocol_Val\n| lookup Keyword from https://s3.amazonaws.com/sumologic-app-data/protocol-numbers.csv on Decimal=Protocol_val \n| if (isNull(keyword), Protocol_val, Keyword) as Protocol\n| fields -keyword, protocol_val \n| transpose row _timeslice column Protocol",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel08eb0fad8241794e",
+      "title": "Flows By Pattern",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  firewall pattern\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| where msg_type=\"firewall\" and isEmpty(action) and !isEmpty(pattern)\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| timeslice 5m\n| where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{direction}}\" = \"*\", true, direction matches \"{{direction}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{pattern}}\" = \"*\", true, pattern matches \"{{pattern}}\")\n| count pattern, _timeslice \n| transpose row _timeslice column pattern",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel363bea25a5e78a4f",
+      "title": "Allowed Traffic Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  firewall (allow or \"Group Policy Allow\" or 0)\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\" and action = \"allow\"\n| timeslice 1m\n| where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{direction}}\" = \"*\", true, direction matches \"{{direction}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{pattern}}\" = \"*\", true, pattern matches \"{{pattern}}\")\n| count as eventCount by _timeslice\n| outlier eventCount window=10, threshold=3, consecutive=2, direction=+-",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6321bd9492cee941",
+      "title": "Denied Destination IPs Locations",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  firewall (deny or \"Group Policy Deny\" or 1)\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\" and action = \"deny\"\n| where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{direction}}\" = \"*\", true, direction matches \"{{direction}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{pattern}}\" = \"*\", true, pattern matches \"{{pattern}}\")\n| count by dest_ip\n| lookup latitude, longitude from geo://location on ip=dest_ip\n| where !isNull(latitude)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6d3d9c3e80dc9945",
+      "title": "Denied Insecure Traffic by Protocol",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  firewall (deny or \"Group Policy Deny\" or 1) dport (21 or 23 or 80 or 8008 or 8080 or 513 or 69) // 21 - FTP, 23 - Telnet, 513 - rlogin, 80, 8008, 8080 - HTTP, 69 - TFTP\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\" and action = \"deny\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\", \"69\")\n// Note - Its assumed that the CDE comprise of private IP address from 172.16.0.0/12, 192.168.0.0/16 and 10.0.0.0/8. User can configure specific IP addresses based on org CDE IP address range(s)\n| if (isPrivateIP(src_ip) and isPrivateIP(dest_ip), \"internal\", if (isPrivateIP(src_ip) and !isPrivateIP(dest_ip), \"outbound\",\"inbound\")) as direction\n| where direction in (\"inbound\", \"outbound\")\n| if (direction=\"inbound\", dest_ip, src_ip) as %\"Host\"\n| timeslice 1m\n| where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{direction}}\" = \"*\", true, direction matches \"{{direction}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{pattern}}\" = \"*\", true, pattern matches \"{{pattern}}\") AND if (\"{{Host}}\" = \"*\", true, Host matches \"{{Host}}\")\n| count as Incidents by _timeslice, Protocol | protocol as Protocol_Val\n| lookup Keyword from https://s3.amazonaws.com/sumologic-app-data/protocol-numbers.csv on Decimal=Protocol_val \n| if (isNull(keyword), Protocol_val, Keyword) as Protocol\n| fields -keyword, protocol_val\n| transpose row _timeslice column Protocol",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7bc9ea49ae8d9b46",
+      "title": "Allowed Destination IPs Locations",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  firewall (allow or \"Group Policy Allow\" or 0)\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\" and action = \"allow\"\n| where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{direction}}\" = \"*\", true, direction matches \"{{direction}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{pattern}}\" = \"*\", true, pattern matches \"{{pattern}}\")\n| count by dest_ip\n| lookup latitude, longitude from geo://location on ip=dest_ip\n| where !isNull(latitude)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9354276cabdc8b44",
+      "title": "Denied Network Activity On Unencrypted Default Ports",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  firewall (deny or \"Group Policy Deny\" or 1) (21 or 23 or 80 or 8008 or 8080 or 513 or 69) // 21 - FTP, 23 - Telnet, 513 - rlogin, 80, 8008, 8080 - HTTP, 69 - TFTP\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\" and action = \"deny\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\", \"69\")\n// Note - Its assumed that the CDE comprise of private IP address from 172.16.0.0/12, 192.168.0.0/16 and 10.0.0.0/8. User can configure specific IP addresses based on org CDE IP address range(s)\n| if (isPrivateIP(src_ip) and isPrivateIP(dest_ip), \"internal\", if (isPrivateIP(src_ip) and !isPrivateIP(dest_ip), \"outbound\",\"inbound\")) as direction\n| where direction in (\"inbound\", \"outbound\")\n| timeslice 1m\n| where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{direction}}\" = \"*\", true, direction matches \"{{direction}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{pattern}}\" = \"*\", true, pattern matches \"{{pattern}}\")\n| count by _timeslice, dest_port \n| transpose row _timeslice column dest_port",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelaa039cdc82ed3b48",
+      "title": "Allowed Network Activity On Unencrypted Default Ports",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  firewall (allow or \"Group Policy Allow\" or 0) (21 or 23 or 80 or 8008 or 8080 or 513 or 69) // 21 - FTP, 23 - Telnet, 513 - rlogin, 80, 8008, 8080 - HTTP, 69 - TFTP\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\" and action = \"allow\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\", \"69\")\n// Note - Its assumed that the CDE comprise of private IP address from 172.16.0.0/12, 192.168.0.0/16 and 10.0.0.0/8. User can configure specific IP addresses based on org CDE IP address range(s)\n| if (isPrivateIP(src_ip) and isPrivateIP(dest_ip), \"internal\", if (isPrivateIP(src_ip) and !isPrivateIP(dest_ip), \"outbound\",\"inbound\")) as direction\n| where direction in (\"inbound\", \"outbound\")\n| timeslice 1m\n| where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{direction}}\" = \"*\", true, direction matches \"{{direction}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{pattern}}\" = \"*\", true, pattern matches \"{{pattern}}\")\n| count by _timeslice, dest_port \n| transpose row _timeslice column dest_port",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneld0508e0a8ffafb4e",
+      "title": "Denied Insecure Traffic by Application and Involved Host",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  firewall (deny or \"Group Policy Deny\" or 1) dport (21 or 23 or 80 or 8008 or 8080 or 513 or 69) // 21 - FTP, 23 - Telnet, 513 - rlogin, 80, 8008, 8080 - HTTP, 69 - TFTP\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\" and action = \"deny\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\", \"69\")\n| if (isPrivateIP(src_ip) and isPrivateIP(dest_ip), \"internal\", if (isPrivateIP(src_ip) and !isPrivateIP(dest_ip), \"outbound\",\"inbound\")) as direction\n| where direction in (\"inbound\", \"outbound\")\n| if (direction=\"inbound\", dest_ip, src_ip) as %\"Host\"\n| lookup Keyword from https://s3.amazonaws.com/sumologic-app-data/port-numbers.csv on Decimal=dest_port\n| if (isNull(keyword), dest_port, Keyword) as Application\n| transactionize application (merge %\"Host\", Application takeFirst)\n| where if (\"{{Application}}\" = \"*\", true, Application matches \"{{Application}}\") AND if (\"{{Host}}\" = \"*\", true, Host matches \"{{Host}}\")\n| count Application, %\"Host\"\n| sort by Application asc\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneld947468385dd3b42",
+      "title": "Denied Traffic Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  firewall (deny or \"Group Policy Deny\" or 1)\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\" and action = \"deny\"\n| timeslice 1m\n| where if (\"{{protocol}}\" = \"*\", true, protocol matches \"{{protocol}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{direction}}\" = \"*\", true, direction matches \"{{direction}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\") AND if (\"{{type}}\" = \"*\", true, type matches \"{{type}}\") AND if (\"{{pattern}}\" = \"*\", true, pattern matches \"{{pattern}}\")\n| count as eventCount by _timeslice\n| outlier eventCount window=10, threshold=3, consecutive=2, direction=+-",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneledb61b76955ef94e",
+      "title": "Allowed Insecure Traffic by Application and Involved Host",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  firewall (allow or \"Group Policy Allow\" or 0) dport (21 or 23 or 80 or 8008 or 8080 or 513 or 69) // 21 - FTP, 23 - Telnet, 513 - rlogin, 80, 8008, 8080 - HTTP, 69 - TFTP\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\" and action = \"allow\" and dest_port in (\"21\", \"23\", \"80\", \"8008\", \"8080\", \"513\", \"69\")\n| if (isPrivateIP(src_ip) and isPrivateIP(dest_ip), \"internal\", if (isPrivateIP(src_ip) and !isPrivateIP(dest_ip), \"outbound\",\"inbound\")) as direction\n| where direction in (\"inbound\", \"outbound\")\n| if (direction=\"inbound\", dest_ip, src_ip) as %\"Host\"\n| lookup Keyword from https://s3.amazonaws.com/sumologic-app-data/port-numbers.csv on Decimal=dest_port\n| if (isNull(keyword), dest_port, Keyword) as Application\n| transactionize application (merge %\"Host\", Application takeFirst)\n| where if (\"{{Application}}\" = \"*\", true, Application matches \"{{Application}}\") AND if (\"{{Host}}\" = \"*\", true, Host matches \"{{Host}}\")\n| count Application, %\"Host\"\n| sort by Application asc\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel513150e8b3d15b4d",
+      "title": "Denied Traffic",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panel93bee4f29ee7e948",
+      "title": "Allowed Traffic",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Metricsdatasource",
+      "displayName": "Metricsdatasource",
+      "defaultValue": "Labs/CiscoMeraki",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/CiscoMeraki"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Application",
+      "displayName": "Application",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"\n| lookup Keyword from https://s3.amazonaws.com/sumologic-app-data/port-numbers.csv on Decimal=dest_port\n| if (isNull(keyword), dest_port, Keyword) as Application",
+        "field": "Application"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Host",
+      "displayName": "Host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"\n| if (isPrivateIP(src_ip) and isPrivateIP(dest_ip), \"internal\", if (isPrivateIP(src_ip) and !isPrivateIP(dest_ip), \"outbound\",\"inbound\")) as direction\n| where direction in (\"inbound\", \"outbound\")\n| if (direction=\"inbound\", dest_ip, src_ip) as %\"Host\"",
+        "field": "Host"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "action",
+      "displayName": "action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"",
+        "field": "action"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_ip",
+      "displayName": "dest_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| where msg_type=\"firewall\"",
+        "field": "dest_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_port",
+      "displayName": "dest_port",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"",
+        "field": "dest_port"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "direction",
+      "displayName": "direction",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"\n| if (isPrivateIP(src_ip) and isPrivateIP(dest_ip), \"internal\", if (isPrivateIP(src_ip) and !isPrivateIP(dest_ip), \"outbound\",\"inbound\")) as direction\n| where direction in (\"inbound\", \"outbound\")\n| if (direction=\"inbound\", dest_ip, src_ip) as %\"Host\"",
+        "field": "direction"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "mac_address",
+      "displayName": "mac_address",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"",
+        "field": "mac_address"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "msg_type",
+      "displayName": "msg_type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"",
+        "field": "msg_type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "name",
+      "displayName": "name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"",
+        "field": "name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "pattern",
+      "displayName": "pattern",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"",
+        "field": "pattern"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "protocol",
+      "displayName": "protocol",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"",
+        "field": "protocol"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_port",
+      "displayName": "src_port",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"",
+        "field": "src_port"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "type",
+      "displayName": "type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  firewall\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|firewall|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\", \"protocol\", \"sport\", \"dport\", \"type\" as src_ip, dest_ip, mac_address, protocol, src_port, dest_port, type  nodrop\n| parse \"pattern: *\" as pattern nodrop\n|\tparse regex \" firewall\\s(?<action>allow|deny?)(?:\\s+|$)\" nodrop\n| if (action=\"\" and (pattern=\"Group Policy Allow\" or pattern matches \"0 *\" or pattern matches \"allow *\"), \"allow\", if (action=\"\" and (pattern=\"Group Policy Deny\" or pattern matches \"1 *\" or pattern matches \"deny *\" ), \"deny\", action)) as action\n| where msg_type=\"firewall\"",
+        "field": "type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

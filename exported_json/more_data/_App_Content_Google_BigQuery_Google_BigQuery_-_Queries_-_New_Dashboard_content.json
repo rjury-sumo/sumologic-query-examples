@@ -1,0 +1,415 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Google BigQuery - Queries - New",
+  "description": "See information about queries in Google BigQuery, including billed GBs, latency, and errors.",
+  "title": "Google BigQuery - Queries - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel0c496e9289cd7a4d",
+        "structure": "{\"width\":10,\"height\":11,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panele1828515b54cf944",
+        "structure": "{\"width\":14,\"height\":6,\"x\":10,\"y\":0}"
+      },
+      {
+        "key": "panel78fae490bfb5e94f",
+        "structure": "{\"width\":14,\"height\":5,\"x\":10,\"y\":5}"
+      },
+      {
+        "key": "panelafef0f8e88df4b41",
+        "structure": "{\"width\":14,\"height\":6,\"x\":0,\"y\":9}"
+      },
+      {
+        "key": "panel6b49556abb25694b",
+        "structure": "{\"width\":10,\"height\":6,\"x\":14,\"y\":9}"
+      },
+      {
+        "key": "panelac9b15b9b5beaa43",
+        "structure": "{\"width\":14,\"height\":6,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panel484f386c97c8194b",
+        "structure": "{\"width\":10,\"height\":6,\"x\":14,\"y\":14}"
+      },
+      {
+        "key": "panel1a97586b9b3f1949",
+        "structure": "{\"width\":14,\"height\":6,\"x\":0,\"y\":19}"
+      },
+      {
+        "key": "panelefbc302fba401a44",
+        "structure": "{\"width\":10,\"height\":6,\"x\":14,\"y\":19}"
+      },
+      {
+        "key": "panel580d489292c62a42",
+        "structure": "{\"width\":14,\"height\":10,\"x\":0,\"y\":24}"
+      },
+      {
+        "key": "panel3e162770ba238a48",
+        "structure": "{\"width\":10,\"height\":10,\"x\":14,\"y\":24}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel6b49556abb25694b",
+      "title": "Top 10 Queries by Billed GB",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":8,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/bigquery logName resource \"\\\"jobCompletedEvent\\\":\" \"\\\"totalBilledBytes\\\":\" \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload.serviceData.jobCompletedEvent.job\" as labels, project, job\n| json field=job \"jobStatistics.totalBilledBytes\", \"jobConfiguration.query.query\" as billed_bytes, query\n| billed_bytes / 1Gi as billed_gbytes\n|where if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Query}}\" = \"*\", true, query matches \"{{Query}}\")\n|sum(billed_gbytes) as billed_gbytes by query, project\n| top 10 query, project by billed_gbytes\n| fields billed_gbytes, project, query",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelefbc302fba401a44",
+      "title": "Top 10 Queries by Errors",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":8,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/bigquery logName resource severity \"\\\"jobCompletedEvent\\\":\" \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.severity\", \"message.data.protoPayload.serviceData.jobCompletedEvent.job.jobConfiguration.query.query\" as labels, project, severity, query\n| if(severity in (\"WARNING\", \"ERROR\",\"CRITICAL\", \"ALERT\", \"EMERGENCY\"), 1, 0) as error\n|where if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Query}}\" = \"*\", true, query matches \"{{Query}}\")\n|count as exec, sum(error) as errors by query, project\n| errors / exec * 100 as error_pct\n| top 10 query, project by errors, error_pct, exec\n| fields errors, exec, error_pct, project, query",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel484f386c97c8194b",
+      "title": "Top 10 Queries by Latency (s)",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":8,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/bigquery logName resource \"\\\"jobCompletedEvent\\\":\" startTime endTime \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload.serviceData.jobCompletedEvent.job.jobConfiguration.query.query\" as labels, project, query\n| parse regex \"\\\"startTime\\\":\\\"(?<start_day>\\d{4}-\\d{2}-\\d{2})T(?<start_time>\\d{2}:\\d{2}:\\d{2})\\.(?<start_millis>\\d{3})[^\\\"]+\\\"\"\n| parse regex \"\\\"endTime\\\":\\\"(?<end_day>\\d{4}-\\d{2}-\\d{2})T(?<end_time>\\d{2}:\\d{2}:\\d{2})\\.(?<end_millis>\\d{3})[^\\\"]+\\\"\"\n| start_millis + toMillis(parseDate(concat(start_day, start_time),\"yyyy-MM-ddHH:mm:ss\")) as start_num\n| end_millis + toMillis(parseDate(concat(end_day, end_time),\"yyyy-MM-ddHH:mm:ss\")) as end_num\n| (end_num - start_num) / 1000 as latency\n|where if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Query}}\" = \"*\", true, query matches \"{{Query}}\")\n|sum(latency) as tot_s, avg(latency) as avg_s, count as exec by query, project\n| top 10 query, project by tot_s, avg_s, exec\n| fields tot_s, avg_s, exec, project, query",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelafef0f8e88df4b41",
+      "title": "Billed GB Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/bigquery logName resource \"\\\"jobCompletedEvent\\\":\" \"\\\"totalBilledBytes\\\":\" \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload.serviceData.jobCompletedEvent.job\" as labels, project, job\n| json field=job \"jobStatistics.totalBilledBytes\", \"jobConfiguration.query.query\" as billed_bytes, query\n| billed_bytes / 1Gi as billed_gbytes\n| timeslice 1h\n|where if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Query}}\" = \"*\", true, query matches \"{{Query}}\")\n|sum(billed_gbytes) as billed_gbytes by _timeslice, query\n| transpose row _timeslice column query",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panele1828515b54cf944",
+      "title": "Billed GB, Latency (s), Errors Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[{\"series\":[\"billed_gbytes\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"line\"}},{\"series\":[\"latency_s\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"line\"}},{\"series\":[\"errors\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}},{\"series\":[\"billed_gbytes_7d_avg\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"line\"}},{\"series\":[\"latency_s_7d_avg\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"line\"}},{\"series\":[\"errors_7d_avg\"],\"queries\":[],\"properties\":{\"axisYType\":\"primary\",\"type\":\"column\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/bigquery logName resource severity startTime endTime \"\\\"jobCompletedEvent\\\":\" \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.severity\", \"message.data.protoPayload.serviceData.jobCompletedEvent.job\" as labels, project, severity, job\n| json field=job \"jobStatistics.totalBilledBytes\", \"jobConfiguration.query.query\" as billed_bytes, query nodrop\n| if(isNull(billed_bytes), 0, billed_bytes) as billed_bytes\n| billed_bytes / 1Gi as billed_gbytes\n| parse regex \"\\\"startTime\\\":\\\"(?<start_day>\\d{4}-\\d{2}-\\d{2})T(?<start_time>\\d{2}:\\d{2}:\\d{2})\\.(?<start_millis>\\d{3})[^\\\"]+\\\"\"\n| parse regex \"\\\"endTime\\\":\\\"(?<end_day>\\d{4}-\\d{2}-\\d{2})T(?<end_time>\\d{2}:\\d{2}:\\d{2})\\.(?<end_millis>\\d{3})[^\\\"]+\\\"\"\n| start_millis + toMillis(parseDate(concat(start_day, start_time),\"yyyy-MM-ddHH:mm:ss\")) as start_num\n| end_millis + toMillis(parseDate(concat(end_day, end_time),\"yyyy-MM-ddHH:mm:ss\")) as end_num\n| (end_num - start_num) / 1000 as latency_s\n| if(severity in (\"WARNING\", \"ERROR\",\"CRITICAL\", \"ALERT\", \"EMERGENCY\"), 1, 0) as error\n| timeslice 1h\n|where if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Query}}\" = \"*\", true, query matches \"{{Query}}\")\n|sum(billed_gbytes) as billed_gbytes, sum(latency_s) as latency_s, sum(error) as errors by _timeslice\n| compare with timeshift 1d 7 avg",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0c496e9289cd7a4d",
+      "title": "Location of Query Requests",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/bigquery logName resource callerIp \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload\" as labels, project, payload\n| json field=payload \"requestMetadata.callerIp\", \"serviceData.jobCompletedEvent.job.jobConfiguration.query.query\" as caller_ip, query\n| lookup latitude, longitude from geo://location on ip=caller_ip\n|where if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Query}}\" = \"*\", true, query matches \"{{Query}}\")\n|count by latitude, longitude",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelac9b15b9b5beaa43",
+      "title": "Latency (s) Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/bigquery logName resource \"\\\"jobCompletedEvent\\\":\" startTime endTime \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload.serviceData.jobCompletedEvent.job.jobConfiguration.query.query\" as labels, project, query\n| parse regex \"\\\"startTime\\\":\\\"(?<start_day>\\d{4}-\\d{2}-\\d{2})T(?<start_time>\\d{2}:\\d{2}:\\d{2})\\.(?<start_millis>\\d{3})[^\\\"]+\\\"\"\n| parse regex \"\\\"endTime\\\":\\\"(?<end_day>\\d{4}-\\d{2}-\\d{2})T(?<end_time>\\d{2}:\\d{2}:\\d{2})\\.(?<end_millis>\\d{3})[^\\\"]+\\\"\"\n| start_millis + toMillis(parseDate(concat(start_day, start_time),\"yyyy-MM-ddHH:mm:ss\")) as start_num\n| end_millis + toMillis(parseDate(concat(end_day, end_time),\"yyyy-MM-ddHH:mm:ss\")) as end_num\n| (end_num - start_num) / 1000 as latency\n| timeslice 1h\n|where if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Query}}\" = \"*\", true, query matches \"{{Query}}\")\n|sum(latency) as tot_latency_s by _timeslice, query\n| transpose row _timeslice column query",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel580d489292c62a42",
+      "title": "Recent Query Failures",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":8,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/bigquery logName resource severity  \"\\\"jobCompletedEvent\\\":\" \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\" (\"\\\"severity\\\":\\\"WARNING\\\"\" or \"\\\"severity\\\":\\\"ERROR\\\"\" or \"\\\"severity\\\":\\\"CRITICAL\\\"\" or \"\\\"severity\\\":\\\"ALERT\\\"\" or \"\\\"severity\\\":\\\"EMERGENCY\\\"\")\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.timestamp\", \"message.data.severity\", \"message.data.protoPayload\" as labels, project, timestamp, severity, payload\n| json field=payload \"serviceData.jobCompletedEvent.job.jobConfiguration.query.query\", \"status.message\" as query, message\n|where if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Query}}\" = \"*\", true, query matches \"{{Query}}\")\n|count timestamp, severity, message, query\n| fields - _count\n| sort by timestamp",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1a97586b9b3f1949",
+      "title": "Errors Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/bigquery logName resource severity \"\\\"jobCompletedEvent\\\":\" \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\" (\"\\\"severity\\\":\\\"WARNING\\\"\" or \"\\\"severity\\\":\\\"ERROR\\\"\" or \"\\\"severity\\\":\\\"CRITICAL\\\"\" or \"\\\"severity\\\":\\\"ALERT\\\"\" or \"\\\"severity\\\":\\\"EMERGENCY\\\"\")\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload.serviceData.jobCompletedEvent.job.jobConfiguration.query.query\" as labels, project, query\n| timeslice 1h\n|where if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Query}}\" = \"*\", true, query matches \"{{Query}}\")\n|count as errors by _timeslice, query\n| transpose row _timeslice column query",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel3e162770ba238a48",
+      "title": "Location of Failed Executions",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/bigquery logName resource callerIp \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\" (\"\\\"severity\\\":\\\"WARNING\\\"\" or \"\\\"severity\\\":\\\"ERROR\\\"\" or \"\\\"severity\\\":\\\"CRITICAL\\\"\" or \"\\\"severity\\\":\\\"ALERT\\\"\" or \"\\\"severity\\\":\\\"EMERGENCY\\\"\")\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.protoPayload\" as labels, project, payload\n| json field=payload \"requestMetadata.callerIp\", \"serviceData.jobCompletedEvent.job.jobConfiguration.query.query\" as caller_ip, query\n| lookup latitude, longitude from geo://location on ip=caller_ip\n|where if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Query}}\" = \"*\", true, query matches \"{{Query}}\")\n|count by latitude, longitude",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel78fae490bfb5e94f",
+      "title": "Query Statistics by Project",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/GCP/bigquery logName resource severity startTime endTime \"\\\"jobCompletedEvent\\\":\" \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\"\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.severity\", \"message.data.protoPayload.serviceData.jobCompletedEvent.job\" as labels, project, severity, job\n| json field=job \"jobStatistics.totalBilledBytes\", \"jobConfiguration.query.query\" as billed_bytes, query nodrop\n| if(isNull(billed_bytes), 0, billed_bytes) as billed_bytes\n| billed_bytes / 1Gi as billed_gbytes\n| parse regex \"\\\"startTime\\\":\\\"(?<start_day>\\d{4}-\\d{2}-\\d{2})T(?<start_time>\\d{2}:\\d{2}:\\d{2})\\.(?<start_millis>\\d{3})[^\\\"]+\\\"\"\n| parse regex \"\\\"endTime\\\":\\\"(?<end_day>\\d{4}-\\d{2}-\\d{2})T(?<end_time>\\d{2}:\\d{2}:\\d{2})\\.(?<end_millis>\\d{3})[^\\\"]+\\\"\"\n| start_millis + toMillis(parseDate(concat(start_day, start_time),\"yyyy-MM-ddHH:mm:ss\")) as start_num\n| end_millis + toMillis(parseDate(concat(end_day, end_time),\"yyyy-MM-ddHH:mm:ss\")) as end_num\n| (end_num - start_num) / 1000 as latency_s\n| if(severity in (\"WARNING\", \"ERROR\",\"CRITICAL\", \"ALERT\", \"EMERGENCY\"), 1, 0) as error\n|where if (\"{{Project}}\" = \"*\", true, project matches \"{{Project}}\") AND if (\"{{UserLabels}}\" = \"*\", true, labels matches \"{{UserLabels}}\") AND if (\"{{Query}}\" = \"*\", true, query matches \"{{Query}}\")\n|sum(billed_gbytes) as billed_gbytes, sum(latency_s) as tot_s, avg(latency_s) as avg_s, count as executions, sum(error) as errors by project\n| errors / executions * 100 as error_pct",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "UserLabels",
+      "displayName": "UserLabels",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/bigquery logName resource severity  \"\\\"jobCompletedEvent\\\":\" \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\" (\"\\\"severity\\\":\\\"WARNING\\\"\" or \"\\\"severity\\\":\\\"ERROR\\\"\" or \"\\\"severity\\\":\\\"CRITICAL\\\"\" or \"\\\"severity\\\":\\\"ALERT\\\"\" or \"\\\"severity\\\":\\\"EMERGENCY\\\"\")\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.timestamp\", \"message.data.severity\", \"message.data.protoPayload\" as labels, project, timestamp, severity, payload\n| json field=payload \"serviceData.jobCompletedEvent.job.jobConfiguration.query.query\", \"status.message\" as query, message",
+        "field": "labels"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Project",
+      "displayName": "Project",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/bigquery logName resource severity  \"\\\"jobCompletedEvent\\\":\" \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\" (\"\\\"severity\\\":\\\"WARNING\\\"\" or \"\\\"severity\\\":\\\"ERROR\\\"\" or \"\\\"severity\\\":\\\"CRITICAL\\\"\" or \"\\\"severity\\\":\\\"ALERT\\\"\" or \"\\\"severity\\\":\\\"EMERGENCY\\\"\")\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.timestamp\", \"message.data.severity\", \"message.data.protoPayload\" as labels, project, timestamp, severity, payload\n| json field=payload \"serviceData.jobCompletedEvent.job.jobConfiguration.query.query\", \"status.message\" as query, message",
+        "field": "project"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Query",
+      "displayName": "Query",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/GCP/bigquery logName resource severity  \"\\\"jobCompletedEvent\\\":\" \"eventName\":\"query_job_completed\" \"type\":\"bigquery_resource\" (\"\\\"severity\\\":\\\"WARNING\\\"\" or \"\\\"severity\\\":\\\"ERROR\\\"\" or \"\\\"severity\\\":\\\"CRITICAL\\\"\" or \"\\\"severity\\\":\\\"ALERT\\\"\" or \"\\\"severity\\\":\\\"EMERGENCY\\\"\")\n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\"\n| where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2F*\"\n| json \"message.data.resource.labels\", \"message.data.resource.labels.project_id\", \"message.data.timestamp\", \"message.data.severity\", \"message.data.protoPayload\" as labels, project, timestamp, severity, payload\n| json field=payload \"serviceData.jobCompletedEvent.job.jobConfiguration.query.query\", \"status.message\" as query, message",
+        "field": "query"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

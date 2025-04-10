@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Top Error Codes",
+  "search": {
+    "queryText": "_sourceCategory = Labs/Windows/OS/Windows (AutomaticUpdates or Report or \"EventCode = 19\" or \"EventCode = 20\" or _sourceName=*WindowsUpdate.log)\n| parse regex \"\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}:\\d+\\s+(?<process_id>\\S*)\\s+(?<thread_id>\\S*)\\s+(?<component>\\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\\d+)\\D\" nodrop | parse regex \"\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}:\\d+\\s+(?<process_id>\\S*)\\s+(?<thread_id>\\S*)\\s+(?<component>\\S*).*(?:\\s+0x|hr\\s=\\s)(?<errorcode>[0-9a-fA-F]+)\" nodrop\n| parse \"EventCode = *;\" as event_id nodrop | parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop | parse regex \"Message = \\\"(?<msg_summary>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop | parse field=msg_summary \"Installation Failure: Windows failed to install the following update with error *: *\" as errorCode, Update nodrop | parse field=msg_summary \"Installation Successful: Windows successfully installed the following update: *\" as Update nodrop | parse field=update \"(*).\" as kbnum nodrop\n| where (component=\"Report\" or update !=\"\") and errorcode!=\"\" \n| count by errorcode \n| top 10 errorcode by _count, errorcode",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-3h"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

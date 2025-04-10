@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "EC2_AuthorizeSecurityGroupIngressToPublic_CountEventResources",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail AuthorizeSecurityGroupIngress \n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where eventSource=\"ec2.amazonaws.com\" and eventName=\"AuthorizeSecurityGroupIngress\" and isBlank(errorCode) \n| json \"requestParameters.ipPermissions.items[*]\" as listIpPermissions \n| parse regex field=listIpPermissions \"\\\"cidrIp\\\"\\s*:\\s*\\\"(?<cirdrIp>[^\\\"]+)\\\"\" multi \n| parse regex field=listIpPermissions \"\\\"ipProtocol\\\"\\s*:\\s*\\\"(?<ipProtocol>[^\\\"]+)\\\"\" multi \n| where cirdrIp=\"0.0.0.0\\\\/0\" and toString(ipProtocol)=\"-1\" \n| json \"requestParameters.groupId\" as groupId \n| count_distinct(groupId) as count \n| \"EC2_AuthorizeSecurityGroupIngressToPublic_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"EC2_AuthorizeSecurityGroupIngressToPublic_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-24h",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1d"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": ""
+}

@@ -1,0 +1,183 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Akamai Security Events - Threat Intel",
+  "description": "The Akamai Security Events - Threat Intel dashboard provides an at-a-glance view of threats analyzed using Crowdstrike Threat Feed. Dashboard panels display threat count over a selected time period, geographic locations where threats occurred, source breakdown, actors responsible for threats, severity, and a correlation of IP addresses, method, and status code of threats.",
+  "title": "Akamai Security Events - Threat Intel",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-A06353ECAA00E849",
+        "structure": "{\"height\":9,\"width\":4,\"x\":10,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-6383D8EB9FC0CB49",
+        "structure": "{\"height\":9,\"width\":10,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-DBC86A239984084D",
+        "structure": "{\"height\":9,\"width\":5,\"x\":14,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-85A2E1DABA447A4C",
+        "structure": "{\"height\":9,\"width\":5,\"x\":19,\"y\":9}"
+      },
+      {
+        "key": "panelPANE-87B6C637B38C3B4E",
+        "structure": "{\"height\":10,\"width\":24,\"x\":0,\"y\":10}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-A06353ECAA00E849",
+      "title": "Threat Count",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Average\",\"label\":\"Threats\",\"useBackgroundColor\":true,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":0.0001,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":0.1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/akamai-security-events \n| json field=_raw \"attackData.clientIP\", \"attackData.configId\", \"attackData.policyId\", \"attackData.ruleAction\", \"attackData.rule\", \"attackData.ruleData\" ,  \"attackData.ruleMessage\", \"attackData.ruleSelector\", \"attackData.ruleTag\", \"attackData.ruleVersion\", \"httpMessage.start\", \"httpMessage.status\" as client_ip, config_id, policy_id, rule_action, rule, rule_data ,rule_message, rule_selector, rule_tag, rule_version, time_epoch, http_response nodrop\n| time_epoch * 1000 as time_epoch_ms\n|formatDate(toLong(time_epoch_ms), \"MM-dd-yyyyHH:mm:ss\") as attack_date \n|json field=_raw \"geo.city\", \"geo.continent\", \"geo.country\", \"geo.regionCode\", \"geo.asn\" as city, continent, country, region_code, asn nodrop\n| json field=_raw \"httpMessage.bytes\", \"httpMessage.host\", \"httpMessage.method\", \"httpMessage.path\", \"httpMessage.port\", \"httpMessage.protocol\", \"httpMessage.query\", \"httpMessage.requestId\" as bytes, host, method, path, port, protocol, query, request_id nodrop\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=client_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count ",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-6383D8EB9FC0CB49",
+      "title": "Threat by Geo Location",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"title\":{\"fontSize\":16},\"series\":{},\"map\":{\"layerType\":\"Cluster\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/akamai-security-events \n| json field=_raw \"attackData.clientIP\", \"attackData.configId\", \"attackData.policyId\", \"attackData.ruleAction\", \"attackData.rule\", \"attackData.ruleData\" ,  \"attackData.ruleMessage\", \"attackData.ruleSelector\", \"attackData.ruleTag\", \"attackData.ruleVersion\", \"httpMessage.start\", \"httpMessage.status\" as client_ip, config_id, policy_id, rule_action, rule, rule_data ,rule_message, rule_selector, rule_tag, rule_version, time_epoch, http_response nodrop\n| time_epoch * 1000 as time_epoch_ms\n|formatDate(toLong(time_epoch_ms), \"MM-dd-yyyyHH:mm:ss\") as attack_date \n|json field=_raw \"geo.city\", \"geo.continent\", \"geo.country\", \"geo.regionCode\", \"geo.asn\" as city, continent, country, region_code, asn nodrop\n| json field=_raw \"httpMessage.bytes\", \"httpMessage.host\", \"httpMessage.method\", \"httpMessage.path\", \"httpMessage.port\", \"httpMessage.protocol\", \"httpMessage.query\", \"httpMessage.requestId\" as bytes, host, method, path, port, protocol, query, request_id nodrop\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=client_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code, area_code, metro_code from geo://default on ip = client_ip\n|where malicious_confidence matches \"high\"\n|count by latitude, longitude, label_name\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-DBC86A239984084D",
+      "title": "Threat by Actor",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/akamai-security-events \n| json field=_raw \"attackData.clientIP\", \"attackData.configId\", \"attackData.policyId\", \"attackData.ruleAction\", \"attackData.rule\", \"attackData.ruleData\" ,  \"attackData.ruleMessage\", \"attackData.ruleSelector\", \"attackData.ruleTag\", \"attackData.ruleVersion\", \"httpMessage.start\", \"httpMessage.status\" as client_ip, config_id, policy_id, rule_action, rule, rule_data ,rule_message, rule_selector, rule_tag, rule_version, time_epoch, http_response nodrop\n| time_epoch * 1000 as time_epoch_ms\n|formatDate(toLong(time_epoch_ms), \"MM-dd-yyyyHH:mm:ss\") as attack_date \n|json field=_raw \"geo.city\", \"geo.continent\", \"geo.country\", \"geo.regionCode\", \"geo.asn\" as city, continent, country, region_code, asn nodrop\n| json field=_raw \"httpMessage.bytes\", \"httpMessage.host\", \"httpMessage.method\", \"httpMessage.path\", \"httpMessage.port\", \"httpMessage.protocol\", \"httpMessage.query\", \"httpMessage.requestId\" as bytes, host, method, path, port, protocol, query, request_id nodrop\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=client_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count as threat_count by Actor",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-85A2E1DABA447A4C",
+      "title": "Threats by Malicious Confidence",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/akamai-security-events \n| json field=_raw \"attackData.clientIP\", \"attackData.configId\", \"attackData.policyId\", \"attackData.ruleAction\", \"attackData.rule\", \"attackData.ruleData\" ,  \"attackData.ruleMessage\", \"attackData.ruleSelector\", \"attackData.ruleTag\", \"attackData.ruleVersion\", \"httpMessage.start\", \"httpMessage.status\" as client_ip, config_id, policy_id, rule_action, rule, rule_data ,rule_message, rule_selector, rule_tag, rule_version, time_epoch, http_response nodrop\n| time_epoch * 1000 as time_epoch_ms\n|formatDate(toLong(time_epoch_ms), \"MM-dd-yyyyHH:mm:ss\") as attack_date \n|json field=_raw \"geo.city\", \"geo.continent\", \"geo.country\", \"geo.regionCode\", \"geo.asn\" as city, continent, country, region_code, asn nodrop\n| json field=_raw \"httpMessage.bytes\", \"httpMessage.host\", \"httpMessage.method\", \"httpMessage.path\", \"httpMessage.port\", \"httpMessage.protocol\", \"httpMessage.query\", \"httpMessage.requestId\" as bytes, host, method, path, port, protocol, query, request_id nodrop\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=client_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count by malicious_confidence",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-87B6C637B38C3B4E",
+      "title": "Threat Table",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/akamai-security-events \n| json field=_raw \"attackData.clientIP\", \"attackData.configId\", \"attackData.policyId\", \"attackData.ruleAction\", \"attackData.rule\", \"attackData.ruleData\" ,  \"attackData.ruleMessage\", \"attackData.ruleSelector\", \"attackData.ruleTag\", \"attackData.ruleVersion\", \"httpMessage.start\", \"httpMessage.status\" as client_ip, config_id, policy_id, rule_action, rule, rule_data ,rule_message, rule_selector, rule_tag, rule_version, time_epoch, http_response nodrop\n| time_epoch * 1000 as time_epoch_ms\n|formatDate(toLong(time_epoch_ms), \"MM-dd-yyyyHH:mm:ss\") as attack_date \n|json field=_raw \"geo.city\", \"geo.continent\", \"geo.country\", \"geo.regionCode\", \"geo.asn\" as city, continent, country, region_code, asn nodrop\n| json field=_raw \"httpMessage.bytes\", \"httpMessage.host\", \"httpMessage.method\", \"httpMessage.path\", \"httpMessage.port\", \"httpMessage.protocol\", \"httpMessage.query\", \"httpMessage.requestId\" as bytes, host, method, path, port, protocol, query, request_id nodrop\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=client_ip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| where !(label_name matches \"*TorProxy*\")\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count by client_ip, rule_action, rule, rule_data , host, rule_message,rule_selector, rule_tag, malicious_confidence, Actor,label_name\n| sort -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [],
+  "coloringRules": []
+}

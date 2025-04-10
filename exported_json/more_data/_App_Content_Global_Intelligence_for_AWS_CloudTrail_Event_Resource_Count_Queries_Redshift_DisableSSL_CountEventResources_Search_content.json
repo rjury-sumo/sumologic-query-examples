@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Redshift_DisableSSL_CountEventResources",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail ModifyClusterParameterGroup \n| json \"eventSource\", \"eventName\", \"errorCode\", \"requestParameters.parameters\" as eventSource, eventName, errorCode, listParams nodrop \n| where isBlank(errorCode) and eventSource=\"redshift.amazonaws.com\" and eventName=\"ModifyClusterParameterGroup\" \n| parse regex field=listParams \"\\{(?<param>[^\\}]+\\})\" multi \n| concat(\"{\", param) as param \n| json field=param \"parameterName\", \"parameterValue\" \n| where parameterName=\"require_ssl\" and parameterValue=\"false\" \n| json \"requestParameters.parameterGroupName\" as groupId \n| count_distinct(groupId) as count \n| \"Redshift_DisableSSL_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"Redshift_DisableSSL_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-24h",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1d"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": ""
+}

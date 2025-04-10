@@ -1,0 +1,261 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "MySQL - Error Logs",
+  "description": "The MySQL - Error Logs dashboard provides insight into database error logs by specifically monitoring database shutdown/start events, errors over time, errors, warnings and crash recovery attempts.",
+  "title": "MySQL - Error Logs",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-DBD058BE88E90841",
+        "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-F79770F4A069EB45",
+        "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":13}"
+      },
+      {
+        "key": "panelPANE-D6C3F9C698DF3B46",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":13}"
+      },
+      {
+        "key": "panelPANE-7FA67CFCA74CAB4B",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-31139F5D8B2A3B43",
+        "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-7B48184880E6DA40",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelF405708196683841",
+        "structure": "{\"height\":9,\"width\":24,\"x\":0,\"y\":21}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-DBD058BE88E90841",
+      "title": "Error Log Type Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"ERROR\"],\"queries\":[],\"properties\":{\"color\":\"#df3d3d\"}},{\"series\":[\"Warning\"],\"queries\":[],\"properties\":{\"color\":\"#dfbe2e\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} (Error or Warning or Note or Info or Information or DEBUG or CRITICAL)\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| where touppercase(ErrorLogtype) in (\"ERROR\", \"WARNING\", \"NOTE\", \"INFO\", \"INFORMATION\", \"DEBUG\", \"CRITICAL\")\n| timeslice 1h\n| count by _timeslice, ErrorLogtype\n| transpose row _timeslice column ErrorLogType",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-F79770F4A069EB45",
+      "title": "Top Errors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[ERROR]\"\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\"\n| where ErrorLogtype=\"ERROR\"\n| parse field=ErrorMsg \"[*] [*] *\" as err_code, subsystem, error_message nodrop\n| if (!isEmpty(error_message), error_message, ErrorMsg) as error_message\n| count as frequency by error_message, db_cluster, err_code, subsystem\n| sort by frequency, error_message asc\n| limit 30",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-D6C3F9C698DF3B46",
+      "title": "Top Warnings",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"[Warning]\"\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\"\n| where ErrorLogtype=\"Warning\" \n| parse field=ErrorMsg \"[*] [*] *\" as err_code, subsystem, ErrorMessage nodrop\n| if (!isEmpty(ErrorMessage), ErrorMessage, ErrorMsg) as warning_message\n| count as frequency by warning_message, db_cluster, err_code, subsystem\n| sort by frequency, warning_message asc\n| limit 30",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-7FA67CFCA74CAB4B",
+      "title": "Server Start and Shutdown Events Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"Down\"],\"queries\":[],\"properties\":{\"color\":\"#df3d3d\"}},{\"series\":[\"Shutting Down\"],\"queries\":[],\"properties\":{\"color\":\"#dfbe2e\"}},{\"series\":[\"Up\"],\"queries\":[],\"properties\":{\"color\":\"#16943e\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} mysqld (\"ready for connections.\" or \"Shutdown complete\" or \"Terminated.\" or \"Normal shutdown\" or \"Shutting down\" or \"starting as process\")\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| if (ErrorMsg matches \"*ready for connections.*\", \"Up\",\"Unknown\") as server_status\n| if (ErrorMsg matches \"*Terminated.*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Normal shutdown*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutting down*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutdown complete*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*starting as process*\", \"Starting\",server_status) as server_status\n| timeslice 15m\n| count by _timeslice, server_status\n| transpose row _timeslice column server_status",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-31139F5D8B2A3B43",
+      "title": "Crash Recovery Attempts Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} \"Starting crash recovery\"\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| _sourceHost as Host\n| timeslice 1h\n| count as recovery_attempts by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-7B48184880E6DA40",
+      "title": "Stopped Servers",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} mysqld (\"ready for connections.\"  or \"Terminated.\" or \"Shutdown complete\" or \"Normal shutdown\")\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"\\[(?<ErrorLogtype>[^\\]]*)][\\:]*\\s(?<ErrorMsg>.*)\" nodrop\n| if (ErrorMsg matches \"*ready for connections.*\", \"Up\",\"Unknown\") as server_status\n| if (ErrorMsg matches \"*Terminated.*\", \"Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Normal shutdown*\", \"Shutting Down\", server_status) as server_status\n| if (ErrorMsg matches \"*Shutdown complete*\", \"Down\", server_status) as server_status\n| _sourceHost as Host\n| timeslice 100s\n| withtime server_status | withtime _messagetime\n| most_recent(server_status_withtime) as server_status, most_recent(_messagetime_withtime) as m_time by Host, db_cluster\n| formatDate(fromMillis(m_time), \"MM-dd-yyyy HH:mm:ss:SSS Z\") as event_time\n| ((toMillis(now())-m_time)/(1000*60)) as since_mins | format(\"%.2f\", since_mins) as since_minutes\n| concat (\"Since \", since_minutes, \" minutes\") as remark\n| where server_status != \"Up\"\n| fields - m_time, since_mins, since_minutes \n| fields Host, event_time, server_status, remark, db_cluster",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelF405708196683841",
+      "title": "Log Reduce",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster={{db_cluster}} (\"ERROR\" or \"CRITICAL\") \n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| logreduce(mesg) by db_cluster limit=20\n| _count as count | fields -_count | sort by count, signature asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db_cluster",
+      "displayName": "db_cluster",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/MySQL* db_system=mysql db_cluster=* | count by db_cluster",
+        "field": "db_cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

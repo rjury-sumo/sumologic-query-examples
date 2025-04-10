@@ -1,0 +1,214 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Apache - Trends",
+  "description": "The Apache - Trends dashboard provides trends around HTTP responses, server hits, visitor locations, traffic volume and distribution.",
+  "title": "Apache - Trends",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-190CC4DF84147946",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-2A6AD279BE3EBB4D",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-D5AA02DAA29D7B42",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-03B568E1A1E11A48",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":24}"
+      },
+      {
+        "key": "panelPANE-E287CB0780C8D947",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":24}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-190CC4DF84147946",
+      "title": " Traffic Distribution by Server",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"area\",\"displayType\":\"stacked\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"Time\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Requests Count\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm={{webserver_farm}} _sourceHost={{host}} HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| timeslice 5m\n| count by _timeslice, _sourceHost  \n| transpose row _timeslice column _sourceHost",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-2A6AD279BE3EBB4D",
+      "title": "Traffic Volume and Bytes Served",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"Time\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Volume\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false},\"axisY2\":{\"title\":\"GBytes\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"hits\"],\"queries\":[],\"properties\":{\"type\":\"column\"}},{\"series\":[\"gbytes\"],\"queries\":[],\"properties\":{\"type\":\"line\",\"axisYType\":\"secondary\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm={{webserver_farm}} _sourceHost={{host}} HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| where size != \"-\" and !isEmpty(size)\n| (size/(1048576*1000)) as gbytes \n| timeslice 5m\n| count as hits, sum(gbytes) as gbytes by _timeslice ",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-D5AA02DAA29D7B42",
+      "title": "Responses Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"Time\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Requests Count\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{\"A_successes\":{\"visible\":true},\"A_client_errors\":{\"visible\":true},\"A_redirects\":{\"visible\":true},\"A_server_errors\":{\"visible\":true}},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm={{webserver_farm}} _sourceHost={{host}} HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| if(status_code matches \"2*\", 1, 0) as successes \n| if(status_code matches \"3*\", 1, 0) as redirects \n| if(status_code matches \"4*\", 1, 0) as client_errors \n| if(status_code matches \"5*\", 1, 0) as server_errors \n| timeslice by 5m\n| sum(successes) as successes, sum(client_errors) as client_errors,  sum(redirects) as redirects, sum(server_errors) as server_errors by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-03B568E1A1E11A48",
+      "title": "Visitor Locations - One Day Time Comparison",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"Country Name\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Visitors Count\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"Visitors_Locations\"],\"queries\":[],\"properties\":{\"name\":\"Visitors Locations\"}},{\"series\":[\"Visitors_Locations_1d\"],\"queries\":[],\"properties\":{\"type\":\"line\",\"color\":\"#bf2121\",\"name\":\"Visitor Locations 1 Day before\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm={{webserver_farm}} _sourceHost={{host}} HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| count src_ip\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip\n| where !isNull(latitude) and !isEmpty(country_name)\n| sum(_count) as Visitors_Locations by country_name\n| sort Visitors_Locations \n| compare with timeshift 1d\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-E287CB0780C8D947",
+      "title": "Number of Hits by Server - One Day Time Comparison",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"Source Host\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"Hits\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[{\"series\":[\"Number_of_Hits\"],\"queries\":[],\"properties\":{\"name\":\"Number of Hits\"}},{\"series\":[\"Number_of_Hits_1d\"],\"queries\":[],\"properties\":{\"type\":\"line\",\"color\":\"#bf2121\",\"name\":\"Number of Hits 1 Day before\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm={{webserver_farm}} _sourceHost={{host}} HTTP\n| json \"log\" nodrop | if (_raw matches \"{*\", log, _raw) as mesg\n| parse regex field=mesg \"^(?<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\" nodrop\n| parse regex field=mesg \"(?<method>[A-Z]+)\\s(?<url>\\S+)\\sHTTP\\/[\\d\\.]+[\\\\n]*\\\"\\s(?<status_code>\\d+)\\s(?<size>[\\d-]+)\\s\\\"(?<referrer>.*?)\\\"\\s\\\"(?<user_agent>.+?)\\\".*\" nodrop\n| count as Number_of_Hits by _sourceHost  \n| compare with timeshift 1d",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "webserver_farm",
+      "displayName": "webserver_farm",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* | count by webserver_farm",
+        "field": "webserver_farm"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host",
+      "displayName": "host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "webserver_system=apache webserver_farm=* webserver_system=apache webserver_farm=* _sourceHost=* | count by _sourceHost",
+        "field": "_sourcehost"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

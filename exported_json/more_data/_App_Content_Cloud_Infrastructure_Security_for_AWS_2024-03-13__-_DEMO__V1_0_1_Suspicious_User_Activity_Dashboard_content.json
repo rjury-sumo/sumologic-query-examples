@@ -1,0 +1,529 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Suspicious User Activity",
+  "description": "The Suspicious User Activity dashboard shows suspicious activity that users perform in the cloud. It shows failed console logins, console logins without MFA, console logins from risky geo locations, root account logins, unauthorized AWS API requests, and impossible travel events. \n\nTo see all events a particular user has been involved with, click a user on a panel (a honeycomb cell), and then on the resulting panel under Linked Dashboards click Resource Risk Dashboard.",
+  "title": "Suspicious User Activity",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-3452E94BAB366A45",
+        "structure": "{\"height\":6,\"width\":9,\"x\":5,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-0EF71248966FFB44",
+        "structure": "{\"height\":6,\"width\":10,\"x\":14,\"y\":6}"
+      },
+      {
+        "key": "panel1738D69DAE2E4A41",
+        "structure": "{\"height\":6,\"width\":19,\"x\":5,\"y\":12}"
+      },
+      {
+        "key": "panel393A368585A8BB46",
+        "structure": "{\"height\":6,\"width\":19,\"x\":5,\"y\":0}"
+      },
+      {
+        "key": "panelE0FD90B497319A44",
+        "structure": "{\"height\":6,\"width\":19,\"x\":5,\"y\":18}"
+      },
+      {
+        "key": "panel918D6D42B96C3B47",
+        "structure": "{\"height\":6,\"width\":19,\"x\":5,\"y\":42}"
+      },
+      {
+        "key": "panel356DA393A249AA43",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel5BC0FD4BBCD27946",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":18}"
+      },
+      {
+        "key": "panel9B2C76B7B6AFA84A",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panel019CC03DB9055848",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panel6482F926842D4B44",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":42}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-3452E94BAB366A45",
+      "title": "Console Logins Without MFA",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"roundDataPoints\":true,\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":1,\"color\":\"#98ECA9\"},{\"from\":1,\"to\":2,\"color\":\"#F2DA73\"},{\"from\":2,\"to\":10,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"latest\",\"noDataMessage\":\"\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* ConsoleLogin\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,event_source,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if(isEmpty(user.name), if(isEmpty(user_principal),\"NA\",user_principal), user.name) as user.name\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n| parse field=event_source \"*.\" as cloud.service.name\n\n// global filters\n| where if (\"{{user.name}}\" = \"*\", true,user.name matches \"{{user.name}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if(\"{{source.user}}\" = \"*\", true, source.user matches \"{{source.user}}\")\n\n| where event.action matches(\"*ConsoleLogin*\")\n| where mfa_used<>\"Yes\"\n| where login_result = \"Success\"\n\n// z-score calculation\n| timeslice 3h\n| count as eventCount by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region, _timeslice\n| sort + _timeslice\n| rollingstd eventCount as eventCount_std by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| smooth eventCount as eventCount_mean by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| round(max_zscore, 2) as max_zscore\n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the details of login events without MFA.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelPANE-0EF71248966FFB44",
+      "title": "Console Logins from Risky Geo Locations",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"map\",\"displayType\":\"default\",\"roundDataPoints\":true,\"mode\":\"map\"},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* ConsoleLogin\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,event_source,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if(isEmpty(user.name), if(isEmpty(user_principal),\"NA\",user_principal), user.name) as user.name\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n| parse field=event_source \"*.\" as cloud.service.name\n\n// global filters\n| where if (\"{{user.name}}\" = \"*\", true,user.name matches \"{{user.name}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if(\"{{source.user}}\" = \"*\", true, source.user matches \"{{source.user}}\")\n\n| where event.action matches(\"*ConsoleLogin*\")\n\n// z-score calculation\n| timeslice 3h\n| count as eventCount by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region, _timeslice\n| sort + _timeslice\n| rollingstd eventCount as eventCount_std by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| smooth eventCount as eventCount_mean by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| round(max_zscore, 2) as max_zscore\n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore\n\n| where isValidIPv4(client.ip) or isValidIPv6(client.ip)\n| where !isNull(client.ip)\n| if(isValidIPv4(client.ip), if(!isPrivateIP(client.ip),true,false),true) as is_public\n| where is_public\n| count as frequency by client.ip\n| lookup latitude, longitude, country_code from geo://location on ip = client.ip\n| lookup country_code from https://sumologic-app-data.s3.amazonaws.com/riskycountries.csv on country_code=country_code\n| where !isEmpty(country_code)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "Shows the geo-locations of login events from risky countries.",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1738D69DAE2E4A41",
+      "title": "Root Account Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"roundDataPoints\":true,\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":1,\"color\":\"#98ECA9\"},{\"from\":1,\"to\":2,\"color\":\"#F2DA73\"},{\"from\":2,\"to\":10,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"latest\",\"noDataMessage\":\"\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* \"Root\"\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,event_source,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if(isEmpty(user.name), if(isEmpty(user_principal),\"NA\",user_principal), user.name) as user.name\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n| parse field=event_source \"*.\" as cloud.service.name\n\n// global filters\n| where if (\"{{user.name}}\" = \"*\", true,user.name matches \"{{user.name}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if(\"{{source.user}}\" = \"*\", true, source.user matches \"{{source.user}}\")\n\n| where user_identity_type=\"Root\"\n| where !isBlank(user.name)\n\n// z-score calculation\n| timeslice 3h\n| count as eventCount by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region, _timeslice\n| sort + _timeslice\n| rollingstd eventCount as eventCount_std by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| smooth eventCount as eventCount_mean by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| round(max_zscore, 2) as max_zscore\n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panel393A368585A8BB46",
+      "title": "Failed Console Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"roundDataPoints\":true,\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":1,\"color\":\"#98ECA9\"},{\"from\":1,\"to\":2,\"color\":\"#F2DA73\"},{\"from\":2,\"to\":10,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\",\"noDataMessage\":\"\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* (\"ConsoleLogin\" and \"Failed authentication\")\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,event_source,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if(isEmpty(user.name), if(isEmpty(user_principal),\"NA\",user_principal), user.name) as user.name\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n| parse field=event_source \"*.\" as cloud.service.name\n\n// global filters\n| where if (\"{{user.name}}\" = \"*\", true,user.name matches \"{{user.name}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if(\"{{source.user}}\" = \"*\", true, source.user matches \"{{source.user}}\")\n\n| where (event.action matches \"ConsoleLogin\" and error_message matches \"Failed authentication\")\n\n// z-score calculation\n| timeslice 3h\n| count as eventCount by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region, _timeslice\n| sort + _timeslice\n| rollingstd eventCount as eventCount_std by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| smooth eventCount as eventCount_mean by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| round(max_zscore, 2) as max_zscore\n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panelE0FD90B497319A44",
+      "title": "Unauthorized AWS API Requests",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"roundDataPoints\":true,\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":1,\"color\":\"#98ECA9\"},{\"from\":1,\"to\":2,\"color\":\"#F2DA73\"},{\"from\":2,\"to\":10,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"latest\",\"noDataMessage\":\"\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* (\"AccessDenied\" or \"UnauthorizedOperation\")\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,event_source,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if(isEmpty(user.name), if(isEmpty(user_principal),\"NA\",user_principal), user.name) as user.name\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n| parse field=event_source \"*.\" as cloud.service.name\n\n// global filters\n| where if (\"{{user.name}}\" = \"*\", true,user.name matches \"{{user.name}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if(\"{{source.user}}\" = \"*\", true, source.user matches \"{{source.user}}\")\n\n| where !isBlank(event.action) or !isBlank(user.name)\n| where error_code=\"AccessDenied\" or error_code=\"UnauthorizedOperation\"\n\n// z-score calculation\n| timeslice 3h\n| count as eventCount by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region, _timeslice\n| sort + _timeslice\n| rollingstd eventCount as eventCount_std by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| smooth eventCount as eventCount_mean by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| round(max_zscore, 2) as max_zscore\n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panel918D6D42B96C3B47",
+      "title": "Impossible Travel Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"roundDataPoints\":true,\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":0,\"to\":100,\"color\":\"#98ECA9\"},{\"from\":100,\"to\":500,\"color\":\"#F2DA73\"},{\"from\":500,\"to\":50000,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"latest\",\"noDataMessage\":\"\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail*\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,event_source,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if(isEmpty(user.name), if(isEmpty(user_principal),\"NA\",user_principal), user.name) as user.name\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n| parse field=event_source \"*.\" as cloud.service.name\n\n// global filters\n| where if (\"{{user.name}}\" = \"*\", true,user.name matches \"{{user.name}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if(\"{{source.user}}\" = \"*\", true, source.user matches \"{{source.user}}\")\n\n// filter and sort the data\n| where isValidIPv4(client.ip) or isValidIPv6(client.ip)\n| where !isNull(client.ip)\n| if(isValidIPv4(client.ip), if(!isPrivateIP(client.ip),true,false),true) as is_public\n| where is_public\n| where !isNull(user.name)\n\n| min(_messagetime) AS login_time BY user.name,client.ip\n| sort by user.name, +login_time\n//| Next, find the previous IP address where each user logged in from, and the previous login time.\n| ipv4ToNumber(client.ip) AS ip_decimal\n| backshift ip_decimal BY user.name\n| backshift login_time AS previous_login\n| where !(isNull(_backshift))\n//| Next, we’ll convert the IP addresses that are in a decimal format to the standard IP address using octets.\n| toInt(floor(_backshift/pow(256, 3))) AS octet1\n| toInt(floor((_backshift-octet1*pow(256, 3))/pow(256, 2))) AS octet2\n| toInt(floor((_backshift-(octet1*pow(256, 3)+octet2*pow(256, 2)))/256)) AS octet3\n| toInt(_backshift-(octet1*pow(256, 3)+octet2*pow(256, 2)+octet3*256)) AS octet4\n| concat(octet1,\".\",octet2,\".\",octet3,\".\",octet4) AS previous_ip\n//| Now that we have two different IP addresses, we can use geo lookup on both to find our where each occurred.\n| lookup latitude AS lat1, longitude AS long1, country_name AS country_name1 FROM geo://location ON ip=client.ip\n| lookup latitude AS lat2, longitude AS long2, country_name AS country_name2 FROM geo://location ON ip=previous_ip\n//| Now that we have two geolocations from two successive logins, we can calculate the distance between them using the Haversine function\n| haversine(lat1, long1, lat2, long2) AS distance_kms\n//| Calculate the speed someone would need to travel that distance in the time between the two logins\n| (login_time - previous_login)/3600000 AS login_time_delta_hrs\n| where login_time_delta_hrs > 0\n| distance_kms/login_time_delta_hrs AS apparent_velocity_kph\n| where apparent_velocity_kph > 0\n//| Flag certain speeds as suspicious.\n| 500 AS suspicious_speed\n| where apparent_velocity_kph > suspicious_speed\n//| add some formatting to clean up the results and make them more human-readable. Add these lines to your query:\n| concat(client.ip,\", \",previous_ip) AS ip_addresses\n| if(country_name1 <> country_name2, concat(country_name1, \", \", country_name2), country_name1) AS countries\n| where apparent_velocity_kph != \"Infinity\"\n\n| sort by apparent_velocity_kph\n| fields user.name, ip_addresses, countries, distance_kms, login_time_delta_hrs\n| max(distance_kms) as distance by user.name, ip_addresses, countries, login_time_delta_hrs\n| sort by distance desc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panel356DA393A249AA43",
+      "title": "Failed Console Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true,\"noDataMessage\":\"0\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"textColor\":\"\",\"backgroundColor\":\"\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":2,\"color\":\"#16943E\"},{\"from\":2,\"to\":5,\"color\":\"#DFBE2E\"},{\"from\":5,\"to\":10,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":10}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* (\"ConsoleLogin\" and \"Failed authentication\")\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,event_source,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if(isEmpty(user.name), if(isEmpty(user_principal),\"NA\",user_principal), user.name) as user.name\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n| parse field=event_source \"*.\" as cloud.service.name\n\n// global filters\n| where if (\"{{user.name}}\" = \"*\", true,user.name matches \"{{user.name}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if(\"{{source.user}}\" = \"*\", true, source.user matches \"{{source.user}}\")\n\n| where (event.action matches \"ConsoleLogin\" and error_message matches \"Failed authentication\")\n\n// z-score calculation\n| timeslice 3h\n| count as eventCount by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region, _timeslice\n| sort + _timeslice\n| rollingstd eventCount as eventCount_std by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| smooth eventCount as eventCount_mean by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| round(max_zscore, 2) as max_zscore\n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore\n\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panel5BC0FD4BBCD27946",
+      "title": "Unauthorized API Requests ",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true,\"noDataMessage\":\"0\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"textColor\":\"\",\"backgroundColor\":\"\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":10,\"color\":\"#16943E\"},{\"from\":10,\"to\":100,\"color\":\"#DFBE2E\"},{\"from\":100,\"to\":1000,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":1000}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* (\"AccessDenied\" or \"UnauthorizedOperation\")\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,event_source,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if(isEmpty(user.name), if(isEmpty(user_principal),\"NA\",user_principal), user.name) as user.name\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n| parse field=event_source \"*.\" as cloud.service.name\n\n// global filters\n| where if (\"{{user.name}}\" = \"*\", true,user.name matches \"{{user.name}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if(\"{{source.user}}\" = \"*\", true, source.user matches \"{{source.user}}\")\n\n| where !isBlank(event.action) or !isBlank(user.name)\n| where error_code=\"AccessDenied\" or error_code=\"UnauthorizedOperation\"\n\n// z-score calculation\n| timeslice 3h\n| count as eventCount by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region, _timeslice\n| sort + _timeslice\n| rollingstd eventCount as eventCount_std by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| smooth eventCount as eventCount_mean by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| round(max_zscore, 2) as max_zscore\n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore\n\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panel9B2C76B7B6AFA84A",
+      "title": "Console Logins Without MFA",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true,\"noDataMessage\":\"0\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"textColor\":\"\",\"backgroundColor\":\"\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":0,\"to\":10,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":10}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* ConsoleLogin\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,event_source,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if(isEmpty(user.name), if(isEmpty(user_principal),\"NA\",user_principal), user.name) as user.name\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n| parse field=event_source \"*.\" as cloud.service.name\n\n// global filters\n| where if (\"{{user.name}}\" = \"*\", true,user.name matches \"{{user.name}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if(\"{{source.user}}\" = \"*\", true, source.user matches \"{{source.user}}\")\n\n| where event.action matches(\"*ConsoleLogin*\")\n| where mfa_used<>\"Yes\"\n| where login_result = \"Success\"\n\n// z-score calculation\n| timeslice 3h\n| count as eventCount by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region, _timeslice\n| sort + _timeslice\n| rollingstd eventCount as eventCount_std by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| smooth eventCount as eventCount_mean by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| round(max_zscore, 2) as max_zscore\n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore\n\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panel019CC03DB9055848",
+      "title": "Root Account Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true,\"noDataMessage\":\"0\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"textColor\":\"\",\"backgroundColor\":\"\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":0,\"to\":1,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":10,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":10}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail* \"Root\"\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,event_source,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if(isEmpty(user.name), if(isEmpty(user_principal),\"NA\",user_principal), user.name) as user.name\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n| parse field=event_source \"*.\" as cloud.service.name\n\n// global filters\n| where if (\"{{user.name}}\" = \"*\", true,user.name matches \"{{user.name}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if(\"{{source.user}}\" = \"*\", true, source.user matches \"{{source.user}}\")\n\n| where user_identity_type=\"Root\"\n| where !isBlank(user.name)\n\n// z-score calculation\n| timeslice 3h\n| count as eventCount by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region, _timeslice\n| sort + _timeslice\n| rollingstd eventCount as eventCount_std by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| smooth eventCount as eventCount_mean by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| eventCount_std + 0.1 as eventCount_std\n| (eventCount - eventCount_mean) / eventCount_std as zscore\n| sort + _timeslice\n\n| max(zscore) as max_zscore by client.ip, user.name, event.action, cloud.service.name, cloud.account.id, cloud.region\n| round(max_zscore, 2) as max_zscore\n| where if (\"{{risk.static_level}}\" = \"*\", true, max_zscore >= toInt(\"{{risk.static_level}}\"))\n| sort - max_zscore\n\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    },
+    {
+      "id": null,
+      "key": "panel6482F926842D4B44",
+      "title": "Impossible Travel Events",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"roundDataPoints\":true,\"noDataMessage\":\"0\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"unitify\":false,\"textColor\":\"\",\"backgroundColor\":\"\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":0,\"to\":10,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":true,\"min\":0,\"max\":10}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory=*CloudTrail*\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,event_source,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if(isEmpty(user.name), if(isEmpty(user_principal),\"NA\",user_principal), user.name) as user.name\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user\n| if(isEmpty(cloud.account.id), \"NA\", cloud.account.id) as cloud.account.id\n| parse field=event_source \"*.\" as cloud.service.name\n\n// global filters\n| where if (\"{{user.name}}\" = \"*\", true,user.name matches \"{{user.name}}\") AND if (\"{{cloud.region}}\" = \"*\", true, cloud.region matches \"{{cloud.region}}\") AND if (\"{{cloud.account.id}}\" = \"*\", true, cloud.account.id matches \"{{cloud.account.id}}\") AND if (\"{{client.ip}}\" = \"*\", true, client.ip matches \"{{client.ip}}\") AND if(\"{{source.user}}\" = \"*\", true, source.user matches \"{{source.user}}\")\n\n// filter and sort the data\n| where isValidIPv4(client.ip) or isValidIPv6(client.ip)\n| where !isNull(client.ip)\n| if(isValidIPv4(client.ip), if(!isPrivateIP(client.ip),true,false),true) as is_public\n| where is_public\n| where !isNull(user.name)\n\n| min(_messagetime) AS login_time BY user.name,client.ip\n| sort by user.name, +login_time\n//| Next, find the previous IP address where each user logged in from, and the previous login time.\n| ipv4ToNumber(client.ip) AS ip_decimal\n| backshift ip_decimal BY user.name\n| backshift login_time AS previous_login\n| where !(isNull(_backshift))\n//| Next, we’ll convert the IP addresses that are in a decimal format to the standard IP address using octets.\n| toInt(floor(_backshift/pow(256, 3))) AS octet1\n| toInt(floor((_backshift-octet1*pow(256, 3))/pow(256, 2))) AS octet2\n| toInt(floor((_backshift-(octet1*pow(256, 3)+octet2*pow(256, 2)))/256)) AS octet3\n| toInt(_backshift-(octet1*pow(256, 3)+octet2*pow(256, 2)+octet3*256)) AS octet4\n| concat(octet1,\".\",octet2,\".\",octet3,\".\",octet4) AS previous_ip\n//| Now that we have two different IP addresses, we can use geo lookup on both to find our where each occurred.\n| lookup latitude AS lat1, longitude AS long1, country_name AS country_name1 FROM geo://location ON ip=client.ip\n| lookup latitude AS lat2, longitude AS long2, country_name AS country_name2 FROM geo://location ON ip=previous_ip\n//| Now that we have two geolocations from two successive logins, we can calculate the distance between them using the Haversine function\n| haversine(lat1, long1, lat2, long2) AS distance_kms\n//| Calculate the speed someone would need to travel that distance in the time between the two logins\n| (login_time - previous_login)/3600000 AS login_time_delta_hrs\n| where login_time_delta_hrs > 0\n| distance_kms/login_time_delta_hrs AS apparent_velocity_kph\n| where apparent_velocity_kph > 0\n//| Flag certain speeds as suspicious.\n| 500 AS suspicious_speed\n| where apparent_velocity_kph > suspicious_speed\n//| add some formatting to clean up the results and make them more human-readable. Add these lines to your query:\n| concat(client.ip,\", \",previous_ip) AS ip_addresses\n| if(country_name1 <> country_name2, concat(country_name1, \", \", country_name2), country_name1) AS countries\n| where apparent_velocity_kph != \"Infinity\"\n\n| sort by apparent_velocity_kph\n| fields user.name, ip_addresses, countries, distance_kms, login_time_delta_hrs\n| max(distance_kms) as distance by user.name, ip_addresses, countries, login_time_delta_hrs\n| sort by distance desc\n\n| count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": [
+        {
+          "id": "AclWTBqtXUlyIN1sNXZEo3TRB4GRymFT7eaaSVns5ErB8y4pjz5cNpn4ttQ1",
+          "relativePath": null,
+          "includeTimeRange": true,
+          "includeVariables": true
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "cloud.account.id",
+      "displayName": "cloud.account.id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* \n| json \"requestID\",\"eventID\",\"userIdentity.sessionContext.sessionIssuer.userName\",\"userIdentity.accountId\",\"sourceIPAddress\",\"awsRegion\",\"eventName\" as request_id, event_id,user_name,acc_id,source_ip,region,event_name nodrop\n| if(isEmpty(acc_id), \"NA\", acc_id) as acc_id",
+        "field": "acc_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "cloud.region",
+      "displayName": "cloud.region",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail*\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\" as event_name,source_ip,user_name,user_principal, login_result,mfa_used,event_source,aws_region,event_type,event_category,user_identity_type,event_time,permission nodrop",
+        "field": "aws_region"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user.name",
+      "displayName": "user.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* \n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| if (isEmpty(user_name), \"NA\", user_name) as user_name\n| count by user_name\n| sort by user_name asc",
+        "field": "user_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "client.ip",
+      "displayName": "client.ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail* sourceIpAddress\n| json field=_raw \"sourceIPAddress\"",
+        "field": "sourceIPAddress"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "risk.static_level",
+      "displayName": "risk.static_level",
+      "defaultValue": "1",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "0,1,2,3"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "source.user",
+      "displayName": "source.user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory=*CloudTrail*\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event.action,client.ip,user.name,user_principal, login_result,mfa_used,service_name,cloud.region,event_type,event_category,user_identity_type,event_time,permission,error_code,cloud.account.id,error_message nodrop\n\n| if (user_identity_type in (\"IAMUser\",\"Root\"), \"Yes\", \"No\") as source.user",
+        "field": "source.user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

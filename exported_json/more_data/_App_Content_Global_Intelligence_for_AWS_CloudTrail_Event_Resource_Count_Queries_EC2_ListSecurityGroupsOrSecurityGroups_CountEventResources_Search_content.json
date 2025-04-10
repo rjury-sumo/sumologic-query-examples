@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "EC2_ListSecurityGroupsOrSecurityGroups_CountEventResources",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail (DescribeSecurityGroups or DescribeImages)\n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where eventSource=\"ec2.amazonaws.com\" and (eventName=\"DescribeSecurityGroups\" or eventName=\"DescribeImages\") and isBlank(errorCode) \n| \"\" as classification\n| if(eventName =\"DescribeSecurityGroups\" ,concat(\"EC2_ListSecurityGroups_CountEventResources,\",classification),classification) as classification\n| if(eventName =\"DescribeImages\",concat(\"EC2_ListAMIs_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| parse regex \"\\\"groupId\\\"\\s*:\\s*\\\"(?<objectId>[^\\\"]+)\\\"\" multi nodrop\n| parse regex \"\\\"imageId\\\"\\s*:\\s*\\\"(?<objectId>[^\\\"]+)\\\"\" multi nodrop\n| where !isBlank(objectId)\n| \"EventResourceCount\" as type \n| count_distinct(objectId) as count by benchmarkname, type\n| fillmissing values(\"EC2_ListSecurityGroups_CountEventResources\",\"EC2_ListAMIs_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "AutoParse",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-24h",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1d"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": ""
+}

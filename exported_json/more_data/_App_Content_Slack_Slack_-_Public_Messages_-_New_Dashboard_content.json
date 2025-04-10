@@ -1,0 +1,340 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Slack - Public Messages - New",
+  "description": "The Slack - Public Messages Investigation dashboard provides details around attachments, files shared and statistics around messages in Slack public channels.",
+  "title": "Slack - Public Messages - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelb1eed92dbef2e94d",
+        "structure": "{\"width\":24,\"height\":4,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel37e6c3ddb9b4ea49",
+        "structure": "{\"width\":5,\"height\":8,\"x\":0,\"y\":3}"
+      },
+      {
+        "key": "panel620229768c41ba43",
+        "structure": "{\"width\":6,\"height\":8,\"x\":5,\"y\":3}"
+      },
+      {
+        "key": "panel6b14f2909f80f846",
+        "structure": "{\"width\":13,\"height\":8,\"x\":11,\"y\":3}"
+      },
+      {
+        "key": "panel3988cd6b8ff68843",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":9}"
+      },
+      {
+        "key": "panel78cf99f7a784cb4a",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panelb6d5f3b1bc907b41",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":19}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel620229768c41ba43",
+      "title": "Message Types",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Slack \"logType\":\"ConversationLog\"\n| json \"userName\", \"type\", \"subtype\", \"ts\", \"text\", \"channelId\", \"channelName\", \"teamName\" as User, Type, SubType, MessageTime, Text, ChannelId, Channel, Workspace nodrop\n| where !isEmpty(SubType)\n|where if (\"{{Workspace}}\" = \"*\", true, Workspace matches \"{{Workspace}}\")\n|count as Count by SubType\n| sort by Count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb1eed92dbef2e94d",
+      "title": "Instructions",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Permissions required in Slack authorization token to get the logs are\n\n\n\n\n- *team:read*, *users:read*, *channels:history*, *channels:read*."
+    },
+    {
+      "id": null,
+      "key": "panel3988cd6b8ff68843",
+      "title": "Recent Attachments",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Slack \"logType\":\"ConversationLog\"\n| json \"userName\", \"type\", \"subtype\", \"ts\", \"text\", \"channelId\", \"channelName\", \"teamName\", \"attachments\" as User, Type, SubType, MessageTime, Text, ChannelId, Channel, Workspace, Attachments nodrop\n| where !isEmpty(Attachments)\n| parse regex field=Attachments \"(?<Attachment>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=Attachment \"id\", \"text\", \"author_name\", \"author_link\", \"pretext\", \"fallback\" as AttachmentId, AttachementText, AuthorName, AuthorLink, PreText, Fallback nodrop\n| if (isEmpty(AuthorName), \"-\", AuthorName) as AuthorName\n| where Workspace matches \"{{Workspace}}\" and Channel matches \"{{Channel}}\" and AttachementText matches \"{{AttachementText}}\" and AuthorName matches \"{{AuthorName}}\" and User matches \"{{User}}\"\n| formatDate(fromMillis(toLong(MessageTime*1000)),\"yyyy-MM-dd HH:mm:ss.SSS ZZZZ\") as Time\n| AttachementText as %\"Attachement Text\" \n| AuthorName as %\"Author Name\"\n| tourl(AuthorLink, \"Author Link\") as %\"Author Link\"\n| count as Count by Time, Workspace, Channel, User, Text, %\"Attachement Text\", Fallback, PreText, AuthorName, %\"Author Link\"\n| sort by Time\n| limit 20\n| fields - Count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel78cf99f7a784cb4a",
+      "title": "Recent File Shared",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Slack \"logType\":\"ConversationLog\"\n| json \"userName\", \"type\", \"subtype\", \"ts\", \"text\", \"channelId\", \"channelName\", \"teamName\", \"files\" as User, Type, SubType, MessageTime, Text, ChannelId, Channel, Workspace, Files nodrop\n| where !isEmpty(Files)\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"name\", \"fileSize\", \"fileType\", \"urlPrivate\", \"permalink\", \"urlPrivateDownload\" as FileName, FileSize, FileType, PrivateURL, PermanentLink, URLDownload nodrop\n| where Workspace matches \"{{Workspace}}\" and Channel matches \"{{Channel}}\" and FileName matches \"{{FileName}}\" and FileType matches \"{{FileType}}\" and User matches \"{{User}}\"\n| FileName as %\"File Name\"| FileSize as %\"File Size\"| FileType as %\"File Type\"| tourl(PrivateURL, \"Private URL\") as %\"Private URL\"\n| tourl(PermanentLink, \"Permanent Link\") as %\"Permanent Link\" | tourl(URLDownload, \"Download Link\") as %\"Download Link\"\n| formatDate(fromMillis(toLong(MessageTime*1000)),\"yyyy-MM-dd HH:mm:ss.SSS ZZZZ\") as Time\n| count as Count by Time, Workspace, Channel, User, Text, %\"File Name\", %\"File Size\", %\"File Type\", %\"Private URL\", %\"Permanent Link\", %\"Download Link\"\n| sort by Time\n| limit 20\n| fields - Count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb6d5f3b1bc907b41",
+      "title": "Recent Messages",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Slack \"logType\":\"ConversationLog\"\n| json \"userName\", \"type\", \"subtype\", \"ts\", \"text\", \"channelId\", \"channelName\", \"teamName\" as User, Type, SubType, Time, Text, ChannelId, Channel, Workspace nodrop\n| where Workspace matches \"{{Workspace}}\" and Channel matches \"{{Channel}}\" and Text matches \"{{Text}}\" and User matches \"{{User}}\"\n| count by Time, Workspace, Channel, User, SubType, Text\n| formatDate(fromMillis(toLong(Time*1000)),\"yyyy-MM-dd HH:mm:ss.SSS ZZZZ\") as Time\n| sort by Time\n| limit 50\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel37e6c3ddb9b4ea49",
+      "title": "Total File Size",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"MB\",\"useBackgroundColor\":false,\"useNoData\":true,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Slack \"logType\":\"ConversationLog\"\n| json \"userName\", \"type\", \"subtype\", \"ts\", \"text\", \"channelId\", \"channelName\", \"teamName\", \"files\" as User, Type, SubType, MessageTime, Text, ChannelId, Channel, Workspace, Files nodrop\n| where !isEmpty(Files)\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"name\", \"fileSize\", \"fileType\" as FileName, FileSize, FileType\n|where if (\"{{FileType}}\" = \"*\", true, FileType matches \"{{FileType}}\")\n|sum(FileSize) as TotalInBytes\n| TotalInBytes/1024/1024 as TotalInMB\n| fields TotalInMB",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6b14f2909f80f846",
+      "title": "File Types",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Slack \"logType\":\"ConversationLog\"\n| json \"userName\", \"type\", \"subtype\", \"ts\", \"text\", \"channelId\", \"channelName\", \"teamName\", \"files\" as User, Type, SubType, MessageTime, Text, ChannelId, Channel, Workspace, Files nodrop\n| where !isEmpty(Files)\n| parse regex field=Files \"(?<File>\\{[^\\}]+(?:\\}\\}|\\}))\" multi\n| json field=File \"name\", \"fileSize\", \"fileType\" as FileName, FileSize, FileType\n|where if (\"{{FileType}}\" = \"*\", true, FileType matches \"{{FileType}}\")\n|count as Count by FileType\n| sort by Count\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Workspace",
+      "displayName": "Workspace",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Channel",
+      "displayName": "Channel",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "AuthorName",
+      "displayName": "AuthorName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "User",
+      "displayName": "User",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "FileName",
+      "displayName": "FileName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "AttachementText",
+      "displayName": "AttachementText",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "FileType",
+      "displayName": "FileType",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Text",
+      "displayName": "Text",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,440 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Linux - Security Analytics - Login Activity",
+  "description": "Dashboard showing analytics for successful and failed login attempt including root account attempts.",
+  "title": "Linux - Security Analytics - Login Activity",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelAA0AAACFBB0B2A47",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panelA797F4798DC00948",
+        "structure": "{\"height\":6,\"width\":19,\"x\":5,\"y\":7}"
+      },
+      {
+        "key": "panel9B897C0E8858DA46",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":13}"
+      },
+      {
+        "key": "panelAA8CFA63B7E38A47",
+        "structure": "{\"height\":6,\"width\":19,\"x\":5,\"y\":13}"
+      },
+      {
+        "key": "panel31F94F42BD99D840",
+        "structure": "{\"height\":6,\"width\":19,\"x\":5,\"y\":20}"
+      },
+      {
+        "key": "panel4DD8EA8FACE30943",
+        "structure": "{\"height\":6,\"width\":19,\"x\":5,\"y\":26}"
+      },
+      {
+        "key": "panel8ABE490C97249949",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":20}"
+      },
+      {
+        "key": "panel2C19227CA2907941",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":26}"
+      },
+      {
+        "key": "panelPANE-0BD235F7B618F84C",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-8A66B4C68442B94C",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":19}"
+      },
+      {
+        "key": "panelPANE-1C8732579FBB8A43",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-FCCCE6789C231A4A",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":0,\"minHeight\":3,\"minWidth\":3}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelAA0AAACFBB0B2A47",
+      "title": "Failed Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\"},\"series\":{},\"svp\":{\"label\":\"Failures\",\"sparkline\":{\"show\":true,\"color\":\"\"},\"gauge\":{\"show\":false},\"option\":\"Sum\",\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}]}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"authentication failure\" or \"FAILED SU\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| if (message matches \"sshd[*\", \"ssh\", \"\") as protocol\n| where dest_user!=\"\"\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where src_host matches \"{{src_host}}\"\n| where src_ip matches \"{{src_ip}}\"\n| where src_user matches \"{{src_user}}\"\n| timeslice 15m\n| count as eventCount by _timeslice\n| sort _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelA797F4798DC00948",
+      "title": "Failed Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"authentication failure\" or \"FAILED SU\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| if (message matches \"sshd[*\", \"ssh\", \"\") as protocol\n| where dest_user!=\"\"\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where src_host matches \"{{src_host}}\"\n| where src_ip matches \"{{src_ip}}\"\n| where src_user matches \"{{src_user}}\"\n| timeslice 1s\n| count as eventCount by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user\n| sort by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9B897C0E8858DA46",
+      "title": "Successful Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\"},\"series\":{},\"svp\":{\"option\":\"Sum\",\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"label\":\"Logins\",\"sparkline\":{\"show\":true,\"color\":\"\"},\"gauge\":{\"show\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where src_host matches \"{{src_host}}\"\n| where src_ip matches \"{{src_ip}}\"\n| where src_user matches \"{{src_user}}\"\n| timeslice 15m\n| count as eventCount by _timeslice\n| sort _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelAA8CFA63B7E38A47",
+      "title": "Successful Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where src_host matches \"{{src_host}}\"\n| where src_ip matches \"{{src_ip}}\"\n| where src_user matches \"{{src_user}}\"\n| timeslice 1s\n| count as eventCount by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user\n| sort by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel31F94F42BD99D840",
+      "title": "Root User Logins - Failure",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"authentication failure\" or \"FAILED SU\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| where src_user=\"root\" or dest_user=\"root\"\n| if (message matches \"sshd[*\", \"ssh\", \"\") as protocol\n| where dest_user!=\"\"\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where src_host matches \"{{src_host}}\"\n| where src_ip matches \"{{src_ip}}\"\n| where src_user matches \"{{src_user}}\"\n| timeslice 1s\n| count as eventCount by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user\n| sort by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4DD8EA8FACE30943",
+      "title": "Root User Logins - Success",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| where src_user=\"root\" or dest_user=\"root\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where src_host matches \"{{src_host}}\"\n| where src_ip matches \"{{src_ip}}\"\n| where src_user matches \"{{src_user}}\"\n| timeslice 1s\n| count as eventCount by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user\n| sort by _timeslice, dest_host, dest_user, message, protocol, src_host, src_ip, src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8ABE490C97249949",
+      "title": "Root Login Failures",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\"},\"series\":{},\"svp\":{\"label\":\"Failures\",\"option\":\"Sum\",\"sparkline\":{\"show\":true,\"color\":\"\"},\"gauge\":{\"show\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"authentication failure\" or \"FAILED SU\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| where src_user=\"root\" or dest_user=\"root\"\n| if (message matches \"sshd[*\", \"ssh\", \"\") as protocol\n| where dest_user!=\"\"\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where src_host matches \"{{src_host}}\"\n| where src_ip matches \"{{src_ip}}\"\n| where src_user matches \"{{src_user}}\"\n| timeslice 15m\n| count as eventCount by _timeslice\n| sort _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2C19227CA2907941",
+      "title": "Root Login Success",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\"},\"series\":{},\"svp\":{\"label\":\"Logins\",\"option\":\"Sum\",\"sparkline\":{\"show\":true,\"color\":\"\"},\"gauge\":{\"show\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| where src_user=\"root\" or dest_user=\"root\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where src_host matches \"{{src_host}}\"\n| where src_ip matches \"{{src_ip}}\"\n| where src_user matches \"{{src_user}}\"\n| timeslice 15m\n| count as eventCount by _timeslice\n| sort _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-0BD235F7B618F84C",
+      "title": "Untitled",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"backgroundColor\":\"#005982\",\"textColor\":\"white\",\"showTitle\":false},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "All User Login Attempts"
+    },
+    {
+      "id": null,
+      "key": "panelPANE-8A66B4C68442B94C",
+      "title": "Untitled",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"backgroundColor\":\"#005982\",\"textColor\":\"white\",\"showTitle\":false},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Root User Login Attempts"
+    },
+    {
+      "id": null,
+      "key": "panelPANE-1C8732579FBB8A43",
+      "title": "Login Failure Outlier",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"minimum\":0}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"authentication failure\" or \"FAILED SU\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| if (message matches \"sshd[*\", \"ssh\", \"\") as protocol\n| where dest_user!=\"\"\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where src_host matches \"{{src_host}}\"\n| where src_ip matches \"{{src_ip}}\"\n| where src_user matches \"{{src_user}}\"\n| timeslice 15m\n| count as eventCount by _timeslice\n| outlier eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-FCCCE6789C231A4A",
+      "title": "Excessive Failed Access Attempts",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"authentication failure\" or \"FAILED SU\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| if (message matches \"sshd[*\", \"ssh\", \"\") as protocol\n| where dest_user!=\"\"\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip\n| where dest_host matches \"{{dest_host}}\"\n| where dest_user matches \"{{dest_user}}\"\n| where src_host matches \"{{src_host}}\"\n| where src_ip matches \"{{src_ip}}\"\n| where src_user matches \"{{src_user}}\"\n| timeslice 5m\n| count as eventCount by _timeslice, dest_host, dest_user, protocol, src_host, src_ip, src_user\n| 5 as threshold\n| where eventCount > threshold\n| sort by _timeslice, dest_host, dest_user, protocol, src_host, src_ip, src_user",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "dest_host",
+      "displayName": "dest_host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<msg>.+)$\" nodrop",
+        "field": "dest_host"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_user",
+      "displayName": "dest_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/linux/Security*\n| parse field=msg \"name=*, UID=\" as dest_user nodrop\n| parse field=msg \"name=*, UID=*, GID=*, home=*, shell=*\" as dest_user, UID, GID, home, shell nodrop\n| parse field=msg \"account=*, uid=*, gid=*, home=*, shell=*\" as dest_user, UID, GID, home, shell nodrop\n| parse field=msg \"account=*, uid=\" as dest_user nodrop",
+        "field": "dest_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_host",
+      "displayName": "src_host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip",
+        "field": "src_host"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_user",
+      "displayName": "src_user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip",
+        "field": "src_user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

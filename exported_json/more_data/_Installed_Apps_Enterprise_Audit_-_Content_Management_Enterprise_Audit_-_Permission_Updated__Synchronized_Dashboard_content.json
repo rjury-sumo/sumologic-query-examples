@@ -1,0 +1,424 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Enterprise Audit - Permission Updated, Synchronized",
+  "description": "Content - Permission Updated, Synchronized DashBoard provides detailed information on content permissions that have been added or deleted, as well as content that has been synchronized. The dashboard is organized according to Content Synchronization and Content Permissions.",
+  "title": "Enterprise Audit - Permission Updated, Synchronized",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel1cb2df43b207f84f",
+        "structure": "{\"width\":6,\"height\":6,\"x\":6,\"y\":1}"
+      },
+      {
+        "key": "panel2179edb4825a5a44",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":16}"
+      },
+      {
+        "key": "panel36edf79281f56a4d",
+        "structure": "{\"width\":6,\"height\":6,\"x\":12,\"y\":1}"
+      },
+      {
+        "key": "panel4903a9a8ac073b46",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":16}"
+      },
+      {
+        "key": "panel492b420da7dfd941",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panel57dc636faaecfb4e",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":6}"
+      },
+      {
+        "key": "panel5dd4e6248cb6a94c",
+        "structure": "{\"width\":12,\"height\":1,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panel69f2f8a5aa6df845",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":11}"
+      },
+      {
+        "key": "panel97f3a180b9f25b45",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":11}"
+      },
+      {
+        "key": "panelabf1ba2e83428a4a",
+        "structure": "{\"width\":6,\"height\":6,\"x\":18,\"y\":1}"
+      },
+      {
+        "key": "panelb23625f7b0953b40",
+        "structure": "{\"width\":12,\"height\":1,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelf8921f2ba737fa4f",
+        "structure": "{\"width\":6,\"height\":6,\"x\":0,\"y\":1}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel1cb2df43b207f84f",
+      "title": "Top Users Updating Permissions on Content",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated\n| json \"eventName\", \"contentIdentity.name\", \"operator.email\" as EventName, ContentName, UserEmail  nodrop\n| where EventName=\"ContentPermissionsUpdated\"\n|where  ContentName matches \"{{ContentName}}\" and EventName matches \"{{EventName}}\" and UserEmail matches \"{{UserEmail}}\"\n|count as Count by UserEmail\n| sort by Count\n| limit 10\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2179edb4825a5a44",
+      "title": "Recent - Permissions Deleted from Content",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated\n| json \"eventName\", \"eventTime\", \"contentIdentity.name\", \"contentIdentity.type\", \"operator.email\", \"permissionsDeleted\" as EventName, EventTime, ContentName, ContentType, UserEmail, permissionsDeleted nodrop\n| where EventName=\"ContentPermissionsUpdated\"\n| parse regex field=permissionsDeleted \"(?<json_deleted_blob>\\{.+?(?:\\}\\}|\\]\\}))\" multi nodrop\n| where !isBlank(json_deleted_blob) \n|json field=json_deleted_blob \"permissionSourceType\" as TargetPermissionSourceType nodrop //\n| json field=json_deleted_blob \"permissions\", \"roleIdentity.roleName\", \"userIdentity.userEmail\" as PermissionsDeleted, RoleName, TargetUserEmail nodrop\n| if(isNull(RoleName),if(isNull(TargetUserEmail),\"Organization\",TargetUserEmail),RoleName) as Target_User\n|where  ContentName matches \"{{ContentName}}\" and EventName matches \"{{EventName}}\" and UserEmail matches \"{{UserEmail}}\"\n|count by EventTime, ContentName, ContentType, UserEmail, TargetPermissionSourceType, Target_User, PermissionsDeleted\n| sort by EventTime\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel36edf79281f56a4d",
+      "title": "Top Users to Request for Synchronization",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=content ContentSynchronizationRequested\n| json \"eventName\", \"syncRequest.requestBy.userEmail\", \"contentIdentity.name\" as EventName, UserEmail, ContentName  nodrop\n| where EventName=\"ContentSynchronizationRequested\"\n| where  ContentName matches \"{{ContentName}}\" and EventName matches \"{{EventName}}\" and UserEmail matches \"{{UserEmail}}\"|count as Count by UserEmail\n| sort by Count\n| limit 10\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4903a9a8ac073b46",
+      "title": "Recent - Permissions Added to Content",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated\n| json \"eventName\", \"eventTime\", \"contentIdentity.name\", \"contentIdentity.type\", \"operator.email\", \"permissionsAdded\" as EventName, EventTime, ContentName, ContentType, UserEmail, permissionsAdded nodrop\n| where EventName=\"ContentPermissionsUpdated\"\n| parse regex field=permissionsAdded \"(?<json_added_blob>\\{.+?(?:\\}\\}|\\]\\}))\" multi nodrop\n|where !isBlank(json_added_blob) \n|json field=json_added_blob \"permissionSourceType\" as TargetPermissionSourceType nodrop //\n| json field=json_added_blob \"permissions\", \"roleIdentity.roleName\", \"userIdentity.userEmail\" as PermissionsAdded, RoleName, TargetUserEmail nodrop\n| if(isNull(RoleName),if(isNull(TargetUserEmail),\"Organization\",TargetUserEmail),RoleName) as Target_User\n|where  ContentName matches \"{{ContentName}}\" and EventName matches \"{{EventName}}\" and UserEmail matches \"{{UserEmail}}\"\n|count by EventTime, ContentName, ContentType, UserEmail, TargetPermissionSourceType, Target_User, PermissionsAdded\n| sort by EventTime\n| fields - _count\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel492b420da7dfd941",
+      "title": "Permission Added Over Time by Source Type",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated\n| json \"eventName\", \"permissionsAdded\", \"contentIdentity.name\", \"operator.email\" as EventName, permissionsAdded,  ContentName, UserEmail nodrop\n| where EventName=\"ContentPermissionsUpdated\"\n| parse regex field=permissionsAdded  \"(?<json_added_blob>\\{.+?(?:\\}\\}|\\]\\}))\" multi nodrop\n| where !isBlank(json_added_blob) \n|json field=json_added_blob \"permissionSourceType\" as TargetPermissionSourceType \n| timeslice 1d\n| where  ContentName matches \"{{ContentName}}\" and EventName matches \"{{EventName}}\" and UserEmail matches \"{{UserEmail}}\"\n|count as Count by _timeslice, TargetPermissionSourceType\n| transpose row _timeslice column TargetPermissionSourceType",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-3d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel57dc636faaecfb4e",
+      "title": "Content Synchronization Success/Failure Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=content ContentSynchronizationCompleted\n| json \"eventName\", \"status\",\"syncRequest.requestBy.userEmail\", \"contentIdentity.name\" as EventName, Status,  UserEmail, ContentName  nodrop\n| where EventName=\"ContentSynchronizationCompleted\"\n| where  ContentName matches \"{{ContentName}}\" and EventName matches \"{{EventName}}\" and UserEmail matches \"{{UserEmail}}\"\n| timeslice 12h\n| count as Count by _timeslice, Status\n| transpose row _timeslice column Status\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel69f2f8a5aa6df845",
+      "title": "Recent - Content Synchronization",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=content ContentSynchronizationCompleted\n| json \"eventName\", \"eventTime\", \"status\", \"syncRequest.requestBy.userEmail\", \"syncRequest.contentNameToSynchronize\", \"syncRequest.parentFolder.name\", \"contentIdentity.name\" as EventName, EventTime, Status, RequestedBy, ContentToSynchronize, FolderName, ContentName  nodrop\n| RequestedBy as UserEmail\n| where EventName=\"ContentSynchronizationCompleted\"\n| where  ContentName matches \"{{ContentName}}\" and EventName matches \"{{EventName}}\" and UserEmail matches \"{{UserEmail}}\"\n|count by  EventTime, Status, RequestedBy, ContentToSynchronize, FolderName\n| sort by EventTime\n| fields - _count\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel97f3a180b9f25b45",
+      "title": "Permission Deleted Over Time by Source Type",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated\n| json \"eventName\", \"permissionsDeleted\", \"contentIdentity.name\", \"operator.email\"  as EventName, permissionsDeleted,  ContentName, UserEmail nodrop\n| where EventName=\"ContentPermissionsUpdated\"\n| parse regex field=permissionsDeleted \"(?<json_added_blob>\\{.+?(?:\\}\\}|\\]\\}))\" multi nodrop\n|where !isBlank(json_added_blob) \n|json field=json_deleted_blob \"permissionSourceType\" as TargetPermissionSourceType nodrop //\n| timeslice 1d\n|where  ContentName matches \"{{ContentName}}\" and EventName matches \"{{EventName}}\" and UserEmail matches \"{{UserEmail}}\"\n|count as Count by _timeslice, TargetPermissionSourceType\n| transpose row _timeslice column TargetPermissionSourceType",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-3d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelabf1ba2e83428a4a",
+      "title": "Top Content Requested to Synchronize",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=content ContentSynchronizationRequested\n| json \"eventName\", \"syncRequest.contentNameToSynchronize\",\"contentIdentity.name\", \"syncRequest.requestBy.userEmail\" as EventName, ContentToSynchronize, ContentName, UserEmail\n| where EventName=\"ContentSynchronizationRequested\"\n|where  ContentName matches \"{{ContentName}}\" and EventName matches \"{{EventName}}\" and UserEmail matches \"{{UserEmail}}\"\n| count as Count by ContentToSynchronize\n| sort by Count\n| limit 10\n\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf8921f2ba737fa4f",
+      "title": "Top Content with Permission Updated",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated\n| json \"eventName\", \"contentIdentity.name\", \"operator.email\" as EventName, ContentName, UserEmail  nodrop\n| where EventName=\"ContentPermissionsUpdated\"\n|where  ContentName matches \"{{ContentName}}\" and EventName matches \"{{EventName}}\" and UserEmail matches \"{{UserEmail}}\"\n|count as Count by ContentName\n| sort by Count\n| limit 10\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5dd4e6248cb6a94c",
+      "title": "Content Synchronization",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelb23625f7b0953b40",
+      "title": "Content Permission",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "ContentName",
+      "displayName": "ContentName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated\n| json \"eventName\", \"eventTime\", \"contentIdentity.name\", \"contentIdentity.type\", \"operator.email\", \"permissionsAdded\" as EventName, EventTime, ContentName, ContentType, UserEmail, permissionsAdded nodrop\n| count by ContentName",
+        "field": "ContentName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "EventName",
+      "displayName": "EventName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated\n| json \"eventName\", \"operator.email\" as EventName, UserEmail nodrop\n| count by EventName",
+        "field": "EventName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "UserEmail",
+      "displayName": "UserEmail",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated\n| json \"eventName\", \"operator.email\" as EventName, UserEmail nodrop\n| count by UserEmail",
+        "field": "UserEmail"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

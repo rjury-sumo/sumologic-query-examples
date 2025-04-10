@@ -1,0 +1,366 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Office 365 - SharePoint - Shared Content Non-Domain Activities",
+  "description": "",
+  "title": "Office 365 - SharePoint - Shared Content Non-Domain Activities",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel09571e15a6451844",
+        "structure": "{\"width\":10,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel0c3f654c9ee79a4b",
+        "structure": "{\"width\":14,\"height\":6,\"x\":10,\"y\":0}"
+      },
+      {
+        "key": "panel538510d184351b40",
+        "structure": "{\"width\":14,\"height\":6,\"x\":10,\"y\":5}"
+      },
+      {
+        "key": "panel6b9f8d119e243b44",
+        "structure": "{\"width\":14,\"height\":6,\"x\":10,\"y\":15}"
+      },
+      {
+        "key": "panel9ad613b991997b4a",
+        "structure": "{\"width\":10,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panelc22d2b00bbc41941",
+        "structure": "{\"width\":10,\"height\":6,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panelc3ae10b791ee4a47",
+        "structure": "{\"width\":14,\"height\":6,\"x\":10,\"y\":10}"
+      },
+      {
+        "key": "panelc4388e17aa3ea944",
+        "structure": "{\"width\":10,\"height\":6,\"x\":0,\"y\":15}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel09571e15a6451844",
+      "title": "Top 10 Users Sharing Outside Domain",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}   Workload SiteUrl  UserId Operation (access* or send* or *sharing* or *shared*) \n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad | parse \"\\\"UserId\\\":\\\"*\\\"\" as userId | parse \"\\\"ObjectId\\\":\\\"*\\\"\" as ObjectId | parse \"\\\"Operation\\\":\\\"*\\\"\" as operation  | parse \"\\\"UserSharedWith\\\":\\\"*\\\"\" as UserSharedWith nodrop | parse \"\\\"TargetUserOrGroupName\\\":\\\"*\\\"\" as TargetUserOrGroupName nodrop \n| parse field=UserSharedWith \"*@*\" as targetusername, targetdomain nodrop\n| parse field=TargetUserOrGroupName \"*@*\" as target_username, target_domain nodrop\n| tolowercase (operation) as opr\n| where workLoad in (\"SharePoint\", \"OneDrive\")  and (opr matches \"access*\" or opr matches \"send*\" or opr matches \"*sharing*\" or opr matches \"*shared*\")\n\n// configure your domian - sample  *sumologic.com*\n| where !(targetdomain matches \"*sumologic.com*\")\n| where !(target_domain matches \"*sumologic.com*\")\n| where !(isEmpty(targetusername) and isEmpty(target_username))\n| where if (\"{{userid}}\" = \"*\", true, userid matches \"{{userid}}\") AND if (\"{{targetdomain}}\" = \"*\", true, targetdomain matches \"{{targetdomain}}\") AND if (\"{{operation}}\" = \"*\", true, operation matches \"{{operation}}\") \n|count as Frequency by userId, Operation | top 10 UserId, Operation by Frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0c3f654c9ee79a4b",
+      "title": "Top 10 Non-Domain Users With Access",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}   Workload  UserId Operation (access* or send* or *sharing* or *shared*) \n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad | parse \"\\\"UserId\\\":\\\"*\\\"\" as userId | parse \"\\\"ObjectId\\\":\\\"*\\\"\" as ObjectId | parse \"\\\"Operation\\\":\\\"*\\\"\" as operation | parse \"\\\"UserSharedWith\\\":\\\"*\\\"\" as UserSharedWith nodrop | parse \"\\\"TargetUserOrGroupName\\\":\\\"*\\\"\" as TargetUserOrGroupName nodrop\n| parse field=UserSharedWith \"*@*\" as targetusername, targetdomain nodrop\n| parse field=TargetUserOrGroupName \"*@*\" as target_username, target_domain nodrop\n| tolowercase (operation) as opr\n| where workLoad in (\"SharePoint\", \"OneDrive\") and (opr matches \"access*\" or opr matches \"send*\" or opr matches \"*sharing*\" or opr matches \"*shared*\")\n\n// configure your domian - sample  *sumologic.com*\n| where !(targetdomain matches \"*sumologic.com*\")\n| where !(target_domain matches \"*sumologic.com*\")\n| where !(isEmpty(targetusername) and isEmpty(target_username))\n| where if (\"{{userid}}\" = \"*\", true, userid matches \"{{userid}}\") AND if (\"{{targetdomain}}\" = \"*\", true, targetdomain matches \"{{targetdomain}}\") AND if (\"{{operation}}\" = \"*\", true, operation matches \"{{operation}}\") \n|count as Frequency by UserSharedWith, TargetUserOrGroupName | top 10 UserSharedWith, TargetUserOrGroupName by Frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel538510d184351b40",
+      "title": "Top 10 Content Download by Non-Domain Users",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}   Workload \"\\\"Operation\\\":\\\"FileDownloaded\\\"\" UserId\n| parse \"\\\"UserId\\\":\\\"*\\\"\" as userId\n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad\n| parse \"\\\"Operation\\\":\\\"*\\\"\" as operation\n| parse \"\\\"SourceFileName\\\":\\\"*\\\"\" as SourceFileName\n| parse \"\\\"SourceRelativeUrl\\\":\\\"*\\\"\" as SourceRelativeUrl\n| where workLoad in (\"SharePoint\", \"OneDrive\")  and operation=\"FileDownloaded\"\n| parse field=userId \"*@*\" as username, targetdomain\n// configure your domian - sample  *sumologic.com*\n| where !(targetdomain matches \"*sumologic.com*\")\n|where if (\"{{userid}}\" = \"*\", true, userid matches \"{{userid}}\") AND if (\"{{targetdomain}}\" = \"*\", true, targetdomain matches \"{{targetdomain}}\") AND if (\"{{operation}}\" = \"*\", true, operation matches \"{{operation}}\") AND if (\"{{sourcefilename}}\" = \"*\", true, sourcefilename matches \"{{sourcefilename}}\") AND if (\"{{sourcerelativeurl}}\" = \"*\", true, sourcerelativeurl matches \"{{sourcerelativeurl}}\")\n|count as Frequency by SourceRelativeUrl, SourceFileName | top 10 SourceRelativeUrl, SourceFileName by Frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6b9f8d119e243b44",
+      "title": "Top 10 Content Viewed by Non-Domain Users",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}   Workload  (\"\\\"Operation\\\":\\\"FileViewed\\\"\" or \"\\\"Operation\\\":\\\"FileAccessed\\\"\") UserId\n| parse \"\\\"UserId\\\":\\\"*\\\"\" as userId\n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad\n| parse \"\\\"Operation\\\":\\\"*\\\"\" as operation\n| parse \"\\\"SourceFileName\\\":\\\"*\\\"\" as SourceFileName\n| parse \"\\\"SourceRelativeUrl\\\":\\\"*\\\"\" as SourceRelativeUrl\n| where workLoad in (\"SharePoint\", \"OneDrive\") and operation in (\"FileViewed\", \"FileAccessed\")\n| parse field=userId \"*@*\" as username, targetdomain\n// configure your domian - sample  *sumologic.com*\n| where !(targetdomain matches \"*sumologic.com*\")\n|where if (\"{{userid}}\" = \"*\", true, userid matches \"{{userid}}\") AND if (\"{{targetdomain}}\" = \"*\", true, targetdomain matches \"{{targetdomain}}\") AND if (\"{{operation}}\" = \"*\", true, operation matches \"{{operation}}\") AND if (\"{{sourcefilename}}\" = \"*\", true, sourcefilename matches \"{{sourcefilename}}\") AND if (\"{{sourcerelativeurl}}\" = \"*\", true, sourcerelativeurl matches \"{{sourcerelativeurl}}\")\n|count as Frequency by SourceRelativeUrl, SourceFileName | top 25 SourceRelativeUrl, SourceFileName by Frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9ad613b991997b4a",
+      "title": "Top 10 Non-Domain Users Downloading",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}   Workload  \"\\\"Operation\\\":\\\"FileDownloaded\\\"\" UserId\n| parse \"\\\"UserId\\\":\\\"*\\\"\" as userId\n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad\n| parse \"\\\"Operation\\\":\\\"*\\\"\" as operation\n| parse \"\\\"SourceFileName\\\":\\\"*\\\"\" as SourceFileName\n| parse \"\\\"SourceRelativeUrl\\\":\\\"*\\\"\" as SourceRelativeUrl\n| where workLoad in (\"SharePoint\", \"OneDrive\")  and operation=\"FileDownloaded\"\n| parse field=userId \"*@*\" as username, targetdomain\n// configure your domian - sample  *sumologic.com*\n| where !(targetdomain matches \"*sumologic.com*\")\n|where if (\"{{userid}}\" = \"*\", true, userid matches \"{{userid}}\") AND if (\"{{targetdomain}}\" = \"*\", true, targetdomain matches \"{{targetdomain}}\") AND if (\"{{operation}}\" = \"*\", true, operation matches \"{{operation}}\") AND if (\"{{sourcefilename}}\" = \"*\", true, sourcefilename matches \"{{sourcefilename}}\") AND if (\"{{sourcerelativeurl}}\" = \"*\", true, sourcerelativeurl matches \"{{sourcerelativeurl}}\")\n|count as Frequency by userId | top 10 userId by Frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc22d2b00bbc41941",
+      "title": "Top 10 Non-Domain Users Uploading",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}   Workload  \"\\\"Operation\\\":\\\"FileUploaded\\\"\" UserId\n| parse \"\\\"UserId\\\":\\\"*\\\"\" as userId\n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad\n| parse \"\\\"Operation\\\":\\\"*\\\"\" as operation\n| parse \"\\\"SourceFileName\\\":\\\"*\\\"\" as SourceFileName\n| parse \"\\\"SourceRelativeUrl\\\":\\\"*\\\"\" as SourceRelativeUrl\n| where workLoad in (\"SharePoint\", \"OneDrive\") and operation=\"FileUploaded\"\n| parse field=userId \"*@*\" as username, targetdomain\n// configure your domian - sample  *sumologic.com*\n| where !(targetdomain matches \"*sumologic.com*\")\n|where if (\"{{userid}}\" = \"*\", true, userid matches \"{{userid}}\") AND if (\"{{targetdomain}}\" = \"*\", true, targetdomain matches \"{{targetdomain}}\") AND if (\"{{operation}}\" = \"*\", true, operation matches \"{{operation}}\") AND if (\"{{sourcefilename}}\" = \"*\", true, sourcefilename matches \"{{sourcefilename}}\") AND if (\"{{sourcerelativeurl}}\" = \"*\", true, sourcerelativeurl matches \"{{sourcerelativeurl}}\")\n|count as Frequency by userId | top 10 userId by Frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc3ae10b791ee4a47",
+      "title": "Recent Uploads by Non-Domain Users",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}   Workload  \"\\\"Operation\\\":\\\"FileUploaded\\\"\" UserId\n| parse \"\\\"UserId\\\":\\\"*\\\"\" as userId\n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad\n| parse \"\\\"Operation\\\":\\\"*\\\"\" as operation\n| parse \"\\\"SourceFileName\\\":\\\"*\\\"\" as SourceFileName\n| parse \"\\\"SourceRelativeUrl\\\":\\\"*\\\"\" as SourceRelativeUrl\n| where workLoad in (\"SharePoint\", \"OneDrive\")  and operation=\"FileUploaded\"\n| parse field=userId \"*@*\" as username, targetdomain\n// configure your domian - sample  *sumologic.com*\n| where !(targetdomain matches \"*sumologic.com*\")\n|where if (\"{{userid}}\" = \"*\", true, userid matches \"{{userid}}\") AND if (\"{{targetdomain}}\" = \"*\", true, targetdomain matches \"{{targetdomain}}\") AND if (\"{{operation}}\" = \"*\", true, operation matches \"{{operation}}\") AND if (\"{{sourcefilename}}\" = \"*\", true, sourcefilename matches \"{{sourcefilename}}\") AND if (\"{{sourcerelativeurl}}\" = \"*\", true, sourcerelativeurl matches \"{{sourcerelativeurl}}\")\n|count as Frequency by SourceRelativeUrl, SourceFileName  | sort by Frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc4388e17aa3ea944",
+      "title": "Top 10 Non-Domain Users Viewing Content",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}   Workload  (\"\\\"Operation\\\":\\\"FileViewed\\\"\" or \"\\\"Operation\\\":\\\"FileAccessed\\\"\") UserId\n| parse \"\\\"UserId\\\":\\\"*\\\"\" as userId\n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad\n| parse \"\\\"Operation\\\":\\\"*\\\"\" as operation\n| where workLoad in (\"SharePoint\", \"OneDrive\")  and operation in (\"FileViewed\", \"FileAccessed\")\n| parse field=userId \"*@*\" as username, targetdomain\n// configure your domian - sample  *sumologic.com*\n| where !(targetdomain matches \"*sumologic.com*\")\n|where if (\"{{userid}}\" = \"*\", true, userid matches \"{{userid}}\") AND if (\"{{targetdomain}}\" = \"*\", true, targetdomain matches \"{{targetdomain}}\") AND if (\"{{operation}}\" = \"*\", true, operation matches \"{{operation}}\")\n|count as Frequency by userId | top 10 userId by Frequency",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "office",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "office"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "operation",
+      "displayName": "operation",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}   Workload UserId\n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad\n| parse \"\\\"Operation\\\":\\\"*\\\"\" as operation\n| count by operation",
+        "field": "operation"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "sourcefilename",
+      "displayName": "sourcefilename",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}   Workload \n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad\n| parse \"\\\"SourceFileName\\\":\\\"*\\\"\" as SourceFileName\n| count by SourceFileName",
+        "field": "sourcefilename"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "sourcerelativeurl",
+      "displayName": "sourcerelativeurl",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}   Workload \n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad\n| parse \"\\\"SourceRelativeUrl\\\":\\\"*\\\"\" as SourceRelativeUrl\n| where workLoad in (\"SharePoint\", \"OneDrive\") \n| count by SourceRelativeUrl",
+        "field": "sourcerelativeurl"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "targetdomain",
+      "displayName": "targetdomain",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}   Workload UserId\n| parse \"\\\"UserId\\\":\\\"*\\\"\" as userId\n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad\n| where workLoad in (\"SharePoint\", \"OneDrive\")  \n| parse field=userId \"*@*\" as username, targetdomain\n// configure your domian - sample  *sumologic.com*\n| where !(targetdomain matches \"*sumologic.com*\")",
+        "field": "targetdomain"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "userid",
+      "displayName": "userid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}   Workload UserId\n| parse \"\\\"UserId\\\":\\\"*\\\"\" as userId\n| parse \"\\\"Workload\\\":\\\"*\\\"\" as workLoad\n| count by userid",
+        "field": "userid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Most Frequently Modified Resource Types (with latest update)",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/Config Notification ConfigurationItemChangeNotification\n| count by _raw, _messageTime\n| json \"Message\", \"Type\" \n| where type == \"Notification\"\n| json field=message \"messageType\",\"configurationItem\" as messageType, single_message \n| where messageType = \"ConfigurationItemChangeNotification\" \n| json field=single_message \"resourceId\", \"resourceType\", \"awsAccountId\" as ResourceId, ResourceType, awsAccountId\n// Use total to get the number of modifications\n| 1 as row_num \n| total row_num as modifications by resourceType\n// Use accum to get a row number by resource ID, and sum up the number of resource IDs for each type\n| 1 as resource_num \n| accum resource_num as resource_num by resourceId \n| if (resource_num = 1, 1, 0) as resource_num \n| total resource_num as ResourcesModified by resourceType \n// Concat the data back together so we can use withtime/most_recent to find only the most recent modification\n| sort by _messageTime desc \n| accum row_num as row_num by resourceType \n| where row_num = 1\n// These numbers appear as floats, we want integers\n| floor(Modifications) \n| floor(ResourcesModified)\n// Look up Name stored in tag with key “Name” for each resource. Schedule the ‘ResourceNames Lookup Table Generator’ search to keep this file up to date.\n//| lookup idAndName from /shared/AWSConfig/ResourceNames on resourceType=resourceType, resourceId=resourceId | if(isNull(idAndName), resourceId, idAndName) as ResourceId\n| formatDate(_messageTime) as MostRecentModification\n| fields -_raw, _messageTime\n| fields(resourceType,  Modifications, ResourcesModified, MostRecentModification, awsAccountId, ResourceId)\n| sort by modifications desc, resourcesModified desc",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-14d"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

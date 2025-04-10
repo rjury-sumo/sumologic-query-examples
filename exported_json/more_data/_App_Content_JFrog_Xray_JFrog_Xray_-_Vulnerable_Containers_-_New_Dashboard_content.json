@@ -1,0 +1,261 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "JFrog Xray - Vulnerable Containers - New",
+  "description": "The JFrog Xray - Vulnerable Containers dashboard provides information of vulnerable containers as well as a breakdown of the hosts and namespaces associated with them.",
+  "title": "JFrog Xray - Vulnerable Containers - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel144ac6c5983fea4c",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panela0c5548ba13a2942",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panelc4e244d6ab763a4b",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel925e99e6b9d64a4d",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel7b49ac1499c85845",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":10}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel144ac6c5983fea4c",
+      "title": "Vulnerable Containers",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":true,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/kubernetes/events \"Successfully pulled image\"\n[subquery: _sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\" as Artifacts nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"display_name\" as ArtifactDisplayName nodrop\n| parse field=ArtifactDisplayName \"*\" as Field1\n| parse regex field=field1 \"(?<field2>.*?):(?<field1>[^:]+$)\" nodrop\n| parse regex field=field2 \"(?<field3>.*?):(?<field2>[^:]+$)\" nodrop\n| if (isEmpty(Field2), \"/\", Field2) as Field2\n| compose Field1, Field2 keywords]\n| where _sourceCategory matches \"*events*\"\n| json \"type\"\n| where type matches \"ADDED\"\n| json \"object.involvedObject.namespace\", \"object.involvedObject.name\", \"object.message\", \"object.source.host\" as Namespace, Container, Message, Host nodrop\n|where if (\"{{Container}}\" = \"*\", true, Container matches \"{{Container}}\") AND if (\"{{Namespace}}\" = \"*\", true, Namespace matches \"{{Namespace}}\") AND if (\"{{Host}}\" = \"*\", true, Host matches \"{{Host}}\")\n|count (container) as VulnerableContainers",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc4e244d6ab763a4b",
+      "title": "Vulnerable Namespaces",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/kubernetes/events \"Successfully pulled image\"\n[subquery: _sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\" as Artifacts nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"display_name\" as ArtifactDisplayName nodrop\n| parse field=ArtifactDisplayName \"*\" as Field1\n| parse regex field=field1 \"(?<field2>.*?):(?<field1>[^:]+$)\" nodrop\n| parse regex field=field2 \"(?<field3>.*?):(?<field2>[^:]+$)\" nodrop\n| if (isEmpty(Field2), \"/\", Field2) as Field2\n| compose Field1, Field2 keywords]\n| where _sourceCategory matches \"*events*\"\n| json \"type\"\n| where type matches \"ADDED\"\n| json \"timestamp\", \"object.involvedObject.namespace\", \"object.involvedObject.name\", \"object.message\", \"object.source.host\" as Time, Namespace, Container, Message, Host nodrop\n|where if (\"{{Container}}\" = \"*\", true, Container matches \"{{Container}}\") AND if (\"{{Namespace}}\" = \"*\", true, Namespace matches \"{{Namespace}}\") AND if (\"{{Host}}\" = \"*\", true, Host matches \"{{Host}}\")\n|count by Namespace\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7b49ac1499c85845",
+      "title": "Vulnerable Containers Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/kubernetes/events \"Successfully pulled image\"\n[subquery: _sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\" as Artifacts nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"display_name\" as ArtifactDisplayName nodrop\n| parse field=ArtifactDisplayName \"*\" as Field1\n| parse regex field=field1 \"(?<field2>.*?):(?<field1>[^:]+$)\" nodrop\n| parse regex field=field2 \"(?<field3>.*?):(?<field2>[^:]+$)\" nodrop\n| if (isEmpty(Field2), \"/\", Field2) as Field2\n| compose Field1, Field2 keywords]\n| where _sourceCategory matches \"*events*\"\n| json \"type\"\n| where type matches \"ADDED\"\n| json \"timestamp\", \"object.involvedObject.namespace\", \"object.involvedObject.name\", \"object.message\", \"object.source.host\" as Time, Namespace, Container, Message, Host nodrop \n| parse regex field=Message \"Successfully pulled image (?<ImageName>.*)\"\n| where Namespace matches \"{{Namespace}}\" and Container matches \"{{Container}}\" and Host matches \"{{Host}}\" and ImageName matches \"{{ImageName}}\"\n| formatDate(fromMillis(toLong(Time)),\"yyyy-MM-dd HH:mm:ss.SSS ZZZZ\") as Time\n| ImageName as %\"Image Name\"\n| count by Time, Namespace, Container, %\"Image Name\", Host\n| sort by Time\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela0c5548ba13a2942",
+      "title": "Vulnerable Hosts",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/kubernetes/events \"Successfully pulled image\"\n[subquery: _sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\" as Artifacts nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"display_name\" as ArtifactDisplayName nodrop\n| parse field=ArtifactDisplayName \"*\" as Field1\n| parse regex field=field1 \"(?<field2>.*?):(?<field1>[^:]+$)\" nodrop\n| parse regex field=field2 \"(?<field3>.*?):(?<field2>[^:]+$)\" nodrop\n| if (isEmpty(Field2), \"/\", Field2) as Field2\n| compose Field1, Field2 keywords]\n| where _sourceCategory matches \"*events*\"\n| json \"type\"\n| where type matches \"ADDED\"\n| json \"timestamp\", \"object.involvedObject.namespace\", \"object.involvedObject.name\", \"object.message\", \"object.source.host\" as Time, Namespace, Container, Message, Host nodrop\n|where if (\"{{Container}}\" = \"*\", true, Container matches \"{{Container}}\") AND if (\"{{Namespace}}\" = \"*\", true, Namespace matches \"{{Namespace}}\") AND if (\"{{Host}}\" = \"*\", true, Host matches \"{{Host}}\")\n|count by Host\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel925e99e6b9d64a4d",
+      "title": "Vulnerable Containers",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jfrog/kubernetes/events \"Successfully pulled image\"\n[subquery: _sourceCategory = Labs/jfrog/xray\n| json \"top_severity\", \"issues\", \"watch_name\", \"policy_name\" as TopSeverity, Issues, WatchName, PolicyName nodrop\n| where !(TopSeverity matches \"Pending Scan\")\n| parse regex field=Issues \"(?<Issue>\\{.*?(?=,\\{\\\"severity\\\"|\\]$))\" multi\n| json field=Issue \"impacted_artifacts\" as Artifacts nodrop\n| parse regex field=Artifacts \"(?<Artifact>\\{.*?(?=,\\{\\\"sha1\\\"|\\]$))\" multi\n| json field=Artifact \"display_name\" as ArtifactDisplayName nodrop\n| parse field=ArtifactDisplayName \"*\" as Field1\n| parse regex field=field1 \"(?<field2>.*?):(?<field1>[^:]+$)\" nodrop\n| parse regex field=field2 \"(?<field3>.*?):(?<field2>[^:]+$)\" nodrop\n| if (isEmpty(Field2), \"/\", Field2) as Field2\n| compose Field1, Field2 keywords]\n| where _sourceCategory matches \"*events*\"\n| json \"type\"\n| where type matches \"ADDED\"\n| json \"timestamp\", \"object.involvedObject.namespace\", \"object.involvedObject.name\", \"object.message\", \"object.source.host\" as Time, Namespace, Container, Message, Host nodrop\n| timeslice 10m\n|where if (\"{{Container}}\" = \"*\", true, Container matches \"{{Container}}\") AND if (\"{{Namespace}}\" = \"*\", true, Namespace matches \"{{Namespace}}\") AND if (\"{{Host}}\" = \"*\", true, Host matches \"{{Host}}\")\n|count by Container, _timeslice | count as %\"Number of Vulnerable Containers\" by _timeslice\n| compare with timeshift {{TimeCompare}}\n| fillmissing timeslice(10m)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Host",
+      "displayName": "Host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "TimeCompare",
+      "displayName": "TimeCompare",
+      "defaultValue": "1d",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1d"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "ImageName",
+      "displayName": "ImageName",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Container",
+      "displayName": "Container",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Namespace",
+      "displayName": "Namespace",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,443 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Nginx Plus Ingress - Error Logs Analysis",
+  "description": "The Nginx Plus Ingress - Error Logs Analysis Dashboard provides a high-level view of log level breakdowns,  comparisons, and trends. The panels also show the geographic locations of clients and clients with critical messages, new connections and outliers, client requests, request trends, and request outliers.",
+  "title": "Nginx Plus Ingress - Error Logs Analysis",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-5DA62434AF966942",
+        "structure": "{\"height\":6,\"width\":16,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-B454C31291F34B4C",
+        "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-1E61C2C19B05794B",
+        "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-E65D64E798E48B49",
+        "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-E172855199EB2A4E",
+        "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":12}"
+      },
+      {
+        "key": "panelPANE-0E8F7BB9BE522B43",
+        "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panelPANE-8EB2369E92984946",
+        "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":12}"
+      },
+      {
+        "key": "panelPANE-24E3596D8E922847",
+        "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":18}"
+      },
+      {
+        "key": "panelPANE-79568B91A41BBB41",
+        "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-5DA62434AF966942",
+      "title": "Critical Messages",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "Cluster={{Cluster}} Namespace={{Namespace}} Deployment={{Deployment}} Pod={{Pod}} _sourceCategory = Labs/Nginx/Logs\n | json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| where Log_Level matches \"{{Log_Level}}\" and Client_Ip matches \"{{Client_Ip}}\" and Server matches \"{{Server}}\" and Method matches \"{{Method}}\" and URL matches \"{{URL}}\"\n| where log_level in (\"emerg\", \"alert\", \"crit\")\n| formatDate(_messageTime, \"MM/dd/yyyy HH:mm:ss:SSS\") as messageDate\n| count by messageDate, log_level, Server, Message\n| fields messageDate, log_level, Server, Message\n| sort by messageDate\n| limit 20",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-B454C31291F34B4C",
+      "title": "Log Level - One Day Time Comparison",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"titleFontSize\":11,\"labelFontSize\":10,\"title\":\"Log Level\"},\"axisY\":{\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\",\"title\":\"Count\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"overrides\":[{\"series\":[\"_count\"],\"queries\":[],\"userProvidedChartType\":true,\"properties\":{\"type\":\"column\",\"color\":\"#50caf2\",\"fillOpacity\":0.5,\"name\":\"Count\"}},{\"series\":[\"_count_1d\"],\"queries\":[],\"userProvidedChartType\":true,\"properties\":{\"type\":\"line\",\"color\":\"#c55003\",\"name\":\"Count 1 Day before\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "Cluster={{Cluster}} Namespace={{Namespace}} Deployment={{Deployment}} Pod={{Pod}} _sourceCategory = Labs/Nginx/Logs\n | json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| where Log_Level matches \"{{Log_Level}}\" and Client_Ip matches \"{{Client_Ip}}\" and Server matches \"{{Server}}\" and Method matches \"{{Method}}\" and URL matches \"{{URL}}\"\n| count by log_level\n| sort by _count | compare with timeshift 1d",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-1E61C2C19B05794B",
+      "title": "Messages by Log Level - Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "Cluster={{Cluster}} Namespace={{Namespace}} Deployment={{Deployment}} Pod={{Pod}} _sourceCategory = Labs/Nginx/Logs\n | json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| where Log_Level matches \"{{Log_Level}}\" and Client_Ip matches \"{{Client_Ip}}\" and Server matches \"{{Server}}\" and Method matches \"{{Method}}\" and URL matches \"{{URL}}\"\n| timeslice 1h\n| count by _timeslice, Log_Level\n| transpose row _timeslice column Log_Level",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-E65D64E798E48B49",
+      "title": "Top 5 Clients causing Errors",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "Cluster={{Cluster}} Namespace={{Namespace}} Deployment={{Deployment}} Pod={{Pod}} _sourceCategory = Labs/Nginx/Logs\n | json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| where Log_Level matches \"{{Log_Level}}\" and Client_Ip matches \"{{Client_Ip}}\" and Server matches \"{{Server}}\" and Method matches \"{{Method}}\" and URL matches \"{{URL}}\"\n| where !isEmpty(client_ip)\n| count by client_ip\n| sort by _count\n| limit 5",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-E172855199EB2A4E",
+      "title": "Number of Requests by Client - One Day Time Comparison",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"timeSeries\"},\"overrides\":[{\"series\":[\"_count\"],\"queries\":[],\"userProvidedChartType\":true,\"properties\":{\"type\":\"column\",\"color\":\"#50caf2\",\"fillOpacity\":0.5,\"name\":\"Count\"}},{\"series\":[\"_count_1d\"],\"queries\":[],\"userProvidedChartType\":true,\"properties\":{\"type\":\"line\",\"color\":\"#c55003\",\"name\":\"Count 1 Day before\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "Cluster={{Cluster}} Namespace={{Namespace}} Deployment={{Deployment}} Pod={{Pod}} _sourceCategory = Labs/Nginx/Logs\n | json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| where Log_Level matches \"{{Log_Level}}\" and Client_Ip matches \"{{Client_Ip}}\" and Server matches \"{{Server}}\" and Method matches \"{{Method}}\" and URL matches \"{{URL}}\"\n| where !isEmpty(Client_Ip)\n| count by client_ip\n| sort by _count\n| compare with timeshift 1d",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-0E8F7BB9BE522B43",
+      "title": "Top 5 Servers with Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "Cluster={{Cluster}} Namespace={{Namespace}} Deployment={{Deployment}} Pod={{Pod}} _sourceCategory = Labs/Nginx/Logs\n | json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| where Log_Level matches \"{{Log_Level}}\" and Client_Ip matches \"{{Client_Ip}}\" and Server matches \"{{Server}}\" and Method matches \"{{Method}}\" and URL matches \"{{URL}}\"\n| where !isEmpty(server)\n| count by server\n| sort by _count\n| limit 5",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-8EB2369E92984946",
+      "title": "Top 5 URLs with Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "Cluster={{Cluster}} Namespace={{Namespace}} Deployment={{Deployment}} Pod={{Pod}} _sourceCategory = Labs/Nginx/Logs\n | json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| where Log_Level matches \"{{Log_Level}}\" and Client_Ip matches \"{{Client_Ip}}\" and Server matches \"{{Server}}\" and Method matches \"{{Method}}\" and URL matches \"{{URL}}\"\n| count by URL\n| sort by _count\n| limit 5",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-24E3596D8E922847",
+      "title": "All Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "Cluster={{Cluster}} Namespace={{Namespace}} Deployment={{Deployment}} Pod={{Pod}} _sourceCategory = Labs/Nginx/Logs\n | json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| where Log_Level matches \"{{Log_Level}}\" and Client_Ip matches \"{{Client_Ip}}\" and Server matches \"{{Server}}\" and Method matches \"{{Method}}\" and URL matches \"{{URL}}\"\n| formatDate(_messageTime, \"MM/dd/yyyy HH:mm:ss:SSS\") as messageDate\n| count by messageDate, log_level, Client_Ip, Server, Method, URL, Message\n| fields - _count\n| sort by messageDate\n| limit 50",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-79568B91A41BBB41",
+      "title": "Client Locations with Critical Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "Cluster={{Cluster}} Namespace={{Namespace}} Deployment={{Deployment}} Pod={{Pod}} _sourceCategory = Labs/Nginx/Logs\n | json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| where Log_Level matches \"{{Log_Level}}\" and Client_Ip matches \"{{Client_Ip}}\" and Server matches \"{{Server}}\" and Method matches \"{{Method}}\" and URL matches \"{{URL}}\"\n| where log_level in (\"emerg\", \"alert\", \"crit\")\n| count by Client_Ip\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = Client_Ip\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Cluster",
+      "displayName": "Cluster",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Nginx/Logs | fields cluster, namespace, pod, deployment",
+        "field": "cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Namespace",
+      "displayName": "Namespace",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Nginx/Logs | fields cluster, namespace, pod, deployment",
+        "field": "namespace"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Deployment",
+      "displayName": "Deployment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Nginx/Logs | fields cluster, namespace, pod, deployment",
+        "field": "deployment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Pod",
+      "displayName": "Pod",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Nginx/Logs | fields cluster, namespace, pod, deployment",
+        "field": "pod"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Log_Level",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Nginx/Logs\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| count by Log_Level, Client_Ip, Server, Method, URL, Host",
+        "field": "Log_Level"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Client_Ip",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Nginx/Logs\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| count by Log_Level, Client_Ip, Server, Method, URL, Host",
+        "field": "Client_Ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Server",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Nginx/Logs\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| count by Log_Level, Client_Ip, Server, Method, URL, Host",
+        "field": "Server"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Method",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Nginx/Logs\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| count by Log_Level, Client_Ip, Server, Method, URL, Host",
+        "field": "method"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "URL",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Nginx/Logs\n| json auto maxdepth 1 nodrop\n| if (isEmpty(log), _raw, log) as nginx_log_message\n| parse regex field=nginx_log_message \"\\s\\[(?<Log_Level>\\S+)\\]\\s\\d+#\\d+:\\s(?:\\*\\d+\\s|)(?<Message>[A-Za-z][^,]+)(?:,|$)\"\n| parse field=nginx_log_message \"client: *, server: *, request: \\\"* * HTTP/1.1\\\", host: \\\"*\\\"\" as Client_Ip, Server, Method, URL, Host nodrop\n| count by Log_Level, Client_Ip, Server, Method, URL, Host",
+        "field": "url"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

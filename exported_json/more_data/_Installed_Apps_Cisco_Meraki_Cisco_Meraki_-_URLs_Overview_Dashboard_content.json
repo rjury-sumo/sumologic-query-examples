@@ -1,0 +1,673 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Cisco Meraki - URLs Overview",
+  "description": "The Cisco Meraki - URLs Overview dashboard provides insights into requests, destination locations, and threats by URLs. The panels also display information on mac addresses, methods, OS platforms used, the top requested URLs and destination ports. Graphs for outlier trends and comparison graphs provide insights that enable proactive troubleshooting and root cause resolution.",
+  "title": "Cisco Meraki - URLs Overview",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-3h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel3f5861d4b3314a48",
+        "structure": "{\"width\":4,\"height\":5,\"x\":0,\"y\":4}"
+      },
+      {
+        "key": "panel4f7120bb967b7940",
+        "structure": "{\"width\":8,\"height\":8,\"x\":8,\"y\":20}"
+      },
+      {
+        "key": "panel5ba55a53a3b34b4a",
+        "structure": "{\"width\":10,\"height\":10,\"x\":4,\"y\":0}"
+      },
+      {
+        "key": "panel5e3dcac1a4538b4c",
+        "structure": "{\"width\":8,\"height\":8,\"x\":8,\"y\":14}"
+      },
+      {
+        "key": "panel75548a128bfbeb4a",
+        "structure": "{\"width\":4,\"height\":8,\"x\":20,\"y\":8}"
+      },
+      {
+        "key": "panel84783f80993baa47",
+        "structure": "{\"width\":10,\"height\":10,\"x\":14,\"y\":0}"
+      },
+      {
+        "key": "panel86d8589ba382794e",
+        "structure": "{\"width\":8,\"height\":8,\"x\":0,\"y\":20}"
+      },
+      {
+        "key": "panel8faba65b974d2849",
+        "structure": "{\"width\":8,\"height\":8,\"x\":12,\"y\":8}"
+      },
+      {
+        "key": "panela34c2e479e784849",
+        "structure": "{\"width\":8,\"height\":8,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panelb37497e790023849",
+        "structure": "{\"width\":4,\"height\":8,\"x\":4,\"y\":8}"
+      },
+      {
+        "key": "panelb6f5e8a99d23cb4f",
+        "structure": "{\"width\":4,\"height\":8,\"x\":8,\"y\":8}"
+      },
+      {
+        "key": "panelbef832d282dc8844",
+        "structure": "{\"width\":4,\"height\":5,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelc3f5b651bd2fb841",
+        "structure": "{\"width\":4,\"height\":8,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "paneld3f82b84a0291a40",
+        "structure": "{\"width\":8,\"height\":8,\"x\":16,\"y\":20}"
+      },
+      {
+        "key": "panelfb5adf7ab4d3aa48",
+        "structure": "{\"width\":8,\"height\":8,\"x\":16,\"y\":14}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel3f5861d4b3314a48",
+      "title": "Threats By URLs",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":true,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":\"1\",\"color\":\"#33ca34\"},{\"from\":\"1\",\"to\":\"5\",\"color\":\"#ffc508\"},{\"from\":\"5\",\"to\":null,\"color\":\"#ff4141\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by url\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=url \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"url\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum(_count) as threatCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4f7120bb967b7940",
+      "title": "Unique Destination IPs Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| timeslice 1m\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count_distinct(dest_ip) as Unique_dest_ips by _timeslice\n| outlier Unique_dest_ips window=10, threshold=3, consecutive=2, direction=+-",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5ba55a53a3b34b4a",
+      "title": "Destination Locations",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by dest_ip\n| lookup latitude, longitude from geo://location on ip = dest_ip\n| where !isNull(latitude)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5e3dcac1a4538b4c",
+      "title": "Number of Requests - Time Compare",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| timeslice 1m\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count as Requests by _timeslice  \n| compare with timeshift 1d 2",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel75548a128bfbeb4a",
+      "title": "Top 10 Destination Ports",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by dest_port\n| top 10 dest_port by _count, dest_port asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel84783f80993baa47",
+      "title": "Destination Locations By Country",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| timeslice 15m\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count by _timeslice, dest_ip\n| lookup latitude, longitude, country_name from geo://location on ip = dest_ip\n| where !isNull(latitude)\n| sum(_count) by _timeslice, country_name\n| transpose row _timeslice column country_name",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel86d8589ba382794e",
+      "title": "Unique Source IPs Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| timeslice 1m\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count_distinct(src_ip) as Unique_src_ips by _timeslice\n| outlier Unique_src_ips window=10, threshold=3, consecutive=2, direction=+-",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8faba65b974d2849",
+      "title": "Top 10 Requested URLs",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count as Requests by url \n| top 10 url by Requests, url asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela34c2e479e784849",
+      "title": "Requests Per Minute",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| timeslice 1m\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count as request by _timeslice, method\n| transpose row _timeslice column method",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb37497e790023849",
+      "title": "Methods",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"Requests\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count as Requests by method | sort by Requests, method asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb6f5e8a99d23cb4f",
+      "title": "OS Platform",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"Events\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls agent\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| if (user_agent matches \"*iPad*\" OR user_agent matches \"*iPhone*\" OR user_agent matches \"*BlackBerry*\" OR user_agent matches \"*SAMSUNG*\" OR user_agent matches \"*Galaxy*\" or user_agent matches \"*Windows Phone*\" or user_agent matches \"*Android*\" or user_agent matches \"LGE-*\" or user_agent matches \"SCH-*\" or user_agent matches \"*HUAWEI-*\" or user_agent matches \"*samsung*\" or user_agent matches \"Dalvik/*\" OR user_agent matches \"Nokia*\" OR user_agent matches \"LG-*\" or user_agent matches \"*CFNetwork*\" or user_agent matches \"*UP.Browser/*\" or user_agent matches \"*QQ*rowser*\" or user_agent matches \"*NetFront/*\" or user_agent matches \"*Mobile Safari*\" or user_agent matches \"*iemobile*\",\"Mobile\",\"PC\") as OS_Platform\n| if (user_agent matches \"*Macintosh*\" or user_agent matches \"*Mac OS*\" or user_agent matches \"*iMac*\",\"Mac\",OS_Platform) as OS_Platform\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{OS_Platform}}\" = \"*\", true, OS_Platform matches \"{{OS_Platform}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count OS_Platform | sort by _count, OS_Platform asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelbef832d282dc8844",
+      "title": "Requests",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count as requests",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc3f5b651bd2fb841",
+      "title": "Mac Addresses",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count_distinct(mac_address) as Unique_mac_addresses",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneld3f82b84a0291a40",
+      "title": "Unique MAC Address Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| timeslice 1m\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count_distinct(mac_address) as Unique_mac_addresses by _timeslice\n| outlier Unique_mac_addresses window=10, threshold=3, consecutive=2, direction=+-",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelfb5adf7ab4d3aa48",
+      "title": "Requests Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":false},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| timeslice 1m\n| where if (\"{{msg_type}}\" = \"*\", true, msg_type matches \"{{msg_type}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{dest_port}}\" = \"*\", true, dest_port matches \"{{dest_port}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{url}}\" = \"*\", true, url matches \"{{url}}\") AND if (\"{{user_agent}}\" = \"*\", true, user_agent matches \"{{user_agent}}\") AND if (\"{{dest_ip}}\" = \"*\", true, dest_ip matches \"{{dest_ip}}\") AND if (\"{{method}}\" = \"*\", true, method matches \"{{method}}\") AND if (\"{{mac_address}}\" = \"*\", true, mac_address matches \"{{mac_address}}\") AND if (\"{{name}}\" = \"*\", true, name matches \"{{name}}\")\n| count as Requests by _timeslice\n| outlier Requests window=10, threshold=3, consecutive=2, direction=+-",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Metricsdatasource",
+      "displayName": "Metricsdatasource",
+      "defaultValue": "Labs/CiscoMeraki",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/CiscoMeraki"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "OS_Platform",
+      "displayName": "OS_Platform",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls agent\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"\n| if (user_agent matches \"*iPad*\" OR user_agent matches \"*iPhone*\" OR user_agent matches \"*BlackBerry*\" OR user_agent matches \"*SAMSUNG*\" OR user_agent matches \"*Galaxy*\" or user_agent matches \"*Windows Phone*\" or user_agent matches \"*Android*\" or user_agent matches \"LGE-*\" or user_agent matches \"SCH-*\" or user_agent matches \"*HUAWEI-*\" or user_agent matches \"*samsung*\" or user_agent matches \"Dalvik/*\" OR user_agent matches \"Nokia*\" OR user_agent matches \"LG-*\" or user_agent matches \"*CFNetwork*\" or user_agent matches \"*UP.Browser/*\" or user_agent matches \"*QQ*rowser*\" or user_agent matches \"*NetFront/*\" or user_agent matches \"*Mobile Safari*\" or user_agent matches \"*iemobile*\",\"Mobile\",\"PC\") as OS_Platform\n| if (user_agent matches \"*Macintosh*\" or user_agent matches \"*Mac OS*\" or user_agent matches \"*iMac*\",\"Mac\",OS_Platform) as OS_Platform",
+        "field": "OS_Platform"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_ip",
+      "displayName": "dest_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"",
+        "field": "dest_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "dest_port",
+      "displayName": "dest_port",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"",
+        "field": "dest_port"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "mac_address",
+      "displayName": "mac_address",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"",
+        "field": "mac_address"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "method",
+      "displayName": "method",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"",
+        "field": "method"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "msg_type",
+      "displayName": "msg_type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"",
+        "field": "msg_type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "name",
+      "displayName": "name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"",
+        "field": "name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_port",
+      "displayName": "src_port",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"",
+        "field": "src_port"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "url",
+      "displayName": "url",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"",
+        "field": "url"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "user_agent",
+      "displayName": "user_agent",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Metricsdatasource}}  urls\n|\tparse regex \" (?<name>\\S*?)\\s(?<msg_type>urls|flows|events|ids-alerts|security_event|airmarshal_events?)\\s+\" nodrop\n| kv regex \"=(.*?)(?:\\s|$)\" \"src\", \"dst\", \"mac\" as src, dst, mac_address nodrop\n| kv \"agent\" as user_agent nodrop\n| parse \"request: * *\" as method, url nodrop\n| parse field=src \"*:*\" as src_ip, src_port nodrop | parse field=dst \"*:*\" as dest_ip, dest_port nodrop\n| where msg_type=\"urls\"",
+        "field": "user_agent"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

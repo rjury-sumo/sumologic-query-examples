@@ -1,0 +1,523 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "AWS Lambda ULM - Error Analysis - New",
+  "description": "See an analysis of errors in AWS Lambda.",
+  "title": "AWS Lambda ULM - Error Analysis - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel0b9f9507988a7b43",
+        "structure": "{\"width\":6,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel633c5b0e8c94aa48",
+        "structure": "{\"width\":6,\"height\":6,\"x\":6,\"y\":0}"
+      },
+      {
+        "key": "panel76590bd785ce2b44",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelccbfad99a353d940",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panelcea706c1b65fab44",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":5}"
+      },
+      {
+        "key": "panel030b7410a4779943",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panel87ab49809fdba841",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":10}"
+      },
+      {
+        "key": "paneld339cfb1869b8a45",
+        "structure": "{\"width\":24,\"height\":1,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panel3214890e91dff84c",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":16}"
+      },
+      {
+        "key": "panelf4a08425a715db47",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":16}"
+      },
+      {
+        "key": "panel16d38cfb8d4b0942",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":21}"
+      },
+      {
+        "key": "panel12f91107b2f8bb41",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":21}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel16d38cfb8d4b0942",
+      "title": "Log - AWS Services Invoking Functions - Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* \"lambda.amazonaws.com\" \"Invoke\" \"AWSService\"\n| json field=_raw \"eventName\" as event_name\n| json field=_raw \"eventSource\" as event_source\n| json field=_raw \"userIdentity.type\" as caller_type\n| where event_name = \"Invoke\" AND caller_type = \"AWSService\"\n| json field=_raw \"sourceIPAddress\" as src_ip\n| json field=_raw \"requestParameters.functionName\" as func_name nodrop\n| json field=_raw \"additionalEventData.functionVersion\" as func_version nodrop\n| parse regex field=func_name \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<functionName>[\\S]+)$\"\n| parse regex field=func_version \"\\w+:\\w+:\\S+:[\\w-]+:\\S+:\\S+:(?<function_version>[\\S]+:[\\S ]+)$\" | json field=_raw \"userAgent\" as user_agent\n| json field=_raw \"userIdentity.invokedBy\"as invoked_by nodrop\n| json field=_raw \"userIdentity.userName\"as user_name nodrop\n| if (isNull(user_name), invoked_by, user_name ) as caller\n| if (isNull(invoked_by), user_name, invoked_by ) as caller\n| where caller_type = \"AWSService\" \n| timeslice 1h\n|where if (\"{{functionname}}\" = \"*\", true, functionname matches \"{{functionname}}\")\n|count by caller, _timeslice\n| outlier _count by caller\n| fields _timeslice,caller, _count_violation\n| transpose row _timeslice column caller",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf4a08425a715db47",
+      "title": "Log - Duration by Hour (Sum) - Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/Lambda*\n| json \"message\"\n| _sourceName as logStream\n| _sourceHost as logGroup\n| parse regex field=message \"REPORT\\s+RequestId:\\s+(?<RequestId>[^\\s]+)\\s+Duration:\\s+(?<Duration>[^\\s]+)\\s+ms\\s+Billed Duration:\\s+(?<BilledDuration>[^\\s]+)\\s+ms\\s+Memory\\s+Size:\\s+(?<MemorySize>[^\\s]+)\\s+MB\\s+Max\\s+Memory\\s+Used:\\s+(?<MaxMemoryUsed>[^\\s]+)\\s+MB\" \n| parse field=logstream \"*/[*]*\" as logstreamDate,version,logstreamID\n| parse field=loggroup \"/aws/lambda/*\" as functionName\n| timeslice 1h\n|where if (\"{{functionname}}\" = \"*\", true, functionname matches \"{{functionname}}\") AND if (\"{{duration}}\" = \"> -2147483648\", true, duration {{duration}}) AND if (\"{{requestid}}\" = \"*\", true, requestid matches \"{{requestid}}\") AND if (\"{{version}}\" = \"*\", true, version matches \"{{version}}\") AND if (\"{{loggroup}}\" = \"*\", true, loggroup matches \"{{loggroup}}\") AND if (\"{{billedduration}}\" = \"> -2147483648\", true, billedduration {{billedduration}})\n|sum(Duration) as Duration by _timeslice\n| outlier Duration",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel030b7410a4779943",
+      "title": "Throttling by Functions - Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"METRIC_DEFAULT\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"axisYType\":\"primary\",\"lineDashType\":\"solid\",\"visible\":true,\"name\":\"A\"}},{\"series\":[],\"queries\":[\"B\"],\"properties\":{\"axisYType\":\"primary\",\"lineDashType\":\"dash\",\"visible\":true,\"name\":\"Average Throttling\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "functionname={{functionname}}  Namespace=AWS/Lambda metric=Throttles Statistic=Sum FunctionName=* Region=* Resource=* | topk(10, max)",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        },
+        {
+          "transient": false,
+          "queryString": "functionname={{functionname}}  Namespace=AWS/Lambda metric=Throttles Statistic=Sum FunctionName=* Region=* Resource=*  | avg ",
+          "queryType": "Metrics",
+          "queryKey": "B",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneld339cfb1869b8a45",
+      "title": "Outliers",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panel87ab49809fdba841",
+      "title": "IteratorAge  by Functions - Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"METRIC_DEFAULT\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[{\"series\":[],\"queries\":[\"C\"],\"properties\":{\"axisYType\":\"primary\",\"lineDashType\":\"solid\",\"visible\":true,\"name\":\"C\"}},{\"series\":[],\"queries\":[\"B\"],\"properties\":{\"axisYType\":\"primary\",\"lineDashType\":\"dash\",\"visible\":true,\"name\":\"Average IteratorAge\"}},{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"axisYType\":\"primary\",\"lineDashType\":\"solid\",\"visible\":true,\"name\":\"A\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "functionname={{functionname}}  Namespace=AWS/Lambda metric=IteratorAge Statistic=Maximum FunctionName=* Region=*  Resource=* | topk(10, max)",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        },
+        {
+          "transient": false,
+          "queryString": "functionname={{functionname}}  Namespace=AWS/Lambda metric=IteratorAge Statistic=Maximum FunctionName=* Region=* Resource=* | avg ",
+          "queryType": "Metrics",
+          "queryKey": "B",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelcea706c1b65fab44",
+      "title": "Error by Functions - Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"METRIC_DEFAULT\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"axisYType\":\"primary\",\"lineDashType\":\"solid\",\"visible\":true,\"name\":\"{{FunctionName}}\"}},{\"series\":[],\"queries\":[\"B\"],\"properties\":{\"axisYType\":\"primary\",\"lineDashType\":\"dash\",\"visible\":true,\"name\":\"Average Errors\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "functionname={{functionname}}  Namespace=AWS/Lambda metric=Errors Statistic=Sum FunctionName=* Region=* Resource=* | topk(10, max)",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        },
+        {
+          "transient": false,
+          "queryString": "functionname={{functionname}}  Namespace=AWS/Lambda metric=Errors Statistic=Sum FunctionName=* Region=* Resource=* | avg ",
+          "queryType": "Metrics",
+          "queryKey": "B",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0b9f9507988a7b43",
+      "title": "Log - Error Count",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":true,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/Lambda* errorMessage\n| json \"message\"\n| _sourceName as logStream\n| _sourceHost as logGroup\n| parse field=logstream \"*/[*]*\" as logstreamDate,version,logstreamID\n| parse field=loggroup \"/aws/lambda/*\" as functionName\n| parse field=message \"*\\t*\\t*\" as time,RequestId,errorObj\n|where if (\"{{functionname}}\" = \"*\", true, functionname matches \"{{functionname}}\") AND if (\"{{requestid}}\" = \"*\", true, requestid matches \"{{requestid}}\") AND if (\"{{version}}\" = \"*\", true, version matches \"{{version}}\") AND if (\"{{loggroup}}\" = \"*\", true, loggroup matches \"{{loggroup}}\")\n|count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel3214890e91dff84c",
+      "title": "Log - Duration by Hour (Average) - Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/Lambda*\n| json \"message\"\n| _sourceName as logStream\n| _sourceHost as logGroup\n| parse regex field=message \"REPORT\\s+RequestId:\\s+(?<RequestId>[^\\s]+)\\s+Duration:\\s+(?<Duration>[^\\s]+)\\s+ms\\s+Billed Duration:\\s+(?<BilledDuration>[^\\s]+)\\s+ms\\s+Memory\\s+Size:\\s+(?<MemorySize>[^\\s]+)\\s+MB\\s+Max\\s+Memory\\s+Used:\\s+(?<MaxMemoryUsed>[^\\s]+)\\s+MB\" \n| parse field=logstream \"*[*]*\" as logstreamDate,version,logstreamID\n| parse field=loggroup \"/aws/lambda/*\" as functionName\n| timeslice 1h\n|where if (\"{{functionname}}\" = \"*\", true, functionname matches \"{{functionname}}\") AND if (\"{{duration}}\" = \"> -2147483648\", true, duration {{duration}}) AND if (\"{{requestid}}\" = \"*\", true, requestid matches \"{{requestid}}\") AND if (\"{{version}}\" = \"*\", true, version matches \"{{version}}\") AND if (\"{{loggroup}}\" = \"*\", true, loggroup matches \"{{loggroup}}\") AND if (\"{{billedduration}}\" = \"> -2147483648\", true, billedduration {{billedduration}})\n|avg(Duration) as Duration by _timeslice\n| outlier Duration",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel633c5b0e8c94aa48",
+      "title": "Log - Error Breakdown by Function",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/Lambda* errorMessage\n| json \"message\"\n| _sourceName as logStream\n| _sourceHost as logGroup\n| parse field=logstream \"*/[*]*\" as logstreamDate,version,logstreamID\n| parse field=loggroup \"/aws/lambda/*\" as functionName\n| parse field=message \"*\\t*\\t*\" as time,RequestId,errorObj\n|where if (\"{{functionname}}\" = \"*\", true, functionname matches \"{{functionname}}\") AND if (\"{{requestid}}\" = \"*\", true, requestid matches \"{{requestid}}\") AND if (\"{{version}}\" = \"*\", true, version matches \"{{version}}\") AND if (\"{{loggroup}}\" = \"*\", true, loggroup matches \"{{loggroup}}\")\n|count by functionName\n| sort by functionName desc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel76590bd785ce2b44",
+      "title": "Log - Top Error Messages",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/Lambda* errorMessage\n| json \"message\"\n| _sourceName as logStream\n| _sourceHost as logGroup\n| parse field=logstream \"*/[*]*\" as logstreamDate,version,logstreamID\n| parse field=loggroup \"/aws/lambda/*\" as functionName\n| parse field=message \"*\\t*\\t*\" as time,RequestId,errorObj\n| json  field=errorObj \"errorMessage\"\n|where if (\"{{functionname}}\" = \"*\", true, functionname matches \"{{functionname}}\") AND if (\"{{requestid}}\" = \"*\", true, requestid matches \"{{requestid}}\") AND if (\"{{version}}\" = \"*\", true, version matches \"{{version}}\") AND if (\"{{loggroup}}\" = \"*\", true, loggroup matches \"{{loggroup}}\")\n|count by errorMessage, functionName \n| top 10 errorMessage, functionName by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelccbfad99a353d940",
+      "title": "DeadLetterErrors by Functions - Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"METRIC_DEFAULT\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[{\"series\":[],\"queries\":[\"A\"],\"properties\":{\"axisYType\":\"primary\",\"lineDashType\":\"solid\",\"visible\":true,\"name\":\"{{FunctionName}}\"}},{\"series\":[],\"queries\":[\"B\"],\"properties\":{\"axisYType\":\"primary\",\"lineDashType\":\"dash\",\"visible\":true,\"name\":\"Average Error\"}}]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "functionname={{functionname}}  Namespace=AWS/Lambda metric=DeadLetterErrors Statistic=Sum FunctionName=* Region=* Resource=* | topk(10, max)",
+          "queryType": "Metrics",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        },
+        {
+          "transient": false,
+          "queryString": "functionname={{functionname}}  Namespace=AWS/Lambda metric=DeadLetterErrors Statistic=Sum FunctionName=* Region=* Resource=* | avg ",
+          "queryType": "Metrics",
+          "queryKey": "B",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel12f91107b2f8bb41",
+      "title": "Log - Max Memory (MB) Used by Hour - Outlier",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/Lambda*\n| json \"message\"\n| _sourceName as logStream\n| _sourceHost as logGroup\n| parse regex field=message \"REPORT\\s+RequestId:\\s+(?<RequestId>[^\\s]+)\\s+Duration:\\s+(?<Duration>[^\\s]+)\\s+ms\\s+Billed Duration:\\s+(?<BilledDuration>[^\\s]+)\\s+ms\\s+Memory\\s+Size:\\s+(?<MemorySize>[^\\s]+)\\s+MB\\s+Max\\s+Memory\\s+Used:\\s+(?<MaxMemoryUsed>[^\\s]+)\\s+MB\" \n| parse field=logstream \"*/[*]*\" as logstreamDate,version,logstreamID\n| parse field=loggroup \"/aws/lambda/*\" as functionName\n| timeslice 1h\n|where if (\"{{functionname}}\" = \"*\", true, functionname matches \"{{functionname}}\") AND if (\"{{duration}}\" = \"> -2147483648\", true, duration {{duration}}) AND if (\"{{requestid}}\" = \"*\", true, requestid matches \"{{requestid}}\") AND if (\"{{version}}\" = \"*\", true, version matches \"{{version}}\") AND if (\"{{loggroup}}\" = \"*\", true, loggroup matches \"{{loggroup}}\") AND if (\"{{billedduration}}\" = \"> -2147483648\", true, billedduration {{billedduration}})\n|sum(MaxMemoryUsed) as MaxMemoryUsed by _timeslice\n| outlier MaxMemoryUsed",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "version",
+      "displayName": "version",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/Lambda*\n| json \"message\"\n| _sourceName as logStream\n| _sourceHost as logGroup\n| parse regex field=message \"REPORT\\s+RequestId:\\s+(?<RequestId>[^\\s]+)\\s+Duration:\\s+(?<Duration>[^\\s]+)\\s+ms\\s+Billed Duration:\\s+(?<BilledDuration>[^\\s]+)\\s+ms\\s+Memory\\s+Size:\\s+(?<MemorySize>[^\\s]+)\\s+MB\\s+Max\\s+Memory\\s+Used:\\s+(?<MaxMemoryUsed>[^\\s]+)\\s+MB\" \n| parse field=logstream \"*/[*]*\" as logstreamDate,version,logstreamID\n| parse field=loggroup \"/aws/lambda/*\" as functionName\n| timeslice 1h",
+        "field": "version"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "functionname",
+      "displayName": "functionname",
+      "defaultValue": null,
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "",
+        "key": "functionname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "requestid",
+      "displayName": "requestid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/Lambda*\n| json \"message\"\n| _sourceName as logStream\n| _sourceHost as logGroup\n| parse regex field=message \"REPORT\\s+RequestId:\\s+(?<RequestId>[^\\s]+)\\s+Duration:\\s+(?<Duration>[^\\s]+)\\s+ms\\s+Billed Duration:\\s+(?<BilledDuration>[^\\s]+)\\s+ms\\s+Memory\\s+Size:\\s+(?<MemorySize>[^\\s]+)\\s+MB\\s+Max\\s+Memory\\s+Used:\\s+(?<MaxMemoryUsed>[^\\s]+)\\s+MB\" \n| parse field=logstream \"*/[*]*\" as logstreamDate,version,logstreamID\n| parse field=loggroup \"/aws/lambda/*\" as functionName\n| timeslice 1h",
+        "field": "requestid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "billedduration",
+      "displayName": "billedduration",
+      "defaultValue": "> -2147483648",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "> -2147483648"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Numeric"
+    },
+    {
+      "id": null,
+      "name": "duration",
+      "displayName": "duration",
+      "defaultValue": "> -2147483648",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "> -2147483648"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Numeric"
+    },
+    {
+      "id": null,
+      "name": "loggroup",
+      "displayName": "loggroup",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/Lambda*\n| json \"message\"\n| _sourceName as logStream\n| _sourceHost as logGroup\n| parse regex field=message \"REPORT\\s+RequestId:\\s+(?<RequestId>[^\\s]+)\\s+Duration:\\s+(?<Duration>[^\\s]+)\\s+ms\\s+Billed Duration:\\s+(?<BilledDuration>[^\\s]+)\\s+ms\\s+Memory\\s+Size:\\s+(?<MemorySize>[^\\s]+)\\s+MB\\s+Max\\s+Memory\\s+Used:\\s+(?<MaxMemoryUsed>[^\\s]+)\\s+MB\" \n| parse field=logstream \"*/[*]*\" as logstreamDate,version,logstreamID\n| parse field=loggroup \"/aws/lambda/*\" as functionName\n| timeslice 1h",
+        "field": "loggroup"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

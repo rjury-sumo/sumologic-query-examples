@@ -1,0 +1,328 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Atlassian - Overview",
+  "description": "The Atlassian - Overview dashboard provides a high-level view of issues, alerts, and build performance. The panels display analytics drawn from the entire Atlassian Solution suite of apps, providing the ability to monitor and troubleshoot your DevOps environment from a single-pane-of-glass.",
+  "title": "Atlassian - Overview",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-2w"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelpane-fb19c792855d4940",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":22}"
+      },
+      {
+        "key": "panelpane-a1c47116a281b941",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":22}"
+      },
+      {
+        "key": "panelpane-6388b550918a6947",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":8}"
+      },
+      {
+        "key": "panelpane-9ef999b1adefcb41",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panelpane-05b9454887bcab47",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panelpane-1d46fa519f6fab49",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":15}"
+      },
+      {
+        "key": "panelpane-92176ae096afaa48",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panelpane-c1808600a3dd0b44",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelpane-044873f2bcda9b45",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":1}"
+      },
+      {
+        "key": "panelpane-148d1c6897ca7a41",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panelpane-34217eca9993fa45",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panelpane-9850b3baace42941",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":21}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelpane-fb19c792855d4940",
+      "title": "Created Vs. Closed Issues",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"smooth\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jira-cloud *issue* (Complete or New)\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| where status_category in (\"New\",\"Complete\",\"To Do\",\"Done\")\n| json field=change_log \"items\" as changes  \n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| timeslice 1d\n| count_distinct (issue_key) by status_category, _timeslice\n| transpose row _timeslice column status_category\n| fillmissing timeslice(1h)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-a1c47116a281b941",
+      "title": " Open Issues by Component",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/jira-cloud *issue*\n| json field=_raw \"webhookEvent\", \"issue_event_type_name\", \"changelog\", \"issue.fields.creator.displayName\", \"issue.self\",  \"issue.key\", \"timestamp\", \"issue.fields.issuetype.name\", \"issue.fields.status.name\", \"issue.fields.resolution.name\", \"issue.fields.project.name\", \"issue.fields.status.statusCategory.name\", \"user.active\",  \"issue.fields.assignee.displayName\", \"issue.fields.summary\", \"issue.fields.priority.name\", \"issue.fields.components\", \"issue.fields.labels\" as  event_name, event_type, change_log, issue_creator, jira_self, issue_key, timestamp, type, status, resolution, project_name, status_category, is_active, issue_assignee, issue_summary, priority, components, labels  nodrop\n| isNull(issue_assignee) ? \"Unassigned\" : issue_assignee as issue_assignee\n| parse regex field=labels \"\\\"(?<label>[\\S]+?)\\\"\" multi nodrop\n| parse regex field=components \"\\\"name\\\":\\\"(?<component>[\\S]+?)\\\"\" multi nodrop\n| json field=change_log \"items\" as changes\n| formatDate(fromMillis(timestamp), \"MM-dd-yyyy HH:mm:ss\", \"UTC\") as date_time\n| parse regex field=jira_self \"https:\\/\\/(?<base_url>.*?)\\/\" \n| concat(\"https://\",base_url,\"/browse/\", issue_key) as issue_url\n| tourl(issue_url, issue_key) as issue\n| first(status_category) by issue_key, component\n| where _first in (\"In Progress\",\"New\",\"To Do\")\n| count_distinct (issue_key) as count by component \n| sort",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-6388b550918a6947",
+      "title": "Builds Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"smooth\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/bitbucket %\"x-event-key\"=repo:commit_status_* (\"SUCCESSFUL\" OR \"FAILED\")\n| json \"commit_status.state\", \"commit_status.commit.message\", \"commit_status.name\", \"commit_status.type\", \"actor.display_name\", \"repository.full_name\",  \"commit_status.refname\",  \"commit_status.commit.links.html.href\", \"commit_status.url\", \"commit_status.created_on\" as build_state, build_commit_message, commit_name, type, commit_user, repo_name, commit_branch, commit_link, build_status_link, date_time\n| where build_state in (\"SUCCESSFUL\", \"FAILED\")\n| tourl(commit_link, build_commit_message) as commit \n| tourl (build_status_link, commit_name) as build\n| timeslice 1d\n| count by _timeslice , build_state\n| transpose row _timeslice column build_state\n| fillmissing timeslice(1d)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-9ef999b1adefcb41",
+      "title": "Failed Builds",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/bitbucket %\"x-event-key\"=repo:commit_status_* display_name full_name !INPROGRESS !STOPPED\n| json \"commit_status.state\", \"commit_status.commit.message\", \"commit_status.name\", \"commit_status.type\", \"actor.display_name\", \"repository.full_name\",  \"commit_status.refname\",  \"commit_status.commit.links.html.href\", \"commit_status.url\", \"commit_status.created_on\" as build_state, build_commit_message, commit_name, type, commit_user, repo, commit_branch, commit_link, build_status_link, date_time\n| where build_state in (\"FAILED\")\n| parse regex field=date_time \"(?<date_time>\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d)\"\n| parse regex field=build_commit_message \"(?<commit_msg_short>.+)\"\n| tourl(commit_link, commit_msg_short) as commit \n| tourl (build_status_link, commit_name) as build\n| replace (date_time, \"T\", \" \") as date_time\n| count by date_time, build\n| sort by date_time\n| fields -_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-05b9454887bcab47",
+      "title": "Commits Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"smooth\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/bitbucket %\"x-event-key\"=\"repo:push\"\n| json \"push.changes[0].closed\", \"push.changes[0].created\", \"push.changes[0].commits[0].links.html.href\", \"push.changes[0].commits[0].author.user.display_name\", \"push.changes[0].commits[0].summary.raw\", \"push.changes[0].commits[0].message\", \"push.changes[0].commits[0].type\" , \"repository.links.html.href\", \"repository.full_name\", \"push.changes[0].commits[0].date\"  as closed, created, commit_link ,user_name, summary, message,commit_type,repo_link, repo_name, commits_date\n| where created=\"true\"\n| json \"push.changes[0].new.name\" as branch_name nodrop\n| parse regex field=commits_date \"(?<commits_date>\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d)\"   \n| timeslice 1d\n| count as count by _timeslice \n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-1d46fa519f6fab49",
+      "title": "Pull Requests Over Time",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"smooth\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"circle\",\"lineThickness\":null},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/bitbucket %\"x-event-key\"=pullrequest* \n| json \"pullrequest.id\", \"pullrequest.title\", \"pullrequest.description\", \"pullrequest.reviewers[*].display_name\", \"pullrequest.destination.repository.full_name\", \"pullrequest.destination.branch.name\", \"pullrequest.created_on\", \"pullrequest.source.branch.name\", \"pullrequest.author.display_name\", \"pullrequest.participants[*].user.display_name\", \"pullrequest.state\", \"pullrequest.comment_count\", \"pullrequest.links.html.href\" as id, title, description, reviewers, repo_name, dest_branch_name, create_time, source_branch_name, author, participants, state, comment_count, PR_link \n| tourl (PR_Link, title) as PR\n| timeslice 1d\n| count by _timeslice , %\"x-event-key\"\n| transpose row _timeslice column %\"x-event-key\"\n| fillmissing timeslice(1d)",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-92176ae096afaa48",
+      "title": "Bitbucket Builds",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"backgroundColor\":\"#8be2ff\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelpane-c1808600a3dd0b44",
+      "title": "Opsgenie Alerts",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"textColor\":\"#00090c\",\"backgroundColor\":\"#8be2ff\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelpane-044873f2bcda9b45",
+      "title": "Alerts Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\",\"title\":\"Alert Count\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Opsgenie_alerts \n| json  \"action\" \n| timeslice 1d\n| count as count by _timeslice\n| (count/1000) as count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-148d1c6897ca7a41",
+      "title": "P1 Alerts",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":3},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Opsgenie_alerts \n| json \"alert.createdAt\", \"alert.updatedAt\" , \"alert.description\", \"alert.message\", \"action\", \"alert.username\",  \"alert.priority\", \"alert.source\" , \"alert.tags[*]\",\"alert.recipients[*]\", \"alert.details\" as created_at, updated_at, description, message, action, username, priority, source, tags, recipients, alert_details nodrop\n| where priority=\"p1\"\n| num(created_at) \n| tolong(created_at) as created_at \n| formatDate(created_at, \"MM-dd-yyyy HH:mm:ss\") as Created_date_time\n| count by  created_date_time, created_at, username, message, source\n| sort by created_at \n| fields - _count, created_at  \n| limit 10\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelpane-34217eca9993fa45",
+      "title": "Commits and PRs",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"backgroundColor\":\"#8be2ff\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelpane-9850b3baace42941",
+      "title": "Jira issues",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"text\":{\"backgroundColor\":\"#8be2ff\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    }
+  ],
+  "variables": [],
+  "coloringRules": []
+}

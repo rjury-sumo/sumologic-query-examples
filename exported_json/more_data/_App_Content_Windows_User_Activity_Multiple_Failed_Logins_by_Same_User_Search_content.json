@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Multiple Failed Logins by Same User",
+  "search": {
+    "queryText": "_sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4771 or 4776 or 4768 or 4625) (\"EventCode = 4771;\" or \"EventCode = 4776;\" or \"EventCode = 4768;\" or \"EventCode = 4625;\")\n| parse \"EventCode = *;\" as event_id nodrop | parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop | parse regex \"Message = \\\"(?<msg_summary>[^\\r]+?)\\r\" nodrop | parse regex \"Logon Type:\\s+(?<logon_type>\\d+)*\" nodrop | parse regex \"Failure Information:\\s+Failure Reason:\\s+(?<fail_reason>[^.\\r]+?)[.\\r]\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Client Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Client Port:\\s+?(?<src_port>[\\d-]+)\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Source Network Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Source Port:\\s+?(?<src_port>[\\d-]+)\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r\" nodrop | parse regex \"Logfile = \\\"Security\\\";[\\s\\S]+?Subject[\\s\\S]+?Account Name:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<src_domain>[^\\r\\\"]+?)\\r[\\s\\S]+?Account Name:\\s+(?<dest_user>[^\\r]+?)\\r[\\s\\S]+?Account Domain:\\s+(?<dest_domain>[^\\r\\\"]+?)\\r\" nodrop | parse regex \"Result Code:\\s+(?<result_code>[^\\r]+)\\r\" nodrop | parse regex \"Failure Code:\\s+(?<failure_code>[^\\r]+)\\r\" nodrop | parse regex \"Logon Account:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Source Workstation:\\s+(?<src_host>[^\\r]+?)\\r[\\s\\S]+?Error Code:\\s+(?<error_code>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop | parse regex \"Logon Account:\\s+(?<src_user>[^\\r]+?)\\r[\\s\\S]+?Source Workstation:\\s*\\r[\\s\\S]+?Error Code:\\s+(?<error_code>[^\\r\\\"]+?)(?:\\r|\\\";)\" nodrop | parse \"Type = \\\"*\\\";\" as type\n| fields host, event_id, msg_summary, src_user, src_ip, src_port, src_domain, dest_user, dest_domain, fail_reason, logon_type, result_code, failure_code, src_host, error_code, type\n| where event_id=\"4771\" or (event_id=\"4768\" and result_code !=\"0x0\") or (event_id=\"4776\" and error_code !=\"0x0\") or event_id=\"4625\"\n| count by src_user, dest_user | where _count > 3 | sort by _count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

@@ -1,0 +1,421 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Squid Proxy - HTTP Response Analysis",
+  "description": "The Squid Proxy -  HTTP Response Analysis dashboard provides insights into HTTP response, HTTP code, the number of client errors, server errors, redirections outlier, URLs experiencing server errors.",
+  "title": "Squid Proxy - HTTP Response Analysis",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel5F289BAF9BFC8B43",
+        "structure": "{\"height\":7,\"width\":9,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel202B043B96D45A4B",
+        "structure": "{\"height\":7,\"width\":5,\"x\":9,\"y\":0}"
+      },
+      {
+        "key": "panel1FC8E42681462846",
+        "structure": "{\"height\":7,\"width\":5,\"x\":14,\"y\":0}"
+      },
+      {
+        "key": "panel3BF21689A52EAA46",
+        "structure": "{\"height\":7,\"width\":5,\"x\":19,\"y\":0}"
+      },
+      {
+        "key": "panelD757B3A98B76CB45",
+        "structure": "{\"height\":6,\"width\":5,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panel0DBE74CA9B223A4D",
+        "structure": "{\"height\":6,\"width\":9,\"x\":5,\"y\":7}"
+      },
+      {
+        "key": "panel920205A895665945",
+        "structure": "{\"height\":6,\"width\":10,\"x\":14,\"y\":7}"
+      },
+      {
+        "key": "panel7C69DDC2884C294B",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":13}"
+      },
+      {
+        "key": "panel19D2620A808E9B48",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":13}"
+      },
+      {
+        "key": "panel8E28D56E93B0C94D",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":19}"
+      },
+      {
+        "key": "panelD3A704658C2E984C",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":19}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel5F289BAF9BFC8B43",
+      "title": "HTTP Response Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"area\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where !isEmpty(status_code)\n| \"\" as status_code_type\n| if(status_code matches \"2*\", \"successes\", status_code_type) as status_code_type\n| if(status_code matches \"3*\", \"redirections\", status_code_type) as status_code_type\n| if(status_code matches \"4*\", \"clientErrors\", status_code_type) as status_code_type\n| if(status_code matches \"5*\", \"serverErrors\", status_code_type) as status_code_type \n| where status_code_type <> \"\"\n| timeslice 15m\n| count as eventCount by _timeslice, status_code_type\n| transpose row _timeslice column status_code_type",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel202B043B96D45A4B",
+      "title": "HTTP Response",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where !isEmpty(status_code)\n| \"\" as status_code_type\n| if(status_code matches \"2*\", \"successes\", status_code_type) as status_code_type\n| if(status_code matches \"3*\", \"redirections\", status_code_type) as status_code_type\n| if(status_code matches \"4*\", \"clientErrors\", status_code_type) as status_code_type\n| if(status_code matches \"5*\", \"serverErrors\", status_code_type) as status_code_type \n| where status_code_type <> \"\"\n| count as eventCount by status_code_type\n| sort by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1FC8E42681462846",
+      "title": "Redirections",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"3*\"\n| count as eventCount by status_code\n| sort by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel3BF21689A52EAA46",
+      "title": "Client Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"4*\"\n| count as eventCount by status_code\n| sort by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelD757B3A98B76CB45",
+      "title": "Server Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"5*\"\n| count as eventCount by status_code\n| sort by eventCount",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0DBE74CA9B223A4D",
+      "title": "URLs Experiencing Redirections",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"3*\"\n| count as eventCount by url, status_Code\n| sort by status_code, eventCount, url",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel920205A895665945",
+      "title": "URLs Experiencing Client Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"4*\"\n| count as eventCount by url, status_Code\n| sort by status_code, eventCount, url",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7C69DDC2884C294B",
+      "title": "URLs Experiencing Server Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"5*\"\n| count as eventCount by url, status_Code\n| sort by status_code, eventCount, url",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel19D2620A808E9B48",
+      "title": "Redirections (HTTP Response) - Outlier",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":1,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"3*\"\n| timeslice 15m \n| count as redirections by _timeslice \n| outlier redirections",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8E28D56E93B0C94D",
+      "title": "Client Errors (HTTP Response) - Outlier",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":1,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"4*\"\n| timeslice 15m \n| count as clientErrors by _timeslice \n| outlier clientErrors",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelD3A704658C2E984C",
+      "title": "Server Errors (HTTP Response) - Outlier",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":1,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy\n| json \"log\" as message nodrop \n| if (isEMpty(message), _raw, message) as message\n| parse regex field = message \"(?<time>[\\d.]+)\\s+(?<elapsed>[\\d]+)\\s+(?<remotehost>[^\\s]+)\\s+(?<action>[^/]+)/(?<status_code>[\\d]+)\\s+(?<bytes>[\\d]+)\\s+(?<method>[^\\s]+)\\s+(?<url>[^\\s]+)\\s(?<rfc931>[^\\s]+)\\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\\s]+)\\s+(?<type>[^\\s|$]+?)(?:\\s+|$)\" nodrop | parse field = message \"Connection: *\\\\r\\\\n\" as connection_status nodrop | parse field = message \"Host: *\\\\r\\\\n\" as host nodrop | parse field = message \"User-Agent: *\\\\r\\\\n\" as user_agent nodrop | parse field = message \"TE: *\\\\r\\\\n\" as te nodrop\n| where status_code matches \"5*\"\n| timeslice 15m \n| count as serverErrors by _timeslice \n| outlier serverErrors",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "proxy_cluster",
+      "displayName": "proxy_cluster",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "_sourceCategory = Labs/squid* proxy_system=squidproxy",
+        "key": "proxy_cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host",
+      "displayName": "host",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "proxy_cluster={{proxy_cluster}} proxy_system=squidproxy",
+        "key": "host"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

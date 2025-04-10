@@ -1,0 +1,351 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Fastly - WAF - Overview",
+  "description": "See the overview of Fastly WAF including the states, hits, and threat intel on warning and blocked events.",
+  "title": "Fastly - WAF - Overview",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel104ccb7f81049a44",
+        "structure": "{\"width\":24,\"height\":8,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panel3c4bbdbd8983d94a",
+        "structure": "{\"width\":12,\"height\":1,\"x\":12,\"y\":12}"
+      },
+      {
+        "key": "panel666dac82bc022a43",
+        "structure": "{\"width\":12,\"height\":10,\"x\":12,\"y\":25}"
+      },
+      {
+        "key": "panel8dc70a0d88ee0b49",
+        "structure": "{\"width\":12,\"height\":9,\"x\":12,\"y\":13}"
+      },
+      {
+        "key": "panel9ba7a14b98773945",
+        "structure": "{\"width\":12,\"height\":1,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panela262834b9c7a4b4e",
+        "structure": "{\"width\":12,\"height\":9,\"x\":0,\"y\":13}"
+      },
+      {
+        "key": "panela5fe1e149cd6aa40",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panela81d9315b0c4b841",
+        "structure": "{\"width\":12,\"height\":6,\"x\":12,\"y\":20}"
+      },
+      {
+        "key": "paneld3e41110bfaa884b",
+        "structure": "{\"width\":12,\"height\":6,\"x\":0,\"y\":20}"
+      },
+      {
+        "key": "panelf3ef42c1be61a94d",
+        "structure": "{\"width\":12,\"height\":10,\"x\":0,\"y\":25}"
+      },
+      {
+        "key": "panelf654d3bba2f98b46",
+        "structure": "{\"width\":24,\"height\":1,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel104ccb7f81049a44",
+      "title": "WAF States",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":\"0\",\"maximum\":\"100\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource1}}  (\"\\\"waf_executed\\\":\\\"1\\\"\")\n| json \"waf_failures\", \"waf_logged\", \"waf_passed\", \"waf_anomaly_score\", \"waf_block\", \"waf_executed\" as waf_failures, waf_logged, waf_passed, waf_anomaly_score, waf_block, waf_executed nodrop\n//review logs that went through waf ruleset \n| where waf_executed=\"1\"\n| timeslice 15m\n//capture different use cases - log, block, pass, failure(error)\n| if ((waf_logged = \"1\" and waf_block = \"0\") or (waf_passed = \"1\" and waf_anomaly_score > 0),1,0) as waf_logged\n| if (waf_failures = \"1\",1,0) as waf_failures\n| if (waf_block = \"1\",1,0) as waf_block\n| if (waf_passed = \"1\" and (waf_logged = \"0\" and waf_block= \"0\"),1,0) as waf_passed\n|sum(waf_logged) as warn, sum(waf_failures) as error, sum(waf_block) as bad, sum(waf_passed) as good by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel666dac82bc022a43",
+      "title": "Top Messages (Blocked)",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_sourceCategory={{Logsdatasource1}}  OR _sourceCategory={{Logsdatasource}} ) (\"\\\"waf_executed\\\":\\\"1\\\"\" \"\\\"waf_block\\\":\\\"1\\\"\")\n| json \"waf_rule_id\", \"waf_block\", \"waf_message\", \"waf_executed\" as waf_rule_id, waf_block, waf_message, waf_executed nodrop\n//review logs that went through waf ruleset and URLs that are blocked and\n| where waf_executed=\"1\" and waf_block=\"1\"\n|count as block by waf_rule_id, waf_message\n| sort by block",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8dc70a0d88ee0b49",
+      "title": "Top URLS (Blocked)",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_sourceCategory={{Logsdatasource1}}  OR _sourceCategory={{Logsdatasource}} ) (\"\\\"waf_executed\\\":\\\"1\\\"\" \"\\\"waf_block\\\":\\\"1\\\"\")\n| json \"url\", \"status\", \"waf_executed\", \"waf_block\" as url, status, waf_executed, waf_block nodrop\n//show Top URLs blocked within reporting time window\n| where waf_executed=\"1\" and waf_block=\"1\"\n|count as block by url, status\n| top 10 url, status by block\n| urldecode(url) as url",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela262834b9c7a4b4e",
+      "title": "Top URLS (Warn)",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_sourceCategory={{Logsdatasource1}}  OR _sourceCategory={{Logsdatasource}} ) (\"\\\"waf_executed\\\":\\\"1\\\"\")\n| json \"url\", \"waf_logged\", \"waf_passed\", \"waf_block\", \"waf_anomaly_score\",\"waf_executed\" as url, waf_logged, waf_passed, waf_block, waf_anomaly_score, waf_executed nodrop\n//review logs that went through waf ruleset and where URL is logged but not blocked (monitor mode) or where URL is logged and not blocked due to not exceeding threshold settings (block mode)\n| where waf_executed=\"1\" and ((waf_logged = \"1\" and waf_block = \"0\") or (waf_passed = \"1\" and waf_anomaly_score > 0))\n|count as warns by url\n| top 10 url by warns\n| urldecode(url) as url",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela5fe1e149cd6aa40",
+      "title": "Daily Hits",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "//log count within 24h timeslice through waf ruleset \n_sourceCategory={{Logsdatasource1}}  (\"waf_executed\")\n| json \"waf_executed\" as waf_executed nodrop\n| timeslice 24h\n| if (!isBlank(waf_executed) and waf_executed = \"1\",1,0) as waf_executed\n|sum (waf_executed) as hits by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panela81d9315b0c4b841",
+      "title": "Rule Count Block",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_sourceCategory={{Logsdatasource1}}  OR _sourceCategory={{Logsdatasource}} ) (\"\\\"waf_executed\\\":\\\"1\\\"\" \"\\\"waf_block\\\":\\\"1\\\"\")\n| json \"waf_rule_id\", \"waf_block\",\"waf_message\", \"client_ip\",\"waf_executed\" as waf_rule_id, waf_block, waf_message, client_ip, waf_executed nodrop\n//review logs that went through waf ruleset and\n| where waf_executed=\"1\" and waf_block=\"1\"\n|count_distinct(client_ip) as distinct_ips, count as total by waf_rule_id, waf_message\n| top 10 waf_rule_id, waf_message, distinct_ips by total",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneld3e41110bfaa884b",
+      "title": "Rule Count Warn",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_sourceCategory={{Logsdatasource1}}  OR _sourceCategory={{Logsdatasource}} ) (\"\\\"waf_executed\\\":\\\"1\\\"\")\n| json \"waf_rule_id\", \"waf_logged\", \"waf_block\", \"waf_passed\", \"waf_anomaly_score\", \"waf_message\", \"client_ip\", \"waf_executed\" as waf_rule_id, waf_logged, waf_block, waf_passed, waf_anomaly_score, waf_message, client_ip, waf_executed nodrop\n//review logs that went through waf ruleset and\n// where URL is logged but not blocked (monitor mode) or where URL is logged and not blocked due to not exceeding threshold settings (block mode)\n| where waf_executed=\"1\" and ((waf_logged = \"1\" and waf_block = \"0\") or (waf_passed = \"1\" and waf_anomaly_score > 0))\n|count_distinct(client_ip) as distinct_ips, count as total by waf_rule_id, waf_message\n| top 10 waf_rule_id, waf_message, distinct_ips by total",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelf3ef42c1be61a94d",
+      "title": "Top Messages (Warn)",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_sourceCategory={{Logsdatasource1}}  OR _sourceCategory={{Logsdatasource}} ) (\"\\\"waf_executed\\\":\\\"1\\\"\")\n| json \"waf_rule_id\", \"waf_logged\", \"waf_block\", \"waf_passed\", \"waf_anomaly_score\", \"waf_message\", \"waf_executed\" as waf_rule_id, waf_logged, waf_block, waf_passed, waf_anomaly_score, waf_message, waf_executed nodrop\n//review logs that went through waf ruleset and\n// where URL is logged but not blocked (monitor mode) or where URL is logged and not blocked due to not exceeding threshold settings (block mode)\n| where  waf_executed=\"1\" and ((waf_logged = \"1\" and waf_block = \"0\") or (waf_passed = \"1\" and waf_anomaly_score > 0))\n|count as warns by waf_rule_id, waf_message\n| sort by warns",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel3c4bbdbd8983d94a",
+      "title": "Threat Intelligence - Blocked Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panel9ba7a14b98773945",
+      "title": "Threat Intelligence - Warn Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panelf654d3bba2f98b46",
+      "title": "WAF Analysis",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "Labs/Fastly ",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Fastly "
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Logsdatasource1",
+      "displayName": "Logsdatasource1",
+      "defaultValue": "Labs/Fastly ",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Fastly "
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

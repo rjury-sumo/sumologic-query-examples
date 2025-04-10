@@ -1,0 +1,734 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Active Directory JSON",
+  "description": "This App is installed via automation.DO NOT DELETE since its shared.",
+  "children": [
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Active Directory Service Activity",
+      "description": "The Active Directory Service Activity dashboard provide insights into overall active directory services like messages overtime, logon/off activity, object creation and deletion.",
+      "title": "Active Directory Service Activity",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-334FE582A1322B46",
+            "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-74754203B06E1B42",
+            "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":8}"
+          },
+          {
+            "key": "panelPANE-1858D1E294BCA94B",
+            "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":8}"
+          },
+          {
+            "key": "panelPANE-333B6E8BB6C07A48",
+            "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":16}"
+          },
+          {
+            "key": "panelPANE-C8641913BC184A4B",
+            "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":16}"
+          },
+          {
+            "key": "panelPANE-45AFDA0FB168CB41",
+            "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":0}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-334FE582A1322B46",
+          "title": "Top 10 Messages",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/windows-jsonformat \n| json \"EventID\", \"Computer\", \"Message\" as event_id, host, msg_summary nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where host matches \"{{host}}\"\n| count by msg_summary \n| top 10 msg_summary by _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-74754203B06E1B42",
+          "title": "Object Creation",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (4720 or 4741 or 4727 or 4731 or 4744 or 4749 or 4754 or 4759 or 4783 or 5137 or 4902 or 4790)  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\" as event_id, host, msg_summary nodrop\n| if ((event_id in (\"4720\")), \"user\", \"\") as object_created\n| if ((event_id in (\"4720\", \"4741\")), \"computer\", \"\") as object_created\n| if ((event_id in (\"4727\", \"4731\", \"4744\", \"4749\", \"4754\", \"4759\", \"4783\")), \"group\", object_created) as object_created\n| if ((event_id in (\"5137\", \"4902\", \"4790\")), \"object\", object_created) as object_created\n| where object_created != \"\" and host matches \"{{host}}\"\n| timeslice 1h\n| count by object_created, _timeslice\n| transpose row _timeslice column object_created\n| fillmissing timeslice(1h)",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-1858D1E294BCA94B",
+          "title": "Rights Management",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (\"\\\"EventID\\\":\\\"4704\\\"\" or \"\\\"EventID\\\":\\\"4705\\\"\")  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"Keywords\", \"Channel\", \"Level\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectLogonId\", \"EventData.PrivilegeList\" as event_id, host, msg_summary, Keywords, channel, Level, src_user, src_domain, src_logonid, PrivilegeList nodrop\n| where event_id in (\"4704\", \"4705\") and host matches \"{{host}}\"\n| if ((event_id = \"4704\"), \"assigned\", if ((event_id = \"4705\"), \"removed\", \"\")) as right\n| timeslice 1h\n| count by right, _timeslice\n| transpose row _timeslice column right\n| fillmissing timeslice(1h) ",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-333B6E8BB6C07A48",
+          "title": "Logon/off Activity",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (\"\\\"EventID\\\":\\\"4624\\\"\" or \"\\\"EventID\\\":\\\"4634\\\"\")  _sourceName=Security\n| json \"EventID\", \"Computer\", \"EventData.SubjectUserName\",  \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.LogonType\", \"EventData.LogonGuid\", \"EventData.SubjectLogonId\", \"EventData.TargetLogonId\", \"Channel\", \"Message\"  as event_id, host, src_user, src_domain, dest_user, dest_domain, logon_type, LogonGuid, SubjectLogonId, TargetLogonId, channel, msg_summary nodrop\n| where event_id in (\"4624\", \"4634\") and channel = \"Security\" and host matches \"{{host}}\"\n| if (logon_type = \"2\", \"interactive\", if (logon_type = \"3\", \"network\", if (logon_type = \"4\", \"batch\", if (logon_type = \"5\", \"service\", if (logon_type = \"7\", \"unlock\", if (logon_type = \"8\", \"networkcleartext\", if (logon_type = \"9\", \"newcredentials\", if (logon_type = \"10\", \"remoteinteractive\", if (logon_type = \"11\", \"cachedinteractive\", \"\" ))))))))) as type\n| if (event_id = \"4624\", \"logon\", \"logged off\") as addonstr\n| concat (type, \" \", addonstr) as type\n| where type != \"\"\n| timeslice 1h\n| count by _timeslice, type\n| transpose row _timeslice column type",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-C8641913BC184A4B",
+          "title": "Object Deletion",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (4726 or 4743 or 4730 or 4734 or 4748 or 4753 or 4758 or 4763 or 4789 or 4659 or 4660 or 5141)  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.LogonType\", \"Channel\" as event_id, host, msg_summary, logon_type, channel nodrop\n| if ((event_id in (\"4726\")), \"user\", \"\") as object_deleted\n| if ((event_id in (\"4743\")), \"computer\", \"\") as object_deleted\n| if ((event_id in (\"4730\", \"4734\", \"4748\", \"4753\", \"4758\", \"4763\", \"4789\")), \"group\", object_deleted) as object_deleted\n| if ((event_id in (\"4659\", \"4660\", \"5141\")), \"object\", object_deleted) as object_deleted\n| where object_deleted != \"\" and host matches \"{{host}}\"\n| timeslice 1h\n| count by object_deleted, _timeslice\n| transpose row _timeslice column object_deleted\n| fillmissing timeslice(1h)",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-45AFDA0FB168CB41",
+          "title": "Category Over Time",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/windows-jsonformat \n| json \"EventID\", \"Computer\", \"Message\", \"Task\" as event_id, host, msg_summary, task nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where host matches \"{{host}}\"\n| timeslice 1h\n| count by _timeslice, task\n| transpose row _timeslice column task",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "host",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/windows-jsonformat  | json \"Computer\" as host",
+            "field": "host"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "Active Directory Service Failures",
+      "description": "The Active Directory Service Failures dashboard provides at-a-glance view of success, failures, and audit failures overtime.",
+      "title": "Active Directory Service Failures",
+      "theme": "Light",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-376F511D9014D943",
+            "structure": "{\"height\":7,\"width\":12,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-7A2E3ED49E8B5A4B",
+            "structure": "{\"height\":7,\"width\":12,\"x\":12,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-9E6C487BA268AA4A",
+            "structure": "{\"height\":8,\"width\":17,\"x\":0,\"y\":7}"
+          },
+          {
+            "key": "panelPANE-453DCCF28E5CD94A",
+            "structure": "{\"height\":8,\"width\":7,\"x\":17,\"y\":7}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-376F511D9014D943",
+          "title": "Successes vs Failures",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/windows-jsonformat  Keywords\n| json \"EventID\", \"Computer\", \"Keywords\" as event_id, host, keywords nodrop\n| if (keywords = \"Audit Failure\", \"Failure\", \"Success\") as status\n| where host matches \"{{host}}\"\n| timeslice 1h\n| count as EventCount by  status, _timeslice\n| transpose row _timeslice column status",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-7A2E3ED49E8B5A4B",
+          "title": "Audit Failures Over Time",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme9\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Keywords\\\":\\\"Audit Failure\\\"\"\n| json \"EventID\", \"Computer\", \"Keywords\" as event_id, host, keywords nodrop\n| where keywords = \"Audit Failure\" and host matches \"{{host}}\"\n| timeslice 1h\n| count as failures by _timeslice, event_id\n| transpose row _timeslice column event_id",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-9E6C487BA268AA4A",
+          "title": "Admin Activity by Category",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/windows-jsonformat  Task \n| json \"EventID\", \"Computer\", \"Level\", \"Message\", \"Keywords\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\", \"Task\" as event_id, host, event_type, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, channel, task nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where (src_user matches \"Administrator*\" or dest_user matches \"Administrator*\") and host matches \"{{host}}\"\n| count by task, Keywords, msg_summary\n| topk(10, _count) by task | fields -_rank",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-453DCCF28E5CD94A",
+          "title": "All Failures by IP",
+          "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.5,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/windows-jsonformat  (\"fatal\" or \"failure\" or \"error\" or \"Audit Failure\") \n| json \"EventID\", \"Computer\", \"Keywords\", \"EventData.IpAddress\" as event_id, host, Keywords, src_ip nodrop\n| where Keywords != \"Audit Success\" and !isEmpty(src_ip) and src_ip != \"-\" and host matches \"{{host}}\"\n| count by src_ip\n| top 10 src_ip by _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "host",
+          "displayName": null,
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "LogQueryVariableSourceDefinition",
+            "query": "_sourceCategory = Labs/windows-jsonformat  | json \"Computer\" as host",
+            "field": "host"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "FolderSyncDefinition",
+      "name": "Security Status",
+      "description": "",
+      "children": [
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Account Lock Out Events",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4740\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\", \"keywords\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel, keywords nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id = \"4740\" \n| fields host, event_id, msg_summary, src_user, src_domain, dest_user, dest_domain",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-7d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Directory Service Object Changes",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (5136 or 5137 or 5138 or 5139 or 5141)  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectLogonId\", \"EventData.DSName\", \"EventData.DSType\", \"EventData.ObjectDN\", \"EventData.ObjectClass\", \"EventData.AttributeValue\", \"Task\", \"Keywords\", \"Channel\", \"Level\" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, AttributeValue, task, Keywords, channel, level nodrop\n| where event_id in (\"5136\", \"5137\", \"5138\", \"5139\", \"5141\") and channel = \"Security\"\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| count by event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, AttributeValue, task, Keywords, channel, level",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-7d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Login attempts to disabled accounts",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"Audit Failure\" (\"\\\"EventID\\\":\\\"4625\\\"\" or \"\\\"EventID\\\":\\\"4768\\\"\" or \"\\\"EventID\\\":\\\"4771\\\"\" or \"\\\"EventID\\\":\\\"4776\\\"\" or \"\\\"EventID\\\":\\\"4769\\\"\") (\"currently disabled\" or 0xc0000072)  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.LogonType\", \"EventData.FailureReason\", \"EventData.IpAddress\", \"EventData.IpPort\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.WorkstationName\", \"Channel\", \"EventData.Status\", \"EventData.SubStatus\", \"EventData.Workstation\", \"Keywords\" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop\n| parse regex field=msg_summary \"Failure Information:\\s+Failure Reason:\\s+(?<failure_reason>[^.\\r]+?)[.\\r]\" nodrop\n| parse regex field=msg_summary \"Failure Information:\\s+(?<test>.*)\" nodrop\n| parse regex field=msg_summary \"Result Code:\\s+(?<result_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"Failure Code:\\s+(?<failure_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id in (\"4625\", \"4771\") or (event_id = \"4768\" and result_code != \"0x0\") or (event_id = \"4769\" and failure_code != \"0x0\") or (event_id = \"4776\" and status != \"0x0\") and (failure_reason = \"Account currently disabled\" or sub_status = \"0xc0000072\")\n| fields host, event_id, msg_summary, src_user, src_ip, src_port, src_domain, dest_user, dest_domain, fail_reason, logon_type, result_code, failure_code, src_host, failure_reason, status, sub_status",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-7d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "New Account Creation",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4720\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id = \"4720\" and channel = \"Security\"\n| fields host, event_id, msg_summary, src_user, dest_user, src_domain, dest_domain",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-7d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "New Computer Account Creation",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4741\\\"\" \"computer account was created\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.SamAccountName\", \"EventData.HomeDirectory\", \"Channel\", \"Task\", \"Keywords\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, SamAccountName, HomeDirectory, channel, task, Keywords nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id = \"4741\" \n| fields event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, SamAccountName, HomeDirectory, channel, task, Keywords",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-24h"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "New Group Creation",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (\"\\\"EventID\\\":\\\"4727\\\"\" or \"\\\"EventID\\\":\\\"4731\\\"\" or \"\\\"EventID\\\":\\\"4754\\\"\")  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id in (\"4727\", \"4731\", \"4754\")\n| dest_user as group_name | dest_domain as group_domain\n| fields host, event_id, msg_summary, src_user, src_domain, group_name, group_domain",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-14d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "OU Creation",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"5137\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectLogonId\", \"EventData.DSName\", \"EventData.DSType\", \"EventData.ObjectDN\", \"EventData.ObjectClass\", \"Task\", \"Keywords\", \"Channel\", \"Level\" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level nodrop\n| where event_id = \"5137\" and channel = \"Security\"\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| count by event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-7d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "OU Deletion",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"5141\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectLogonId\", \"EventData.DSName\", \"EventData.DSType\", \"EventData.ObjectDN\", \"EventData.ObjectClass\", \"Task\", \"Keywords\", \"Channel\", \"Level\" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level nodrop\n| where event_id = \"5141\" and channel = \"Security\"\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| fields event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level ",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-24h"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Policy Changes",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (4902 or 4904 or 4905 or 4906 or 4907 or 4912 or 4715 or 4719 or 4739 or \"Audit Policy Change\" or \"System audit policy was changed\" or *policy*change* or \"Policy Change\")  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\", \"Task\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel, task nodrop\n| where event_id in (\"4902\", \"4904\", \"4905\", \"4906\", \"4907\", \"4912\", \"4715\", \"4719\", \"4739\") or msg_summary matches \"System audit policy was changed\" or msg_summary matches \"*policy*change*\"\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| count as num_changes, first(_messageTime) as last_change by src_domain, host, task, msg_summary\n| sort by last_change \n| formatDate(fromMillis(last_change), \"MM-dd-yyyy HH:mm:ss z\") as last_change",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-7d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Trend of new users and disabled users over time",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (\"\\\"EventID\\\":\\\"4720\\\"\" or \"\\\"EventID\\\":\\\"4725\\\"\")  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id in (\"4720\", \"4725\") \n| if (event_id = \"4720\", \"New Users\", \"Disabled Users\") as type \n| timeslice by 1d \n| count by _timeslice, type \n| sort by _timeslice asc \n| transpose row _timeslice column type",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-14d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "User added to group",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (4728 or 4732 or 4746 or 4751 or 4756 or 4761)  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.GroupName\", \"EventData.GroupDomain\", \"Channel\", \"EventData.MemberName\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, group_name, group_domain, channel, MemberName nodrop\n| parse regex field=msg_summary \"Subject:[\\s\\S]+?Account Name:[\\s\\S]+?Member:[\\s\\S]+?Security ID:\\s+(?<member_user_name>[^\\r\\\"]+?)\\r[\\s\\S]+?Account Name:[\\s\\S]+?Group:[\\s\\S]+?(?:Account|Group) Name:\\s+(?<group_name>[^\\r\\\"]+?)\\r\\s+?(?:Account|Group) Domain:\\s+(?<group_domain>[^\\r\\\"]+?)(?:\\r|\\\")\" nodrop \n| where event_id in (\"4728\", \"4732\", \"4746\", \"4751\", \"4756\", \"4761\")\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| fields host, event_id, msg_summary, src_user, src_domain, group_name, group_domain, member_user_name",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-7d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        }
+      ]
+    },
+    {
+      "type": "FolderSyncDefinition",
+      "name": "User Activity",
+      "description": "",
+      "children": [
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Failed User Logins",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (4771 or 4776 or 4768 or 4769 or 4625) \"Audit Failure\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.LogonType\", \"EventData.FailureReason\", \"EventData.IpAddress\", \"EventData.IpPort\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.WorkstationName\", \"Channel\", \"EventData.Status\", \"EventData.SubStatus\", \"EventData.Workstation\", \"Keywords\" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop\n| parse regex field=msg_summary \"Failure Information:\\s+Failure Reason:\\s+(?<failure_reason>[^.\\r]+?)[.\\r]\" nodrop\n| parse regex field=msg_summary \"Result Code:\\s+(?<result_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"Failure Code:\\s+(?<failure_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id in (\"4625\", \"4771\") or (event_id = \"4768\" and result_code != \"0x0\") or (event_id = \"4769\" and failure_code != \"0x0\") or (event_id = \"4776\" and status != \"0x0\")\n| fields host, event_id, msg_summary, src_user, src_ip, src_port, src_domain, dest_user, dest_domain, fail_reason, logon_type, result_code, failure_code, src_host, status, sub_status",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-1d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Last Successful Login Report",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4624\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"Keywords\", \"EventData.SubjectUserName\",  \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.IpAddress\", \"EventData.IpPort\", \"Channel\", \"Level\", \"EventData.LogonType\" as event_id, host, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel, level, logon_type nodrop\n| parse regex field=msg_summary \"Client Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Client Port:\\s+?(?<src_port>[\\d-]+)\" nodrop  \n| parse regex field=msg_summary \"Source Network Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Source Port:\\s+?(?<src_port>[\\d-]+)\" nodrop\n| parse regex field=msg_summary \"Client Name:\\s+(?<src_host>[^\\r]+?)\\r[\\s\\S]+?Client Address:[\\s\\r]+(?<src_ip>[^\\r]+)\" nodrop\n| where event_id = \"4624\" and logon_type in (\"2\", \"7\", \"8\", \"10\", \"11\") \n| first(_messagetime) as last_login by src_ip, dest_user, dest_domain, logon_type, src_port, src_domain, src_user, src_host, host\n| sort by last_login \n| formatDate(fromMillis(last_login), \"MM-dd-yyyy HH:mm:ss z\") as last_login",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-7d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Last Successful Login for a specific user",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4624\\\"\" myuser  _sourceName=Security \n// provide username you want to search for in place of myuser\n| json \"EventID\", \"Computer\", \"Message\", \"Keywords\", \"EventData.SubjectUserName\",  \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.IpAddress\", \"EventData.IpPort\", \"Channel\", \"Level\", \"EventData.LogonType\" as event_id, host, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel, level, logon_type nodrop\n| parse regex field=msg_summary \"Client Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Client Port:\\s+?(?<src_port>[\\d-]+)\" nodrop  \n| parse regex field=msg_summary \"Source Network Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Source Port:\\s+?(?<src_port>[\\d-]+)\" nodrop\n| parse regex field=msg_summary \"Client Name:\\s+(?<src_host>[^\\r]+?)\\r[\\s\\S]+?Client Address:[\\s\\r]+(?<src_ip>[^\\r]+)\" nodrop\n| where event_id = \"4624\" and logon_type in (\"2\",\"7\",\"8\",\"10\",\"11\") and dest_user matches \"myuser\" // provide username you want to search for in place of myuser\n| first(_messagetime) as last_login by host, src_user, src_domain, src_ip, src_port, dest_user, dest_domain, logon_type, src_host\n| sort by last_login \n| formatDate(fromMillis(last_login), \"MM-dd-yyyy HH:mm:ss z\") as last_login",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-14d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Password Change Attempts",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4723\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id = \"4723\"\n| fields host, event_id, msg_summary, src_user, dest_user, src_domain, dest_domain",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-7d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Password Reset Attempts",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4724\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id = \"4724\"\n| fields host, event_id, msg_summary, src_user, src_domain, dest_user, dest_domain",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-7d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Successful User Logins",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4624\\\"\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"Keywords\", \"EventData.SubjectUserName\",  \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.IpAddress\", \"EventData.IpPort\", \"Channel\", \"Level\", \"EventData.LogonType\" as event_id, host, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel, level, logon_type nodrop\n| parse regex field=msg_summary \"Client Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Client Port:\\s+?(?<src_port>[\\d-]+)\" nodrop  \n| parse regex field=msg_summary \"Source Network Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Source Port:\\s+?(?<src_port>[\\d-]+)\" nodrop\n| parse regex field=msg_summary \"Client Name:\\s+(?<src_host>[^\\r]+?)\\r[\\s\\S]+?Client Address:[\\s\\r]+(?<src_ip>[^\\r]+)\" nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| where event_id = \"4624\" \n| fields event_id, msg_summary, src_host, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, logon_type",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-24h"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Top 10 Domain Controllers with Most Login Failures",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (4771 or 4776 or 4768 or 4769 or 4625) \"Audit Failure\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.LogonType\", \"EventData.FailureReason\", \"EventData.IpAddress\", \"EventData.IpPort\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.WorkstationName\", \"Channel\", \"EventData.Status\", \"EventData.SubStatus\", \"EventData.Workstation\", \"Keywords\" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop\n| parse regex field=msg_summary \"Failure Information:\\s+Failure Reason:\\s+(?<failure_reason>[^.\\r]+?)[.\\r]\" nodrop\n| parse regex field=msg_summary \"Result Code:\\s+(?<result_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"Failure Code:\\s+(?<failure_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"Client Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Client Port:\\s+?(?<src_port>[\\d-]+)\" nodrop  \n| parse regex field=msg_summary \"Source Network Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Source Port:\\s+?(?<src_port>[\\d-]+)\" nodrop\n| parse regex field=msg_summary \"Client Name:\\s+(?<src_host>[^\\r]+?)\\r[\\s\\S]+?Client Address:[\\s\\r]+(?<src_ip>[^\\r]+)\" nodrop\n| where event_id in (\"4625\", \"4771\") or (event_id = \"4768\" and result_code != \"0x0\") or (event_id = \"4769\" and failure_code != \"0x0\") or (event_id = \"4776\" and status != \"0x0\")\n| fields host, event_id, msg_summary, src_user, src_ip, src_port, src_domain, dest_user, dest_domain, fail_reason, logon_type, result_code, failure_code, src_host, status, sub_status\n| _sourceHost as ReportingDC | count as %\"LoginFailureCount\" by ReportingDC | top 10 ReportingDC by %\"LoginFailureCount\"\n\n\n",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-1d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Top 10 Domain Controllers with the Most Login Failure Rate",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (4624 or 4625 or 4771 or 4776 or 4768 or 4769)  _sourceName=Security\n// 4624 - Login Success, 4625 or 4771 - Login Failures, 4776 - Domain Controller - Credential validation, 4768 - A Kerberos authentication ticket (TGT) was requested, 4769 - A Kerberos service ticket was requested\n| json \"EventID\", \"Computer\", \"Level\", \"Message\", \"Keywords\", \"Channel\" as event_id, host, event_type, msg_summary, Keywords, channel nodrop\n| where event_id in (\"4624\", \"4625\", \"4771\", \"4776\", \"4768\", \"4769\")\n| if (Keywords matches \"Audit Success\", 1, 0) as Success \n| if (Keywords matches \"Audit Failure\", 1, 0) as Failure \n| _sourceHost as ReportingDC \n| count as LoginAttempts, sum(Success) as SuccessLoginAttempts, sum(Failure) as FailureLoginAttempts by ReportingDC \n| FailureLoginAttempts / LoginAttempts as %\"LoginFailureRatio\" | sort - %\"LoginFailureRatio\" | limit 10",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-1d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "Top 10 Domains with Most Login Failures",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (4771 or 4776 or 4768 or 4769 or 4625) \"Audit Failure\"  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Message\", \"EventData.LogonType\", \"EventData.FailureReason\", \"EventData.IpAddress\", \"EventData.IpPort\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.WorkstationName\", \"Channel\", \"EventData.Status\", \"EventData.SubStatus\", \"EventData.Workstation\", \"Keywords\" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop\n| parse regex field=msg_summary \"Failure Information:\\s+Failure Reason:\\s+(?<failure_reason>[^.\\r]+?)[.\\r]\" nodrop\n| parse regex field=msg_summary \"Result Code:\\s+(?<result_code>[^\\r]+)\\r\" nodrop\n| parse regex field=msg_summary \"Failure Code:\\s+(?<failure_code>[^\\r]+)\\r\" nodrop\n| where event_id in (\"4625\", \"4771\") or (event_id = \"4768\" and result_code != \"0x0\") or (event_id = \"4769\" and failure_code != \"0x0\") or (event_id = \"4776\" and status != \"0x0\")\n| fields host, event_id, msg_summary, src_user, src_ip, src_port, src_domain, dest_user, dest_domain, fail_reason, logon_type, result_code, failure_code, src_host, status, sub_status\n| count as %\"LoginFailureCount\" by dest_domain \n| where !isEmpty(dest_domain)\n| top 10 dest_domain by  %\"LoginFailureCount\"",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-1d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        },
+        {
+          "type": "SavedSearchWithScheduleSyncDefinition",
+          "name": "User Account Changes",
+          "search": {
+            "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" (\"13824\" or \"4720\" or \"4722\" or \"4723\" or \"4724\" or \"4725\" or \"4726\" or \"4738\" or \"4740\" or \"4767\" or \"4780\" or \"4781\" or \"4794\" or \"5376\" or \"5377\")  _sourceName=Security\n| json \"EventID\", \"Computer\", \"Level\", \"Message\", \"Keywords\", \"EventData.SubjectUserName\", \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"Channel\", \"Task\" as event_id, host, event_type, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, channel, task nodrop\n| parse regex field=msg_summary \"Changed Attributes:\\s+(?<changedAttributes>[\\s\\S]*?)Additional Information:\" nodrop\n| parse regex field=msg_summary \"(?<msg_summary>.*\\.*)\" nodrop\n| fields msg_summary, event_id, src_user, src_domain, dest_user, dest_domain, host, task, changedAttributes\n| where event_id in (\"4720\", \"4722\", \"4723\", \"4724\", \"4725\", \"4726\", \"4738\", \"4740\", \"4767\", \"4780\", \"4781\", \"4794\", \"5376\", \"5377\") or task = \"13824\"\n| fields host, task, event_id, msg_summary, src_user, src_domain, dest_user, dest_domain, changedAttributes",
+            "byReceiptTime": false,
+            "viewName": "",
+            "viewStartTime": "1970-01-01T00:00:00Z",
+            "queryParameters": [],
+            "parsingMode": "Manual",
+            "defaultTimeRange": "-7d"
+          },
+          "searchSchedule": null,
+          "description": ""
+        }
+      ]
+    }
+  ]
+}

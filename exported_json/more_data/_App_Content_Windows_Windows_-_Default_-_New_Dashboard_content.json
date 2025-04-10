@@ -1,0 +1,212 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Windows - Default - New",
+  "description": "",
+  "title": "Windows - Default - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel4a0a6eccbdcd5a49",
+        "structure": "{\"width\":12,\"height\":10,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelc57937299e9a484e",
+        "structure": "{\"width\":12,\"height\":10,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelfffbddbbbb186a4d",
+        "structure": "{\"width\":12,\"height\":10,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panelc9ff46bfb125ab40",
+        "structure": "{\"width\":12,\"height\":10,\"x\":12,\"y\":8}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel4a0a6eccbdcd5a49",
+      "title": "Top 10 Service Operations",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows Service Control Manager 7036 \"service entered\"\n| parse \"EventCode = *;\" as event_id nodrop\n| parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"The (?<service>\\w.+?) service entered the (?<state>\\w+) state\"\n| where event_id=\"7036\"\n| if(state=\"running\", 1, 0) as starts\n| if(state=\"stopped\",1,0) as stops\n|where if (\"{{service}}\" = \"*\", true, service matches \"{{service}}\") AND if (\"{{state}}\" = \"*\", true, state matches \"{{state}}\") AND if (\"{{event_id}}\" = \"*\", true, event_id matches \"{{event_id}}\")\n|sum(starts) as starts, sum(stops) as stops by service, host\n| sort by stops, starts\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-10h"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc9ff46bfb125ab40",
+      "title": "Errors and Warnings Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows (error or warning)\n| parse \"Type = \\\"*\\\";\" as evtType\n| if(_raw matches \"*EventType = Error*\",1,0) as errors \n| if(_raw matches \"*EventType = Warning*\",1,0) as warnings\n| if (evtType matches \"Error*\",1,errors) as errors \n| if (evtType matches \"Warning*\",1,warnings) as warnings \n| timeslice by 1h\n| sum(errors) as errors, sum(warnings) as warnings by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc57937299e9a484e",
+      "title": "Event Distribution Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":true,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows (System or Security or Application) Win32_NTLogEvent\n| parse \"Logfile = \\\"*\\\";\" as _sourceName\n| if(_sourceName=\"System\",1,0) as system \n| if(_sourceName=\"Application\",1,0) as application\n| if(_sourceName=\"Security\",1,0) as security\n| timeslice by 1h \n| sum(system) as System, sum(application) as application, sum(security) as security by _timeslice\n| sort by _timeslice asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelfffbddbbbb186a4d",
+      "title": "System Operations",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Windows/OS/Windows  Security (4608 or 4946 or 4947 or 4948 or 4727 or 4731 or 4754 or 4720)\n| parse \"EventCode = *;\" as event_id\n| parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| \"\" as operation\n| if(event_id=\"4608\",\"Restarts\",operation) as operation  \n| if(event_id in (\"4946\", \"4947\", \"4948\"),\"Firewall Changes\",operation) as operation \n| if(event_id in (\"4727\", \"4731\", \"4754\"),\"Groups Created\",operation) as operation\n| if(event_id=\"4720\",\"Users Created\",operation) as operation\n| where operation != \"\"\n|where if (\"{{event_id}}\" = \"*\", true, event_id matches \"{{event_id}}\")\n|count as count by operation, host \n| transpose row host column operation",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-10h"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "service",
+      "displayName": "service",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows Service Control Manager 7036 \"service entered\"\n| parse \"EventCode = *;\" as event_id nodrop\n| parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"The (?<service>\\w.+?) service entered the (?<state>\\w+) state\"\n| where event_id=\"7036\"\n| if(state=\"running\", 1, 0) as starts\n| if(state=\"stopped\",1,0) as stops",
+        "field": "service"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "state",
+      "displayName": "state",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows Service Control Manager 7036 \"service entered\"\n| parse \"EventCode = *;\" as event_id nodrop\n| parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"The (?<service>\\w.+?) service entered the (?<state>\\w+) state\"\n| where event_id=\"7036\"\n| if(state=\"running\", 1, 0) as starts\n| if(state=\"stopped\",1,0) as stops",
+        "field": "state"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "event_id",
+      "displayName": "event_id",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Windows/OS/Windows Service Control Manager 7036 \"service entered\"\n| parse \"EventCode = *;\" as event_id nodrop\n| parse \"Computer = \\\"*\\\";\" as host nodrop | parse \"ComputerName = \\\"*\\\";\" as host nodrop\n| parse regex \"Message = \\\"The (?<service>\\w.+?) service entered the (?<state>\\w+) state\"\n| where event_id=\"7036\"\n| if(state=\"running\", 1, 0) as starts\n| if(state=\"stopped\",1,0) as stops",
+        "field": "event_id"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

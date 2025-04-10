@@ -1,0 +1,449 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "AWS WAF - Threat Intelligence - New",
+  "description": "See details of threats related to traffic allowed and blocked by AWS WAF.",
+  "title": "AWS WAF - Threat Intelligence - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel1bbc5d42891cab43",
+        "structure": "{\"width\":12,\"height\":1,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelece538d7b1ee2849",
+        "structure": "{\"width\":12,\"height\":1,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panel14df6575a9aceb40",
+        "structure": "{\"width\":12,\"height\":8,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panel61688218945ada44",
+        "structure": "{\"width\":12,\"height\":8,\"x\":12,\"y\":1}"
+      },
+      {
+        "key": "panel2634d9258d927a42",
+        "structure": "{\"width\":4,\"height\":6,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panel2a8571fc86226843",
+        "structure": "{\"width\":8,\"height\":6,\"x\":4,\"y\":7}"
+      },
+      {
+        "key": "panel76d1db2d9fd9094d",
+        "structure": "{\"width\":4,\"height\":6,\"x\":12,\"y\":7}"
+      },
+      {
+        "key": "panele9b64d9bb595e940",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":7}"
+      },
+      {
+        "key": "panel119717cb8de89844",
+        "structure": "{\"width\":12,\"height\":5,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panel7772639ca16e6a46",
+        "structure": "{\"width\":12,\"height\":5,\"x\":12,\"y\":12}"
+      },
+      {
+        "key": "panelebbe13c3b9182947",
+        "structure": "{\"width\":6,\"height\":8,\"x\":0,\"y\":16}"
+      },
+      {
+        "key": "panel2d2a42afbd65ab4e",
+        "structure": "{\"width\":6,\"height\":8,\"x\":6,\"y\":16}"
+      },
+      {
+        "key": "paneld7208f1e8b612846",
+        "structure": "{\"width\":6,\"height\":8,\"x\":12,\"y\":16}"
+      },
+      {
+        "key": "panel5cef314991887a4b",
+        "structure": "{\"width\":6,\"height\":8,\"x\":18,\"y\":16}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel61688218945ada44",
+      "title": "Unique Blocked Threats Map",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  BLOCK\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"BLOCK\"\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count as allowed_ips by clientip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = clientip\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneld7208f1e8b612846",
+      "title": "Blocked Threats by Actors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  BLOCK\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"BLOCK\"\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count as blocked_ips by clientip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|sum (blocked_ips) as threat_count by Actor",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelebbe13c3b9182947",
+      "title": "Allowed Threat by Actors",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  ALLOW\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"ALLOW\"\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count as allowed_ips by clientip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|sum (allowed_ips) as threat_count by Actor",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2a8571fc86226843",
+      "title": "Allowed Traffic by Malicious IPs",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  ALLOW\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"ALLOW\"\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count as allowed_ips by clientip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|sum (allowed_ips) as threat_count by clientip, malicious_confidence, Actor, label_name\n| sort by threat_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel14df6575a9aceb40",
+      "title": "Unique Allowed Threats Map",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  ALLOW\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"ALLOW\"\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count as allowed_ips by clientip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = clientip\n| count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2d2a42afbd65ab4e",
+      "title": "Allowed Threat Breakdown by Sources",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  ALLOW\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"ALLOW\"\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count as allowed_ips by clientip, _sourceCategory\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|sum (allowed_ips) as threat_count by _sourceCategory",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5cef314991887a4b",
+      "title": "Blocked Threat Breakdown by Sources",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  BLOCK\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"BLOCK\"\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count as blocked_ips by clientip, _sourceCategory\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|sum (blocked_ips) as threat_count by _sourceCategory",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelece538d7b1ee2849",
+      "title": "Blocked",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panel1bbc5d42891cab43",
+      "title": "Allowed",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panel2634d9258d927a42",
+      "title": "Allowed Traffic by Threat Confidence",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  ALLOW\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"ALLOW\"\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count as allowed_ips by clientip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| sum (allowed_ips) as threat_count by malicious_confidence\n| sort by threat_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel76d1db2d9fd9094d",
+      "title": "Blocked Traffic by Threat Confidence",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  BLOCK\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"BLOCK\"\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count as blocked_ips by clientip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| sum (blocked_ips) as threat_count by malicious_confidence\n| sort by threat_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panele9b64d9bb595e940",
+      "title": "Blocked Traffic by Malicious IPs",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  BLOCK\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"BLOCK\"\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count as blocked_ips by clientip\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n|sum (blocked_ips) as threat_count by clientip, malicious_confidence, Actor, label_name\n| sort by threat_count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel119717cb8de89844",
+      "title": "Allowed Threats Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  ALLOW\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"ALLOW\"\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| timeslice 5m\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-12h"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7772639ca16e6a46",
+      "title": "Blocked Threats Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/WAF  BLOCK\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"BLOCK\"\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=clientip \n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| timeslice 5m\n|where if (\"{{clientip}}\" = \"*\", true, clientip matches \"{{clientip}}\")\n|count by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "clientip",
+      "displayName": "clientip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/WAF  ALLOW\n| parse \"\\\"httpMethod\\\":\\\"*\\\",\" as httpMethod,\"\\\"httpVersion\\\":\\\"*\\\",\" as httpVersion,\"\\\"uri\\\":\\\"*\\\",\" as uri, \"{\\\"clientIp\\\":\\\"*\\\",\\\"country\\\":\\\"*\\\"\" as clientIp,country, \"\\\"action\\\":\\\"*\\\"\" as action, \"\\\"matchingNonTerminatingRules\\\":[*]\" as matchingNonTerminatingRules, \"\\\"rateBasedRuleList\\\":[*]\" as rateBasedRuleList, \"\\\"ruleGroupList\\\":[*]\" as ruleGroupList, \"\\\"httpSourceId\\\":\\\"*\\\"\" as httpSourceId, \"\\\"httpSourceName\\\":\\\"*\\\"\" as httpSourceName, \"\\\"terminatingRuleType\\\":\\\"*\\\"\" as terminatingRuleType, \"\\\"terminatingRuleId\\\":\\\"*\\\"\" as terminatingRuleId, \"\\\"webaclId\\\":\\\"*\\\"\" as webaclId nodrop\n| where action=\"ALLOW\"",
+        "field": "clientip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,245 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "AWS CloudTrail - Overview - New",
+  "description": "See an overview of your AWS users, resources, network and security events. The panels present information about top 10 users, failed logins, user locations, and resource creation and deletion.",
+  "title": "AWS CloudTrail - Overview - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelb7e57ab39629c842",
+        "structure": "{\"width\":16,\"height\":13,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel1b3f523d85d1ea40",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel9d16ec859479b94b",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":5}"
+      },
+      {
+        "key": "paneld9c7ce8596ef3841",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panel4ca79e31a5432a46",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":10}"
+      },
+      {
+        "key": "panel7c5786708a68aa45",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":10}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel1b3f523d85d1ea40",
+      "title": "Created Resources",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* (Create* OR Run*)\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name\n| parse regex field=event_name \"^(?:Create|Run)(?<resource_type>[A-Z][A-Za-z]+)\"\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\")\n|count by resource_type",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4ca79e31a5432a46",
+      "title": "Failed Logins",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"\",\"useBackgroundColor\":false,\"useNoData\":true,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* ConsoleLogin Failure\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| parse \"\\\"responseElements\\\":{\\\"ConsoleLogin\\\":\\\"*\\\"}\" as loginResult nodrop\n| where eventName=\"ConsoleLogin\" and loginresult=\"Failure\"\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\")\n|count by loginResult",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb7e57ab39629c842",
+      "title": "Geo Location of All Users",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{\"layerType\":\"Cluster\"}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* sourceIPAddress \n| json \"sourceIPAddress\"\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\")\n|count by sourceIPAddress\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = sourceIPAddress\n| where !isNull(latitude)\n| sum(_count) as _count by latitude, longitude, country_code, country_name, region, city, postal_code\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneld9c7ce8596ef3841",
+      "title": "Top 10 Users",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail*\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\")\n|count as count by user\n| sort count \n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7c5786708a68aa45",
+      "title": "Created and Deleted Network and Security Events",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"50\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* (*Security* OR *Network*) \n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event\n| parse regex field=event \"^(?<event_type>[A-Z][a-z]+?)[A-Z]\"\n| where (event matches \"*Security*\" OR event matches \"*Network*\") and event_type in (\"Create\",\"Delete\")\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\")\n|count by event \n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9d16ec859479b94b",
+      "title": "Deleted Resources Over Time",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/CloudTrail* Delete*\n| parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n| json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n| parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n| if (user_name=\"\", user_principal, user_name) as user \n| parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name\n| parse regex field=event_name \"^(?:Delete)(?<resource_type>[A-Z][A-Za-z]+)\"\n|where if (\"{{user}}\" = \"*\", true, user matches \"{{user}}\") AND if (\"{{event_name}}\" = \"*\", true, event_name matches \"{{event_name}}\")\n|count resource_type\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "user",
+      "displayName": "user",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* ConsoleLogin Failure\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| parse \"\\\"responseElements\\\":{\\\"ConsoleLogin\\\":\\\"*\\\"}\" as loginResult nodrop\n| where eventName=\"ConsoleLogin\" and loginresult=\"Failure\"",
+        "field": "user"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "event_name",
+      "displayName": "event_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/CloudTrail* ConsoleLogin Failure\n| parse \"\\\"eventName\\\":\\\"*\\\"\" as eventName nodrop\n| parse \"\\\"responseElements\\\":{\\\"ConsoleLogin\\\":\\\"*\\\"}\" as loginResult nodrop\n| where eventName=\"ConsoleLogin\" and loginresult=\"Failure\"",
+        "field": "event_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

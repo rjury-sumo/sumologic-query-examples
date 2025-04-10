@@ -1,0 +1,777 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Event Resource Count Queries",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "CloudTrail_DisableEvents,EncryptWithNewKey_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail \n(includeGlobalServiceEvents  or enableLogFileValidation or StopLogging or kmsKeyId)\n\n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where isBlank(errorCode) and eventSource=\"cloudtrail.amazonaws.com\"  and (eventName=\"UpdateTrail\"  or eventName=\"StopLogging\") \n| json \"requestParameters.includeGlobalServiceEvents\" ,\"requestParameters.enableLogFileValidation\",  \"requestParameters.name\", \"requestParameters.kmsKeyId\" as inclGlobalServiceEvents, disableLogFileValidation, arn, kmsKeyId nodrop\n| where (inclGlobalServiceEvents=\"false\" or disableLogFileValidation=\"false\" or eventName=\"StopLogging\" or kmsKeyId=\"\") \n| json \"requestParameters.name\" as name \n| \"\" as classification\n| if (inclGlobalServiceEvents=\"false\",concat(\"CloudTrail_DisableGlobalEvents_CountEventResources,\",classification),classification) as classification\n| if(disableLogFileValidation=\"false\",concat(\"CloudTrail_DisableLogIntegrityValidation_CountEventResources,\",classification),classification) as classification\n| if(eventName=\"StopLogging\",concat(\"CloudTrail_DisableTrails_CountEventResources,\",classification),classification) as classification \n| if(kmsKeyId=\"\",concat(\"CloudTrail_EncryptWithNewKey_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| parse regex field=name \"(?<prefix>.*?:.*?:.*?:.*?:.*?:)?(?<resource>[^:]+$)\" \n| \"EventResourceCount\" as type \n| count_distinct(resource) as count by benchmarkname, type\n| fillmissing values(\"CloudTrail_DisableGlobalEvents_CountEventResources\",\"CloudTrail_EncryptWithNewKey_CountEventResources\",\"CloudTrail_DisableLogIntegrityValidation_CountEventResources\",\"CloudTrail_DisableTrails_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "EC2_AuthorizeSecurityGroupIngressToPublic_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail AuthorizeSecurityGroupIngress \n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where eventSource=\"ec2.amazonaws.com\" and eventName=\"AuthorizeSecurityGroupIngress\" and isBlank(errorCode) \n| json \"requestParameters.ipPermissions.items[*]\" as listIpPermissions \n| parse regex field=listIpPermissions \"\\\"cidrIp\\\"\\s*:\\s*\\\"(?<cirdrIp>[^\\\"]+)\\\"\" multi \n| parse regex field=listIpPermissions \"\\\"ipProtocol\\\"\\s*:\\s*\\\"(?<ipProtocol>[^\\\"]+)\\\"\" multi \n| where cirdrIp=\"0.0.0.0\\\\/0\" and toString(ipProtocol)=\"-1\" \n| json \"requestParameters.groupId\" as groupId \n| count_distinct(groupId) as count \n| \"EC2_AuthorizeSecurityGroupIngressToPublic_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"EC2_AuthorizeSecurityGroupIngressToPublic_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "EC2_DescribeInstanceUserData_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail DescribeInstanceAttribute \n| json \"eventSource\", \"eventName\", \"errorCode\", \"requestParameters.attribute\", \"requestParameters.instanceId\" as eventSource, eventName, errorCode, requestedAttribute, requestedInstance nodrop \n| where eventSource=\"ec2.amazonaws.com\" and eventName=\"DescribeInstanceAttribute\" and isBlank(errorCode) and requestedAttribute=\"userData\" \n| count_distinct(requestedInstance) as count \n| \"EC2_DescribeInstanceUserData_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"EC2_DescribeInstanceUserData_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "EC2_DisableterminationprotectionOrListInstances_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (ModifyInstanceAttribute or DescribeInstances )\n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where eventSource=\"ec2.amazonaws.com\" and (eventName=\"ModifyInstanceAttribute\" or eventName=\"DescribeInstances\") and isBlank(errorCode) \n| json \"requestParameters.attribute\", \"requestParameters.value\" as attribute, val nodrop\n| \"\" as classification\n| if(eventName =\"ModifyInstanceAttribute\" and attribute=\"disableApiTermination\" and val=\"true\",concat(\"EC2_Disableterminationprotection_CountEventResources,\",classification),classification) as classification\n| if(eventName =\"DescribeInstances\",concat(\"EC2_ListInstances_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| parse regex \"\\\"instanceId\\\"\\s*:\\s*\\\"(?<instanceId>[^\\\"]+)\\\"\" multi \n| \"EventResourceCount\" as type \n| count_distinct(instanceId) as count by benchmarkname , type\n| fillmissing values(\"EC2_Disableterminationprotection_CountEventResources\",\"EC2_ListInstances_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "EC2_ListSecurityGroupsOrSecurityGroups_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (DescribeSecurityGroups or DescribeImages)\n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where eventSource=\"ec2.amazonaws.com\" and (eventName=\"DescribeSecurityGroups\" or eventName=\"DescribeImages\") and isBlank(errorCode) \n| \"\" as classification\n| if(eventName =\"DescribeSecurityGroups\" ,concat(\"EC2_ListSecurityGroups_CountEventResources,\",classification),classification) as classification\n| if(eventName =\"DescribeImages\",concat(\"EC2_ListAMIs_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| parse regex \"\\\"groupId\\\"\\s*:\\s*\\\"(?<objectId>[^\\\"]+)\\\"\" multi nodrop\n| parse regex \"\\\"imageId\\\"\\s*:\\s*\\\"(?<objectId>[^\\\"]+)\\\"\" multi nodrop\n| where !isBlank(objectId)\n| \"EventResourceCount\" as type \n| count_distinct(objectId) as count by benchmarkname, type\n| fillmissing values(\"EC2_ListSecurityGroups_CountEventResources\",\"EC2_ListAMIs_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "EC2_TrafficMirroringOrDescribeRouteTables_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail ( CreateTraffic* or DescribeRouteTables)\n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where eventSource=\"ec2.amazonaws.com\" and eventName in (\"CreateTrafficMirrorTarget\", \"CreateTrafficMirrorSession\", \"CreateTrafficMirrorFilter\", \"CreateTrafficMirrorFilterRule\",\"DescribeRouteTables\") and isBlank(errorCode) \n| if(_raw matches /requestParameters.*?NetworkInterfaceId/,1,0) as hasNetworkInterface \n| if(_raw matches /requestParameters.*?TrafficMirrorFilterId/,1,0) as hasTrafficMirrorFilterId \n//| where hasNetworkInterface > 0 or hasTrafficMirrorFilterId > 0 \n| \"\" as classification\n| if (eventName in (\"CreateTrafficMirrorTarget\", \"CreateTrafficMirrorSession\", \"CreateTrafficMirrorFilter\", \"CreateTrafficMirrorFilterRule\") and (hasNetworkInterface > 0 or hasTrafficMirrorFilterId > 0),concat(\"EC2_TrafficMirroring_CountEventResources,\",classification),classification) as classification\n| if(eventName =\"DescribeRouteTables\",concat(\"EC2_DescribeRouteTables_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| parse regex \"\\\"NetworkInterfaceId\\\"\\s*:\\s*\\\"(?<resource>[^\\\"]+)\\\"\" multi nodrop \n| parse regex \"\\\"hasTrafficMirrorFilterId\\\"\\s*:\\s*\\\"(?<resource>[^\\\"]+)\\\"\" multi nodrop \n| parse regex \"\\\"routeTableId\\\"\\s*:\\s*\\\"(?<resource>[^\\\"]+)\\\"\" multi nodrop\n| \"EventResourceCount\" as type \n| where !isblank(resource)\n| count_distinct(resource) as count by benchmarkname, type\n| fillmissing values(\"EC2_TrafficMirroring_CountEventResources\",\"EC2_DescribeRouteTables_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IAM_AddUserToGroup,CompromisedUserOrKeys_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail ( AddUser*  or \"CreateAccessKey\" or \"CreateLoginProfile\" or \"UpdateLoginProfile\" ) iam.amazonaws.com\n| json \"eventSource\", \"eventName\", \"errorCode\", \"requestParameters\" nodrop \n| where eventName in (\"AddUserToGroup\", \"AddUsersToGroup\",\"CreateAccessKey\", \"CreateLoginProfile\", \"UpdateLoginProfile\") and isBlank(errorCode) and eventSource=\"iam.amazonaws.com\" \n| \"\" as classification\n| if (eventName in (\"AddUserToGroup\", \"AddUsersToGroup\"),concat(\"IAM_AddUserToGroup_CountEventResources,\",classification),classification) as classification\n| if (eventName in (\"CreateAccessKey\", \"CreateLoginProfile\", \"UpdateLoginProfile\"),concat(\"IAM_CompromisedUserOrKeys_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| parse regex field=requestparameters \"\\\"userName\\\"\\s*:\\s*\\\"(?<userName>[^\\\"]+)\\\"\" multi \n| \"EventResourceCount\" as type \n| count_distinct(userName) as count by benchmarkname,type \n| fillmissing values(\"IAM_AddUserToGroup_CountEventResources\",\"IAM_CompromisedUserOrKeys_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IAM_AttachPutRoleOrGroupOrUserPolicy_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail *GroupPolicy or *RolePolicy or *UserPolicy\n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where eventName in (\"AttachRolePolicy\", \"PutRolePolicy\",\"AttachGroupPolicy\", \"PutGroupPolicy\",\"AttachUserPolicy\", \"PutUserPolicy\") and isBlank(errorCode) and eventSource=\"iam.amazonaws.com\" \n| json \"requestParameters.policyArn\", \"requestParameters.policyName\" as policyArn, policyName nodrop \n| parse regex field=policyArn \".*?:.*?:.*?:.*?:.*?:policy/(?<resourceName>.*)\" nodrop \n| \"\" as classification\n| if (eventName in (\"AttachRolePolicy\", \"PutRolePolicy\"),concat(\"IAM_AttachPutRolePolicy_CountEventResources,\",classification),classification) as classification\n| if (eventName in (\"AttachGroupPolicy\", \"PutGroupPolicy\"),concat(\"IAM_AttachPutGroupPolicy_CountEventResources,\",classification),classification) as classification\n| if (eventName in (\"AttachUserPolicy\", \"PutUserPolicy\"),concat(\"IAM_AttachPutUserPolicy_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| concat(resourceName, policyName) as policyId \n| where !isBlank(policyId) and !isBlank(policyArn)\n| \"EventResourceCount\" as type \n| count_distinct(policyId) as count by benchmarkname, type\n| fillmissing values(\"IAM_AttachPutRolePolicy_CountEventResources\",\"IAM_AttachPutGroupPolicy_CountEventResources\",\"IAM_AttachPutUserPolicy_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IAM_ConsoleLoginsOrNoMfa_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (ConsoleLogin or MFAUsed )\n| json \"eventName\", \"errorCode\", \"additionalEventData.MFAUsed\" as eventName, errorCode, MFAUsed nodrop\n| where isBlank(errorCode) and eventName=\"ConsoleLogin\" \n| json \"userIdentity.arn\" as arn \n| where !isBlank(arn)\n| \"\" as classification\n| if (eventName=\"ConsoleLogin\",concat(\"IAM_TotalConsoleLogins_CountEventResources,\",classification),classification) as classification\n| if(eventName=\"ConsoleLogin\" and MFAUsed=\"No\",concat(\"IAM_ConsoleLoginsNoMfa_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| count_distinct(arn) as count by benchmarkname, type\n| \"EventResourceCount\" as type \n| fillmissing values(\"IAM_TotalConsoleLogins_CountEventResources\",\"IAM_ConsoleLoginsNoMfa_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IAM_CreateUpdatePolicy_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail *Policy* \n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where eventName in (\"SetDefaultPolicyVersion\" , \"CreatePolicy\", \"CreatePolicyVersion\") and isBlank(errorCode) and eventSource=\"iam.amazonaws.com\" \n| parse regex \"[vV]ersionId\\\"\\s*:\\s*\\\"(?<version>[^\\\"]+)\\\"\" \n| parse regex \"\\\"(?<arn>arn:[^\\\"]+)\\\"\" multi \n| parse regex field=arn \".*?:.*?:.*?:.*?:.*?:(?<resource>[^:]+$)\" multi \n| where resource matches \"policy*\" \n| concat(arn, version) as policyId \n| count_distinct(policyId) as count \n| \"IAM_CreateUpdatePolicy_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"IAM_CreateUpdatePolicy_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IAM_TooManyAccessDenied_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail AccessDenied \n| json \"eventName\", \"eventSource\", \"errorCode\", \"sourceIPAddress\", \"userIdentity.type\", \"userIdentity.userName\" as eventName, eventSource, errorCode, sourceIPAddress, userType, userName \n| where errorCode=\"AccessDenied\" \n| count as failures, count_distinct(eventName) as methods, count_distinct(eventSource) as sources by userType, userName, eventSource, errorCode, sourceIPAddress \n| where failures > 5 and methods > 1 and sources > 1 \n| count_distinct(username) as count \n| \"IAM_TooManyAccessDenied_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"IAM_TooManyAccessDenied_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IAM_UpdateAssumeRolePolicy_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail UpdateAssumeRolePolicy \n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where eventName=\"UpdateAssumeRolePolicy\" and isBlank(errorCode) and eventSource=\"iam.amazonaws.com\" \n| json \"requestParameters.roleName\" as roleName \n| count_distinct(roleName) as count \n| \"IAM_UpdateAssumeRolePolicy_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"IAM_UpdateAssumeRolePolicy_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Lambda_ExcessPermissions_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail lambda.amazonaws.com \n| json \"eventSource\", \"eventName\", \"errorCode\", \"userIdentity.type\" as eventSource, eventName, errorCode, userType nodrop \n| where userType=\"IAMUser\" and isBlank(errorCode) and eventSource=\"lambda.amazonaws.com\" and (eventName matches \"CreateFunction*\" or eventName matches \"Invoke*\" or eventName matches \"CreateEventSourceMapping*\" or eventName matches \"UpdateFunctionCode*\" or eventName matches \"UpdateFunctionConfiguration*\") \n| json \"requestParameters.functionName\" as functionName \n| parse regex field=functionName \"(?<prefix>.*?:.*?:.*?:.*?:.*?:)?(?<resource>[^:]+$)\" \n| count_distinct(resource) as count \n| \"Lambda_ExcessPermissions_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"Lambda_ExcessPermissions_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Lambda_InteractWithIam_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail lambda.amazonaws.com \n| json \"userIdentity.type\", \"userIdentity.invokedBy\", \"errorCode\" as userType, service, errorCode nodrop \n| where service=\"lambda.amazonaws.com\" and isBlank(errorCode) and !isBlank(service) and userType=\"IAMUser\" \n| parse regex \"\\\"(?<arn>arn:[^\\\"]+)\\\"\" multi \n| parse regex field=arn \".*?:.*?:(?<service>[^:]+):.*?:.*?:(?<resource>[^:]+$)\" \n| where service=\"lambda\" \n| where !isBlank(resource) \n| count_distinct(resource) as count \n| \"Lambda_InteractWithIam_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"Lambda_InteractWithIam_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "RDS_ModifySecurityGroup_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail AuthorizeDBSecurityGroupIngress \n| json \"eventName\", \"errorCode\" nodrop \n| where isBlank(errorCode) and eventName=\"AuthorizeDBSecurityGroupIngress\" \n| json \"requestParameters.dBSecurityGroupName\" as groupName \n| parse regex field=groupName \"(?<prefix>.*?:.*?:.*?:.*?:.*?:)?(?<resource>[^:]+$)\" \n| count_distinct(resource) as count \n| \"RDS_ModifySecurityGroup_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"RDS_ModifySecurityGroup_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "RDS_ModifyingAdminPwd,RestoreFromBackup_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (ModifyDBInstance or AuthorizeDBSecurityGroupIngress or Restore*From*Snapshot)\n| json \"eventName\", \"errorCode\", \"eventSource\", \"responseElements.pendingModifiedValues.masterUserPassword\" as eventName, errorCode, eventSource,setPassword nodrop\n| where isBlank(errorCode) and ((eventSource=\"rds.amazonaws.com\" and eventName=\"ModifyDBInstance\") or eventName matches \"Restore*From*Snapshot\" )\n| \"\" as classification\n| if (eventSource=\"rds.amazonaws.com\" and eventName=\"ModifyDBInstance\" and !isBlank(setPassword),concat(\"RDS_ModifyingAdminPassword_CountEventResources,\",classification),classification) as classification\n| if(eventName matches \"Restore*From*Snapshot\",concat(\"RDS_RestoreFromBackup_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| json \"requestParameters.dBInstanceIdentifier\" as rdsId \n| \"EventResourceCount\" as type \n| count_distinct(rdsId) as count by benchmarkname, type\n| fillmissing values(\"RDS_ModifyingAdminPassword_CountEventResources\",\"RDS_RestoreFromBackup_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Redshift_DisableEncryption,DisableAccessLogging_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (DisableLogging or encryptionType)\n| json \"eventSource\", \"eventName\", \"errorCode\" ,\"responseElements.pendingModifiedValues.encryptionType\" as eventSource, eventName, errorCode, encrypted nodrop\n| where isBlank(errorCode) and eventSource=\"redshift.amazonaws.com\" and ( eventName=\"DisableLogging\" or (eventName=\"ModifyCluster\" and encrypted=\"NONE\"))\n| \"\" as classification\n| if (eventName=\"DisableLogging\" ,concat(\"Redshift_DisableAccesslogging_CountEventResources,\",classification),classification) as classification\n| if(eventName =\"ModifyCluster\" and encrypted=\"NONE\",concat(\"Redshift_DisableEncryption_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| json \"requestParameters.clusterIdentifier\" as rdsId \n| \"EventResourceCount\" as type \n| count_distinct(rdsId) as count by benchmarkname, type\n| fillmissing values(\"Redshift_DisableAccesslogging_CountEventResources\",\"Redshift_DisableEncryption_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Redshift_DisableSSL_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail ModifyClusterParameterGroup \n| json \"eventSource\", \"eventName\", \"errorCode\", \"requestParameters.parameters\" as eventSource, eventName, errorCode, listParams nodrop \n| where isBlank(errorCode) and eventSource=\"redshift.amazonaws.com\" and eventName=\"ModifyClusterParameterGroup\" \n| parse regex field=listParams \"\\{(?<param>[^\\}]+\\})\" multi \n| concat(\"{\", param) as param \n| json field=param \"parameterName\", \"parameterValue\" \n| where parameterName=\"require_ssl\" and parameterValue=\"false\" \n| json \"requestParameters.parameterGroupName\" as groupId \n| count_distinct(groupId) as count \n| \"Redshift_DisableSSL_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"Redshift_DisableSSL_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "S3_AccessDeniedOrBucketConfigChecksFromPublicIp_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (AccessDenied or GetBucket*)\n| json \"eventSource\", \"eventName\", \"sourceIPAddress\", \"errorCode\" nodrop \n| json \"requestParameters.bucketName\" as bucketName\n| where eventSource=\"s3.amazonaws.com\"  \n| \"\" as classification\n| if (errorCode=\"AccessDenied\",concat(\"S3_AccessDeniedTotal_CountEventResources,\",classification),classification) as classification\n| if(isPublicIP(sourceIPAddress) and errorCode=\"AccessDenied\",concat(\"S3_AccessDeniedForPublicIp_CountEventResources,\",classification),classification) as classification\n| if(isBlank(errorCode) and eventSource=\"s3.amazonaws.com\" and eventName in (\"GetBucketAcl\", \"GetBucketCors\", \"GetBucketEncryption\", \"GetBucketLogging\", \"GetBucketPolicy\", \"GetBucketPublicAccessBlock\", \"GetBucketVersioning\"),concat(\"S3_BucketConfigChecksFromPublicIp_CountEventResources,\",classification),classification) as classification\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| \"EventResourceCount\" as type \n| count_distinct(bucketName) as count by benchmarkname, type\n| fillmissing values(\"S3_AccessDeniedTotal_CountEventResources\",\"S3_AccessDeniedForPublicIp_CountEventResources\", \"S3_BucketConfigChecksFromPublicIp_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count\n",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": "Scheduled search for counting buckets impacted by configuration checks or access denied errors"
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "S3_CrudBucketsFromPublicIp_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail s3.amazonaws.com \n| json \"eventSource\", \"eventName\", \"sourceIPAddress\", \"errorCode\" nodrop \n| json \"requestParameters.bucketName\" as bucketName\n| where isBlank(errorCode) and eventSource=\"s3.amazonaws.com\" and isPublicIP(sourceIPAddress) and (eventName matches \"Put*\") or (eventName matches \"Create*\") or (eventName matches \"Delete*\") or (eventName matches \"Update*\") \n| count_distinct(bucketName) as count \n| \"S3_CrudBucketsFromPublicIp_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"S3_CrudBucketsFromPublicIp_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "S3_DisableMfaDeleteOrBucketVersionioningOrAccessLogging_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail (PutBucketLogging  or Suspended or MfaDelete)\n\n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| json \"requestParameters.bucketName\" as bucketName\n| where isBlank(errorCode) and eventSource=\"s3.amazonaws.com\" and (eventName=\"PutBucketLogging\"  or eventName=\"PutBucketVersioning\") \n| json \"requestParameters.BucketLoggingStatus.LoggingEnabled\" ,\"requestParameters.VersioningConfiguration.Status\",  \"requestParameters.VersioningConfiguration.MfaDelete\" as loggingEnabled, versioningStatus, mfaDelete nodrop\n| where (isNull(loggingEnabled)  or versioningStatus=\"Suspended\" or mfaDelete=\"Disabled\") \n| \"\" as classification\n| if (eventName=\"PutBucketLogging\" and isNull(loggingEnabled),concat(\"S3_DisableAccessLogging_CountEventResources,\",classification),classification) as classification\n| if (eventName=\"PutBucketVersioning\" and versioningStatus=\"Suspended\" ,concat(\"S3_DisableBucketVersioning_CountEventResources,\",classification),classification) as classification\n| if(eventName=\"PutBucketVersioning\" and mfaDelete=\"Disabled\",concat(\"S3_DisableMfaDelete_CountEventResources,\",classification),classification) as classification \n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi \n| \"EventResourceCount\" as type \n| count_distinct(bucketName) as count by benchmarkname, type\n| fillmissing values(\"S3_DisableAccessLogging_CountEventResources\",\"S3_DisableBucketVersioning_CountEventResources\",\"S3_DisableMfaDelete_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": "Scheduled search to count buckets for which access logging, versioning or MFA was deleted"
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "S3_EnablePublicAccess_CountEventResources",
+      "search": {
+        "queryText": "_sourceCategory = Labs/AWS/CloudTrail *Bucket* \n| json \"eventName\", \"requestParameters.bucketName\", \"requestParameters.x-amz-acl\", \"requestParameters.x-amz-grant-read\", \"requestParameters.x-amz-grant-read-acp\", \"requestParameters.x-amz-grant-write\", \"requestParameters.x-amz-grant-write-acp\",\"userIdentity.accountId\", \"userIdentity.arn\", \"userIdentity.sessionContext.sessionIssuer.userName\", \"sourceIPAddress\", \"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Grantee.URI\", \"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\", \"eventTime\", \"errorCode\" as event, bucket, acl, grant_read, grant_read_acp, grant_write, grant_write_acp, account, arn, user, src_ip, grant_uri, permission, datetime, errorCode nodrop \n| json \"requestParameters.bucketName\" as bucketName\n| where isBlank(errorCode) and (grant_uri matches \"*AllUsers*\" or grant_uri matches \"*AuthenticatedUsers*\") or (acl matches \"*public*\") or (grant_read matches \"*AllUsers*\") or (grant_read matches \"AuthenticatedUsers\") or (grant_read_acp matches \"*AllUsers*\") or (grant_read_acp matches \"AuthenticatedUsers\") or (grant_write matches \"*AllUsers*\") or (grant_write matches \"*AuthenticatedUsers*\") or (grant_write_acp matches \"*AllUsers*\") or (grant_write_acp matches \"*AuthenticatedUsers*\") \n| where event=\"PutBucketAcl\" or event=\"CreateBucket\" \n| count_distinct(bucketName) as count \n| \"S3_EnablePublicAccess_CountEventResources\" as benchmarkname \n| \"EventResourceCount\" as type \n| fillmissing values(\"S3_EnablePublicAccess_CountEventResources\") in benchmarkname, values(\"EventResourceCount\") in type \n| toInt(count) as count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-24h"
+      },
+      "searchSchedule": {
+        "cronExpression": "0 0 * * * ? *",
+        "displayableTimeRange": "-24h",
+        "parseableTimeRange": {
+          "type": "BeginBoundedTimeRange",
+          "from": {
+            "type": "RelativeTimeRangeBoundary",
+            "relativeTime": "-1d"
+          },
+          "to": null
+        },
+        "timeZone": "America/Los_Angeles",
+        "threshold": null,
+        "notification": {
+          "taskType": "SaveToViewNotificationSyncDefinition",
+          "viewName": "cloudtrail_analytics_v1_rnd4685946Wbczy2GDgJ2dKUvO2fFD"
+        },
+        "scheduleType": "1Hour",
+        "muteErrorEmails": false,
+        "parameters": []
+      },
+      "description": ""
+    }
+  ]
+}

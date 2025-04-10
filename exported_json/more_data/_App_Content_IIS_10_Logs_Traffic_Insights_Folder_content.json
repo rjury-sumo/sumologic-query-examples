@@ -1,0 +1,1113 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Traffic Insights",
+  "description": "",
+  "children": [
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "IIS - Threat Analysis",
+      "description": "The IIS - Threat Analysis Dashboard provides high-level views of threats throughout your IIS network. Dashboard panels display visual graphs and detailed information on Threats by Client IP, Threats by Referrer, and Threats by URL.",
+      "title": "IIS - Threat Analysis",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelPANE-C643CCC0AF1FDB48",
+            "structure": "{\"height\":6,\"width\":7,\"x\":10,\"y\":0}"
+          },
+          {
+            "key": "panel390319898CD2484A",
+            "structure": "{\"height\":12,\"width\":10,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelBF512093814F194A",
+            "structure": "{\"height\":6,\"width\":7,\"x\":17,\"y\":0}"
+          },
+          {
+            "key": "panelC1DCBA8880C3BB40",
+            "structure": "{\"height\":6,\"width\":7,\"x\":10,\"y\":6}"
+          },
+          {
+            "key": "panelB89A0242BA3AB945",
+            "structure": "{\"height\":7,\"width\":14,\"x\":10,\"y\":12}"
+          },
+          {
+            "key": "panelDEEE7BCAB5AC3848",
+            "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":19}"
+          },
+          {
+            "key": "panel7B9A22B0BCC93949",
+            "structure": "{\"height\":6,\"width\":7,\"x\":17,\"y\":6}"
+          },
+          {
+            "key": "panel4B3BD22F968E6A44",
+            "structure": "{\"height\":7,\"width\":10,\"x\":0,\"y\":12}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelPANE-C643CCC0AF1FDB48",
+          "title": "Threat Count",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Latest\",\"label\":\"Threats\",\"useBackgroundColor\":true,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":0.9999,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":1,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count by c_ip\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum(_count) as threatCount",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Auto",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel390319898CD2484A",
+          "title": "Threat Location",
+          "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count by c_ip\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = c_ip",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelBF512093814F194A",
+          "title": "Threat by Actors",
+          "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[],\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count by c_ip\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| sum(_count) as threatCount by Actor\n| sort by threatCount, Actor asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelC1DCBA8880C3BB40",
+          "title": "Threat by Malicious Confidence",
+          "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"title\":\"Malicious Confidence\"},\"axisY\":{\"title\":\"Threat Count\"}},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count by c_ip\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum(_count) as threatCount by malicious_confidence\n| sort by threatCount, malicious_confidence asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelB89A0242BA3AB945",
+          "title": "Highly Malicious Threat Table",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| count c_ip, sc_status, cs_uri_stem, cs_referer, cs_User_Agent\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| where malicious_confidence matches \"high\"\n| count by malicious_confidence, Actor,c_ip, sc_status, cs_uri_stem, cs_referer, cs_User_Agent\n| sort by _count\n| _count as count\n| limit 20\n| fields malicious_confidence, Actor, c_ip,sc_status, cs_uri_stem, cs_referer, cs_User_Agent\n",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelDEEE7BCAB5AC3848",
+          "title": "Threat Table",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count c_ip, sc_status, cs_uri_stem, cs_referer, cs_User_Agent\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where  type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count by malicious_confidence, Actor,c_ip, sc_status, cs_uri_stem, cs_referer, cs_User_Agent\n| sort by _count\n| _count as count\n| limit 50\n| fields malicious_confidence, Actor, c_ip,sc_status, cs_uri_stem, cs_referer, cs_User_Agent",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel7B9A22B0BCC93949",
+          "title": "Threat Breakdown by Sources",
+          "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":false},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Light\"},\"axes\":{\"axisX\":{\"title\":\"Source Name\"},\"axisY\":{\"title\":\"Threat Count\"}},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count as ip_count by c_ip, _source\n| where !isPrivateIP(c_ip)\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"ip_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as actor\n| sum (ip_count) as threat_count by _source",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel4B3BD22F968E6A44",
+          "title": "Top 5 Highly Malicious URLs",
+          "visualSettings": "{\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[],\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count as ip_count by c_ip, cs_uri_stem\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=c_ip \n| where malicious_confidence matches \"high\"\n| count by cs_uri_stem",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "webserver_farm",
+          "displayName": "webserver_farm",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "MetadataVariableSourceDefinition",
+            "filter": "_sourceCategory = Labs/iis* webserver_system=iis",
+            "key": "webserver_farm"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "IIS - Visitor Access Types",
+      "description": "The IIS  - Visitor Access Types Dashboard provides insights into visitor platform types, browsers, and operating systems, as well as the most popular mobile devices, PC and Mac versions used.",
+      "title": "IIS - Visitor Access Types",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panel674EAF06A67CB94A",
+            "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":18}"
+          },
+          {
+            "key": "panelDD4A3DC99B11794E",
+            "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":18}"
+          },
+          {
+            "key": "panel9BA8DD568C03194F",
+            "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":24}"
+          },
+          {
+            "key": "panelC245F3EDAA054A46",
+            "structure": "{\"height\":6,\"width\":8,\"x\":8,\"y\":24}"
+          },
+          {
+            "key": "panelCC507FE6A02B284E",
+            "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":24}"
+          },
+          {
+            "key": "panelFB4C01D0ABE63A4E",
+            "structure": "{\"height\":6,\"width\":8,\"x\":16,\"y\":18}"
+          },
+          {
+            "key": "panel774D6ED4B0AB6B49",
+            "structure": "{\"height\":6,\"width\":24,\"x\":0,\"y\":30}"
+          },
+          {
+            "key": "panelPANE-1B4FF85F868D7A45",
+            "structure": "{\"height\":6,\"width\":6,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-1428F563AE2FEA44",
+            "structure": "{\"height\":6,\"width\":7,\"x\":6,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-AB5F8ED1BAB9BB49",
+            "structure": "{\"height\":6,\"width\":13,\"x\":0,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-C1B774D5B405EA4C",
+            "structure": "{\"height\":9,\"width\":11,\"x\":13,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-9A40B52D8598AA46",
+            "structure": "{\"height\":9,\"width\":11,\"x\":13,\"y\":9}"
+          },
+          {
+            "key": "panelPANE-8EC4304B99E5C94F",
+            "structure": "{\"height\":6,\"width\":13,\"x\":0,\"y\":12}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panel674EAF06A67CB94A",
+          "title": "Requests by App Over Time",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"area\"},\"series\":{},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\"},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| parse regex field=cs_uri_stem \"/(?<app>[^\\./]+?)(?:/|$)\" nodrop\n| if (isEmpty(app), cs_uri_stem, app) as app\n| timeslice 1m \n| count by _timeslice, app \n| transpose row _timeslice column app",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelDD4A3DC99B11794E",
+          "title": "Top Requests by Users",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"bar\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| where cs_username != \"-\" \n| count as Requests by cs_username \n| top 20 cs_username by Requests, cs_username asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel9BA8DD568C03194F",
+          "title": "Top Apps by Request",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| parse regex field=cs_uri_stem \"/(?<app>[^\\./]+?)(?:/|$)\" nodrop\n| if (isEmpty(app), cs_uri_stem, app) as app\n| count as Requests by app \n| top 20 app by Requests, app asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelC245F3EDAA054A46",
+          "title": "Cumulative User Request Percentiles",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\"},\"series\":{},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\" \n| count as Requests by cs_username | where cs_username != \"-\" | sort -Requests \n| pct(requests,50) as Pct50, pct(requests,55) as Pct55, pct(requests,60) as Pct60, pct(requests,65) as Pct65, pct(requests,70) as Pct70, pct(requests,75) as Pct75, pct(requests,80) as Pct80, pct(requests,85) as Pct85, pct(requests,90) as Pct90, pct(requests,95) as Pct95, pct(requests,98) as Pct98, pct(requests,100) as Pct100",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelCC507FE6A02B284E",
+          "title": "Cumulative Client Request Percentiles",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| count as Requests by c_ip | sort -Requests \n| pct(requests,50) as Pct50, pct(requests,55) as Pct55, pct(requests,60) as Pct60, pct(requests,65) as Pct65, pct(requests,70) as Pct70, pct(requests,75) as Pct75, pct(requests,80) as Pct80, pct(requests,85) as Pct85, pct(requests,90) as Pct90, pct(requests,95) as Pct95, pct(requests,98) as Pct98, pct(requests,100) as Pct100",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelFB4C01D0ABE63A4E",
+          "title": "Top 10 Queries",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| where cs_uri_query != \"-\"\n| count by cs_uri_query\n| top 10 cs_uri_query by _count, cs_uri_query asc\n| _count as count\n| fields cs_uri_query, count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel774D6ED4B0AB6B49",
+          "title": "Requests Stats by Client IP",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"table\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| if(sc_status matches \"2*\", 1, 0) as successes \n| if(sc_status matches \"3*\", 1, 0) as redirects \n| if(sc_status matches \"4*\", 1, 0) as client_errors\n| if(sc_status matches \"5*\", 1, 0) as server_errors \n| withtime _messagetime\n| count as Requests, most_recent(_messagetime_withtime), least_recent(_messagetime_withtime), count_distinct(cs_uri_stem) as UniquePagesVisited, sum(successes) as successes, sum(redirects) as redirects, sum(client_errors) as client_errors,  sum(server_errors) as server_errors by c_ip\n| formatDate(fromMillis(_mostrecent), \"MM/dd/yyyy HH:mm:ss:SSS Z\") as LatestRequest\n| formatDate(fromMillis(_leastrecent), \"MM/dd/yyyy HH:mm:ss:SSS Z\") as EarliestRequest\n| top 20 c_ip, LatestRequest, EarliestRequest, Requests, UniquePagesVisited, successes, redirects, client_errors, server_errors by Requests, UniquePagesVisited",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-1B4FF85F868D7A45",
+          "title": "Unique Visitors",
+          "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"svp\":{\"option\":\"Average\",\"label\":\"Unique Visitors\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}},\"series\":{},\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| Count by c_ip\n| Count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-1428F563AE2FEA44",
+          "title": "Visitor Platforms",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"scheme2\"},\"series\":{},\"title\":{\"fontSize\":14}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| if (cs_User_Agent matches \"*iPad*\" OR cs_User_Agent matches \"*iPhone*\" OR cs_User_Agent matches \"*Android*\" OR cs_User_Agent matches \"*BlackBerry*\" OR cs_User_Agent matches \"*Galaxy*\" OR cs_User_Agent matches \"LGE-*\" OR cs_User_Agent matches \"SCH-*\" OR cs_User_Agent matches \"*HUAWEI-*\" OR cs_User_Agent matches \"*SAMSUNG*\" OR cs_User_Agent matches \"*samsung*\" OR cs_User_Agent matches \"Dalvik/*\" OR cs_User_Agent matches \"Nokia*\" OR cs_User_Agent matches \"LG-*\" OR cs_User_Agent matches \"*CFNetwork*\"  OR cs_User_Agent matches \"*UP.Browser/*\" OR cs_User_Agent matches \"*QQ*rowser*\" OR cs_User_Agent matches \"*NetFront/*\" OR cs_User_Agent matches \"*Windows Phone*\" OR cs_User_Agent matches \"*Mobile Safari*\" OR cs_User_Agent matches \"*iemobile*\",\"Mobile\",\"\") as type\n| if (cs_User_Agent matches \"*Windows*\" OR cs_User_Agent matches \"*Win64*\" OR cs_User_Agent matches \"*Win32*\" OR cs_User_Agent matches \"*i686*\" OR cs_User_Agent matches \"*x86*\",\"PC\",type) as type\n| if (user_agent matches \"*Macintosh*\" OR user_agent matches \"*Mac OS*\",\"Mac\",type) as type\n| if (type = \"\",\"bots/unknown\",type) as type\n| count type\n| sort by _count",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-AB5F8ED1BAB9BB49",
+          "title": "Visitors Platforms Over Time",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"titleFontFamily\":\"Lab Grotesque Medium, \\\"Arial Bold\\\", sans-serif\",\"titleFontColor\":\"#EBEFF2\",\"titleFontWeight\":\"normal\",\"labelFontColor\":\"#EBEFF2\",\"lineColor\":\"#DDE4E9\",\"stripLines\":null,\"gridThickness\":1,\"lineThickness\":0,\"labelFontSize\":12,\"tickColor\":\"#344666\",\"logarithmic\":false,\"linear\":false,\"unit\":{\"value\":\"\",\"isCustom\":false},\"gridColor\":\"#dde4e9\",\"labelFontFamily\":\"Lab Grotesque Regular, \\\"Arial\\\", sans-serif\",\"labelFontWeight\":\"normal\"},\"axisY2\":{\"title\":\"\",\"titleFontSize\":12,\"titleFontFamily\":\"Lab Grotesque Medium, \\\"Arial Bold\\\", sans-serif\",\"titleFontColor\":\"#EBEFF2\",\"titleFontWeight\":\"normal\",\"labelFontColor\":\"#EBEFF2\",\"lineColor\":\"#DDE4E9\",\"stripLines\":null,\"lineThickness\":0,\"labelFontSize\":12,\"tickColor\":\"#344666\",\"logarithmic\":false,\"linear\":false,\"unit\":{\"value\":\"\",\"isCustom\":false},\"gridThickness\":0,\"valueFormatString\":\"\",\"gridColor\":\"#344666\",\"labelFontFamily\":\"Lab Grotesque Regular, \\\"Arial\\\", sans-serif\",\"labelFontWeight\":\"normal\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme2\"},\"series\":{},\"title\":{\"fontSize\":14},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| if (cs_User_Agent matches \"*iPad*\" OR cs_User_Agent matches \"*iPhone*\" OR cs_User_Agent matches \"*Android*\" OR cs_User_Agent matches \"*BlackBerry*\" OR cs_User_Agent matches \"*Galaxy*\" OR cs_User_Agent matches \"LGE-*\" OR cs_User_Agent matches \"SCH-*\" OR cs_User_Agent matches \"*HUAWEI-*\" OR cs_User_Agent matches \"*SAMSUNG*\" OR cs_User_Agent matches \"*samsung*\" OR cs_User_Agent matches \"Dalvik/*\" OR cs_User_Agent matches \"Nokia*\" OR cs_User_Agent matches \"LG-*\" OR cs_User_Agent matches \"*CFNetwork*\"  OR cs_User_Agent matches \"*UP.Browser/*\" OR cs_User_Agent matches \"*QQ*rowser*\" OR cs_User_Agent matches \"*NetFront/*\" OR cs_User_Agent matches \"*Windows Phone*\" OR cs_User_Agent matches \"*Mobile Safari*\" OR cs_User_Agent matches \"*iemobile*\",\"Mobile\",\"\") as type\n| if (cs_User_Agent matches \"*Windows*\" OR cs_User_Agent matches \"*Win64*\" OR cs_User_Agent matches \"*Win32*\" OR cs_User_Agent matches \"*i686*\" OR cs_User_Agent matches \"*x86*\",\"PC\",type) as type\n| if (user_agent matches \"*Macintosh*\" OR user_agent matches \"*Mac OS*\",\"Mac\",type) as type\n| if (type = \"\",\"bots/unknown\",type) as type\n| timeslice 5m\n| count by _timeslice, type\n| transpose row _timeslice column type",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-C1B774D5B405EA4C",
+          "title": "Browsers and Operating Systems",
+          "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[{\"label\":\"series\",\"value\":\"series\"}],\"aggregationType\":\"avg\"},\"series\":{},\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| if (cs_User_Agent matches \"*Windows *\" OR cs_User_Agent matches \"*Win32*\" OR cs_User_Agent matches \"*Win64*\",\"Windows\",\"\") as OS \n| if (cs_User_Agent matches \"*Macintosh*\" OR cs_User_Agent matches \"*Darwin/*\" OR cs_User_Agent matches \"*Mac OS*\",\"MacOS\",OS) as OS \n| if (cs_User_Agent matches \"* CrOS *\",\"Chrome OS\",OS) as OS\n| if (cs_User_Agent matches \"*Linux*\",\"Linux\",OS) as OS \n| if (cs_User_Agent matches \"*iPad*\",\"iPad\",OS) as OS \n| if (cs_User_Agent matches \"*iPhone*\",\"iPhone\",OS) as OS \n| if (cs_User_Agent matches \"*Android*\",\"Android\",OS) as OS \n| if (cs_User_Agent matches \"*Windows Phone*\",\"Windows Phone\",OS) as OS \n| if (OS == \"\",\"Other\",OS) as OS \n| if (cs_User_Agent matches \"Mozilla/*; rv:*)*\",\"Mozilla\",\"\") as Browser\n| if (cs_User_Agent matches \"*MSIE*\",\"Internet Explorer\",Browser) as Browser \n| if (cs_User_Agent matches \"*Firefox*\",\"Firefox\",Browser) as Browser \n| if (cs_User_Agent matches \"*Safari*\",\"Safari\",Browser) as Browser \n| if (OS==\"Android\" AND cs_User_Agent matches \"*WebKit*\",\"WebKit\",Browser) as Browser\n| if ((OS==\"iPhone\" OR OS==\"iPad\") AND (cs_User_Agent matches \"*Mobile/*\" OR cs_User_Agent matches \"*AppleWebKit*(KHTML*Gecko)*\"),\"Mobile Safari\",Browser) as Browser\n| if (browser == \"\" AND OS==\"MacOS\" AND cs_User_Agent matches \"Mozilla/* (Macintosh;*(KHTML, like Gecko)*\",\"Safari\",Browser) as Browser \n| if (cs_User_Agent matches \"*MobileSafari/*\",\"Mobile Safari\",Browser) as Browser\n| if (cs_User_Agent matches \"*Chrome*\",\"Chrome\",Browser) as Browser \n| if (cs_User_Agent matches \"Opera*\",\"Opera\",Browser) as Browser \n| if (cs_User_Agent matches \"Dolphin*\",\"Dolphin\",Browser) as Browser \n| if (Browser == \"\",\"Other\",Browser) as Browser  \n| count by OS,browser\n| transpose row Browser column OS",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-9A40B52D8598AA46",
+          "title": "Popular Mobile Device Versions",
+          "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[{\"label\":\"series\",\"value\":\"series\"}],\"aggregationType\":\"avg\"},\"series\":{},\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}}  (iphone or ipad or android or samsung) \n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| parse regex field=cs_User_Agent \"(?<device>iPad);\\+CPU\\+OS\\+(?<version>[\\d_]+?)(?:\\+|\\))\" nodrop \n| parse regex field=cs_User_Agent \"(?<device>iPhone);\\+CPU\\+iPhone\\+OS\\+(?<version>[\\d_]+?)(?:\\+|\\))\" nodrop \n| parse regex field=cs_User_Agent \"(?<device>Android)\\+(?<version>[\\d.]+?)(?:;|\\))\" nodrop \n| parse regex field=cs_User_Agent \"(?<device>SAMSUNG).+?(?<version>(?:GT-\\w+|SGH-\\w+|SPH-\\w+|SCH-\\w+))\" \n| where device != \"\"\n| count as count by device, version \n| transpose row version column device",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-8EC4304B99E5C94F",
+          "title": "Desktop OS Version",
+          "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"honeyComb\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[{\"label\":\"series\",\"value\":\"series\"}],\"aggregationType\":\"avg\"},\"series\":{},\"title\":{\"fontSize\":14},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} (\"macintosh\" OR \"mac os\" OR \"windows\" OR \"i686\" or \"PC\" or (\"Linux\" AND !android))\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| if (cs_User_Agent matches \"*Windows NT*\" or cs_User_Agent matches \"*Windows+NT*\" or cs_User_Agent matches \"*Windows *\" or cs_User_Agent matches \"*Win32*\" or cs_User_Agent matches \"*Win64*\", \"Windows\", \"Other\") as OS \n| if (cs_User_Agent matches \"*Macintosh*\",\"MacOS\",OS) as OS \n| if (cs_User_Agent matches \"*Windows Phone*\" or cs_User_Agent matches \"*Windows+Phone*\",\"Windows Phone\",OS) as OS \n| if (cs_User_Agent matches \"*Linux*\",\"Linux\",OS) as OS \n| if (cs_User_Agent matches \"*iPad*\",\"iPad\",OS) as OS \n| if (cs_User_Agent matches \"*iPhone*\",\"iPhone\",OS) as OS \n| if (cs_User_Agent matches \"*Android*\",\"Android\",OS) as OS \n| if (cs_User_Agent matches \"*Darwin*\",\"Darwin\",OS) as OS \n| if (cs_User_Agent matches \"*CrOS*\",\"Google Chrome\",OS) as OS \n| where OS <> \"Other\"\n| parse regex field=cs_User_Agent \"(?<os>Windows)\\+NT\\+(?<version>[\\d.]+?)(?:;|\\))\" nodrop \n| parse regex field=cs_User_Agent \"(?<os>Mac OS)\\+(?<version>[X\\+\\d.\\_]+?)(?:;|\\))\" nodrop \n| parse regex field=cs_User_Agent \"(?<os>Linux)\\+(?<version>[x\\d.\\_]+?)(?:;|\\))\" nodrop \n| where os != \"\"\n| count as count by os, version\n| transpose row Version column Os",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "webserver_farm",
+          "displayName": "webserver_farm",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "MetadataVariableSourceDefinition",
+            "filter": "_sourceCategory = Labs/iis* webserver_system=iis",
+            "key": "webserver_farm"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "IIS - Visitor Locations",
+      "description": "The IIS - Visitor Locations Dashboard provides a high-level view of Nginx visitor geographic locations both worldwide and in the United States. Dashboard panels also show graphic trends for visits by country over time and visits by  US region over time.",
+      "title": "IIS - Visitor Locations",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelC6EF64ADAB3BD949",
+            "structure": "{\"height\":10,\"width\":12,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelB3C1E404BD3C0A4A",
+            "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":0}"
+          },
+          {
+            "key": "panel78170B38B80C9B44",
+            "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":10}"
+          },
+          {
+            "key": "panel0A42AEDB9600DA43",
+            "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":10}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelC6EF64ADAB3BD949",
+          "title": "Worldwide Visitors",
+          "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| count by c_ip\n| lookup latitude, longitude, country_name from geo://location on ip=c_ip\n| where !isNull(latitude)",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelB3C1E404BD3C0A4A",
+          "title": "US Visitors",
+          "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"series\":{}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| count by c_ip\n| lookup latitude, longitude, country_name, region, city from geo://location on ip=c_ip\n| where !isNull(latitude)\n| where country_name = \"United States\"",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel78170B38B80C9B44",
+          "title": "Visits by Country Over Time",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"wrap\":true,\"showAsTable\":false},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| timeslice 5m\n| count by _timeslice, c_ip\n| lookup latitude, longitude, country_name from geo://location on ip = c_ip\n| where !isNull(latitude)\n| sum(_count) by _timeslice, country_name\n| transpose row _timeslice column country_name",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panel0A42AEDB9600DA43",
+          "title": "Visitors by US Region Over Time",
+          "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\"},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| timeslice 5m\n| count by _timeslice, c_ip\n| lookup latitude, longitude, country_name, region, city, state, postal_code from geo://location on ip = c_ip\n| where !isNull(latitude) and country_name = \"United States\"\n| sum(_count) by _timeslice, region\n| transpose row _timeslice column region",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "webserver_farm",
+          "displayName": "webserver_farm",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "MetadataVariableSourceDefinition",
+            "filter": "_sourceCategory = Labs/iis* webserver_system=iis",
+            "key": "webserver_farm"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    },
+    {
+      "type": "DashboardV2SyncDefinition",
+      "name": "IIS - Visitor Traffic Insights",
+      "description": "The IIS - Visitor Traffic Insight Dashboard provides detailed information on the top documents accessed, top referrers, top search terms from popular search engines, and the media types served.",
+      "title": "IIS - Visitor Traffic Insights",
+      "theme": "Dark",
+      "topologyLabelMap": {
+        "data": {}
+      },
+      "refreshInterval": 0,
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1d"
+        },
+        "to": null
+      },
+      "layout": {
+        "layoutType": "Grid",
+        "layoutStructures": [
+          {
+            "key": "panelE3D9336F83CB9A4B",
+            "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":10}"
+          },
+          {
+            "key": "panelPANE-2C6578FD9898FA4B",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":0}"
+          },
+          {
+            "key": "panelPANE-F0002CADB4281B4B",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":6}"
+          },
+          {
+            "key": "panelPANE-FD7674FF9CC5194C",
+            "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":12}"
+          },
+          {
+            "key": "panelPANE-3BD1C8CB851B3948",
+            "structure": "{\"height\":10,\"width\":12,\"x\":12,\"y\":0}"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": null,
+          "key": "panelE3D9336F83CB9A4B",
+          "title": "Media Types Served",
+          "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"legend\":{\"enabled\":false}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| parse regex field=cs_uri_stem \"\\.(?<media_type>[A-Za-z]+)$\" \n| count as count by media_type\n| sort by count, media_type asc",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-2C6578FD9898FA4B",
+          "title": "HTTP Methods",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":180,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"legend\":{\"enabled\":false},\"series\":{},\"title\":{\"fontSize\":14}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| count by method",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-F0002CADB4281B4B",
+          "title": "Top 5 Referrers",
+          "visualSettings": "{\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"Referrer\"},\"axisY\":{\"title\":\"Count\",\"titleFontSize\":12,\"titleFontFamily\":\"Lab Grotesque Medium, \\\"Arial Bold\\\", sans-serif\",\"titleFontColor\":\"#EBEFF2\",\"titleFontWeight\":\"normal\",\"labelFontColor\":\"#EBEFF2\",\"lineColor\":\"#DDE4E9\",\"stripLines\":null,\"gridThickness\":1,\"lineThickness\":0,\"labelFontSize\":12,\"tickColor\":\"#344666\",\"logarithmic\":false,\"linear\":false,\"unit\":{\"value\":\"\",\"isCustom\":false},\"gridColor\":\"#dde4e9\",\"labelFontFamily\":\"Lab Grotesque Regular, \\\"Arial\\\", sans-serif\",\"labelFontWeight\":\"normal\"},\"axisY2\":{\"title\":\"\",\"titleFontSize\":12,\"titleFontFamily\":\"Lab Grotesque Medium, \\\"Arial Bold\\\", sans-serif\",\"titleFontColor\":\"#EBEFF2\",\"titleFontWeight\":\"normal\",\"labelFontColor\":\"#EBEFF2\",\"lineColor\":\"#DDE4E9\",\"stripLines\":null,\"lineThickness\":0,\"labelFontSize\":12,\"tickColor\":\"#344666\",\"logarithmic\":false,\"linear\":false,\"unit\":{\"value\":\"\",\"isCustom\":false},\"gridThickness\":0,\"valueFormatString\":\"\",\"gridColor\":\"#344666\",\"labelFontFamily\":\"Lab Grotesque Regular, \\\"Arial\\\", sans-serif\",\"labelFontWeight\":\"normal\"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme2\"},\"series\":{},\"title\":{\"fontSize\":14},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| where cs_referer != \"-\"\n| count as count by cs_referer\n| sort by count\n| limit 5 ",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-FD7674FF9CC5194C",
+          "title": "Top 5 URLs",
+          "visualSettings": "{\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12,\"title\":\"URL\"},\"axisY\":{\"title\":\"Count\",\"titleFontSize\":12,\"titleFontFamily\":\"Lab Grotesque Medium, \\\"Arial Bold\\\", sans-serif\",\"titleFontColor\":\"#EBEFF2\",\"titleFontWeight\":\"normal\",\"labelFontColor\":\"#EBEFF2\",\"lineColor\":\"#DDE4E9\",\"stripLines\":null,\"gridThickness\":1,\"lineThickness\":0,\"labelFontSize\":12,\"tickColor\":\"#344666\",\"logarithmic\":false,\"linear\":false,\"unit\":{\"value\":\"\",\"isCustom\":false},\"gridColor\":\"#dde4e9\",\"labelFontFamily\":\"Lab Grotesque Regular, \\\"Arial\\\", sans-serif\",\"labelFontWeight\":\"normal\"},\"axisY2\":{\"title\":\"\",\"titleFontSize\":12,\"titleFontFamily\":\"Lab Grotesque Medium, \\\"Arial Bold\\\", sans-serif\",\"titleFontColor\":\"#EBEFF2\",\"titleFontWeight\":\"normal\",\"labelFontColor\":\"#EBEFF2\",\"lineColor\":\"#DDE4E9\",\"stripLines\":null,\"lineThickness\":0,\"labelFontSize\":12,\"tickColor\":\"#344666\",\"logarithmic\":false,\"linear\":false,\"unit\":{\"value\":\"\",\"isCustom\":false},\"gridThickness\":0,\"valueFormatString\":\"\",\"gridColor\":\"#344666\",\"labelFontFamily\":\"Lab Grotesque Regular, \\\"Arial\\\", sans-serif\",\"labelFontWeight\":\"normal\"}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme2\"},\"series\":{},\"title\":{\"fontSize\":14},\"overrides\":[]}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} | json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| count as count by cs_uri_stem\n| sort by count\n| limit 5",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        },
+        {
+          "id": null,
+          "key": "panelPANE-3BD1C8CB851B3948",
+          "title": "Top 10 Search Terms from Popular Search Engines",
+          "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#ED3CPE\",\"outlierBandFillOpacity\":0.15,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"legend\":{\"enabled\":false},\"color\":{\"family\":\"scheme2\"},\"series\":{},\"title\":{\"fontSize\":14}}",
+          "keepVisualSettingsConsistentWithParent": true,
+          "panelType": "SumoSearchPanel",
+          "queries": [
+            {
+              "transient": false,
+              "queryString": "_sourceCategory = Labs/iis* webserver_system=iis webserver_farm={{webserver_farm}} (google OR bing OR aol OR ask OR yahoo) (\"p=\" OR \"q=\" OR \"wd=\" OR \"searchfor=\")\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as iis_log_message\n| parse regex field=iis_log_message \"(?<server_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) (?<method>\\S+?) (?<cs_uri_stem>\\S+?) (?<cs_uri_query>\\S+?) (?<s_port>\\S+?) (?<cs_username>\\S+?) (?<c_ip>\\S+?) (?<cs_User_Agent>\\S+?) (?<cs_referer>\\S+?) (?<sc_status>\\S+?) (?<sc_substatus>\\S+?) (?<sc_win32_status>\\S+?) (?<time_taken>\\S+?)$\"\n| parse regex field=cs_referer \"(?:\\?|&)(?:p|q|wd|searchfor)=(?<search_term>[^=]+?)(?:&|$)\" nodrop \n| where search_term != \"\"\n| urldecode(search_term)\n| if(cs_referer matches \"*google.*\", \"Google\", \"\") as engine\n| if(cs_referer matches \"*bing.*\", \"Bing\", engine) as engine\n| if(cs_referer matches \"*ask.com*\", \"Ask.com\", engine) as engine\n| if(cs_referer matches \"*aol.*\", \"AOL\", engine) as engine\n| if(cs_referer matches \"*yahoo.*\", \"Yahoo\", engine) as engine\n| where engine !=\"\" \n| count as count by search_term\n| sort count\n| limit 10",
+              "queryType": "Logs",
+              "queryKey": "A",
+              "metricsQueryMode": null,
+              "metricsQueryData": null,
+              "tracesQueryData": null,
+              "spansQueryData": null,
+              "parseMode": "Manual",
+              "timeSource": "Message",
+              "outputCardinalityLimit": null
+            }
+          ],
+          "description": "",
+          "timeRange": null,
+          "coloringRules": null,
+          "linkedDashboards": []
+        }
+      ],
+      "variables": [
+        {
+          "id": null,
+          "name": "webserver_farm",
+          "displayName": "webserver_farm",
+          "defaultValue": "*",
+          "sourceDefinition": {
+            "variableSourceType": "MetadataVariableSourceDefinition",
+            "filter": "_sourceCategory = Labs/iis* webserver_system=iis",
+            "key": "webserver_farm"
+          },
+          "allowMultiSelect": false,
+          "includeAllOption": true,
+          "hideFromUI": false,
+          "valueType": "Any"
+        }
+      ],
+      "coloringRules": []
+    }
+  ]
+}

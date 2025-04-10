@@ -1,0 +1,445 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Azure SQL - Blocking Stats",
+  "description": "See information about blocking queries in Azure SQL, including lock mode usage, lock duration, and details about block events.",
+  "title": "Azure SQL - Blocking Stats",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel02fc0c8188c07a42",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel2a2281c9b6a15b4b",
+        "structure": "{\"width\":24,\"height\":6,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panel2c5d13a79c861b43",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panel61894deeb109484d",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panel8058677a99016949",
+        "structure": "{\"width\":16,\"height\":6,\"x\":8,\"y\":10}"
+      },
+      {
+        "key": "paneldb78f01aa452eb42",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":10}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel02fc0c8188c07a42",
+      "title": "Lock Mode Used by Query",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n|where if (\"{{resourceid}}\" = \"*\", true, resourceid matches \"{{resourceid}}\") AND if (\"{{subscriptionid}}\" = \"*\", true, subscriptionid matches \"{{subscriptionid}}\") AND if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{elasticpoolname}}\" = \"*\", true, elasticpoolname matches \"{{elasticpoolname}}\") AND if (\"{{logicalservername}}\" = \"*\", true, logicalservername matches \"{{logicalservername}}\") AND if (\"{{resource_owner_type}}\" = \"*\", true, resource_owner_type matches \"{{resource_owner_type}}\") AND if (\"{{blockedprocess_transactionname}}\" = \"*\", true, blockedprocess_transactionname matches \"{{blockedprocess_transactionname}}\") AND if (\"{{blockingprocess_clientapp}}\" = \"*\", true, blockingprocess_clientapp matches \"{{blockingprocess_clientapp}}\") AND if (\"{{resourcegroup}}\" = \"*\", true, resourcegroup matches \"{{resourcegroup}}\") AND if (\"{{lock_mode}}\" = \"*\", true, lock_mode matches \"{{lock_mode}}\") AND if (\"{{blockingprocess_isolationlevel}}\" = \"*\", true, blockingprocess_isolationlevel matches \"{{blockingprocess_isolationlevel}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\") AND if (\"{{databasename}}\" = \"*\", true, databasename matches \"{{databasename}}\")\n|count as eventCount by lock_mode\n| sort by eventCount, lock_mode asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2a2281c9b6a15b4b",
+      "title": "Block Event Details",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n|where if (\"{{resourceid}}\" = \"*\", true, resourceid matches \"{{resourceid}}\") AND if (\"{{subscriptionid}}\" = \"*\", true, subscriptionid matches \"{{subscriptionid}}\") AND if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{elasticpoolname}}\" = \"*\", true, elasticpoolname matches \"{{elasticpoolname}}\") AND if (\"{{logicalservername}}\" = \"*\", true, logicalservername matches \"{{logicalservername}}\") AND if (\"{{resource_owner_type}}\" = \"*\", true, resource_owner_type matches \"{{resource_owner_type}}\") AND if (\"{{blockedprocess_transactionname}}\" = \"*\", true, blockedprocess_transactionname matches \"{{blockedprocess_transactionname}}\") AND if (\"{{blockingprocess_clientapp}}\" = \"*\", true, blockingprocess_clientapp matches \"{{blockingprocess_clientapp}}\") AND if (\"{{resourcegroup}}\" = \"*\", true, resourcegroup matches \"{{resourcegroup}}\") AND if (\"{{lock_mode}}\" = \"*\", true, lock_mode matches \"{{lock_mode}}\") AND if (\"{{blockingprocess_isolationlevel}}\" = \"*\", true, blockingprocess_isolationlevel matches \"{{blockingprocess_isolationlevel}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\") AND if (\"{{databasename}}\" = \"*\", true, databasename matches \"{{databasename}}\")\n|sum(duration) as lock_duration by LogicalServerName, DatabaseName, ElasticPoolName, lock_mode, resource_owner_type, blockedprocess_transactionname, blockingprocess_clientapp, blockingprocess_isolationlevel\n| (lock_duration/(1000*1000)) as lock_duration_sec\n| fields -lock_duration\n| sort by lock_duration_sec",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2c5d13a79c861b43",
+      "title": "Owner Type Used by Query",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":false,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n|where if (\"{{resourceid}}\" = \"*\", true, resourceid matches \"{{resourceid}}\") AND if (\"{{subscriptionid}}\" = \"*\", true, subscriptionid matches \"{{subscriptionid}}\") AND if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{elasticpoolname}}\" = \"*\", true, elasticpoolname matches \"{{elasticpoolname}}\") AND if (\"{{logicalservername}}\" = \"*\", true, logicalservername matches \"{{logicalservername}}\") AND if (\"{{resource_owner_type}}\" = \"*\", true, resource_owner_type matches \"{{resource_owner_type}}\") AND if (\"{{blockedprocess_transactionname}}\" = \"*\", true, blockedprocess_transactionname matches \"{{blockedprocess_transactionname}}\") AND if (\"{{blockingprocess_clientapp}}\" = \"*\", true, blockingprocess_clientapp matches \"{{blockingprocess_clientapp}}\") AND if (\"{{resourcegroup}}\" = \"*\", true, resourcegroup matches \"{{resourcegroup}}\") AND if (\"{{lock_mode}}\" = \"*\", true, lock_mode matches \"{{lock_mode}}\") AND if (\"{{blockingprocess_isolationlevel}}\" = \"*\", true, blockingprocess_isolationlevel matches \"{{blockingprocess_isolationlevel}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\") AND if (\"{{databasename}}\" = \"*\", true, databasename matches \"{{databasename}}\")\n|count as eventCount by resource_owner_type\n| sort by eventCount, resource_owner_type asc",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel61894deeb109484d",
+      "title": "Lock Duration",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Latest\",\"label\":\"Second\",\"useBackgroundColor\":false,\"useNoData\":true,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n|where if (\"{{resourceid}}\" = \"*\", true, resourceid matches \"{{resourceid}}\") AND if (\"{{subscriptionid}}\" = \"*\", true, subscriptionid matches \"{{subscriptionid}}\") AND if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{elasticpoolname}}\" = \"*\", true, elasticpoolname matches \"{{elasticpoolname}}\") AND if (\"{{logicalservername}}\" = \"*\", true, logicalservername matches \"{{logicalservername}}\") AND if (\"{{resource_owner_type}}\" = \"*\", true, resource_owner_type matches \"{{resource_owner_type}}\") AND if (\"{{blockedprocess_transactionname}}\" = \"*\", true, blockedprocess_transactionname matches \"{{blockedprocess_transactionname}}\") AND if (\"{{blockingprocess_clientapp}}\" = \"*\", true, blockingprocess_clientapp matches \"{{blockingprocess_clientapp}}\") AND if (\"{{resourcegroup}}\" = \"*\", true, resourcegroup matches \"{{resourcegroup}}\") AND if (\"{{lock_mode}}\" = \"*\", true, lock_mode matches \"{{lock_mode}}\") AND if (\"{{blockingprocess_isolationlevel}}\" = \"*\", true, blockingprocess_isolationlevel matches \"{{blockingprocess_isolationlevel}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\") AND if (\"{{databasename}}\" = \"*\", true, databasename matches \"{{databasename}}\")\n|sum(duration) as lock_duration\n| (lock_duration/(1000*1000)) as lock_duration_sec\n| fields lock_duration_sec",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel8058677a99016949",
+      "title": "Blocks by Database Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName\n|where if (\"{{resourceid}}\" = \"*\", true, resourceid matches \"{{resourceid}}\") AND if (\"{{subscriptionid}}\" = \"*\", true, subscriptionid matches \"{{subscriptionid}}\") AND if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{elasticpoolname}}\" = \"*\", true, elasticpoolname matches \"{{elasticpoolname}}\") AND if (\"{{logicalservername}}\" = \"*\", true, logicalservername matches \"{{logicalservername}}\") AND if (\"{{resource_owner_type}}\" = \"*\", true, resource_owner_type matches \"{{resource_owner_type}}\") AND if (\"{{blockedprocess_transactionname}}\" = \"*\", true, blockedprocess_transactionname matches \"{{blockedprocess_transactionname}}\") AND if (\"{{blockingprocess_clientapp}}\" = \"*\", true, blockingprocess_clientapp matches \"{{blockingprocess_clientapp}}\") AND if (\"{{resourcegroup}}\" = \"*\", true, resourcegroup matches \"{{resourcegroup}}\") AND if (\"{{lock_mode}}\" = \"*\", true, lock_mode matches \"{{lock_mode}}\") AND if (\"{{blockingprocess_isolationlevel}}\" = \"*\", true, blockingprocess_isolationlevel matches \"{{blockingprocess_isolationlevel}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\") AND if (\"{{databasename}}\" = \"*\", true, databasename matches \"{{databasename}}\")\n|sum(duration) as lock_duration by _timeslice, Server_DatabaseName\n| (lock_duration/(1000*1000)) as lock_duration_sec\n| fields -lock_duration\n| transpose row _timeslice column Server_DatabaseName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": {
+        "type": "BeginBoundedTimeRange",
+        "from": {
+          "type": "RelativeTimeRangeBoundary",
+          "relativeTime": "-1w"
+        },
+        "to": null
+      },
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneldb78f01aa452eb42",
+      "title": "Blocks by Database",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n|where if (\"{{resourceid}}\" = \"*\", true, resourceid matches \"{{resourceid}}\") AND if (\"{{subscriptionid}}\" = \"*\", true, subscriptionid matches \"{{subscriptionid}}\") AND if (\"{{operationname}}\" = \"*\", true, operationname matches \"{{operationname}}\") AND if (\"{{elasticpoolname}}\" = \"*\", true, elasticpoolname matches \"{{elasticpoolname}}\") AND if (\"{{logicalservername}}\" = \"*\", true, logicalservername matches \"{{logicalservername}}\") AND if (\"{{resource_owner_type}}\" = \"*\", true, resource_owner_type matches \"{{resource_owner_type}}\") AND if (\"{{blockedprocess_transactionname}}\" = \"*\", true, blockedprocess_transactionname matches \"{{blockedprocess_transactionname}}\") AND if (\"{{blockingprocess_clientapp}}\" = \"*\", true, blockingprocess_clientapp matches \"{{blockingprocess_clientapp}}\") AND if (\"{{resourcegroup}}\" = \"*\", true, resourcegroup matches \"{{resourcegroup}}\") AND if (\"{{lock_mode}}\" = \"*\", true, lock_mode matches \"{{lock_mode}}\") AND if (\"{{blockingprocess_isolationlevel}}\" = \"*\", true, blockingprocess_isolationlevel matches \"{{blockingprocess_isolationlevel}}\") AND if (\"{{category}}\" = \"*\", true, category matches \"{{category}}\") AND if (\"{{databasename}}\" = \"*\", true, databasename matches \"{{databasename}}\")\n|count as eventCount, sum(duration) as lock_duration by LogicalServerName, DatabaseName\n| (lock_duration/(1000*1000)) as lock_duration_sec\n| fields -lock_duration\n| sort by eventCount, lock_duration_sec, LogicalServerName, DatabaseName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Metricsdatasource",
+      "displayName": "Metricsdatasource",
+      "defaultValue": "Labs/Azure/SQL/Metrics",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Azure/SQL/Metrics"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Logsdatasource",
+      "displayName": "Logsdatasource",
+      "defaultValue": "Labs/Azure/SQL/Logs",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/Azure/SQL/Logs"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "blockedprocess_transactionname",
+      "displayName": "blockedprocess_transactionname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "blockedprocess_transactionname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "blockingprocess_clientapp",
+      "displayName": "blockingprocess_clientapp",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "blockingprocess_clientapp"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "blockingprocess_isolationlevel",
+      "displayName": "blockingprocess_isolationlevel",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "blockingprocess_isolationlevel"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "category",
+      "displayName": "category",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "category"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "databasename",
+      "displayName": "databasename",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "databasename"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "elasticpoolname",
+      "displayName": "elasticpoolname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "ElasticPoolName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "lock_mode",
+      "displayName": "lock_mode",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "lock_mode"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "logicalservername",
+      "displayName": "logicalservername",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "logicalservername"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "operationname",
+      "displayName": "operationname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "operationname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "resource_owner_type",
+      "displayName": "resource_owner_type",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "resource_owner_type"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "resourcegroup",
+      "displayName": "resourcegroup",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "resourcegroup"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "resourceid",
+      "displayName": "resourceid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "resourceid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "subscriptionid",
+      "displayName": "subscriptionid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{Logsdatasource}}  \"\\\"operationName\\\":\\\"BlockEvent\\\"\"\n| json \"LogicalServerName\", \"SubscriptionId\", \"ResourceGroup\", \"resourceId\", \"category\", \"operationName\", \"properties\" nodrop\n| json field=properties \"ElasticPoolName\", \"DatabaseName\", \"duration\", \"lock_mode\", \"resource_owner_type\", \"blocked_process_filtered\"  nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocked-process/process/@transactionname\" as blockedprocess_transactionname nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@clientapp\" as blockingprocess_clientapp nodrop\n| parse xml field=blocked_process_filtered \"/blocked-process-report/blocking-process/process/@isolationlevel\" as blockingprocess_isolationlevel nodrop\n| where operationName = \"BlockEvent\"\n| timeslice 1d\n| concat (LogicalServerName, \" : \" ,DatabaseName) as Server_DatabaseName",
+        "field": "subscriptionid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

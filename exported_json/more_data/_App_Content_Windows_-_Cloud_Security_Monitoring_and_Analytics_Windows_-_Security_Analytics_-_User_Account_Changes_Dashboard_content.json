@@ -1,0 +1,601 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Windows - Security Analytics - User Account Changes",
+  "description": "Dashboard providing analytics on use account changes and events.",
+  "title": "Windows - Security Analytics - User Account Changes",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-9439C47B9E31B84E",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelA1DCA12B94CFCA42",
+        "structure": "{\"height\":6,\"width\":11,\"x\":13,\"y\":1}"
+      },
+      {
+        "key": "panel78E8E96282235A4F",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panel7284D97EAD587A46",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panel3D68F0A6BB066846",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panel0278631ABE48CB4E",
+        "structure": "{\"height\":6,\"width\":11,\"x\":13,\"y\":8}"
+      },
+      {
+        "key": "panelE129A0C28C022A44",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":14}"
+      },
+      {
+        "key": "panelD0EE5FD3A6A6B948",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panel6162CAF8B1882849",
+        "structure": "{\"height\":6,\"width\":11,\"x\":13,\"y\":15}"
+      },
+      {
+        "key": "panelDA7974A084046A41",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":21}"
+      },
+      {
+        "key": "panelD71AE96683238B46",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":22}"
+      },
+      {
+        "key": "panelF3872368ACEF6846",
+        "structure": "{\"height\":6,\"width\":11,\"x\":13,\"y\":22}"
+      },
+      {
+        "key": "panel2CD769D18E341A4A",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":28}"
+      },
+      {
+        "key": "panelA9DDD72E899C294D",
+        "structure": "{\"height\":6,\"width\":4,\"x\":0,\"y\":29}"
+      },
+      {
+        "key": "panel48A8B4579D89AB4C",
+        "structure": "{\"height\":6,\"width\":11,\"x\":13,\"y\":29}"
+      },
+      {
+        "key": "panel2556B328BE5BBB40",
+        "structure": "{\"height\":6,\"width\":9,\"x\":4,\"y\":1}"
+      },
+      {
+        "key": "panel33422BE285822847",
+        "structure": "{\"height\":6,\"width\":9,\"x\":4,\"y\":8}"
+      },
+      {
+        "key": "panelEE2D3F17A544FB4A",
+        "structure": "{\"height\":6,\"width\":9,\"x\":4,\"y\":15}"
+      },
+      {
+        "key": "panel1BBA747888DCAA46",
+        "structure": "{\"height\":6,\"width\":9,\"x\":4,\"y\":22}"
+      },
+      {
+        "key": "panel1415B37DB168CA43",
+        "structure": "{\"height\":6,\"width\":9,\"x\":4,\"y\":29}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-9439C47B9E31B84E",
+      "title": "Firewall Service Events",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"text\",\"showTitle\":false,\"backgroundColor\":\"#005982\",\"textColor\":\"#ffffff\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "User Account Created"
+    },
+    {
+      "id": null,
+      "key": "panelA1DCA12B94CFCA42",
+      "title": "Details",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":5,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4720\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4720\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n| count as Total Date, Computer, Subject, Target\n| fields -Total\n| order by Date",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel78E8E96282235A4F",
+      "title": "Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"Total\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":10,\"color\":\"#16943E\"},{\"from\":10,\"to\":50,\"color\":\"#DFBE2E\"},{\"from\":50,\"to\":100,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#bf2121\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4720\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4720\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n| timeslice 1h\n| count as Total _timeslice\n| order by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7284D97EAD587A46",
+      "title": "Firewall Service Events (Copy)",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"text\",\"showTitle\":false,\"backgroundColor\":\"#005982\",\"textColor\":\"#ffffff\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "User Account Deleted"
+    },
+    {
+      "id": null,
+      "key": "panel3D68F0A6BB066846",
+      "title": "Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"Total\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":10,\"color\":\"#16943E\"},{\"from\":10,\"to\":50,\"color\":\"#DFBE2E\"},{\"from\":50,\"to\":100,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#bf2121\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4726\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4726\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n| timeslice 1h\n| count as Total _timeslice\n| order by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0278631ABE48CB4E",
+      "title": "Details",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":5,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4726\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4726\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n| count as Total Date, Computer, Subject, Target\n| fields -Total\n| order by Date",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE129A0C28C022A44",
+      "title": "Firewall Service Events (Copy) (Copy)",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"text\",\"showTitle\":false,\"backgroundColor\":\"#005982\",\"textColor\":\"#ffffff\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "User Account Locked Out"
+    },
+    {
+      "id": null,
+      "key": "panelD0EE5FD3A6A6B948",
+      "title": "Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"Total\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":10,\"color\":\"#16943E\"},{\"from\":10,\"to\":50,\"color\":\"#DFBE2E\"},{\"from\":50,\"to\":100,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#bf2121\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4740\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4740\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n\n| timeslice 1h\n| count as Total _timeslice\n| order by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel6162CAF8B1882849",
+      "title": "Details",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":5,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4740\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4740\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n| count as Total Date, Computer, Subject, Target\n| fields -Total\n| order by Date",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelDA7974A084046A41",
+      "title": "Firewall Service Events (Copy) (Copy) (Copy)",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"text\",\"showTitle\":false,\"backgroundColor\":\"#005982\",\"textColor\":\"#ffffff\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "User Account Password Change (Admin)"
+    },
+    {
+      "id": null,
+      "key": "panelD71AE96683238B46",
+      "title": "Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"Total\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":10,\"color\":\"#16943E\"},{\"from\":10,\"to\":50,\"color\":\"#DFBE2E\"},{\"from\":50,\"to\":100,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#bf2121\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4724\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4724\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n| timeslice 1h\n| count as Total _timeslice\n| order by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelF3872368ACEF6846",
+      "title": "Details",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":5,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4724\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4724\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n| count as Total Date, Computer, Subject, Target\n| fields -Total\n| order by Date",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2CD769D18E341A4A",
+      "title": "Firewall Service Events (Copy) (Copy) (Copy) (Copy)",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"text\",\"showTitle\":false,\"backgroundColor\":\"#005982\",\"textColor\":\"#ffffff\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "User Account Disabled"
+    },
+    {
+      "id": null,
+      "key": "panelA9DDD72E899C294D",
+      "title": "Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"svp\",\"displayType\":\"default\",\"mode\":\"singleValueMetrics\"},\"svp\":{\"option\":\"Sum\",\"label\":\"Total\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"0\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":0,\"to\":10,\"color\":\"#16943E\"},{\"from\":10,\"to\":50,\"color\":\"#DFBE2E\"},{\"from\":50,\"to\":100,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#bf2121\"},\"gauge\":{\"show\":false}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4725\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4725\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n| timeslice 1h\n| count as Total _timeslice\n| order by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel48A8B4579D89AB4C",
+      "title": "Details",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":5,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4725\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4725\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n| count as Total Date, Computer, Subject, Target\n| fields -Total\n| order by Date",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2556B328BE5BBB40",
+      "title": "Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4720\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4720\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n| timeslice 1h\n| count as Total _timeslice\n| order by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel33422BE285822847",
+      "title": "Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4726\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4726\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n\n| timeslice 1h\n| count as Total _timeslice\n| order by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelEE2D3F17A544FB4A",
+      "title": "Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4740\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4740\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n| timeslice 1h\n| count as Total _timeslice\n| order by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1BBA747888DCAA46",
+      "title": "Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4724\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4724\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n| timeslice 1h\n| count as Total _timeslice\n| order by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1415B37DB168CA43",
+      "title": "Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/windows* \"Microsoft-Windows-Security-Auditing\" \"4725\" {{{Computer}}} {{{Subject}}} {{{Target}}}\n\n| json \"Channel\", \"Provider.Name\", \"EventID\", \"Computer\", \"Keywords\" as Channel, Provider, EventID, Computer, Keywords nodrop\n| where Channel = \"Security\"\n| where provider = \"Microsoft-Windows-Security-Auditing\"\n| where EventID = \"4725\"\n| where computer matches \"{{{Computer}}}\"\n\n| json \"EventData.TargetDomainName\", \"EventData.TargetUserName\", \"EventData.SubjectDomainName\", \"EventData.SubjectUserName\" as TargetDomainName, TargetUserName, SubjectDomainName, SubjectUserName nodrop\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n| format(\"%s/%s\", SubjectDomainName, SubjectUserName) as subject\n| format(\"%s/%s\", TargetDomainName, TargetUserName) as target\n\n| where subject matches \"{{{Subject}}}\"\n| where target matches \"{{{Target}}}\"\n\n| timeslice 1h\n| count as Total _timeslice\n| order by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Computer",
+      "displayName": "Computer",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Subject",
+      "displayName": "Subject",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "Target",
+      "displayName": "Target",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "*"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

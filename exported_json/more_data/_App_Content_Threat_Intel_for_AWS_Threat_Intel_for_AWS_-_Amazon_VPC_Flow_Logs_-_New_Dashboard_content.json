@@ -1,0 +1,411 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Threat Intel for AWS - Amazon VPC Flow Logs - New",
+  "description": "Review this dashboard for details on potential threats and IOCs for AWS VPC Flow Logs.",
+  "title": "Threat Intel for AWS - Amazon VPC Flow Logs - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel1461bf5d85ce2844",
+        "structure": "{\"width\":11,\"height\":10,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelae657c0586d28946",
+        "structure": "{\"width\":13,\"height\":10,\"x\":11,\"y\":0}"
+      },
+      {
+        "key": "panel570f3fc5a5ff9947",
+        "structure": "{\"width\":11,\"height\":14,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panel48423957a3f0bb44",
+        "structure": "{\"width\":13,\"height\":14,\"x\":11,\"y\":8}"
+      },
+      {
+        "key": "panel44428070b18c094b",
+        "structure": "{\"width\":10,\"height\":6,\"x\":0,\"y\":19}"
+      },
+      {
+        "key": "paneld882eb7eb5a86845",
+        "structure": "{\"width\":5,\"height\":6,\"x\":10,\"y\":19}"
+      },
+      {
+        "key": "panela47726f49156b840",
+        "structure": "{\"width\":9,\"height\":6,\"x\":15,\"y\":19}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panela47726f49156b840",
+      "title": "Threats Over Time by Action",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest\n| if (isNull(actor) or actor=\"\",\"Unassigned\",actor) as actor \n| timeslice 1h\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{last_updated}}\" = \"*\", true, last_updated matches \"{{last_updated}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{interfaceid}}\" = \"*\", true, interfaceid matches \"{{interfaceid}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\")\n|count by _timeslice, Action\n| transpose row _timeslice column Action",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1461bf5d85ce2844",
+      "title": "Geo Location of Threats with Rejected Flow Logs",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"REJECT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{last_updated}}\" = \"*\", true, last_updated matches \"{{last_updated}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{interfaceid}}\" = \"*\", true, interfaceid matches \"{{interfaceid}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\")\n|count by latitude, longitude, label_name,threat_last_updated",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel48423957a3f0bb44",
+      "title": "Threats Associated with Accepted Flow Logs ",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{last_updated}}\" = \"*\", true, last_updated matches \"{{last_updated}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{interfaceid}}\" = \"*\", true, interfaceid matches \"{{interfaceid}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\")\n|count by interfaceID, accountID, src, dest, Protocol, malicious_confidence, label_name,  threat_malware_families,threat_last_updated",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelae657c0586d28946",
+      "title": "Geo Location of Threats with Accepted Flow Logs",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\"\n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| lookup latitude, longitude, country_code, country_name, region, city, postal_code from geo://location on ip = src_ip\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{last_updated}}\" = \"*\", true, last_updated matches \"{{last_updated}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{interfaceid}}\" = \"*\", true, interfaceid matches \"{{interfaceid}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\")\n|count by latitude, longitude, label_name,threat_last_updated",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel570f3fc5a5ff9947",
+      "title": "Threats Associated with Rejected Flow Logs",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"REJECT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{last_updated}}\" = \"*\", true, last_updated matches \"{{last_updated}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{interfaceid}}\" = \"*\", true, interfaceid matches \"{{interfaceid}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\")\n|count by interfaceID, accountID, src, dest, Protocol, malicious_confidence, label_name,  threat_malware_families,threat_last_updated",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "paneld882eb7eb5a86845",
+      "title": "Threat Breakdown",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest\n| if (isNull(actor) or actor=\"\",\"Unassigned\",actor) as actor\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{last_updated}}\" = \"*\", true, last_updated matches \"{{last_updated}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{interfaceid}}\" = \"*\", true, interfaceid matches \"{{interfaceid}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\")\n|count by actor, Action",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel44428070b18c094b",
+      "title": "Top 10 Threat Sources by Action",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"default\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest\n| if (isNull(actor) or actor=\"\",\"Unassigned\",actor) as actor\n|where if (\"{{threat_malware_families}}\" = \"*\", true, threat_malware_families matches \"{{threat_malware_families}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{malicious_confidence}}\" = \"*\", true, malicious_confidence matches \"{{malicious_confidence}}\") AND if (\"{{action}}\" = \"*\", true, action matches \"{{action}}\") AND if (\"{{actor}}\" = \"*\", true, actor matches \"{{actor}}\") AND if (\"{{last_updated}}\" = \"*\", true, last_updated matches \"{{last_updated}}\") AND if (\"{{threat_last_updated}}\" = \"*\", true, threat_last_updated matches \"{{threat_last_updated}}\") AND if (\"{{src_ip}}\" = \"*\", true, src_ip matches \"{{src_ip}}\") AND if (\"{{src_port}}\" = \"*\", true, src_port matches \"{{src_port}}\") AND if (\"{{interfaceid}}\" = \"*\", true, interfaceid matches \"{{interfaceid}}\") AND if (\"{{label_name}}\" = \"*\", true, label_name matches \"{{label_name}}\")\n|count by src_ip,Action\n| top 10 src_ip, Action by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "src_port",
+      "displayName": "src_port",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest",
+        "field": "src_port"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "label_name",
+      "displayName": "label_name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest",
+        "field": "label_name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "malicious_confidence",
+      "displayName": "malicious_confidence",
+      "defaultValue": "high",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest",
+        "field": "malicious_confidence"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "action",
+      "displayName": "action",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest",
+        "field": "action"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "interfaceid",
+      "displayName": "interfaceid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest",
+        "field": "interfaceid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "actor",
+      "displayName": "actor",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest",
+        "field": "actor"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "last_updated",
+      "displayName": "last_updated",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest",
+        "field": "last_updated"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "threat_last_updated",
+      "displayName": "threat_last_updated",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest",
+        "field": "threat_last_updated"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "src_ip",
+      "displayName": "src_ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest",
+        "field": "src_ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "threat_malware_families",
+      "displayName": "threat_malware_families",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest",
+        "field": "threat_malware_families"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "accountid",
+      "displayName": "accountid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/VPC \n| json \"message\"\n| parse field=message \"* * * * * * * * * * * * * *\" as version,accountID,interfaceID,src_ip,dest_ip,src_port,dest_port,Protocol,Packets,bytes,StartSample,EndSample,Action,status\n| where action=\"ACCEPT\"\n| lookup type, actor, raw , threatlevel as malicious_confidence,threat   from sumo://threat/cs on src_ip=threat\n| where type=\"ip_address\" \n| json field=raw \"malware_families[*]\" as threat_malware_families\n| json field=raw \"last_updated\" as last_updated\n| formatDate(fromseconds(last_updated), \"MM-dd-yyyy\") as threat_last_updated \n| json field=raw \"labels[*].name\" as label_name \n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| concat ( src_ip,\" : \", src_port) as src\n| concat ( dest_ip,\" : \", dest_port) as dest",
+        "field": "accountid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,407 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Windows - Security Monitoring - Critical Events",
+  "description": "Dashboard presenting analysis of critical security events related to services stopped, audit logs tampered, and logging ingestion delays.",
+  "title": "Windows - Security Monitoring - Critical Events",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel00F2A6C4AA324940",
+        "structure": "{\"height\":9,\"width\":5,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panel17DC2A5484418948",
+        "structure": "{\"height\":9,\"width\":11,\"x\":5,\"y\":11}"
+      },
+      {
+        "key": "panel3347A27390A9EA40",
+        "structure": "{\"height\":9,\"width\":8,\"x\":16,\"y\":1}"
+      },
+      {
+        "key": "panel4313EEEEBF469A4B",
+        "structure": "{\"height\":9,\"width\":5,\"x\":0,\"y\":21}"
+      },
+      {
+        "key": "panel46B288B897041B43",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel5C05F83F9CCA8A4E",
+        "structure": "{\"height\":9,\"width\":11,\"x\":5,\"y\":21}"
+      },
+      {
+        "key": "panel9771D883865B0B4C",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panelA1DCA12B94CFCA42",
+        "structure": "{\"height\":9,\"width\":8,\"x\":16,\"y\":21}"
+      },
+      {
+        "key": "panelB746AB148EB3294F",
+        "structure": "{\"height\":9,\"width\":11,\"x\":5,\"y\":1}"
+      },
+      {
+        "key": "panelC9BA1B378425484B",
+        "structure": "{\"height\":9,\"width\":5,\"x\":0,\"y\":11}"
+      },
+      {
+        "key": "panelFF5ED8D49B1DEB48",
+        "structure": "{\"height\":9,\"width\":8,\"x\":16,\"y\":11}"
+      },
+      {
+        "key": "panelPANE-9439C47B9E31B84E",
+        "structure": "{\"height\":1,\"width\":24,\"x\":0,\"y\":20}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel00F2A6C4AA324940",
+      "title": "Computers",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} (\"104\" OR \"517\" OR \"1102\") {{{Computer}}}\n\n| json \"channel\", \"provider\", \"event_id\", \"computer\" as Channel, Provider, EventID, Computer nodrop\n| json field=EventID \"qualifiers\",\"id\" as  qualifiers, EventID\n| json field=Provider \"guid\",\"event_source\",\"name\" as  Guid, EventSource,Provider\n| where Channel in (\"System\", \"Security\")\n| where EventID in (\"104\", \"517\", \"1102\")\n| where computer matches \"{{{Computer}}}\"\n\n| count as Total Computer",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel17DC2A5484418948",
+      "title": "Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"Service Control Manager\" \"7036\" {{Computer}}\n\n| json \"channel\", \"event_id\",\"event_data\", \"computer\",\"provider\" as Channel,EventID, EventData, Computer, Provider  nodrop\n| json field=EventID \"qualifiers\",\"id\" as  qualifiers, EventID\n| json field=Provider \"guid\",\"event_source\",\"name\" as  Guid, EventSource,Provider\n| where Channel = \"System\"\n| where EventID = \"7036\"\n| where Computer matches \"{{Computer}}\"\n| where Provider matches \"Service Control Manager\"\n| where EventData matches \"*stopped*\"\n| timeslice 1h\n| count as Total by _timeslice, service\n| transpose row _timeslice column service\n| order by _timeslice\n\n\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel3347A27390A9EA40",
+      "title": "Details",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":10,\"mode\":\"distribution\",\"paginationPageSize\":10},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} (\"104\" OR \"517\" OR \"1102\") {{{Computer}}}\n\n| json \"channel\", \"provider\", \"event_id\", \"computer\" as Channel, Provider, EventID, Computer nodrop\n| json field=EventID \"qualifiers\",\"id\" as  qualifiers, EventID\n| json field=Provider \"guid\",\"event_source\",\"name\" as  Guid, EventSource,Provider\n| where Channel in (\"System\", \"Security\")\n| where EventID in (\"104\", \"517\", \"1102\")\n| where computer matches \"{{{Computer}}}\"\n\n| json \"UserData.LogFileCleared.SubjectUserName\", \"UserData.LogFileCleared.Channel\" as SubjectUserName, targetChannel nodrop\n\n| if(Channel=\"Security\", \"Security\", targetChannel) as targetChannel\n\n| formatDate(_messageTime, \"yyyy-MM-dd hh:mm:ss\") as date\n\n| count as Events Date, Computer, SubjectUserName, targetChannel\n| order by Date\n| fields -Events",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel4313EEEEBF469A4B",
+      "title": "Computers",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} {{Computer}}\n\n| json field=_raw \"computer\" as Computer nodrop\n| where computer matches \"{{Computer}}\"\n\n| _receiptTime - _messageTime as delayMS\n| (delayMS/1000/60) as delayMIN\n| round(delayMIN) as delayMIN\n\n| where delayMIN > 10\n\n| count as Total by Computer",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel5C05F83F9CCA8A4E",
+      "title": "Maximum Ingestion Delay",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":false,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} {{{Computer}}}\n\n| json field=_raw \"computer\" as Computer nodrop\n| where Computer matches \"{{{Computer}}}\"\n\n| _receiptTime - _messageTime as delayMS\n| (delayMS/1000/60) as delayMIN\n| round(delayMIN) as delayMIN\n\n//| where delayMIN > 10\n\n| timeslice 1h\n\n| max(delayMIN) as Minutes by _timeslice\n| order by _timeslice\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelA1DCA12B94CFCA42",
+      "title": "Details",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":10,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} {{{Computer}}}\n\n| json field=_raw \"computer\" as Computer nodrop\n| where Computer matches \"{{{Computer}}}\"\n\n| _receiptTime - _messageTime as delayMS\n| (delayMS/1000/60) as delayMIN\n| round(delayMIN) as delayMIN\n\n| where delayMIN > 10\n\n| max(DelayMIN) as Minutes by Computer\n| order by Minutes\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelB746AB148EB3294F",
+      "title": "Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} (\"104\" OR \"517\" OR \"1102\") {{{Computer}}}\n\n| json \"channel\", \"provider\", \"event_id\", \"computer\" as Channel, Provider, EventID, Computer nodrop\n| json field=EventID \"qualifiers\",\"id\" as  qualifiers, EventID\n| json field=Provider \"guid\",\"event_source\",\"name\" as  Guid, EventSource,Provider\n\n| where Channel in (\"System\", \"Security\")\n| where EventID in (\"104\", \"517\", \"1102\")\n| where computer matches \"{{{Computer}}}\"\n\n| json \"UserData.LogFileCleared.SubjectUserName\", \"UserData.LogFileCleared.Channel\" as SubjectUserName, targetChannel nodrop\n\n| if(Channel=\"Security\", \"Security\", targetChannel) as targetChannel\n\n| timeslice 1h\n| count as Total _timeslice, computer\n| transpose row _timeslice column computer\n| order by _timeslice\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelC9BA1B378425484B",
+      "title": "Computers",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"honeyComb\",\"displayType\":\"default\",\"mode\":\"honeyComb\"},\"honeyComb\":{\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"Service Control Manager\" \"7036\" {{Computer}}\n\n| json \"channel\", \"event_id\",\"event_data\", \"computer\",\"provider\" as Channel,EventID, EventData, Computer, Provider  nodrop\n| json field=EventID \"qualifiers\",\"id\" as  qualifiers, EventID\n| json field=Provider \"guid\",\"event_source\",\"name\" as  Guid, EventSource,Provider\n| where Channel = \"System\"\n| where EventID = \"7036\"\n| where Computer matches \"{{Computer}}\"\n\n| where Provider matches \"Service Control Manager\"\n| where EventData matches \"*stopped*\"\n\n| count as Total by Computer",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelFF5ED8D49B1DEB48",
+      "title": "Details",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} host.name={{host.name}} \"Service Control Manager\" \"7036\" {{Computer}}\n\n| json \"channel\", \"event_id\",\"event_data\", \"computer\",\"provider\" as Channel,EventID, EventData, Computer, Provider  nodrop\n| json field=EventID \"qualifiers\",\"id\" as  qualifiers, EventID\n| json field=Provider \"guid\",\"event_source\",\"name\" as  Guid, EventSource,Provider\n| where Channel = \"System\"\n| where EventID = \"7036\"\n| where Computer matches \"{{Computer}}\"\n| where Provider matches \"Service Control Manager\"\n| where EventData matches \"*stopped*\"\n| count as Total by Computer, Provider\n| order by Total\n\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel46B288B897041B43",
+      "title": "Firewall Service Events (Copy)",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"text\",\"showTitle\":false,\"backgroundColor\":\"#005982\",\"textColor\":\"#ffffff\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Audit Logs Tampered"
+    },
+    {
+      "id": null,
+      "key": "panel9771D883865B0B4C",
+      "title": "Firewall Service Events (Copy)",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"text\",\"showTitle\":false,\"backgroundColor\":\"#005982\",\"textColor\":\"#ffffff\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Service Stopped"
+    },
+    {
+      "id": null,
+      "key": "panelPANE-9439C47B9E31B84E",
+      "title": "Firewall Service Events",
+      "visualSettings": "{\"general\":{\"mode\":\"TextPanel\",\"type\":\"text\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"series\":{},\"text\":{\"format\":\"text\",\"showTitle\":false,\"backgroundColor\":\"#005982\",\"textColor\":\"#ffffff\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Ingestion Delays (> 10 Minutes)"
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Computer",
+      "displayName": "Computer",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=windows | json \"event_id\",\"computer\" as event_id, computer\n| json field=event_id \"qualifiers\",\"id\" as  qualifiers, id\n| count by computer",
+        "field": "computer"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=windows |count by deployment.environment",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host.group",
+      "displayName": "host.group",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=windows  |count by host.group",
+        "field": "host.group"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "host.name",
+      "displayName": "host.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=windows |count by host.name",
+        "field": "host.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

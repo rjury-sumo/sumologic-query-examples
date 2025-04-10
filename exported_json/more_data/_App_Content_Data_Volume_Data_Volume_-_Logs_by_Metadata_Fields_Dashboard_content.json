@@ -1,0 +1,229 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Data Volume - Logs by Metadata Fields",
+  "description": "The Data Volume - Logs by Metadata Fields dashboard allows you to view log ingest volume by tier, source categories, collectors and hosts.",
+  "title": "Data Volume - Logs by Metadata Fields",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-0",
+        "structure": "{\"height\":7,\"width\":8,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-1",
+        "structure": "{\"height\":7,\"width\":16,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-2",
+        "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panelPANE-3",
+        "structure": "{\"height\":6,\"width\":16,\"x\":8,\"y\":7}"
+      },
+      {
+        "key": "panelPANE-4",
+        "structure": "{\"height\":6,\"width\":8,\"x\":0,\"y\":13}"
+      },
+      {
+        "key": "panelPANE-5",
+        "structure": "{\"height\":6,\"width\":16,\"x\":8,\"y\":13}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-0",
+      "title": "Top 5 Source Categories",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"mode\":\"distribution\",\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"aggregationType\":\"average\",\"groupBy\":[],\"decimals\":0},\"axes\":{},\"legend\":{},\"color\":{},\"hiddenQueryKeys\":[],\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourceCategory = \"sourcecategory_and_tier_volume\"\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"field\",\"dataTier\",\"sizeInBytes\",\"count\" as sourcecategory, dataTier, bytes, count\n|where dataTier matches \"{{Tier}}\"\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes by sourceCategory\n| round(gbytes,2) as gbytes\n| ((queryEndTime() - queryStartTime())/(1000*60*60*24)) as duration_in_day\n| gbytes / duration_in_day as %\"GB/Day\"\n| round(%\"GB/Day\",2) as %\"GB/Day\"\n| top 5 sourceCategory by gbytes, %\"GB/Day\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-1",
+      "title": "Ingest by Source Category",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"axes\":{},\"legend\":{},\"hiddenQueryKeys\":[],\"overrides\":[],\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourceCategory = \"sourcecategory_and_tier_volume\"\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"field\",\"dataTier\",\"sizeInBytes\",\"count\" as sourcecategory, dataTier, bytes, count\n|where dataTier matches \"{{Tier}}\"\n| bytes/1Gi as gbytes \n| timeslice 1h\n| sum(gbytes) as daily_ingest_gbytes by _timeslice, sourceCategory\n| transpose row _timeslice column sourceCategory",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-2",
+      "title": "Top 5 Collectors",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"mode\":\"distribution\",\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"aggregationType\":\"average\",\"groupBy\":[],\"decimals\":0},\"axes\":{},\"legend\":{},\"color\":{},\"hiddenQueryKeys\":[],\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourceCategory = \"collector_and_tier_volume\" \n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"field\",\"dataTier\",\"sizeInBytes\",\"count\" as collector, dataTier, bytes, count\n|where dataTier matches \"{{Tier}}\"\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes by collector\n| round(gbytes,2) as gbytes\n| ((queryEndTime() - queryStartTime())/(1000*60*60*24)) as duration_in_day\n| gbytes / duration_in_day as %\"GB/Day\"\n| round(%\"GB/Day\",2) as %\"GB/Day\"\n| top 5 collector by gbytes, %\"GB/Day\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-3",
+      "title": "Ingest by Collector",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"axes\":{},\"legend\":{},\"hiddenQueryKeys\":[],\"overrides\":[],\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourceCategory = \"collector_and_tier_volume\"\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"field\",\"dataTier\",\"sizeInBytes\",\"count\" as collector, dataTier, bytes, count\n|where dataTier matches \"{{Tier}}\"\n| bytes/1Gi as gbytes \n| timeslice 1h\n| sum(gbytes) as daily_ingest_gbytes by _timeslice, collector\n| transpose row _timeslice column collector",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-4",
+      "title": "Top 5 Source Hosts",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"mode\":\"distribution\",\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"aggregationType\":\"average\",\"groupBy\":[],\"decimals\":0},\"axes\":{},\"legend\":{},\"color\":{},\"hiddenQueryKeys\":[],\"overrides\":[],\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourceCategory = \"sourcehost_and_tier_volume\"\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"field\",\"dataTier\",\"sizeInBytes\",\"count\" as sourceHost, dataTier, bytes, count\n|where dataTier matches \"{{Tier}}\"\n| bytes/1Gi as gbytes \n| sum(gbytes) as gbytes by sourceHost\n| round(gbytes,2) as gbytes\n| ((queryEndTime() - queryStartTime())/(1000*60*60*24)) as duration_in_day\n| gbytes / duration_in_day as %\"GB/Day\"\n| round(%\"GB/Day\",2) as %\"GB/Day\"\n| top 5 sourceHost by gbytes, %\"GB/Day\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-5",
+      "title": "Ingest by Source Host",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"axes\":{},\"legend\":{},\"hiddenQueryKeys\":[],\"overrides\":[],\"series\":{},\"general\":{\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"mode\":\"timeSeries\"},\"color\":{\"family\":\"Categorical Default\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_index=sumologic_volume _sourceCategory = \"sourcehost_and_tier_volume\"\n| parse regex \"(?<data>\\{[^\\{]+\\})\" multi\n| json field=data \"field\",\"dataTier\",\"sizeInBytes\",\"count\" as sourceHost, dataTier, bytes, count\n|where dataTier matches \"{{Tier}}\"\n| bytes/1Gi as gbytes \n| timeslice 1h\n| sum(gbytes) as daily_ingest_gbytes by _timeslice, sourceHost\n| transpose row _timeslice column sourceHost",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Tier",
+      "displayName": "Tier",
+      "defaultValue": "Continuous",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Continuous,Frequent,Infrequent,CSE"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

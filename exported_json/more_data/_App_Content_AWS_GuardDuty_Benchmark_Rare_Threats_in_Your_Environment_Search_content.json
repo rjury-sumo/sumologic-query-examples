@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Rare Threats in Your Environment",
+  "search": {
+    "queryText": "benchscore contribution from guardduty | toint(severity) as severity | max(contribution) as contribution by threatname, threatpurpose, severity, resource\n|where [subquery: _sourceCategory = *guardduty*\n// PARSE\n| json field=_raw \"id\", \"type\",\"severity\" ,\"title\",\"description\"\n| toint(severity) as severity\n//| where sev>2\n| parse field=type \"*:*/*\" as threatpurpose, resource, threatname\n| count by threatpurpose, threatname, resource, severity\n| benchmark percentage as global_percent from guardduty on threatpurpose=threatpurpose, threatname=threatname, severity=severity, resource=resource\n| if(global_percent=0, 0.000001, global_percent) as global_percent\n| total _count as totalevents | _count/totalevents as percentage\n| total global_percent as total_global_percent\n| where global_percent<.002\n| count by threatpurpose, threatname, severity, resource\n| compose threatpurpose, threatname]\n| count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": "Rare threats accounts for less than 0.2% of findings in the Sumo Logic customer population and should receive immediate attention."
+}

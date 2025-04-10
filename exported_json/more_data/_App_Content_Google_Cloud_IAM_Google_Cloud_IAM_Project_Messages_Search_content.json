@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Google Cloud IAM Project Messages",
+  "search": {
+    "queryText": "_sourceCategory = Labs/GCP/cloudaudit logName resource timestamp\n| json \"message.data\" as data\n| json field=data \"resource.type\" as type \n| parse regex \"\\\"logName\\\":\\\"(?<log_name>[^\\\"]+)\\\"\" \n| where type = \"project\" | where log_name matches \"projects/*/logs/cloudaudit.googleapis.com%2Factivity\"\n| json field=data \"timestamp\", \"resource.labels.project_id\", \"protoPayload.authenticationInfo.principalEmail\", \"protoPayload.serviceData.policyDelta.bindingDeltas[*]\" as timestamp, project, user, changes\n\n| parse regex field=changes \"\\\"role\\\":\\\"roles\\\\\\/(?<role>[a-zA-Z.]+)\\\",\\\"member\\\":\\\"(?<member>.*?)\\\",\\\"action\\\":\\\"(?<action>[A-Z]+)\\\"\" multi\n| count by action, role, member, timestamp, user\n| sort by timestamp asc\n| 1 as operation\n| accum operation as total_operations by user\n| fields timestamp, user, action, role, member, total_operations\n| sort by timestamp",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-24h"
+  },
+  "searchSchedule": null,
+  "description": ""
+}

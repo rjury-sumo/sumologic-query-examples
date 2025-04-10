@@ -1,0 +1,224 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "HAProxy - Outlier Analysis",
+  "description": "The HAProxy -  Outlier Analysis dashboard helps you quickly identify outliers for key metrics such bytes served, number of visitors, server errors, and client errors.",
+  "title": "HAProxy - Outlier Analysis",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-2w"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel1B92DE1BBDD13A40",
+        "structure": "{\"height\":9,\"width\":12,\"x\":0,\"y\":9}"
+      },
+      {
+        "key": "panel2779354BA146CA46",
+        "structure": "{\"height\":9,\"width\":12,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelE41AC6D592AFB846",
+        "structure": "{\"height\":9,\"width\":12,\"x\":12,\"y\":9}"
+      },
+      {
+        "key": "panelPANE-5E2CC6D696DD9946",
+        "structure": "{\"height\":9,\"width\":12,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel1B92DE1BBDD13A40",
+      "title": "Bytes Served - Outlier",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webengine.cluster.name={{webengine.cluster.name}} sumo.datasource=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| where bytes_read != \"-\" and !isEmpty(bytes_read)\n| number(bytes_read)\n| (bytes_read/(1024*1024)) as mbytes \n| timeslice {{timeslice}}\n| sum(mbytes) as mbytes by _timeslice \n| sort _timeslice asc\n| outlier mbytes window={{window}}, threshold={{threshold}}, consecutive={{consecutive}}, direction=+",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2779354BA146CA46",
+      "title": "Client Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webengine.cluster.name={{webengine.cluster.name}} sumo.datasource=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| where (status_code matches \"4*\") \n| timeslice {{timeslice}}\n| count as client_errors by _timeslice\n| sort _timeslice asc\n| outlier client_errors window={{window}}, threshold={{threshold}}, consecutive={{consecutive}}, direction=+",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelE41AC6D592AFB846",
+      "title": "Number of Visitors",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webengine.cluster.name={{webengine.cluster.name}} sumo.datasource=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| where !isEmpty(c_ip)\n| timeslice {{timeslice}}\n| count as hits by _timeslice \n| sort _timeslice asc\n| outlier hits window={{window}}, threshold={{threshold}}, consecutive={{consecutive}}, direction=+",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-5E2CC6D696DD9946",
+      "title": "Server Errors",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"markerSize\":5,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1},\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"series\":{},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "webengine.cluster.name={{webengine.cluster.name}} sumo.datasource=haproxy\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as haproxy_log_message\n| parse regex field=haproxy_log_message \"(?<syslog_host>.*)\\]:\\s+\" nodrop\n| parse regex field=haproxy_log_message \":\\s+(?<c_ip>[\\w\\.]+):(?<c_port>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\[(?<accept_date>.+)\\]\\s+(?<frontend_name>\\S+)\\s+(?<backend_name>\\S+)/(?<server_name>\\S+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<tq>-?\\d+)/(?<tw>-?\\d+)/(?<tc>-?\\d+)/(?<tr>-?\\d+)/(?<tt>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<status_code>\\d+)\\s+(?<bytes_read>[\\d-]+)\\s+(?<tsc>.*)\\s+(?<act>\\d+)/(?<fe>\\d+)/(?<be>\\d+)/(?<srv>\\d+)/(?<retries>\\+?\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+(?<queue_server>\\d+)/(?<queue_backend>\\d+)\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\{(?<request_headers>.*)\\}\\s+\" nodrop\n| parse regex field=haproxy_log_message \"\\s+\\\"(?<http_request>.*)\\\"\" nodrop\n| parse regex field=request_headers \"(?<referer>\\S+)\\|(?<user_agent>[^\\\"]*)\"\n| parse regex field=http_request \"(?<method>\\w+)\\s+(?<request>[^\\\"]*)\\s+(?<http_version>\\w+)\"\n| where (status_code matches \"5*\") \n| timeslice {{timeslice}}\n| count as server_errors by _timeslice\n| sort _timeslice asc\n| outlier server_errors window={{window}}, threshold={{threshold}}, consecutive={{consecutive}}, direction=+",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "webengine.cluster.name",
+      "displayName": "webengine.cluster.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "sumo.datasource=haproxy\n| count by webengine.cluster.name",
+        "field": "webengine.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "consecutive",
+      "displayName": "consecutive",
+      "defaultValue": "1",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1,2,3,4,5,6,7,8,9"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "window",
+      "displayName": "window",
+      "defaultValue": "10",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1,2,3,4,5,6,7,8,9,10"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "timeslice",
+      "displayName": "timeslice",
+      "defaultValue": "1m",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "10m,15m,1h,1m,2m,30m,5m,2h,6h,1d"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "threshold",
+      "displayName": "threshold",
+      "defaultValue": "3",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "1,2,3,4,5,6,7,8,9"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": false,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

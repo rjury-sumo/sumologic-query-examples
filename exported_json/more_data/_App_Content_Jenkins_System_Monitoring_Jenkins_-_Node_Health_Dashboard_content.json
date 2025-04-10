@@ -1,0 +1,508 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Jenkins - Node Health",
+  "description": "The Jenkins - Node Health dashboard provides insights into the health of all the nodes present on the Jenkins master. Panels display information on disk usage, physical Memory usage, as well as free and busy executors.",
+  "title": "Jenkins - Node Health",
+  "theme": "Light",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-CF0429819392D94D",
+        "structure": "{\"height\":6,\"width\":15,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-A4E43397846FEA46",
+        "structure": "{\"height\":6,\"width\":3,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-245EE37989500A4C",
+        "structure": "{\"height\":6,\"width\":3,\"x\":15,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-F89DE521B538F844",
+        "structure": "{\"height\":6,\"width\":3,\"x\":18,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-E2288F4390BB5844",
+        "structure": "{\"height\":6,\"width\":3,\"x\":21,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-97DB154EA9239B4B",
+        "structure": "{\"height\":7,\"width\":7,\"x\":8,\"y\":12}"
+      },
+      {
+        "key": "panelPANE-69979B01A689EB4F",
+        "structure": "{\"height\":12,\"width\":9,\"x\":15,\"y\":14}"
+      },
+      {
+        "key": "panelPANE-46D8C625B9B3EA42",
+        "structure": "{\"height\":7,\"width\":8,\"x\":0,\"y\":19}"
+      },
+      {
+        "key": "panelPANE-A1A39944B4783843",
+        "structure": "{\"height\":7,\"width\":7,\"x\":8,\"y\":19}"
+      },
+      {
+        "key": "panelPANE-F25B579ABB4FB94D",
+        "structure": "{\"height\":8,\"width\":9,\"x\":15,\"y\":6}"
+      },
+      {
+        "key": "panelPANE-F7091A248F2E9B4B",
+        "structure": "{\"height\":6,\"width\":12,\"x\":12,\"y\":26}"
+      },
+      {
+        "key": "panelPANE-132D8C32BB61E849",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":26}"
+      },
+      {
+        "key": "panelPANE-87EC8A89B9A9A84F",
+        "structure": "{\"height\":6,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-335837D7BA76D84E",
+        "structure": "{\"height\":7,\"width\":8,\"x\":0,\"y\":12}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-CF0429819392D94D",
+      "title": "Jenkins Nodes",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"updated\"\n| json \"nodeName\", \"numberOfExecutors\", \"nodeLabel\" as NodeName, ExecutorsCount,NodeLabel\n| _sourceHost as Master\n| where NodeName matches \"{{NodeName}}\" and NodeLabel matches \"{{NodeLabel}}\" and Master matches \"{{Master}}\"\n| first(_raw) as Message by NodeName, Master\n| where ![subquery:_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"removed\"\n| json \"eventTime\", \"nodeName\", \"numberOfExecutors\" as Time, NodeName, ExecutorsCount nodrop\n| _sourceHost as Master\n| count as Count by NodeName, Master \n| compose NodeName, Master]\n| json field=Message \"nodeName\", \"monitorData.ArchitectureMonitor\", \"monitorData.ClockMonitor\" ,\"monitorData.ResponseTimeMonitor\", \"monitorData.DiskSpaceMonitor\", \"monitorData.TemporarySpaceMonitor\", \"monitorData.SwapSpaceMonitor\", \"isIdle\", \"isOnline\", \"nodeURL\", \"nodeLabel\"  as %\"Node Name\", Architecture, Clock, %\"Reponse Time\", %\"Free Disk Space\", Temporary_Space, SwapMemory, Idle, Online, URL, %\"Node Label\" nodrop\n| if(Idle matches \"true\", \"false\", \"true\") as Busy\n| parse field=SwapMemory \"Memory:*  Swap:*\" as Physical_Memory, Swap_Memory\n| parse regex field=Physical_Memory \"(?<Free_Physical_Memory>.*?)/(?<Total_Physical_Memory>.*?)(?<Unit_Phy>[A-Z]+)\"\n| num(Free_Physical_Memory) | num(Total_Physical_Memory)\n| (Free_Physical_Memory/Total_Physical_Memory)*100 as Free_Physical_Memory\n| parse regex field=Swap_Memory \"(?<Free_Swap_Memory>.*?)/(?<Total_Swap_Memory>.*?)(?<Unit_Swap>[A-Z]+)\"\n| num(Free_Swap_Memory) | num(Total_Swap_Memory)\n| (Free_Swap_Memory/Total_Swap_Memory)*100 as Free_Swap_Memory\n| if(Total_Physical_Memory=0, \"0 %\", format(\"%.2f %s\",Free_Physical_Memory, \"%\")) as %\"Free Physical Memory\"\n| if(Total_Swap_Memory=0, \"0 %\", format(\"%.2f %s\",Free_Swap_Memory, \"%\")) as %\"Free Swap Memory\" \n| replace(URL, \"(\", \"%28\") as URL\n| replace(URL, \")\", \"%29\") as URL\n| tourl(URL, %\"Node Name\") as URL\n| count by Master, %\"Node Name\", %\"Node Label\", Busy, Online, Architecture, Clock, %\"Reponse Time\", %\"Free Physical Memory\", %\"Free Swap Memory\", %\"Free Disk Space\", URL\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-A4E43397846FEA46",
+      "title": "Busy Nodes",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\" \",\"useBackgroundColor\":true,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":0,\"to\":0.99,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":1,\"to\":null,\"color\":\"#f36644\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"updated\"\n| _sourceHost as Master\n| json \"nodeName\", \"numberOfExecutors\", \"nodeLabel\" as NodeName, ExecutorsCount,NodeLabel\n| where NodeName matches \"{{NodeName}}\" and NodeLabel matches \"{{NodeLabel}}\" and Master matches \"{{Master}}\"\n| first(_raw) as Message by NodeName, Master\n| where ![subquery:_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"removed\"\n| json \"eventTime\", \"nodeName\", \"numberOfExecutors\" as Time, NodeName, ExecutorsCount nodrop\n| _sourceHost as Master\n| count as Count by NodeName, Master \n| compose NodeName, Master]\n| json field=Message \"nodeName\", \"monitorData.ArchitectureMonitor\", \"monitorData.ClockMonitor\" ,\"monitorData.ResponseTimeMonitor\", \"monitorData.DiskSpaceMonitor\", \"monitorData.TemporarySpaceMonitor\", \"monitorData.SwapSpaceMonitor\", \"isIdle\", \"isOnline\", \"nodeURL\", \"nodeLabel\"  as %\"Node Name\", Architecture, Clock, Reponse_Time, Disk_Space, Temporary_Space, SwapMemory, Idle, Online, URL, %\"Node Label\" nodrop\n| if(Idle matches \"true\", \"false\", \"true\") as Busy\n| where busy = \"true\"\n| count as Count by Busy",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-245EE37989500A4C",
+      "title": "Idle Nodes",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\" \",\"useBackgroundColor\":true,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":1,\"to\":null,\"color\":\"#75bf00\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":null,\"to\":null,\"color\":\"#FFB5B5\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"updated\"\n| _sourceHost as Master\n| json \"nodeName\", \"numberOfExecutors\", \"nodeLabel\" as NodeName, ExecutorsCount,NodeLabel\n| where NodeName matches \"{{NodeName}}\" and NodeLabel matches \"{{NodeLabel}}\" and Master matches \"{{Master}}\"\n| first(_raw) as Message by NodeName, Master\n| where ![subquery:_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"removed\"\n| json \"eventTime\", \"nodeName\", \"numberOfExecutors\" as Time, NodeName, ExecutorsCount nodrop\n| _sourceHost as Master\n| count as Count by NodeName, Master \n| compose NodeName, Master]\n| json field=Message \"nodeName\", \"monitorData.ArchitectureMonitor\", \"monitorData.ClockMonitor\" ,\"monitorData.ResponseTimeMonitor\", \"monitorData.DiskSpaceMonitor\", \"monitorData.TemporarySpaceMonitor\", \"monitorData.SwapSpaceMonitor\", \"isIdle\", \"isOnline\", \"nodeURL\", \"nodeLabel\"  as %\"Node Name\", Architecture, Clock, Reponse_Time, Disk_Space, Temporary_Space, SwapMemory, Idle, Online, URL, %\"Node Label\" nodrop\n| if(Idle matches \"true\", \"false\", \"true\") as Busy\n| where busy = \"false\"\n| count as Count by Busy",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-F89DE521B538F844",
+      "title": "Online Nodes",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\" \",\"useBackgroundColor\":true,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":1,\"to\":null,\"color\":\"#75bf00\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":0,\"to\":0.99,\"color\":\"#FFB5B5\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"updated\"\n| _sourceHost as Master\n| json \"nodeName\", \"numberOfExecutors\", \"nodeLabel\" as NodeName, ExecutorsCount,NodeLabel\n| where NodeName matches \"{{NodeName}}\" and NodeLabel matches \"{{NodeLabel}}\" and Master matches \"{{Master}}\"\n| first(_raw) as Message by NodeName, Master\n| where ![subquery:_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"removed\"\n| json \"eventTime\", \"nodeName\", \"numberOfExecutors\" as Time, NodeName, ExecutorsCount nodrop\n| _sourceHost as Master\n| count as Count by NodeName, Master \n| compose NodeName, Master]\n| json field=Message \"nodeName\", \"monitorData.ArchitectureMonitor\", \"monitorData.ClockMonitor\" ,\"monitorData.ResponseTimeMonitor\", \"monitorData.DiskSpaceMonitor\", \"monitorData.TemporarySpaceMonitor\", \"monitorData.SwapSpaceMonitor\", \"isIdle\", \"isOnline\", \"nodeURL\", \"nodeLabel\"  as Node_Name, Architecture, Clock, Reponse_Time, Disk_Space, Temporary_Space, SwapMemory, Idle, Online, URL, Label nodrop\n| where Online = \"true\"\n| count as Count by Online",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-E2288F4390BB5844",
+      "title": "Offline Nodes",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"svp\":{\"option\":\"Average\",\"label\":\" \",\"useBackgroundColor\":true,\"useNoData\":false,\"noDataString\":\"\",\"hideData\":false,\"rounding\":2,\"thresholds\":[{\"from\":0,\"to\":0.99,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":1,\"to\":null,\"color\":\"#f36644\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false,\"min\":0,\"max\":100,\"showThreshold\":false,\"showThresholdMarker\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"updated\"\n| _sourceHost as Master\n| json \"nodeName\", \"numberOfExecutors\", \"nodeLabel\" as NodeName, ExecutorsCount,NodeLabel\n| where NodeName matches \"{{NodeName}}\" and NodeLabel matches \"{{NodeLabel}}\" and Master matches \"{{Master}}\"\n| first(_raw) as Message by NodeName, Master\n| where ![subquery:_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"removed\"\n| json \"eventTime\", \"nodeName\", \"numberOfExecutors\" as Time, NodeName, ExecutorsCount nodrop\n| _sourceHost as Master\n| count as Count by NodeName, Master \n| compose NodeName, Master]\n| json field=Message \"nodeName\", \"monitorData.ArchitectureMonitor\", \"monitorData.ClockMonitor\" ,\"monitorData.ResponseTimeMonitor\", \"monitorData.DiskSpaceMonitor\", \"monitorData.TemporarySpaceMonitor\", \"monitorData.SwapSpaceMonitor\", \"isIdle\", \"isOnline\", \"nodeURL\", \"nodeLabel\"  as Node_Name, Architecture, Clock, Reponse_Time, Disk_Space, Temporary_Space, SwapMemory, Idle, Online, URL, Label nodrop\n| where Online = \"false\"\n| count as Count by Online",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-97DB154EA9239B4B",
+      "title": "Recent Builds",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Job_Status\n| json \"nodeName\", \"name\", \"result\", \"jobBuildURL\", \"number\" as NodeName, JobName, Result, jobBuildURL, Number nodrop\n| _sourceHost as Master\n| where NodeName matches \"{{NodeName}}\" and Master matches \"{{Master}}\"\n| tourl(jobBuildURL, JobName) as JobName\n| JobName as %\"Job Name\"\n| NodeName as %\"Node Name\"\n| count by Master, %\"Node Name\", %\"Job Name\", Number, Result\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-69979B01A689EB4F",
+      "title": "Available Disk Space (GB)",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"line\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2},\"title\":{\"fontSize\":16},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme5\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"updated\"\n| _sourceHost as Master\n| json \"nodeName\", \"numberOfExecutors\", \"isOnline\", \"nodeLabel\" as NodeName, ExecutorsCount, Onilne, NodeLabel nodrop\n| where NodeName matches \"{{NodeName}}\" and NodeLabel matches \"{{NodeLabel}}\" and Master matches \"{{Master}}\"\n| where ExecutorsCount > 0 AND Onilne matches \"true\"\n| where ![subquery:_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"removed\"\n| json \"eventTime\", \"nodeName\", \"numberOfExecutors\" as Time, NodeName, ExecutorsCount nodrop\n| _sourceHost as Master\n| count as Count by NodeName, Master \n| compose NodeName, Master]\n| concat(Master, \"-\", NodeName) as %\"Node Name\"\n| json field=_raw \"monitorData.DiskSpaceMonitor\" as Disk_Space\n| parse regex field=Disk_Space \"(?<Disk_Space>.*?) (?<Unit>.*[A-Z]+)\" nodrop\n| num(Disk_Space)\n| if(Unit in (\"MB\", \"Mb\", \"mb\"), Disk_Space/1024, if(Unit in (\"KB\", \"Kb\", \"kb\"), Disk_Space/1024/1024, if(Unit in (\"TB\", \"Tb\", \"tb\"), Disk_Space*1024, Disk_Space))) as Disk_Space\n| timeslice 10m\n| avg(Disk_Space) as Disk_Space by _timeslice, %\"Node Name\"\n| transpose row _timeslice column %\"Node Name\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-46D8C625B9B3EA42",
+      "title": "Physical Memory",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme8\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"updated\"\n| _sourceHost as Master\n| json \"nodeName\", \"numberOfExecutors\", \"isOnline\", \"nodeLabel\" as NodeName, ExecutorsCount, Onilne, NodeLabel nodrop\n| where NodeName matches \"{{NodeName}}\" and NodeLabel matches \"{{NodeLabel}}\" and Master matches \"{{Master}}\"\n| where ExecutorsCount > 0 AND Onilne matches \"true\"\n| first(_raw) as Message by NodeName, Master\n| where ![subquery:_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"removed\"\n| json \"eventTime\", \"nodeName\", \"numberOfExecutors\" as Time, NodeName, ExecutorsCount nodrop\n| _sourceHost as Master\n| count as Count by NodeName, Master \n| compose NodeName, Master]\n| concat(Master, \"-\", NodeName) as NodeName\n| json field=Message \"monitorData.SwapSpaceMonitor\", \"nodeLabel\"  as SwapMemory, Node_Label nodrop\n| parse field=SwapMemory \"Memory:*  Swap:*\" as Physical_Memory, Swap_Memory\n| parse regex field=Physical_Memory \"(?<Free_Memory>.*?)/(?<Total_Memory>.*?)[A-Z]\"\n| Free_Memory/Total_Memory as Free_Memory\n| 1 - Free_Memory as Used_Memory\n| avg(Used_Memory) as %\"Used Memory\", avg(Free_Memory) as %\"Free Memory\" by NodeName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-A1A39944B4783843",
+      "title": "Offline Nodes",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme5\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* (\"Computer_Offline\")\n| _sourceHost as Master\n| json \"nodeName\", \"nodeLabel\" as NodeName, NodeLabel nodrop\n| where NodeName matches \"{{NodeName}}\" and NodeLabel matches \"{{NodeLabel}}\" and Master matches \"{{Master}}\"\n| _sourceHost as Jenkins_Master\n| concat (\"Master=\",Master,\" Node=\", NodeName) as %\"Master Node Name\" \n| timeslice 10m\n| count as Count by _timeslice, %\"Master Node Name\"\n| transpose row _timeslice column %\"Master Node Name\" ",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-F25B579ABB4FB94D",
+      "title": "Launch Failures",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"markerSize\":0,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":2,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme4\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* (\"Launch_Failure\")\n| json \"nodeName\", \"nodeLabel\" as NodeName, NodeLabel nodrop\n| _sourceHost as Master\n| where NodeName matches \"{{NodeName}}\" and NodeLabel matches \"{{NodeLabel}}\" and Master matches \"{{Master}}\"\n| concat (\"Master=\",Master,\" Node=\", NodeName) as %\"Master Node Name\" \n| timeslice 10m\n| count as Count by _timeslice, %\"Master Node Name\"\n| transpose row _timeslice column %\"Master Node Name\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-F7091A248F2E9B4B",
+      "title": "Recently Removed Nodes",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"removed\"\n| json \"eventTime\", \"nodeName\", \"numberOfExecutors\" as Time, NodeName, ExecutorsCount nodrop\n| _sourceHost as Master\n| where NodeName matches \"{{NodeName}}\" and Master matches \"{{Master}}\"\n| count as Count by Time, NodeName, Master \n| sort by Time\n| fields - Count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-132D8C32BB61E849",
+      "title": "Node Events",
+      "visualSettings": "{\"general\":{\"mode\":\"distribution\",\"type\":\"pie\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"50%\",\"maxNumOfSlices\":10},\"title\":{\"fontSize\":16}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* (\"Computer_Online\" OR \"Computer_Offline\" OR \"Computer_Temp_Online\" OR \"Computer_Temp_Offline\" OR \"Launch_Failure\")\n| json \"nodeName\", \"eventSource\", \"eventTime\", \"nodeLabel\", \"numberOfExecutors\", \"nodeURL\" as NodeName, Event, Time, NodeLabel, Executors, Node_URL nodrop\n| _sourceHost as Master\n| where NodeName matches \"{{NodeName}}\" and NodeLabel matches \"{{NodeLabel}}\" and Master matches \"{{Master}}\"\n| NodeName as %\"Node Name\"\n| NodeLabel as %\"Node Label\"\n| replace(Node_URL, \"(\", \"%28\") as Node_URL\n| replace(Node_URL, \")\", \"%29\") as Node_URL\n| tourl(Node_URL, %\"Node Name\") as %\"Node URL\"\n| count as Count by Time, Master, Event, %\"Node Name\", %\"Node Label\", Executors, %\"Node URL\"\n| sort by Time\n| fields - Count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-87EC8A89B9A9A84F",
+      "title": "Nodes by Online Status",
+      "visualSettings": "{\"general\":{\"mode\":\"honeyComb\",\"type\":\"table\",\"displayType\":\"default\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\"},\"title\":{\"fontSize\":16},\"honeyComb\":{\"thresholds\":[{\"from\":1,\"to\":null,\"color\":\"#98ECA9\"},{\"from\":null,\"to\":null,\"color\":\"#F2DA73\"},{\"from\":0,\"to\":0.99,\"color\":\"#FFB5B5\"}],\"shape\":\"hexagon\",\"groupBy\":[],\"aggregationType\":\"avg\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"updated\"\n| json \"nodeName\", \"numberOfExecutors\", \"nodeLabel\" as NodeName, ExecutorsCount,NodeLabel\n| _sourceHost as Master\n| first(_raw) as Message by NodeName, Master\n| where ![subquery:_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"removed\"\n| json \"eventTime\", \"nodeName\", \"numberOfExecutors\" as Time, NodeName, ExecutorsCount nodrop\n| _sourceHost as Master\n| count as Count by NodeName, Master  \n| compose NodeName, Master] \n| json field=Message \"nodeName\",\"isOnline\" as %\"Node Name\",Online\n| where (Online = \"true\" or Online = \"false\")\n| count(%\"Node Name\") by %\"Node Name\", Online\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-335837D7BA76D84E",
+      "title": "Executors",
+      "visualSettings": "{\"title\":{\"fontSize\":16},\"general\":{\"type\":\"column\",\"displayType\":\"stacked\",\"outlierBandColor\":\"#FDECF5\",\"outlierBandMarkerColor\":\"#F032A9\",\"outlierBandFillOpacity\":0.3,\"outlierBandLineThickness\":2,\"outlierBandMarkerSize\":10,\"outlierBandMarkerType\":\"triangle\",\"outlierBandLineDashType\":\"solid\",\"outlierBandDisplayType\":\"default\",\"fillOpacity\":1,\"mode\":\"distribution\"},\"axes\":{\"axisX\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":10},\"axisY\":{\"title\":\"\",\"titleFontSize\":11,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"#dde4e9\"}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"bottom\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":false,\"wrap\":true},\"color\":{\"family\":\"scheme6\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"updated\"\n| json \"numberOfExecutors\", \"nodeName\", \"nodeLabel\", \"numberOfFreeExecutors\", \"eventTime\" as Total_Executors, NodeName, NodeLabel, Free_Executors, Event_Time nodrop\n| _sourceHost as Master\n| where NodeName matches \"{{NodeName}}\" and NodeLabel matches \"{{NodeLabel}}\" and Master matches \"{{Master}}\"\n| concat(Master, \"-\",NodeName) as NodeName\n| Total_Executors - Free_Executors as Busy_Executors\n| first(Total_Executors) as Total_Executors, first(Free_Executors) as Free_Executors, first(Busy_Executors) as Busy_Executors by NodeName\n| where Busy_Executors >= 0\n| where ![subquery:_sourceCategory = Labs/Jenkins* Periodic_Update \"nodeStatus\":\"removed\"\n| json \"eventTime\", \"nodeName\", \"numberOfExecutors\" as Time, NodeName, ExecutorsCount nodrop\n| _sourceHost as Master\n| count as Count by NodeName, Master\n| concat(Master, \"-\",NodeName) as NodeName\n| compose NodeName]\n| NodeName as %\"Node Name\"\n| avg(Free_Executors) as %\"Free Executors\", avg(Busy_Executors) as %\"Busy Executors\" by %\"Node Name\"\n| fields %\"Node Name\", %\"Free Executors\", %\"Busy Executors\"",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "Master",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jenkins*\n| _sourceHost as Master\n| json \"nodeName\", \"nodeLabel\" as NodeName,NodeLabel",
+        "field": "Master"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "NodeName",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jenkins*\n| _sourceHost as Master\n| json \"nodeName\", \"nodeLabel\" as NodeName,NodeLabel",
+        "field": "NodeName"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "NodeLabel",
+      "displayName": null,
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/Jenkins*\n| _sourceHost as Master\n| json \"nodeName\", \"nodeLabel\" as NodeName,NodeLabel",
+        "field": "NodeLabel"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

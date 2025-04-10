@@ -1,0 +1,315 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Google Workspace - Alert Center - Investigations",
+  "description": "The Google Workspace - Alert Center - Investigations  Dashboard provides easily accessible analytics on compromised credentials, including Google Workspace activity of users with compromised credentials and Google Workspace applications used. This dashboard also provides data on Google Workspace user activities and  Google Workspace applications used from compromised devices.",
+  "title": "Google Workspace - Alert Center - Investigations",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel009ca172896eab40",
+        "structure": "{\"width\":15,\"height\":6,\"x\":0,\"y\":1}"
+      },
+      {
+        "key": "panel022c4bae91b8194c",
+        "structure": "{\"width\":24,\"height\":1,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel398de531adb01a45",
+        "structure": "{\"width\":24,\"height\":1,\"x\":0,\"y\":11}"
+      },
+      {
+        "key": "panel420d0ceb8e8af84c",
+        "structure": "{\"width\":9,\"height\":6,\"x\":15,\"y\":6}"
+      },
+      {
+        "key": "panel48ce8ea69a778a46",
+        "structure": "{\"width\":8,\"height\":6,\"x\":16,\"y\":12}"
+      },
+      {
+        "key": "panel50bfe7bd9706b94a",
+        "structure": "{\"width\":8,\"height\":6,\"x\":8,\"y\":12}"
+      },
+      {
+        "key": "panel57531ef5b4a8284d",
+        "structure": "{\"width\":15,\"height\":6,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panel82adfc32bdbd1b4a",
+        "structure": "{\"width\":8,\"height\":6,\"x\":0,\"y\":12}"
+      },
+      {
+        "key": "panelb390351e959a6a4c",
+        "structure": "{\"width\":9,\"height\":6,\"x\":15,\"y\":1}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel009ca172896eab40",
+      "title": "Google Workspace Activity by Users with Compromised Credentials",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}} \n| json \"actor\", \"events\", \"id\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| where [subquery:_sourceCategory={{GoogleWorkspaceAlertsDataSource}}  \"Leaked password\"\n | json \"alertId\",\"customerId\",\"source\",\"type\",\"data\", \"data.email\" as alert_id, customer_id, source, type, data, email\n | where type=\"Leaked password\"  \n | count by email\n | compose email  \n]\n| parse regex field=events \"\\\"type\\\":\\\"(?<event_type>[^\\\"]+)\\\",\\\"name\\\":\\\"(?<event_name>[^\\\"]+)\\\"\" multi\n| formatDate(_messageTime,\"MM-dd-yyyy HH:mm:ss:SSS\") as event_time\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\")\n|count by event_time, event_name, event_type, email, applicationName\n| fields -_count\n| sort by event_time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel420d0ceb8e8af84c",
+      "title": "Google Workspace Apps Accessed from Compromised Devices",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}} \n| json \"actor\", \"events\", \"id\" nodrop\n| parse regex field=events \"\\\"type\\\":\\\"(?<event_type>[^\\\"]+)\\\",\\\"name\\\":\\\"(?<event_name>[^\\\"]+)\\\"\" multi\n| parse regex field=events \"\\\"DEVICE_SERIAL_NUMBER\\\",\\\"value\\\":\\\"(?<serial_number>[^\\\"]+)\\\"\" multi\n| where [subquery:_sourceCategory={{GoogleWorkspaceAlertsDataSource}}   \"Device compromised\"\n    | json \"alertId\",\"customerId\",\"source\",\"type\",\"data.email\", \"data.events[*]\", \"createTime\" as alert_id, customer_id, source, type, email, events, create_time\n    | where type = \"Device compromised\"\n    | parse regex field=events \"(?<device_info>\\{[^\\{]+\\})\" multi\n    | json field=device_info \"serialNumber\" as serial_number\n    | count by serial_number\n    | compose serial_number\n]\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\")\n|count by serial_number, applicationName\n| transpose row serial_number column applicationName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel48ce8ea69a778a46",
+      "title": "Threat Intel by sender email",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAlertsDataSource}}  \"Gmail phishing\"\n| json \"alertId\",\"customerId\", \"source\", \"type\", \"data\" as alert_id, customer_id, source, type, data\n| where source = \"Gmail phishing\"\n| parse regex field=data \"\\\"fromHeader\\\":\\\"(?<sender_email>[^\\\"]*)\\\"\"\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=sender_email\n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"email_address\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count by sender_email, malicious_confidence, Actor,  _source, label_name\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel50bfe7bd9706b94a",
+      "title": "Threat Intel by Attachments",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAlertsDataSource}}  \"Gmail phishing\"\n| json \"alertId\",\"customerId\", \"source\", \"type\", \"data\" as alert_id, customer_id, source, type, data\n| where source = \"Gmail phishing\"\n| json field=data \"messages[*].attachmentsSha256Hash\" as  attachment_hashes\n| parse regex field=attachment_hashes \"\\\"(?<attachment_hash>[^\\\"]+)\\\"\" multi\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=attachment_hash\n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"hash_sha256\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count by attachment_hash, malicious_confidence, Actor, _source, label_name\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel57531ef5b4a8284d",
+      "title": "Google Workspace Activity from Compromised Devices",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}} \n| json \"actor\", \"events\", \"id\" nodrop\n| parse regex field=events \"\\\"type\\\":\\\"(?<event_type>[^\\\"]+)\\\",\\\"name\\\":\\\"(?<event_name>[^\\\"]+)\\\"\" multi\n| parse regex field=events \"\\\"DEVICE_SERIAL_NUMBER\\\",\\\"value\\\":\\\"(?<serial_number>[^\\\"]+)\\\"\" multi\n| where [subquery:_sourceCategory={{GoogleWorkspaceAlertsDataSource}}   \"Device compromised\"\n    | json \"alertId\",\"customerId\",\"source\",\"type\",\"data.email\", \"data.events[*]\", \"createTime\" as alert_id, customer_id, source, type, email, events, create_time\n    | where type = \"Device compromised\"\n    | parse regex field=events \"(?<device_info>\\{[^\\{]+\\})\" multi\n    | json field=device_info \"serialNumber\" as serial_number\n    | count by serial_number\n    | compose serial_number\n]\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| formatDate(_messageTime,\"MM-dd-yyyy HH:mm:ss:SSS\") as event_time\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\")\n|count by event_time, event_name, event_type, serial_number, applicationName, email\n| fields -_count\n| sort by event_time",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel82adfc32bdbd1b4a",
+      "title": "Threat Intel by Domain",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAlertsDataSource}}  \"Gmail phishing\"\n| json \"alertId\",\"customerId\", \"source\", \"type\", \"data\" as alert_id, customer_id, source, type, data\n| where source = \"Gmail phishing\"\n| parse regex field=data \"\\\"fromHeader\\\":\\\"(?<sender_email>[^\\\"]*)\\\"\"\n| parse field=sender_email \"*@*\" as user_name, domain\n| lookup type, actor, raw, threatlevel as malicious_confidence from sumo://threat/cs on threat=domain\n| json field=raw \"labels[*].name\" as label_name\n| replace(label_name, \"\\\\/\",\"->\") as label_name\n| replace(label_name, \"\\\"\",\" \") as label_name\n| where type=\"domain\" and !isNull(malicious_confidence)\n| if (isEmpty(actor), \"Unassigned\", actor) as Actor\n| count by domain, malicious_confidence, Actor,  _source, label_name\n| sort by _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb390351e959a6a4c",
+      "title": "Google Workspace Apps Accessed by Compromised Users",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}} \n| json \"actor\", \"events\", \"id\" nodrop\n| json field=actor \"email\"\n| json field=id \"applicationName\"\n| where [subquery:_sourceCategory={{GoogleWorkspaceAlertsDataSource}}  \"Leaked password\"\n | json \"alertId\",\"customerId\",\"source\",\"type\",\"data\", \"data.email\" as alert_id, customer_id, source, type, data, email\n | where type=\"Leaked password\"  \n | count by email\n | compose email  \n]\n|where if (\"{{email}}\" = \"*\", true, email matches \"{{email}}\")\n|count by email, applicationName\n| transpose row email column applicationName",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel022c4bae91b8194c",
+      "title": "Investigations",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    },
+    {
+      "id": null,
+      "key": "panel398de531adb01a45",
+      "title": "Threat Intelligence",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": ""
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "GoogleWorkspaceAlertsDataSource",
+      "displayName": "GoogleWorkspaceAlertsDataSource",
+      "defaultValue": "Labs/gsuite/alerts",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/gsuite/alerts"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "GoogleWorkspaceAuditLogsSource",
+      "displayName": "GoogleWorkspaceAuditLogsSource",
+      "defaultValue": "Labs/gsuite/apps",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/gsuite/apps"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "email",
+      "displayName": "email",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory={{GoogleWorkspaceAuditLogsSource}} \n| json \"actor\", \"events\", \"id\" nodrop\n| json field=actor \"email\"",
+        "field": "email"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

@@ -1,0 +1,472 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Amazon GuardDuty - Overview - New",
+  "description": "See the overview of GuardDuty threats including the severity, threat purpose, resource type, threat name, account ID, and region.",
+  "title": "Amazon GuardDuty - Overview - New",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelc858a006a3526944",
+        "structure": "{\"width\":11,\"height\":9,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel9163c96499fbc842",
+        "structure": "{\"width\":13,\"height\":8,\"x\":11,\"y\":0}"
+      },
+      {
+        "key": "panel970e7b1b9822e94d",
+        "structure": "{\"width\":13,\"height\":6,\"x\":11,\"y\":6}"
+      },
+      {
+        "key": "panel98bcdd78a4814846",
+        "structure": "{\"width\":11,\"height\":5,\"x\":0,\"y\":7}"
+      },
+      {
+        "key": "panelb3d6b43f8562794e",
+        "structure": "{\"width\":7,\"height\":6,\"x\":0,\"y\":11}"
+      },
+      {
+        "key": "panelff4740fa8bf3bb4b",
+        "structure": "{\"width\":6,\"height\":6,\"x\":7,\"y\":11}"
+      },
+      {
+        "key": "panel22f14665822e5a4e",
+        "structure": "{\"width\":6,\"height\":6,\"x\":13,\"y\":11}"
+      },
+      {
+        "key": "panelcfa5ab9b81da384c",
+        "structure": "{\"width\":5,\"height\":6,\"x\":19,\"y\":11}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel970e7b1b9822e94d",
+      "title": "Threats by ThreatPurpose, ResourceType, ThreatName",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity\n| if(!isNull(instanceid),concat (\"https://\",region,\".console.aws.amazon.com/ec2/v2/home?region=\",region,\"#Instances:search=\",instanceid),\"\") as link\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.geoLocation.lon\" as longitude nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n|where if (\"{{severity}}\" = \"*\", true, severity matches \"{{severity}}\") AND if (\"{{instanceid}}\" = \"*\", true, instanceid matches \"{{instanceid}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{vpcid}}\" = \"*\", true, vpcid matches \"{{vpcid}}\") AND if (\"{{subnetid}}\" = \"*\", true, subnetid matches \"{{subnetid}}\") AND if (\"{{tags}}\" = \"*\", true, tags matches \"{{tags}}\") AND if (\"{{threatpurpose}}\" = \"*\", true, threatpurpose matches \"{{threatpurpose}}\") AND if (\"{{securitygroupname}}\" = \"*\", true, securitygroupname matches \"{{securitygroupname}}\") AND if (\"{{arn}}\" = \"*\", true, arn matches \"{{arn}}\") AND if (\"{{resourcetype}}\" = \"*\", true, resourcetype matches \"{{resourcetype}}\") AND if (\"{{securitygroupid}}\" = \"*\", true, securitygroupid matches \"{{securitygroupid}}\") AND if (\"{{ip}}\" = \"*\", true, ip matches \"{{ip}}\")\n|count as count by ThreatPurpose,ResourceType,ThreatName\n| sort count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelff4740fa8bf3bb4b",
+      "title": "Severity and AccountID",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity\n|where if (\"{{severity}}\" = \"*\", true, severity matches \"{{severity}}\") AND if (\"{{instanceid}}\" = \"*\", true, instanceid matches \"{{instanceid}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{vpcid}}\" = \"*\", true, vpcid matches \"{{vpcid}}\") AND if (\"{{subnetid}}\" = \"*\", true, subnetid matches \"{{subnetid}}\") AND if (\"{{tags}}\" = \"*\", true, tags matches \"{{tags}}\") AND if (\"{{threatpurpose}}\" = \"*\", true, threatpurpose matches \"{{threatpurpose}}\") AND if (\"{{securitygroupname}}\" = \"*\", true, securitygroupname matches \"{{securitygroupname}}\") AND if (\"{{arn}}\" = \"*\", true, arn matches \"{{arn}}\") AND if (\"{{resourcetype}}\" = \"*\", true, resourcetype matches \"{{resourcetype}}\") AND if (\"{{securitygroupid}}\" = \"*\", true, securitygroupid matches \"{{securitygroupid}}\") AND if (\"{{ip}}\" = \"*\", true, ip matches \"{{ip}}\")\n|count by severity, accountId\n| transpose row severity column accountId",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelb3d6b43f8562794e",
+      "title": "Threats by IP",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"wrap\":true,\"verticalAlign\":\"right\",\"showAsTable\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity\n|where if (\"{{severity}}\" = \"*\", true, severity matches \"{{severity}}\") AND if (\"{{instanceid}}\" = \"*\", true, instanceid matches \"{{instanceid}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{vpcid}}\" = \"*\", true, vpcid matches \"{{vpcid}}\") AND if (\"{{subnetid}}\" = \"*\", true, subnetid matches \"{{subnetid}}\") AND if (\"{{tags}}\" = \"*\", true, tags matches \"{{tags}}\") AND if (\"{{threatpurpose}}\" = \"*\", true, threatpurpose matches \"{{threatpurpose}}\") AND if (\"{{securitygroupname}}\" = \"*\", true, securitygroupname matches \"{{securitygroupname}}\") AND if (\"{{arn}}\" = \"*\", true, arn matches \"{{arn}}\") AND if (\"{{resourcetype}}\" = \"*\", true, resourcetype matches \"{{resourcetype}}\") AND if (\"{{securitygroupid}}\" = \"*\", true, securitygroupid matches \"{{securitygroupid}}\") AND if (\"{{ip}}\" = \"*\", true, ip matches \"{{ip}}\")\n|count by ip\n| where !isNull(ip)\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel98bcdd78a4814846",
+      "title": "Severity Trend",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"area\",\"displayType\":\"default\",\"markerSize\":null,\"lineDashType\":\"solid\",\"markerType\":\"none\",\"lineThickness\":1,\"fillOpacity\":0.25,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/GuardDuty* severity\n| json \"severity\"\n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity\n| timeslice 15m\n|where if (\"{{severity}}\" = \"*\", true, severity matches \"{{severity}}\") AND if (\"{{instanceid}}\" = \"*\", true, instanceid matches \"{{instanceid}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{vpcid}}\" = \"*\", true, vpcid matches \"{{vpcid}}\") AND if (\"{{subnetid}}\" = \"*\", true, subnetid matches \"{{subnetid}}\") AND if (\"{{tags}}\" = \"*\", true, tags matches \"{{tags}}\") AND if (\"{{threatpurpose}}\" = \"*\", true, threatpurpose matches \"{{threatpurpose}}\") AND if (\"{{securitygroupname}}\" = \"*\", true, securitygroupname matches \"{{securitygroupname}}\") AND if (\"{{arn}}\" = \"*\", true, arn matches \"{{arn}}\") AND if (\"{{resourcetype}}\" = \"*\", true, resourcetype matches \"{{resourcetype}}\") AND if (\"{{securitygroupid}}\" = \"*\", true, securitygroupid matches \"{{securitygroupid}}\") AND if (\"{{ip}}\" = \"*\", true, ip matches \"{{ip}}\")\n|count by severity, _timeslice\n| transpose row _timeslice column severity",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelcfa5ab9b81da384c",
+      "title": "Severity and ResourceType",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity\n|where if (\"{{severity}}\" = \"*\", true, severity matches \"{{severity}}\") AND if (\"{{instanceid}}\" = \"*\", true, instanceid matches \"{{instanceid}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{vpcid}}\" = \"*\", true, vpcid matches \"{{vpcid}}\") AND if (\"{{subnetid}}\" = \"*\", true, subnetid matches \"{{subnetid}}\") AND if (\"{{tags}}\" = \"*\", true, tags matches \"{{tags}}\") AND if (\"{{threatpurpose}}\" = \"*\", true, threatpurpose matches \"{{threatpurpose}}\") AND if (\"{{securitygroupname}}\" = \"*\", true, securitygroupname matches \"{{securitygroupname}}\") AND if (\"{{arn}}\" = \"*\", true, arn matches \"{{arn}}\") AND if (\"{{resourcetype}}\" = \"*\", true, resourcetype matches \"{{resourcetype}}\") AND if (\"{{securitygroupid}}\" = \"*\", true, securitygroupid matches \"{{securitygroupid}}\") AND if (\"{{ip}}\" = \"*\", true, ip matches \"{{ip}}\")\n|count by severity,resourceType\n| transpose row severity column resourceType",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel9163c96499fbc842",
+      "title": "High Severity Threats Table",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity\n| if(!isNull(instanceid),concat (\"https://\",region,\".console.aws.amazon.com/ec2/v2/home?region=\",region,\"#Instances:search=\",instanceid),\"\") as link\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.geoLocation.lon\" as longitude nodrop\n| where severity = \"High\"\n| timeslice 1m\n|where if (\"{{severity}}\" = \"*\", true, severity matches \"{{severity}}\") AND if (\"{{instanceid}}\" = \"*\", true, instanceid matches \"{{instanceid}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{vpcid}}\" = \"*\", true, vpcid matches \"{{vpcid}}\") AND if (\"{{subnetid}}\" = \"*\", true, subnetid matches \"{{subnetid}}\") AND if (\"{{tags}}\" = \"*\", true, tags matches \"{{tags}}\") AND if (\"{{securitygroupname}}\" = \"*\", true, securitygroupname matches \"{{securitygroupname}}\") AND if (\"{{arn}}\" = \"*\", true, arn matches \"{{arn}}\") AND if (\"{{resourcetype}}\" = \"*\", true, resourcetype matches \"{{resourcetype}}\") AND if (\"{{securitygroupid}}\" = \"*\", true, securitygroupid matches \"{{securitygroupid}}\") AND if (\"{{ip}}\" = \"*\", true, ip matches \"{{ip}}\")\n|count by _timeslice, accountId, region, resourceType, description, link\n| order by _timeslice\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel22f14665822e5a4e",
+      "title": "Severity and Region",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"bar\",\"displayType\":\"stacked\",\"fillOpacity\":1,\"mode\":\"timeSeries\"},\"axes\":{\"axisX\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"hideLabels\":false,\"title\":\"\",\"titleFontSize\":12,\"labelFontSize\":12,\"logarithmic\":false,\"gridColor\":\"\",\"minimum\":null,\"maximum\":null}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\",\"fontSize\":12,\"maxHeight\":50,\"showAsTable\":true,\"wrap\":true},\"color\":{\"family\":\"Categorical Default\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"numberThresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}},\"highlightViolations\":true}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity\n|where if (\"{{severity}}\" = \"*\", true, severity matches \"{{severity}}\") AND if (\"{{instanceid}}\" = \"*\", true, instanceid matches \"{{instanceid}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{vpcid}}\" = \"*\", true, vpcid matches \"{{vpcid}}\") AND if (\"{{subnetid}}\" = \"*\", true, subnetid matches \"{{subnetid}}\") AND if (\"{{tags}}\" = \"*\", true, tags matches \"{{tags}}\") AND if (\"{{threatpurpose}}\" = \"*\", true, threatpurpose matches \"{{threatpurpose}}\") AND if (\"{{securitygroupname}}\" = \"*\", true, securitygroupname matches \"{{securitygroupname}}\") AND if (\"{{arn}}\" = \"*\", true, arn matches \"{{arn}}\") AND if (\"{{resourcetype}}\" = \"*\", true, resourcetype matches \"{{resourcetype}}\") AND if (\"{{securitygroupid}}\" = \"*\", true, securitygroupid matches \"{{securitygroupid}}\") AND if (\"{{ip}}\" = \"*\", true, ip matches \"{{ip}}\")\n|count by severity, region\n| transpose row severity column region",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelc858a006a3526944",
+      "title": "Guard Duty Threat Map",
+      "visualSettings": "{\"general\":{\"mode\":\"map\",\"type\":\"map\"},\"map\":{\"mainMetric\":{}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/AWS/GuardDuty* (geoLocation and lat and lon)\n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.geoLocation.lon\", \"networkConnectionAction.remoteIpDetails.geoLocation.lat\", \"networkConnectionAction.remoteIpDetails.organization.asnOrg\", \"networkConnectionAction.remoteIpDetails.organization.org\", \"networkConnectionAction.remoteIpDetails.organization.isp\", \"networkConnectionAction.remoteIpDetails.ipAddressV4\" as longitude, latitude, asnOrg, organization, isp, ip\n|where if (\"{{severity}}\" = \"*\", true, severity matches \"{{severity}}\") AND if (\"{{instanceid}}\" = \"*\", true, instanceid matches \"{{instanceid}}\") AND if (\"{{accountid}}\" = \"*\", true, accountid matches \"{{accountid}}\") AND if (\"{{region}}\" = \"*\", true, region matches \"{{region}}\") AND if (\"{{vpcid}}\" = \"*\", true, vpcid matches \"{{vpcid}}\") AND if (\"{{subnetid}}\" = \"*\", true, subnetid matches \"{{subnetid}}\") AND if (\"{{tags}}\" = \"*\", true, tags matches \"{{tags}}\") AND if (\"{{threatpurpose}}\" = \"*\", true, threatpurpose matches \"{{threatpurpose}}\") AND if (\"{{securitygroupname}}\" = \"*\", true, securitygroupname matches \"{{securitygroupname}}\") AND if (\"{{arn}}\" = \"*\", true, arn matches \"{{arn}}\") AND if (\"{{resourcetype}}\" = \"*\", true, resourcetype matches \"{{resourcetype}}\") AND if (\"{{securitygroupid}}\" = \"*\", true, securitygroupid matches \"{{securitygroupid}}\") AND if (\"{{ip}}\" = \"*\", true, ip matches \"{{ip}}\")\n|count by latitude, longitude\n| sort _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": null,
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "securitygroupname",
+      "displayName": "securitygroupname",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "securitygroupname"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "severity",
+      "displayName": "severity",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "severity"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "subnetid",
+      "displayName": "subnetid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "subnetid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "accountid",
+      "displayName": "accountid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "accountid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "securitygroupid",
+      "displayName": "securitygroupid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "securitygroupid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "instanceid",
+      "displayName": "instanceid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "instanceid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "vpcid",
+      "displayName": "vpcid",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "vpcid"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "ip",
+      "displayName": "ip",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "ip"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "tags",
+      "displayName": "tags",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "tags"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "resourcetype",
+      "displayName": "resourcetype",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "resourcetype"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "threatpurpose",
+      "displayName": "threatpurpose",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "threatpurpose"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "arn",
+      "displayName": "arn",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "arn"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "region",
+      "displayName": "region",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "_sourceCategory = Labs/AWS/GuardDuty* \n| json field=_raw \"accountId\", \"region\", \"partition\", \"id\", \"arn\", \"type\",\"service.serviceName\",\"service.detectorId\",\"service.action\",\"severity\",\"title\",\"description\" nodrop\n| parse field=type \"*:*/*\" as ThreatPurpose,ResourceType,ThreatName\n| json field=%service.action \"networkConnectionAction.remoteIpDetails.ipAddressV4\",\"networkConnectionAction.localPortDetails.port\" as ip, localPort nodrop\n| parse \"\\\"vpcId\\\":\\\"*\\\"\" as vpcId, \"\\\"subnetId\\\":\\\"*\\\"\" as subnetId,\"\\\"groupId\\\":\\\"*\\\"\" as securityGroupId,\"\\\"tags\\\":[*]\" as tags,\"\\\"groupName\\\":\\\"*\\\"\" as securityGroupName nodrop\n| json field=_raw \"resource.instanceDetails.instanceId\" as instanceid nodrop\n| if(severity=0, \"Info\",if(severity=2, \"Low\", if(severity=5, \"Medium\", if(severity=8, \"High\",if(severity=9.5, \"Critical\",severity))))) as severity",
+        "field": "region"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

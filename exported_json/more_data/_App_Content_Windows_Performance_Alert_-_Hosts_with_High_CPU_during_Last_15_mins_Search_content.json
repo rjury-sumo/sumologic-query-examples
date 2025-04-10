@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Alert - Hosts with High CPU during Last 15 mins",
+  "search": {
+    "queryText": "_sourceCategory = Labs/Windows/OS/Windows \"Win32_PerfFormattedData_PerfOS_Processor\" \"_Total\"\n| parse regex \"winbox = (?<dest_host>\\S+)\" nodrop \n| if (isNull(dest_host) or dest_host=\"\",_sourceHost,dest_host) as host\n| kv regex \"= (?:\\\"|)(.*?)(?:\\\"|);\" keys \"PercentProcessorTime\" as procTime\n| timeslice 1m \n| avg(procTime) as AvgProcTime by host,_timeslice \n// High CPU Threshold: 80%\n| where AvgProcTime>= 80\n| count as DataPoints by host \n// Second threshold: The cpu is high for at least 10 minutes within the last 15mins\n| where DataPoints >= 10",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-15m"
+  },
+  "searchSchedule": null,
+  "description": "Schedule this alert to run for every 15 mins and for the last 15 minutes. Alert thresholds can be changed in the query."
+}

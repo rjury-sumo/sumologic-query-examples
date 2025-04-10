@@ -1,0 +1,196 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Enterprise Search Audit - Queries Characteristics and Opportunities to Improve",
+  "description": "The Enterprise Search Audit - Queries Characteristics and Opportunities to Improve dashboard provides information about which of your queries take and don’t take advantage of important optimization techniques and metadata to improve efficiency.",
+  "title": "Enterprise Search Audit - Queries Characteristics and Opportunities to Improve",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel037db1d1a726a94d",
+        "structure": "{\"width\":8,\"height\":10,\"x\":8,\"y\":0}"
+      },
+      {
+        "key": "panel0a2b85b7a2f9db48",
+        "structure": "{\"width\":8,\"height\":10,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel34e99aa5a23bdb44",
+        "structure": "{\"width\":24,\"height\":10,\"x\":0,\"y\":16}"
+      },
+      {
+        "key": "panel93da686ba51bb847",
+        "structure": "{\"width\":12,\"height\":10,\"x\":12,\"y\":8}"
+      },
+      {
+        "key": "panel973468bf9c8f1a45",
+        "structure": "{\"width\":8,\"height\":10,\"x\":16,\"y\":0}"
+      },
+      {
+        "key": "panelbe8859af9be10a4d",
+        "structure": "{\"width\":12,\"height\":10,\"x\":0,\"y\":8}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel037db1d1a726a94d",
+      "title": "Queries by Optimization Techniques",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"thresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_view=sumologic_search_usage_per_query\n//| \"_sourcecategory=cqsplitter DefaultPerCustomerLagTracker \\\"current lag\\\" \" as query \n| count as qCount, sum(data_scanned_bytes) as scanned by query,user_name\n| toLowerCase(query) as queryLower \n| parse regex field=queryLower \"^(?<scope_section_raw>[^\\|]+)\" nodrop \n| replace(scope_section_raw,\" \",\"\") as scope_section | if (scope_section=\"\" or isNull(scope_section) or scope_section=\"*\",1, 0) as  select_all\n| parse regex field=scope_section_raw \"_(?<meta>sourcecategory|sourcehost|collector|source|sourcename)\\s*=\"  nodrop  | if (meta!=\"\",1,0) as use_meta\n| parse regex field=scope_section_raw \"_(?<idx>view|index)\\s*=\"  nodrop  | if (idx!=\"\",1,0) as use_idx\n| parse regex field=scope_section_raw \"(?:^|\\s+)(?<kfield>\\w+)\\s*=\"  nodrop  | if (kfield!=\"\" and !(kfield in (\"sourcecategory\",\"collector\",\"index\",\"view\",\"source\",\"sourcehost\",\"sourcename\")),1,0) as use_field\n| 0 as use_kw | parse regex field=scope_section_raw \"(?:^|\\s+)(?<first>\\\"[^\\\"]+\\\"|\\'[^\\']+\\'|[\\w\\\"\\']+)(?<bridge>\\s*=\\s*|\\s+|$)(?<second>\\w+|$)\" multi nodrop | if ( !(bridge matches \"*=*\") and select_all!=1,1,use_kw) as use_kw\n| max(use_kw) as use_kw, max(use_field) as use_field, max(use_meta) as use_meta, max(use_idx) as use_idx, max(qCount) as qCount, max(scanned) as scanned by query,user_name \n| scanned/1Gi as scanned\n| (use_kw+use_field+use_meta+use_idx) as optimizations\n| format(\"%d Optimizations\",int(optimizations)) as %\"Optimization Techniques\"\n// To look for queries WITH a given number of optimizations, uncomment and modify the following line and comment the last line\n//| where optimizationsStr matches \"0*\" \n| sum(qCount) as queries, sum(scanned) as scanned_in_GB by %\"Optimization Techniques\" \n| total(queries) as total_queries | total(scanned_in_gb) as total_scanned_in_gb \n| toInt((queries/total_queries)*100) as queries_pct | toInt((scanned_in_gb/total_scanned_in_gb)*100) as scanned_pct \n| format(\"%.2f\",scanned_in_gb) as scanned_in_gb\n| fields -total_queries,total_scanned_in_gb\n| sort by %\"Optimization Techniques\" \n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel34e99aa5a23bdb44",
+      "title": "Unoptimized Queries",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"thresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_view=sumologic_search_usage_per_query \n//(query_type=\"Scheduled Search\" or query_type=\"Interactive Dashboard\" or query_type=\"Search API\")\n| if (query_type == \"View Maintenance\", \"Scheduled Views\", query_type) as query_type\n| count as qCount, sum(data_scanned_bytes) as scanned by query,user_name,query_type\n| toLowerCase(query) as queryLower \n| parse regex field=queryLower \"^(?<scope_section_raw>[^\\|]+)\" nodrop \n| replace(scope_section_raw,\" \",\"\") as scope_section | if (scope_section=\"\" or isNull(scope_section) or scope_section=\"*\",1, 0) as  select_all\n| parse regex field=scope_section_raw \"_(?<meta>sourcecategory|sourcehost|collector|source|sourcename)\\s*=\"  nodrop  | if (meta!=\"\",1,0) as use_meta\n| parse regex field=scope_section_raw \"_(?<idx>view|index)\\s*=\"  nodrop  | if (idx!=\"\",1,0) as use_idx\n| parse regex field=scope_section_raw \"(?:^|\\s+)(?<kfield>\\w+)\\s*=\"  nodrop  | if (kfield!=\"\" and !(kfield in (\"sourcecategory\",\"collector\",\"index\",\"view\",\"source\",\"sourcehost\",\"sourcename\")),1,0) as use_field\n| 0 as use_kw | parse regex field=scope_section_raw \"(?:^|\\s+)(?<first>\\\"[^\\\"]+\\\"|\\'[^\\']+\\'|[\\w\\\"\\']+)(?<bridge>\\s*=\\s*|\\s+|$)(?<second>\\w+|$)\" multi nodrop | if ( !(bridge matches \"*=*\") and select_all!=1,1,use_kw) as use_kw\n| max(use_kw) as use_kw, max(use_field) as use_field, max(use_meta) as use_meta, max(use_idx) as use_idx, max(qCount) as queries, max(scanned) as scanned_bytes by query,user_name, query_type \n| (scanned_bytes/1Gi) as scanned_gbytes | fields -scanned_bytes\n| (use_kw+use_field+use_meta+use_idx) as optimizations\n| where optimizations =0\n| fields -use_kw,use_field,use_idx,optimizations,use_meta\n| sort by scanned_gbytes\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel93da686ba51bb847",
+      "title": "Scheduled Searches without Metadata",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"thresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_view=sumologic_search_usage_per_query query_type=\"Scheduled Search\"\n| sum(data_scanned_bytes) as scanned_bytes, sum(data_retrieved_bytes) as retrieved_bytes by user_name, query, session_id, execution_duration_ms \n| round(execution_duration_ms/1000) as duration_seconds \n| toLowerCase(query) as queryLower \n| parse regex field=queryLower \"^(?<scope_section_raw>[^\\|]+)\" nodrop \n| replace(scope_section_raw,\" \",\"\") as scope_section \n| parse regex field=scope_section_raw \"_(?<meta>sourcecategory|sourcehost|collector|source|sourcename)\\s*=\"  nodrop\n| parse regex field=scope_section_raw \"_(?<idx>view|index)\\s*=\"  nodrop  \n| where ( isEmpty(idx) AND isEmpty(meta) )\n| fields -queryLower,session_id,execution_duration_ms, scope_section_raw,_some_matched, scope_section,meta,idx",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel973468bf9c8f1a45",
+      "title": "Queries by Optimization Techniques",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"pie\",\"displayType\":\"default\",\"fillOpacity\":1,\"startAngle\":270,\"innerRadius\":\"30%\",\"maxNumOfSlices\":\"10\",\"mode\":\"distribution\"},\"color\":{\"family\":\"Categorical Default\"},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"legend\":{\"enabled\":true,\"verticalAlign\":\"right\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_view=sumologic_search_usage_per_query \n| count as queries by query\n| toLowerCase(query) as queryLower \n| parse regex field=queryLower \"^(?<scope_section_raw>[^\\|]+)\" nodrop \n| replace(scope_section_raw,\" \",\"\") as scope_section | if (scope_section=\"\" or isNull(scope_section) or scope_section=\"*\",1, 0) as  select_all\n| parse regex field=scope_section_raw \"_(?<meta>sourcecategory|sourcehost|collector|source|sourcename)\\s*=\"  nodrop  | if (meta!=\"\",1,0) as use_meta\n| parse regex field=scope_section_raw \"_(?<idx>view|index)\\s*=\"  nodrop  | if (idx!=\"\",1,0) as use_idx\n| parse regex field=scope_section_raw \"(?:^|\\s+)(?<kfield>\\w+)\\s*=\"  nodrop  | if (kfield!=\"\" and !(kfield in (\"sourcecategory\",\"collector\",\"index\",\"view\",\"source\",\"sourcehost\",\"sourcename\")),1,0) as use_field\n| 0 as use_kw | parse regex field=scope_section_raw \"(?:^|\\s+)(?<first>\\\"[^\\\"]+\\\"|\\'[^\\']+\\'|[\\w\\\"\\']+)(?<bridge>\\s*=\\s*|\\s+|$)(?<second>\\w+|$)\" multi nodrop | if ( !(bridge matches \"*=*\") and select_all!=1,1,use_kw) as use_kw\n| max(use_kw) as use_kw, max(use_field) as use_field, max(use_meta) as use_meta, max(use_idx) as use_idx, max(queries) as queries by query\n| (use_kw+use_field+use_meta+use_idx) as optimizations\n| format(\"%d Optimizations\",int(optimizations)) as OptimizationsStr\n//| where optimizationsStr matches \"4*\" \n| sum(queries) as queries by optimizationsStr | sort by optimizationsStr \n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelbe8859af9be10a4d",
+      "title": "Interactive Dashboard Queries without Metadata",
+      "visualSettings": "{\"title\":{\"fontSize\":12},\"series\":{},\"general\":{\"type\":\"table\",\"fontSize\":12,\"mode\":\"timeSeries\"},\"thresholdsSettings\":{\"fillRemainingGreen\":false,\"showThresholds\":false,\"thresholds\":{\"warning\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":80},\"critical\":{\"display\":true,\"comparator\":\"greater_or_equal\",\"value\":100}}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_view=sumologic_search_usage_per_query query_type=\"Interactive Dashboard\"\n| sum(data_scanned_bytes) as scanned_bytes, sum(data_retrieved_bytes) as retrieved_bytes by user_name, query, session_id, execution_duration_ms \n| round(execution_duration_ms/1000) as duration_seconds \n| toLowerCase(query) as queryLower \n| parse regex field=queryLower \"^(?<scope_section_raw>[^\\|]+)\" nodrop \n| replace(scope_section_raw,\" \",\"\") as scope_section \n| parse regex field=scope_section_raw \"_(?<meta>sourcecategory|sourcehost|collector|source|sourcename)\\s*=\"  nodrop\n| parse regex field=scope_section_raw \"_(?<idx>view|index)\\s*=\"  nodrop  \n| where ( isEmpty(idx) AND isEmpty(meta))\n| fields -queryLower,session_id,execution_duration_ms, scope_section_raw,_some_matched, scope_section,meta,idx",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel0a2b85b7a2f9db48",
+      "title": "Search Optimization Considerations",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"general\":{\"type\":\"text\",\"displayType\":\"default\",\"mode\":\"TextPanel\"},\"legend\":{\"enabled\":false},\"text\":{\"format\":\"markdownV2\",\"fontSize\":14},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "TextPanel",
+      "text": "Incorporating the following optimizations into your queries can help improve your search performance while getting exactly the same results:\n\n* Partitions and Views\n* Keywords\n* Metadata\n* Extracted fields\n\n# Partitions and Views\nLeverage popular search categories to create partitions and let your team know these partitions are available. Partitions speed up searches on queries because only the data in that partition is scanned.\nHelp your team leverage existing configured partitions and views to speed up their searches and reduce load on the system which in turn will speed up queries for other team members as well.\n\n# Keywords\nChoosing specific keywords can help narrow your log searches. Combine with search metadata for fields such as _collector, _sourceCategory, _sourceName, and _sourceHost to narrow your search even further.\n\n# Other [Metadata](https://help.sumologic.com/Search/Get_Started_with_Search/Search_Basics/Search_Metadata)\nPatterns observed in other metadata such as collector, sourceHost, sourceCategory, and source name can also be used to create partitions, improve partitions and reduce load.\n\n# Extracted Fields\nField extractions allow you to parse fields from your log messages at the time the messages are ingested, saves time when you parse fields at the query level. With Field Extraction Rules (FERs), you can standardize field names and searches, simplify the search syntax and scope definition, and improve search performance.\n\nNote: The key to efficiently retrieving data with the query is to be as specific as possible in your source expression i.e. before the first | (pipe) in the query. You can visit our online help for more information on [Search Best Practices](https://help.sumologic.com/Search/Get-Started-with-Search/How-to-Build-a-Search/Best-Practices%3A-7-Search-Rules-to-Live-By).\n\n\n"
+    }
+  ],
+  "variables": [],
+  "coloringRules": []
+}

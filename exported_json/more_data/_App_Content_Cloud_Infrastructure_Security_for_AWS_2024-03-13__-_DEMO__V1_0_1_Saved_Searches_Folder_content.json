@@ -1,0 +1,232 @@
+{
+  "type": "FolderSyncDefinition",
+  "name": "Saved Searches",
+  "description": "",
+  "children": [
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Admin Privileges Granted",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail*\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\",\"requestParameters.policyArn\" as event_name,source_ip,user_name,user_principal, login_result,mfa_used,event_source,aws_region,event_type,event_category,user_identity_type,event_time,permission,error_code,acc_id,error_message,policy_arn nodrop\n| if(user_name = \"\",user_principal,user_name) as user_name\n\n// global filters\n| where user_name matches \"*\"\n| where aws_region matches \"*\"\n| where acc_id matches \"*\"\n| where event_type matches \"*\"\n\n| where event_name matches(\"*AttachUserPolicy*\")\n| where policy_arn matches(\"*AdministratorAccess*\")\n\n| count by acc_id,event_type,user_name,event_time,event_source,aws_region\n| sort by event_time\n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Control Failure Findings Details by Severity",
+      "search": {
+        "queryText": "_sourceCategory=Labs/AWS/SecurityHub \n| json field=_raw \"AwsAccountId\", \"Id\", \"GeneratorId\", \"ProductArn\", \"CreatedAt\", \"UpdatedAt\", \"Resources\", \"Severity.Normalized\", \"SourceUrl\", \"Title\",\"Types\", \"Compliance.Status\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\" as account_id, finding_id, generator_id, product_arn, created_at, updated_at, resources, severity_normalized, sourceurl, title, finding_types, compliance_status ,vpcId, subnetId , securityGroupId, tags, securityGroupName nodrop\n\n| topk(1, updated_at) by finding_id\n| parse regex field=finding_types \"\\\"(?<finding_type>.*?)\\\"\" multi\n| parse regex field=resources \"\\\"Type\\\":\\\"(?<resource_type>.*?)\\\"\" multi\n| parse regex field=resources \"\\\"Id\\\":\\\"(?<resource_id>.*?)\\\"\" multi\n| parse regex field=product_arn \"product/(?<finding_provider>.*?)$\"\n| parse regex field=product_arn \":(?<sechub_region>[a-z]*-[a-z]*-\\d{1}):\"\n| parse field=finding_type \"*/*/*\" as namespace, category, classifier\n| replace(finding_type,\"\\\\\",\"\") as finding_type\n| replace(namespace,\"\\\\\",\"\") as namespace\n| replace(category,\"\\\\\",\"\") as category\n| replace(classifier,\"\\\\\",\"\") as classifier\n\n| if (severity_normalized == 0, \"Informational\", \"Others\") as severity\n| if (severity_normalized <= 39, \"Low\", severity) as severity\n| if ((severity_normalized <= 69) and (severity_normalized >= 40), \"Medium\", severity) as severity\n| if ((severity_normalized <= 89) and (severity_normalized >= 70), \"High\", severity) as severity\n| if (severity_normalized <= 100 and severity_normalized >= 90, \"Critical\", severity) as severity\n\n// global filters\n| where account_id matches \"*\"\n| where finding_id matches \"*\"\n| where finding_type matches \"*\"\n| where finding_provider matches \"*\"\n| where severity matches \"*\"\n| where compliance_status matches \"*\"\n\n| format(\"https://console.aws.amazon.com/securityhub/home?region=%s#/research?Id=%s\", sechub_region, finding_id) as finding_url\n| tourl(finding_url, title) as title\n\n| top 100 title,source,severity,compliance_status, updated_at, resource_type, finding_type, resource_id, account_id, finding_provider by updated_at",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Creation of IAM Role",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail* CreateRole\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event_name,source_ip,user_name,user_principal, login_result,mfa_used,event_source,aws_region,event_type,event_category,user_identity_type,event_time,permission,error_code,acc_id,error_message nodrop\n| if(user_name = \"\",user_principal,user_name) as user_name\n\n// global filters\n| where user_name matches \"*\"\n| where aws_region matches \"*\"\n| where acc_id matches \"*\"\n| where event_type matches \"*\"\n\n| where event_name matches(\"*CreateRole*\")\n| formatDate(toLong(_messageTime), \"MM-dd-yyyy HH:mm:ss\") as event_time\n| count by user_name,event_source,aws_region,event_type,event_category,user_identity_type,event_time\n| top 100 user_name,event_source,aws_region,event_type,event_category,user_identity_type by event_time",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Deleted resources over time",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail* Delete*\n | parse \"\\\"userName\\\":\\\"*\\\"\" as user_name nodrop\n | json field=_raw \"userIdentity.principalId\" as principal_id nodrop\n | parse regex field = principal_id \":(?<user_principal>.+)\" nodrop\n | if (user_name=\"\", user_principal, user_name) as user | parse \"\\\"eventName\\\":\\\"*\\\"\" as event_name\n | timeslice 1h \n | parse regex field=event_name \"^(?:Delete)(?<resource_type>[A-Z][A-Za-z]+)\"\n | count _timeslice, resource_type\n | transpose row _timeslice column resource_type",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "Manual",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Exposed S3 Bucket Created",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail* (\"PutBucketAcl\" or \"*FULL_CONTROL*\")\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event_name,source_ip,user_name,user_principal, login_result,mfa_used,event_source,aws_region,event_type,event_category,user_identity_type,event_time,permission,error_code,acc_id,error_message nodrop\n| if(user_name = \"\",user_principal,user_name) as user_name\n\n// global filters\n| where user_name matches \"*\"\n| where aws_region matches \"*\"\n| where acc_id matches \"*\"\n| where event_type matches \"*\"\n\n| where event_name matches(\"PutBucketAcl\")\n| where permission matches(\"*FULL_CONTROL*\")\n| count by user_name,user_identity_type,event_source,event_type,event_time,aws_region\n| top 100 user_name,user_identity_type,event_source,event_type,event_time,aws_region by event_time",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Gateway Changes",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail* (\"CreateCustomerGateway\" or \"DeleteCustomerGateway\" or \"AttachInternetGateway\" or \"CreateInternetGateway\" or \"DeleteInternetGateway\" or \"DetachInternetGateway\")\n| json \"requestID\",\"eventID\",\"userIdentity.sessionContext.sessionIssuer.userName\",\"userIdentity.accountId\",\"sourceIPAddress\",\"awsRegion\",\"eventName\",\"eventType\" as request_id, event_id,user_name,acc_id,source_ip,region,event_name,event_type nodrop\n\n// global filters\n| where user_name matches \"*\"\n| where region matches \"*\"\n| where acc_id matches \"*\"\n| where event_type matches \"*\"\n\n| where eventName matches \"CreateCustomerGateway\" or eventName matches \"DeleteCustomerGateway\" or eventName matches \"AttachInternetGateway\" or eventName matches \"CreateInternetGateway\" or eventName matches \"DeleteInternetGateway\" or eventName matches \"DetachInternetGateway\"\n| count as frequency by user_name,acc_id\n| sort by frequency\n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "IAM Policy Changes",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail*\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\" as event_name,source_ip,user_name,user_principal, login_result,mfa_used,event_source,aws_region,event_type,event_category,user_identity_type,event_time,permission,error_code,acc_id,error_message nodrop\n| if(user_name = \"\",user_principal,user_name) as user_name\n\n// global filters\n| where user_name matches \"*\"\n| where aws_region matches \"*\"\n| where acc_id matches \"*\"\n| where event_type matches \"*\"\n\n| where event_name matches(\"Add*\") or event_name matches(\"Attach*\") or event_name matches(\"Change*\") or event_name matches(\"Create*\") or event_name matches(\"Deactivate*\") or event_name matches(\"Delete*\") or event_name matches(\"Detach*\") or event_name matches(\"Enable*\") or event_name matches(\"Put*\") or event_name matches(\"Remove*\") or event_name matches(\"Set*\") or event_name matches(\"Update*\") or event_name matches(\"Upload*\")\n| where event_source matches(\"*iam.amazonaws.com*\")\n| count by user_name,acc_id,user_identity_type,event_source,event_type,event_time,event_name,aws_region\n| top 100 user_name,acc_id,user_identity_type,event_source,event_type,event_time,event_name,aws_region by event_time",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Least Common Out of Compliance Findings",
+      "search": {
+        "queryText": "_sourceCategory=Labs/AWS/SecurityHub \n| json field=_raw \"AwsAccountId\", \"Id\", \"GeneratorId\", \"ProductArn\", \"CreatedAt\", \"UpdatedAt\", \"Resources\", \"Severity.Normalized\", \"SourceUrl\", \"Title\",\"Types\", \"Compliance.Status\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\" as account_id, finding_id, generator_id, product_arn, created_at, updated_at, resources, severity_normalized, sourceurl, title, finding_types, compliance_status ,vpcId, subnetId , securityGroupId, tags, securityGroupName nodrop\n\n| topk(1, updated_at) by finding_id\n| parse regex field=finding_types \"\\\"(?<finding_type>.*?)\\\"\" multi\n| parse regex field=resources \"\\\"Type\\\":\\\"(?<resource_type>.*?)\\\"\" multi\n| parse regex field=resources \"\\\"Id\\\":\\\"(?<resource_id>.*?)\\\"\" multi\n| parse regex field=product_arn \"product/(?<finding_provider>.*?)$\"\n| parse regex field=product_arn \":(?<sechub_region>[a-z]*-[a-z]*-\\d{1}):\"\n| parse field=finding_type \"*/*/*\" as namespace, category, classifier\n| replace(finding_type,\"\\\\\",\"\") as finding_type\n| replace(namespace,\"\\\\\",\"\") as namespace\n| replace(category,\"\\\\\",\"\") as category\n| replace(classifier,\"\\\\\",\"\") as classifier\n\n| if (severity_normalized == 0, \"Informational\", \"Others\") as severity\n| if (severity_normalized <= 39, \"Low\", severity) as severity\n| if ((severity_normalized <= 69) and (severity_normalized >= 40), \"Medium\", severity) as severity\n| if ((severity_normalized <= 89) and (severity_normalized >= 70), \"High\", severity) as severity\n| if (severity_normalized <= 100 and severity_normalized >= 90, \"Critical\", severity) as severity\n\n// global filters\n| where account_id matches \"*\"\n| where finding_id matches \"*\"\n| where finding_type matches \"*\"\n| where finding_provider matches \"*\"\n| where severity matches \"*\"\n| where compliance_status matches \"*\"\n\n| where !isBlank(compliance_status) and compliance_status matches \"FAILED\"\n| parse regex field=finding_types \"\\\"(?<finding_type>.*?)\\\"\" multi\n| replace(finding_type,\"\\\\\",\"\") as finding_type\n| timeslice 1h\n| count as frequency by finding_type\n| sort by frequency asc\n| limit 50",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Most Common Out of Compliance Findings",
+      "search": {
+        "queryText": "_sourceCategory=Labs/AWS/SecurityHub \n| json field=_raw \"AwsAccountId\", \"Id\", \"GeneratorId\", \"ProductArn\", \"CreatedAt\", \"UpdatedAt\", \"Resources\", \"Severity.Normalized\", \"SourceUrl\", \"Title\",\"Types\", \"Compliance.Status\", \"vpcId\", \"subnetId\", \"groupId\" , \"tags\", \"groupName\" as account_id, finding_id, generator_id, product_arn, created_at, updated_at, resources, severity_normalized, sourceurl, title, finding_types, compliance_status ,vpcId, subnetId , securityGroupId, tags, securityGroupName nodrop\n\n| topk(1, updated_at) by finding_id\n| parse regex field=finding_types \"\\\"(?<finding_type>.*?)\\\"\" multi\n| parse regex field=resources \"\\\"Type\\\":\\\"(?<resource_type>.*?)\\\"\" multi\n| parse regex field=resources \"\\\"Id\\\":\\\"(?<resource_id>.*?)\\\"\" multi\n| parse regex field=product_arn \"product/(?<finding_provider>.*?)$\"\n| parse regex field=product_arn \":(?<sechub_region>[a-z]*-[a-z]*-\\d{1}):\"\n| parse field=finding_type \"*/*/*\" as namespace, category, classifier\n| replace(finding_type,\"\\\\\",\"\") as finding_type\n| replace(namespace,\"\\\\\",\"\") as namespace\n| replace(category,\"\\\\\",\"\") as category\n| replace(classifier,\"\\\\\",\"\") as classifier\n\n| if (severity_normalized == 0, \"Informational\", \"Others\") as severity\n| if (severity_normalized <= 39, \"Low\", severity) as severity\n| if ((severity_normalized <= 69) and (severity_normalized >= 40), \"Medium\", severity) as severity\n| if ((severity_normalized <= 89) and (severity_normalized >= 70), \"High\", severity) as severity\n| if (severity_normalized <= 100 and severity_normalized >= 90, \"Critical\", severity) as severity\n\n// global filters\n| where account_id matches \"*\"\n| where finding_id matches \"*\"\n| where finding_type matches \"*\"\n| where finding_provider matches \"*\"\n| where severity matches \"*\"\n| where compliance_status matches \"*\"\n\n| where !isBlank(compliance_status) and compliance_status matches \"FAILED\"\n| parse regex field=finding_types \"\\\"(?<finding_type>.*?)\\\"\" multi\n| replace(finding_type,\"\\\\\",\"\") as finding_type\n| timeslice 1h\n| count as frequency by finding_type\n| sort by frequency\n| limit 50",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Network ACL Changes",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail* (\"CreateNetworkAcl\" or \"CreateNetworkAclEntry\" or \"DeleteNetworkAcl\" or \"DeleteNetworkAclEntry\" or \"ReplaceNetworkAclEntry\" or \"ReplaceNetworkAclAssociation\")\n| json \"requestID\",\"eventID\",\"userIdentity.sessionContext.sessionIssuer.userName\",\"userIdentity.accountId\",\"sourceIPAddress\",\"awsRegion\",\"eventName\",\"eventType\" as request_id, event_id,user_name,acc_id,source_ip,region,event_name,event_type nodrop\n\n// global filters\n| where user_name matches \"*\"\n| where region matches \"*\"\n| where acc_id matches \"*\"\n| where event_type matches \"*\"\n\n| where eventName matches \"CreateNetworkAcl\" or eventName matches \"CreateNetworkAclEntry\" or eventName matches \"DeleteNetworkAcl\" or eventName matches \"DeleteNetworkAclEntry\" or eventName matches \"ReplaceNetworkAclEntry\" or eventName matches \"ReplaceNetworkAclAssociation\"\n| count as frequency by user_name,acc_id\n| sort by frequency\n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "New Admins Added",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail*\n| json \"eventName\",\"sourceIPAddress\",\"userIdentity.userName\",\"userIdentity.principalId\",\"responseElements.ConsoleLogin\",\"additionalEventData.MFAUsed\" ,\"eventSource\",\"awsRegion\",\"eventType\",\"eventCategory\",\"userIdentity.type\",\"eventTime\",\"requestParameters.AccessControlPolicy.AccessControlList.Grant[*].Permission\",\"errorCode\",\"userIdentity.accountId\",\"errorMessage\",\"requestParameters.policyArn\",\"requestParameters.groupName\" as event_name,source_ip,user_name,user_principal, login_result,mfa_used,event_source,aws_region,event_type,event_category,user_identity_type,event_time,permission,error_code,acc_id,error_message,policy_arn,group_name nodrop\n| if(user_name = \"\",user_principal,user_name) as user_name\n\n// global filters\n| where aws_region matches \"*\"\n| where acc_id matches \"*\"\n| where event_type matches \"*\"\n\n| where event_name matches(\"*AddUserToGroup*\")\n| where group_name matches(\"*admin*\")\n\n| count by acc_id,event_type,event_time,event_source,aws_region\n| sort by event_time\n| limit 100\n| fields - _count",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Route Table Changes",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail* (\"CreateRoute\" or \"CreateRouteTable\" or \"ReplaceRoute\" or \"ReplaceRouteTableAssociation\" or \"DeleteRouteTable\" or \"DeleteRoute\" or \"DisassociateRouteTable\")\n| json \"requestID\",\"eventID\",\"userIdentity.sessionContext.sessionIssuer.userName\",\"userIdentity.accountId\",\"sourceIPAddress\",\"awsRegion\",\"eventName\",\"eventType\" as request_id, event_id,user_name,acc_id,source_ip,region,event_name,event_type nodrop\n\n// global filters\n| where user_name matches \"*\"\n| where region matches \"*\"\n| where acc_id matches \"*\"\n| where event_type matches \"*\"\n\n| where eventName matches \"CreateRoute\" or eventName matches \"CreateRouteTable\" or eventName matches \"ReplaceRoute\" or eventName matches \"ReplaceRouteTableAssociation\" or eventName matches \"DeleteRouteTable\" or eventName matches \"DeleteRoute\" or eventName matches \"DisassociateRouteTable\"\n\n| count as frequency by user_name,acc_id\n| sort by frequency\n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "S3 Bucket Changes",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail* (*BucketAcl or *BucketPolicy or *BucketCors or *BucketLifecycle)\n| json \"requestID\",\"eventID\",\"userIdentity.sessionContext.sessionIssuer.userName\",\"userIdentity.accountId\",\"sourceIPAddress\",\"awsRegion\",\"eventName\",\"eventType\" as request_id, event_id,user_name,acc_id,source_ip,region,event_name,event_type nodrop\n\n// global filters\n| where user_name matches \"*\"\n| where region matches \"*\"\n| where acc_id matches \"*\"\n| where event_type matches \"*\"\n\n| where eventName matches \"*BucketAcl\" or eventName matches \"*BucketPolicy\" or eventName matches \"*BucketCors\" or eventName matches \"*BucketLifecycle\"\n| count as frequency by user_name,acc_id\n| sort by frequency\n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "Security Group Changes",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail* (\"CreateSecurityGroup\" or \"DeleteSecurityGroup\" or \"RevokeSecurityGroupEgress\" or \"RevokeSecurityGroupIngress\")\n| json \"requestID\",\"eventID\",\"userIdentity.sessionContext.sessionIssuer.userName\",\"userIdentity.accountId\",\"sourceIPAddress\",\"awsRegion\",\"eventName\",\"eventType\" as request_id, event_id,user_name,acc_id,source_ip,region,event_name,event_type nodrop\n\n// global filters\n| where user_name matches \"*\"\n| where region matches \"*\"\n| where acc_id matches \"*\"\n| where event_type matches \"*\"\n\n| where eventName matches \"CreateSecurityGroup\" or eventName matches \"DeleteSecurityGroup\" or eventName matches \"RevokeSecurityGroupEgress\" or eventName matches \"RevokeSecurityGroupIngress\"\n| count as frequency by user_name,acc_id\n| sort by frequency\n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    },
+    {
+      "type": "SavedSearchWithScheduleSyncDefinition",
+      "name": "VPC Changes",
+      "search": {
+        "queryText": "_sourceCategory=*CloudTrail* (\"CreateVpc\" or \"DeleteVpc\" or \"ModifyVpcAttribute\" or *VpcPeeringConnection or *tachClassicLink or *ableVpcClassic)\n| json \"requestID\",\"eventID\",\"userIdentity.sessionContext.sessionIssuer.userName\",\"userIdentity.accountId\",\"sourceIPAddress\",\"awsRegion\",\"eventName\",\"eventType\" as request_id, event_id,user_name,acc_id,source_ip,region,event_name,event_type nodrop\n\n// global filters\n| where user_name matches \"*\"\n| where region matches \"*\"\n| where acc_id matches \"*\"\n| where event_type matches \"*\"\n\n| where eventName matches \"CreateVpc\" or eventName matches \"DeleteVpc\" or eventName matches \"ModifyVpcAttribute\" or eventName matches \"*VpcPeeringConnection\" or eventName matches \"*tachClassicLink\" or eventName matches \"*ableVpcClassic\"\n| count as frequency by user_name,acc_id\n| sort by frequency\n| limit 100",
+        "byReceiptTime": false,
+        "viewName": "",
+        "viewStartTime": "1970-01-01T00:00:00Z",
+        "queryParameters": [],
+        "parsingMode": "AutoParse",
+        "defaultTimeRange": "-15m"
+      },
+      "searchSchedule": null,
+      "description": ""
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "CloudTrail_DisableGlobalEventsOrDisableLogOrEncryptWithNewKey",
+  "search": {
+    "queryText": "_sourceCategory = Labs/AWS/CloudTrail (includeGlobalServiceEvents or enableLogFileValidation or kmsKeyId)\n| json \"eventSource\", \"eventName\", \"errorCode\" nodrop \n| where isBlank(errorCode) and eventName=\"UpdateTrail\" and eventSource=\"cloudtrail.amazonaws.com\" \n| json \"requestParameters.includeGlobalServiceEvents\", \"requestParameters.enableLogFileValidation\", \"requestParameters.kmsKeyId\" as inclGlobalServiceEvents, disableLogFileValidation, kmsKeyId nodrop\n| \"\" as classification\n| if(inclGlobalServiceEvents matches \"false\",concat(\"CloudTrail_DisableGlobalEvents,\",classification),classification) as classification\n| if(disableLogFileValidation matches \"false\",concat(\"CloudTrail_DisableLogIntegrityValidation,\",classification ),classification) as classification\n| if(_raw matches \"*kmsKeyId*\" and isBlank(kmsKeyId),concat(\"CloudTrail_EncryptWithNewKey,\",classification ),classification) as classification\n| if(!isBlank(classification), 1, 0) as indicator\n| parse regex field=classification \"(?<benchmarkname>[^,]+),\" multi\n| \"EventCount\" as type\n| sum(indicator) as count by benchmarkname, type\n| fillmissing values(\"CloudTrail_DisableGlobalEvents\",\"CloudTrail_DisableLogIntegrityValidation\",\"CloudTrail_EncryptWithNewKey\") in benchmarkname, values(\"EventCount\") in type \n| toInt(count) as count",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "AutoParse",
+    "defaultTimeRange": "-60m"
+  },
+  "searchSchedule": {
+    "cronExpression": "0 0 * * * ? *",
+    "displayableTimeRange": "-60m",
+    "parseableTimeRange": {
+      "type": "BeginBoundedTimeRange",
+      "from": {
+        "type": "RelativeTimeRangeBoundary",
+        "relativeTime": "-1h"
+      },
+      "to": null
+    },
+    "timeZone": "America/Los_Angeles",
+    "threshold": null,
+    "notification": {
+      "taskType": "SaveToViewNotificationSyncDefinition",
+      "viewName": "cloudtrail_analytics_inc_v1_rnd4685946T96PXzbCsyGRaXAZRUmB"
+    },
+    "scheduleType": "1Hour",
+    "muteErrorEmails": false,
+    "parameters": []
+  },
+  "description": ""
+}

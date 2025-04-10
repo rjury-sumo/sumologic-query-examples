@@ -1,0 +1,199 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Couchbase - Errors",
+  "description": "The Couchbase -  Errors dashboard provides insights into errors from error logs in couchbase servers and couchbase clusters: buckets not ready, nodes not responding, node down, error queries, last error logs.",
+  "title": "Couchbase - Errors",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-15m"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-D7A608BB9B2AD847",
+        "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panel1CA4C03BB5D50B4B",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panel2D4DED4A8D564A42",
+        "structure": "{\"height\":8,\"width\":12,\"x\":0,\"y\":8}"
+      },
+      {
+        "key": "panelD1F81CA1A02E5A46",
+        "structure": "{\"height\":8,\"width\":12,\"x\":12,\"y\":8}"
+      },
+      {
+        "key": "panel2FD8324A980C3A4F",
+        "structure": "{\"height\":8,\"width\":24,\"x\":0,\"y\":16}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-D7A608BB9B2AD847",
+      "title": "Buckets Not Ready",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = *couchbase* db_cluster={{db_cluster}} db_system=\"couchbase\" \"buckets became not ready on node\" \"error\"\n| json \"log\" as _rawlog nodrop\n| if(isEmpty(_rawlog),_raw,_rawlog) as _raw\n|replace (_raw,/\\s+/,\" \") as _raw\n| parse regex \"\\'\\S+@(?<node>\\S+)\\'\\:\\s+\\[(?<buckets>.+)\\],\" | parse regex field=buckets \"\\\"(?<bucket>[^,]+)\\\"\" multi\n| parse regex \"ns_server:error,(?<time>\\S+),\" | _raw as msg\n| count by time,bucket,node,msg  | limit 100 | fields time,bucket,node,msg\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel1CA4C03BB5D50B4B",
+      "title": "Nodes Not Respond",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = *couchbase* db_cluster={{db_cluster}} db_system=\"couchbase\" \"error\" \"Some nodes didn't respond\" \n| json \"log\" as _rawlog nodrop\n| if(isEmpty(_rawlog),_raw,_rawlog) as _raw\n|replace (_raw,/\\s+/,\" \") as _raw\n| parse regex \"stats:error,(?<time>\\S+),\"\n| parse regex \"Some nodes didn't respond: \\[(?<temp_nodes>.+)\\]\" | parse regex field=temp_nodes \"\\'(?<node_temp>[^,]+)\\'\" multi | parse regex field=node_temp \"@(?<node>.+)\"| _raw as msg | count by time,node,msg| limit 100|sort by time|fields time,node,msg ",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2D4DED4A8D564A42",
+      "title": "Node Down",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = *couchbase* db_cluster={{db_cluster}} db_system=\"couchbase\" \"error\" \"nodedown\"\n| json \"log\" as _rawlog nodrop\n| if(isEmpty(_rawlog),_raw,_rawlog) as _raw\n|replace (_raw,/\\s+/,\" \") as _raw\n|parse regex \"nodedown,\\s'\\S+@(?<node>\\S+)\\'\"\n| parse regex \"ns_server:error,(?<time>\\S+),\"|_raw as msg | count by time,node,msg | limit 100 | fields time,node,msg\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelD1F81CA1A02E5A46",
+      "title": "Error Queries",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = *couchbase* db_cluster={{db_cluster}} db_system=\"couchbase\" (\"ERROR\" or \"Error\")\n| json \"log\" as _rawlog nodrop\n| if(isEmpty(_rawlog),_raw,_rawlog) as _raw\n| parse regex \"_time=(?<time>\\S+)\"\n| parse regex \"_msg=(?<msg>.+)\"\n| parse regex field=msg \"Keyspace\\s\\w+:(?<bucket>.+)\\.\"\n| parse regex field=msg \"Failed to perform (?<method>\\w+)\"\n|count by time,bucket,method,msg\n| fields time,bucket,method,msg\n| limit 100\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel2FD8324A980C3A4F",
+      "title": "Last 100 Error Logs",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":100,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = *couchbase* db_cluster={{db_cluster}} db_system=\"couchbase\" \"ns_server:error\" \n| json \"log\" as _rawlog nodrop\n| if(isEmpty(_rawlog),_raw,_rawlog) as _raw\n|replace (_raw,/\\s+/,\" \") as _raw\n| parse regex \"ns_server:error,(?<time>\\S+),\"|_raw as msg | limit 100 | count by time,msg | sort by time | fields time,msg\n",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db_cluster",
+      "displayName": "db_cluster",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "MetadataVariableSourceDefinition",
+        "filter": "_sourceCategory = *couchbase* db_system=couchbase",
+        "key": "db_cluster"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

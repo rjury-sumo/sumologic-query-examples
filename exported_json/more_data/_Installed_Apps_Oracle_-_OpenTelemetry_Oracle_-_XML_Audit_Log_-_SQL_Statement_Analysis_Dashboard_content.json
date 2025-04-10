@@ -1,0 +1,382 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Oracle - XML Audit Log - SQL Statement Analysis",
+  "description": "See information derived from the XML audit trail about user management, role management, Data Definition Language (DDL), Data Manipulation Language (DML), and Transaction Control Language (TCL) activity.",
+  "title": "Oracle - XML Audit Log - SQL Statement Analysis",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {
+      "sumo.datasource": [
+        "oracle"
+      ],
+      "db.cluster.name": [
+        "*"
+      ],
+      "_sumo_domain_name": [
+        "databases"
+      ],
+      "deployment.environment": [
+        "*"
+      ]
+    }
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1d"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panel4E01588D97BC9A48",
+        "structure": "{\"height\":6,\"width\":9,\"x\":15,\"y\":0}"
+      },
+      {
+        "key": "panel64AEBE1981788946",
+        "structure": "{\"height\":6,\"width\":15,\"x\":0,\"y\":6,\"minHeight\":3,\"minWidth\":3}"
+      },
+      {
+        "key": "panel7312374FAFAC7A47",
+        "structure": "{\"height\":6,\"width\":9,\"x\":15,\"y\":0,\"minHeight\":3,\"minWidth\":3}"
+      },
+      {
+        "key": "panel74B338538C778A4B",
+        "structure": "{\"height\":6,\"width\":9,\"x\":15,\"y\":0,\"minHeight\":3,\"minWidth\":3}"
+      },
+      {
+        "key": "panel7B92E4C393BCA948",
+        "structure": "{\"height\":6,\"width\":9,\"x\":15,\"y\":0,\"minHeight\":3,\"minWidth\":3}"
+      },
+      {
+        "key": "panelA09DA314A6820943",
+        "structure": "{\"height\":6,\"width\":15,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelCA998882AEE32B45",
+        "structure": "{\"height\":6,\"width\":15,\"x\":0,\"y\":6}"
+      },
+      {
+        "key": "panelD1EB486691EA194E",
+        "structure": "{\"height\":6,\"width\":9,\"x\":15,\"y\":0,\"minHeight\":3,\"minWidth\":3}"
+      },
+      {
+        "key": "panelEF5753B5B4498B4D",
+        "structure": "{\"height\":6,\"width\":15,\"x\":0,\"y\":6,\"minHeight\":3,\"minWidth\":3}"
+      },
+      {
+        "key": "panelF4C7054D8E3A7947",
+        "structure": "{\"height\":6,\"width\":15,\"x\":0,\"y\":6,\"minHeight\":3,\"minWidth\":3}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panel4E01588D97BC9A48",
+      "title": "User Management Activity Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"<AuditRecord>\" (\"<Action>43</Action>\" or \"<Action>51</Action>\" or \"<Action>53</Action>\")\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"(?<auditrecord>\\<AuditRecord\\>[\\s\\S]+?</AuditRecord>)\"\n| parse XML field=auditrecord \"/AuditRecord/Audit_Type\" as Audit_Type nodrop | parse field=Audit_Type \"<Audit_Type>*</Audit_Type>\" as Audit_Type nodrop\n| parse XML field=auditrecord \"/AuditRecord/Session_Id\" as Session_Id nodrop | parse field=Session_Id \"<Session_Id>*</Session_Id>\" as Session_Id nodrop\n| parse XML field=auditrecord \"/AuditRecord/DB_User\" as databaseUser nodrop | parse field=databaseUser \"<DB_User>*</DB_User>\" as databaseUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/OS_User\" as clientUser nodrop | parse field=clientUser \"<OS_User>*</OS_User>\" as clientUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/Userhost\" as Userhost nodrop | parse field=Userhost \"<Userhost>*</Userhost>\" as Userhost nodrop\n| parse XML field=auditrecord \"/AuditRecord/Sql_Text\" as Sql_Text nodrop | parse field=Sql_Text \"<Sql_Text>*</Sql_Text>\" as Sql_Text nodrop | parse regex field=Sql_Text \"\\s+(?<Sql_Text>.*)\" nodrop\n| parse XML field=auditrecord \"/AuditRecord/Action\" as Action nodrop | parse field=Action \"<Action>*</Action>\" as Action nodrop\n| parse XML field=auditrecord \"/AuditRecord/Returncode\" as status nodrop | parse field=status \"<Returncode>*</Returncode>\" as status nodrop\n| parse XML field=auditrecord \"/AuditRecord/Comment_Text\" as Comment_Text nodrop | parse field=Comment_Text \"<Comment_Text>*</Comment_Text>\" as Comment_Text nodrop\n| parse XML field=auditrecord \"/AuditRecord/Priv_Used\" as privilege nodrop | parse field=privilege \"<Priv_Used>*</Priv_Used>\" as privilege nodrop\n| parse XML field=auditrecord \"/AuditRecord/Terminal\" as clientTerminal nodrop | parse field=clientTerminal \"<Terminal>*</Terminal>\" as clientTerminal nodrop\n| parse field=Comment_Text \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Name\" as Object_Name nodrop | parse field=Object_Name \"<Object_Name>*</Object_Name>\" as Object_Name nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Schema\" as Object_Schema nodrop | parse field=Object_Schema \"<Object_Schema>*</Object_Schema>\" as Object_Schema nodrop\n| where Action in (\"43\", \"51\", \"53\") // 43 ALTER USER, 51 Create USER and 53 DROP USER\n| if (Action=\"43\", \"ALTER USER\", if (Action=\"51\", \"CREATE USER\", \"DROP USER\")) as Action\n| fields Session_Id, databaseUser, clientUser, userHost, Action, Object_Name, Object_Schema, Sql_Text, status, clientTerminal, privilege\n| timeslice 1d\n| count as eventCount by _timeslice, Action\n| transpose row _timeslice column Action",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel64AEBE1981788946",
+      "title": "Last 10 Recent DDL Activities",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"<AuditRecord>\" (\"<Action>1</Action>\" or \"<Action>12</Action>\" or \"<Action>15</Action>\" or \"<Action>62</Action>\" or \"<Action>85</Action>\" or \"<Action>21</Action>\" or \"<Action>22</Action>\" or \"<Action>9</Action>\" or \"<Action>10</Action>\" or \"<Action>11</Action>\" or \"<Action>13</Action>\" or \"<Action>14</Action>\" or \"<Action>16</Action>\" or \"<Action>19</Action>\" or \"<Action>20</Action>\" or \"<Action>18</Action>\" or \"<Action>109</Action>\" or \"<Action>115</Action>\" or \"<Action>17</Action>\" or \"<Action>108</Action>\" or \"<Action>114</Action>\" or \"<Action>28</Action>\" or \"<Action>29</Action>\" or \"<Action>117</Action>\" or \"<Action>63</Action>\" or \"<Action>64</Action>\" or \"<Action>5</Action>\" or \"<Action>30</Action>\" or \"<Action>104</Action>\" or \"<Action>106</Action>\" or \"<Action>31</Action>\" or \"<Action>105</Action>\" or \"<Action>107</Action>\")\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"(?<auditrecord>\\<AuditRecord\\>[\\s\\S]+?</AuditRecord>)\"\n| parse XML field=auditrecord \"/AuditRecord/Audit_Type\" as Audit_Type nodrop | parse field=Audit_Type \"<Audit_Type>*</Audit_Type>\" as Audit_Type nodrop\n| parse XML field=auditrecord \"/AuditRecord/Session_Id\" as Session_Id nodrop | parse field=Session_Id \"<Session_Id>*</Session_Id>\" as Session_Id nodrop\n| parse XML field=auditrecord \"/AuditRecord/DB_User\" as databaseUser nodrop | parse field=databaseUser \"<DB_User>*</DB_User>\" as databaseUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/OS_User\" as clientUser nodrop | parse field=clientUser \"<OS_User>*</OS_User>\" as clientUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/Userhost\" as Userhost nodrop | parse field=Userhost \"<Userhost>*</Userhost>\" as Userhost nodrop\n| parse XML field=auditrecord \"/AuditRecord/Sql_Text\" as Sql_Text nodrop | parse field=Sql_Text \"<Sql_Text>*</Sql_Text>\" as Sql_Text nodrop | parse regex field=Sql_Text \"\\s+(?<Sql_Text>.*)\" nodrop\n| parse XML field=auditrecord \"/AuditRecord/Action\" as Action nodrop | parse field=Action \"<Action>*</Action>\" as Action nodrop\n| parse XML field=auditrecord \"/AuditRecord/Returncode\" as status nodrop | parse field=status \"<Returncode>*</Returncode>\" as status nodrop\n| parse XML field=auditrecord \"/AuditRecord/Comment_Text\" as Comment_Text nodrop | parse field=Comment_Text \"<Comment_Text>*</Comment_Text>\" as Comment_Text nodrop\n| parse XML field=auditrecord \"/AuditRecord/Priv_Used\" as privilege nodrop | parse field=privilege \"<Priv_Used>*</Priv_Used>\" as privilege nodrop\n| parse XML field=auditrecord \"/AuditRecord/Terminal\" as clientTerminal nodrop | parse field=clientTerminal \"<Terminal>*</Terminal>\" as clientTerminal nodrop\n| parse field=Comment_Text \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Name\" as Object_Name nodrop | parse field=Object_Name \"<Object_Name>*</Object_Name>\" as Object_Name nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Schema\" as Object_Schema nodrop | parse field=Object_Schema \"<Object_Schema>*</Object_Schema>\" as Object_Schema nodrop\n| where Action in (\"1\", \"12\", \"15\", \"62\", \"85\", \"21\", \"22\", \"9\", \"10\", \"11\", \"13\", \"14\", \"16\", \"19\", \"20\", \"18\", \"109\", \"115\", \"17\", \"108\", \"114\", \"28\", \"29\", \"117\", \"63\", \"64\", \"5\", \"30\", \"104\", \"106\", \"31\", \"105\", \"107\") // 1 CREATE TABLE, 12 DROP TABLE, 15 ALTER TABLE, 62 ANALYZE TABLE and 85 TRUNCATE TABLE, 21 CREATE View, 22 Drop VIEW, 9 CREATE INDEX, 10 DROP INDEX, 11 ALTER INDEX, 13 CREATE SEQUENCE, 14 DROP SEQUENCE, 16 ALTER SEQUENCE, 19 CREATE SYNONYM, 20 DROP SYNONYM, 18 REVOKE OBJECT, 109 SYSTEM REVOKE, 115 REVOKE ROLE,17 GRANT OBJECT, 108 SYSTEM GRANT, 114 GRANT ROLE, 28 RENAME, 29 COMMENT, 117 USER COMMENT, 63 ANALYZE INDEX, 64 ANALYZE CLUSTER, 5 ALTER CLUSTER, 30 AUDIT OBJECT, 104 SYSTEM AUDIT, 106 AUDIT DEFAULT, 31 NOAUDIT OBJECT, 105 SYSTEM NOAUDIT, 107 NOAUDIT DEFAULT\n| fields Session_Id, databaseUser, clientUser, userHost, Action, status, Sql_Text, Object_Name, Object_Schema, clientTerminal, privilege\n| timeslice 1s\n| count as eventCount by _timeslice, Session_Id, databaseUser, clientUser, userHost, Action, status, Sql_Text, Object_Name, Object_Schema, clientTerminal, privilege\n| fields -eventCount\n| if (Action=\"1\", \"CREATE TABLE\", if (Action=\"12\", \"DROP TABLE\", if (Action=\"15\", \"ALTER TABLE\", if (Action=\"62\", \"ANALYZE TABLE\", if (Action=\"85\", \"TRUNCATE TABLE\", if (Action=\"21\", \"CREATE VIEW\", if (Action=\"22\", \"DROP VIEW\", if (Action=\"9\", \"CREATE INDEX\",if (Action=\"10\", \"DROP INDEX\", if (Action=\"11\", \"ALTER INDEX\", if (Action=\"13\", \"CREATE SEQUENCE\", if (Action=\"14\", \"DROP SEQUENCE\", if (Action=\"16\", \"ALTER SEQUENCE\", if (Action=\"19\", \"CREATE SYNONYM\", if (Action=\"20\", \"DROP SYNONYM\", if (Action=\"18\", \"REVOKE OBJECT\", if (Action=\"109\", \"SYSTEM REVOKE\", if (Action=\"115\", \"REVOKE ROLE\", if (Action=\"17\", \"GRANT OBJECT\", if (Action=\"108\", \"SYSTEM GRANT\", if (Action=\"114\", \"GRANT ROLE\", if (Action=\"28\", \"RENAME\", if (Action=\"29\", \"COMMENT\", if (Action=\"117\", \"USER COMMENT\", if (Action=\"63\", \"ANALYZE INDEX\", if (Action=\"64\", \"ANALYZE CLUSTER\", if (Action=\"5\", \"ALTER CLUSTER\", if (Action=\"30\", \"AUDIT OBJECT\", if (Action=\"104\", \"SYSTEM AUDIT\", if (Action=\"106\", \"AUDIT DEFAULT\", if (Action=\"31\", \"NOAUDIT OBJECT\", if (Action=\"105\", \"SYSTEM NOAUDIT\", \"NOAUDIT DEFAULT\")))))))))))))))))))))))))))))))) as Action\n| sort by _timeslice\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7312374FAFAC7A47",
+      "title": "TCL Activity Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[],\"color\":{\"family\":\"Colorsafe\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"<AuditRecord>\" (\"<Action>44</Action>\" or \"<Action>45</Action>\" or \"<Action>46</Action>\" or \"<Action>48</Action>\")\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"(?<auditrecord>\\<AuditRecord\\>[\\s\\S]+?</AuditRecord>)\"\n| parse XML field=auditrecord \"/AuditRecord/Audit_Type\" as Audit_Type nodrop | parse field=Audit_Type \"<Audit_Type>*</Audit_Type>\" as Audit_Type nodrop\n| parse XML field=auditrecord \"/AuditRecord/Session_Id\" as Session_Id nodrop | parse field=Session_Id \"<Session_Id>*</Session_Id>\" as Session_Id nodrop\n| parse XML field=auditrecord \"/AuditRecord/DB_User\" as databaseUser nodrop | parse field=databaseUser \"<DB_User>*</DB_User>\" as databaseUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/OS_User\" as clientUser nodrop | parse field=clientUser \"<OS_User>*</OS_User>\" as clientUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/Userhost\" as Userhost nodrop | parse field=Userhost \"<Userhost>*</Userhost>\" as Userhost nodrop\n| parse XML field=auditrecord \"/AuditRecord/Sql_Text\" as Sql_Text nodrop | parse field=Sql_Text \"<Sql_Text>*</Sql_Text>\" as Sql_Text nodrop | parse regex field=Sql_Text \"\\s+(?<Sql_Text>.*)\" nodrop\n| parse XML field=auditrecord \"/AuditRecord/Action\" as Action nodrop | parse field=Action \"<Action>*</Action>\" as Action nodrop\n| parse XML field=auditrecord \"/AuditRecord/Returncode\" as status nodrop | parse field=status \"<Returncode>*</Returncode>\" as status nodrop\n| parse XML field=auditrecord \"/AuditRecord/Comment_Text\" as Comment_Text nodrop | parse field=Comment_Text \"<Comment_Text>*</Comment_Text>\" as Comment_Text nodrop\n| parse XML field=auditrecord \"/AuditRecord/Priv_Used\" as privilege nodrop | parse field=privilege \"<Priv_Used>*</Priv_Used>\" as privilege nodrop\n| parse XML field=auditrecord \"/AuditRecord/Terminal\" as clientTerminal nodrop | parse field=clientTerminal \"<Terminal>*</Terminal>\" as clientTerminal nodrop\n| parse field=Comment_Text \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Name\" as Object_Name nodrop | parse field=Object_Name \"<Object_Name>*</Object_Name>\" as Object_Name nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Schema\" as Object_Schema nodrop | parse field=Object_Schema \"<Object_Schema>*</Object_Schema>\" as Object_Schema nodrop\n| where Action in (\"44\", \"45\", \"46\", \"48\") // 44 COMMIT, 45 ROLLBACK, 46 SAVEPOINT, 48 SET TRANSACTION\n| if (Action=\"44\", \"COMMIT\", if (Action=\"45\", \"ROLLBACK\", if (Action=\"46\", \"SAVEPOINT\", \"SET TRANSACTION\" ))) as Action\n| fields Session_Id, databaseUser, clientUser, userHost, Action, Object_Name, Object_Schema, Sql_Text, status, clientTerminal, privilege\n| timeslice 1d\n| count as eventCount by _timeslice, Session_Id, databaseUser, clientUser, userHost, Action, Object_Name, Object_Schema, Sql_Text, status, clientTerminal, privilege\n| count as eventCount by _timeslice, Action\n| transpose row _timeslice column Action",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel74B338538C778A4B",
+      "title": "Role Management Activity Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"<AuditRecord>\" (\"<Action>52</Action>\" or \"<Action>54</Action>\" or \"<Action>55</Action>\" or \"<Action>79</Action>\")\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"(?<auditrecord>\\<AuditRecord\\>[\\s\\S]+?</AuditRecord>)\"\n| parse XML field=auditrecord \"/AuditRecord/Audit_Type\" as Audit_Type nodrop | parse field=Audit_Type \"<Audit_Type>*</Audit_Type>\" as Audit_Type nodrop\n| parse XML field=auditrecord \"/AuditRecord/Session_Id\" as Session_Id nodrop | parse field=Session_Id \"<Session_Id>*</Session_Id>\" as Session_Id nodrop\n| parse XML field=auditrecord \"/AuditRecord/DB_User\" as databaseUser nodrop | parse field=databaseUser \"<DB_User>*</DB_User>\" as databaseUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/OS_User\" as clientUser nodrop | parse field=clientUser \"<OS_User>*</OS_User>\" as clientUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/Userhost\" as Userhost nodrop | parse field=Userhost \"<Userhost>*</Userhost>\" as Userhost nodrop\n| parse XML field=auditrecord \"/AuditRecord/Sql_Text\" as Sql_Text nodrop | parse field=Sql_Text \"<Sql_Text>*</Sql_Text>\" as Sql_Text nodrop | parse regex field=Sql_Text \"\\s+(?<Sql_Text>.*)\" nodrop\n| parse XML field=auditrecord \"/AuditRecord/Action\" as Action nodrop | parse field=Action \"<Action>*</Action>\" as Action nodrop\n| parse XML field=auditrecord \"/AuditRecord/Returncode\" as status nodrop | parse field=status \"<Returncode>*</Returncode>\" as status nodrop\n| parse XML field=auditrecord \"/AuditRecord/Comment_Text\" as Comment_Text nodrop | parse field=Comment_Text \"<Comment_Text>*</Comment_Text>\" as Comment_Text nodrop\n| parse XML field=auditrecord \"/AuditRecord/Priv_Used\" as privilege nodrop | parse field=privilege \"<Priv_Used>*</Priv_Used>\" as privilege nodrop\n| parse XML field=auditrecord \"/AuditRecord/Terminal\" as clientTerminal nodrop | parse field=clientTerminal \"<Terminal>*</Terminal>\" as clientTerminal nodrop\n| parse field=Comment_Text \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Name\" as Object_Name nodrop | parse field=Object_Name \"<Object_Name>*</Object_Name>\" as Object_Name nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Schema\" as Object_Schema nodrop | parse field=Object_Schema \"<Object_Schema>*</Object_Schema>\" as Object_Schema nodrop\n| where Action in (\"52\", \"54\", \"55\", \"79\") // 52 CREATE ROLE, 54 DROP ROLE, 55 SET ROLE, 79 ALTER ROLE\n| if (Action=\"52\", \"CREATE ROLE\", if (Action=\"54\", \"DROP ROLE\", if (Action=\"55\", \"SET ROLE\", \"ALTER ROLE\" ))) as Action\n| fields Session_Id, databaseUser, clientUser, userHost, Action, Object_Name, Object_Schema, Sql_Text, status, clientTerminal, privilege\n| timeslice 1d\n| count as eventCount by _timeslice, Action\n| transpose row _timeslice column Action",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panel7B92E4C393BCA948",
+      "title": "DML Activity Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[],\"color\":{\"family\":\"Colorsafe\"}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"<AuditRecord>\" (\"<Action>2</Action>\" or \"<Action>3</Action>\" or \"<Action>6</Action>\" or \"<Action>7</Action>\" or \"<Action>50</Action>\" or \"<Action>170</Action>\" or \"<Action>26</Action>\")\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"(?<auditrecord>\\<AuditRecord\\>[\\s\\S]+?</AuditRecord>)\"\n| parse XML field=auditrecord \"/AuditRecord/Audit_Type\" as Audit_Type nodrop | parse field=Audit_Type \"<Audit_Type>*</Audit_Type>\" as Audit_Type nodrop\n| parse XML field=auditrecord \"/AuditRecord/Session_Id\" as Session_Id nodrop | parse field=Session_Id \"<Session_Id>*</Session_Id>\" as Session_Id nodrop\n| parse XML field=auditrecord \"/AuditRecord/DB_User\" as databaseUser nodrop | parse field=databaseUser \"<DB_User>*</DB_User>\" as databaseUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/OS_User\" as clientUser nodrop | parse field=clientUser \"<OS_User>*</OS_User>\" as clientUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/Userhost\" as Userhost nodrop | parse field=Userhost \"<Userhost>*</Userhost>\" as Userhost nodrop\n| parse XML field=auditrecord \"/AuditRecord/Sql_Text\" as Sql_Text nodrop | parse field=Sql_Text \"<Sql_Text>*</Sql_Text>\" as Sql_Text nodrop | parse regex field=Sql_Text \"\\s+(?<Sql_Text>.*)\" nodrop\n| parse XML field=auditrecord \"/AuditRecord/Action\" as Action nodrop | parse field=Action \"<Action>*</Action>\" as Action nodrop\n| parse XML field=auditrecord \"/AuditRecord/Returncode\" as status nodrop | parse field=status \"<Returncode>*</Returncode>\" as status nodrop\n| parse XML field=auditrecord \"/AuditRecord/Comment_Text\" as Comment_Text nodrop | parse field=Comment_Text \"<Comment_Text>*</Comment_Text>\" as Comment_Text nodrop\n| parse XML field=auditrecord \"/AuditRecord/Priv_Used\" as privilege nodrop | parse field=privilege \"<Priv_Used>*</Priv_Used>\" as privilege nodrop\n| parse XML field=auditrecord \"/AuditRecord/Terminal\" as clientTerminal nodrop | parse field=clientTerminal \"<Terminal>*</Terminal>\" as clientTerminal nodrop\n| parse field=Comment_Text \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Name\" as Object_Name nodrop | parse field=Object_Name \"<Object_Name>*</Object_Name>\" as Object_Name nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Schema\" as Object_Schema nodrop | parse field=Object_Schema \"<Object_Schema>*</Object_Schema>\" as Object_Schema nodrop\n| where Action in (\"2\", \"3\", \"6\", \"7\", \"50\", \"170\", \"26\") // 2 INSERT, 3 SELECT, 6 UPDATE, 7 DELETE, 50 EXPLAIN, 170 CALL METHOD, 26 LOCK\n| if (Action=\"2\", \"INSERT\", if (Action=\"3\", \"SELECT\", if (Action=\"6\", \"UPDATE\", if (Action=\"7\", \"DELETE\", if (Action=\"50\", \"EXPLAIN\", if (action=\"170\", \"CALL METHOD\", \"LOCK\" )))))) as Action\n| fields Session_Id, databaseUser, clientUser, userHost, Action, status, Sql_Text, Object_Name, Object_Schema, clientTerminal, privilege\n| timeslice 1d\n| count as eventCount by _timeslice, Session_Id, databaseUser, clientUser, userHost, Action, Object_Name, Object_Schema, Sql_Text, status, clientTerminal, privilege\n| count as eventCount by _timeslice, Action\n| transpose row _timeslice column Action",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelA09DA314A6820943",
+      "title": "Last 10 Recent User Management Activities",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"<AuditRecord>\" (\"<Action>43</Action>\" or \"<Action>51</Action>\" or \"<Action>53</Action>\")\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"(?<auditrecord>\\<AuditRecord\\>[\\s\\S]+?</AuditRecord>)\"\n| parse XML field=auditrecord \"/AuditRecord/Audit_Type\" as Audit_Type nodrop | parse field=Audit_Type \"<Audit_Type>*</Audit_Type>\" as Audit_Type nodrop\n| parse XML field=auditrecord \"/AuditRecord/Session_Id\" as Session_Id nodrop | parse field=Session_Id \"<Session_Id>*</Session_Id>\" as Session_Id nodrop\n| parse XML field=auditrecord \"/AuditRecord/DB_User\" as databaseUser nodrop | parse field=databaseUser \"<DB_User>*</DB_User>\" as databaseUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/OS_User\" as clientUser nodrop | parse field=clientUser \"<OS_User>*</OS_User>\" as clientUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/Userhost\" as Userhost nodrop | parse field=Userhost \"<Userhost>*</Userhost>\" as Userhost nodrop\n| parse XML field=auditrecord \"/AuditRecord/Sql_Text\" as Sql_Text nodrop | parse field=Sql_Text \"<Sql_Text>*</Sql_Text>\" as Sql_Text nodrop | parse regex field=Sql_Text \"\\s+(?<Sql_Text>.*)\" nodrop\n| parse XML field=auditrecord \"/AuditRecord/Action\" as Action nodrop | parse field=Action \"<Action>*</Action>\" as Action nodrop\n| parse XML field=auditrecord \"/AuditRecord/Returncode\" as status nodrop | parse field=status \"<Returncode>*</Returncode>\" as status nodrop\n| parse XML field=auditrecord \"/AuditRecord/Comment_Text\" as Comment_Text nodrop | parse field=Comment_Text \"<Comment_Text>*</Comment_Text>\" as Comment_Text nodrop\n| parse XML field=auditrecord \"/AuditRecord/Priv_Used\" as privilege nodrop | parse field=privilege \"<Priv_Used>*</Priv_Used>\" as privilege nodrop\n| parse XML field=auditrecord \"/AuditRecord/Terminal\" as clientTerminal nodrop | parse field=clientTerminal \"<Terminal>*</Terminal>\" as clientTerminal nodrop\n| parse field=Comment_Text \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Name\" as Object_Name nodrop | parse field=Object_Name \"<Object_Name>*</Object_Name>\" as Object_Name nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Schema\" as Object_Schema nodrop | parse field=Object_Schema \"<Object_Schema>*</Object_Schema>\" as Object_Schema nodrop\n| where Action in (\"43\", \"51\", \"53\") // 43 Alter User, 51 Create User and 53 Drop user\n| fields Session_Id, databaseUser, clientUser, userHost, Action, status, Sql_Text, Object_Name, Object_Schema, clientTerminal, privilege\n| timeslice 1s\n| count as eventCount by _timeslice, Session_Id, databaseUser, clientUser, userHost, Action, Object_Name, Object_Schema, Sql_Text, status, clientTerminal, privilege\n| fields -eventCount\n| if (action=\"43\", \"ALTER USER\", if (action=\"51\", \"CREATE USER\", \"DROP USER\")) as action\n| sort by _timeslice\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelCA998882AEE32B45",
+      "title": "Last 10 Recent Role Management Activities",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"<AuditRecord>\" (\"<Action>52</Action>\" or \"<Action>54</Action>\" or \"<Action>55</Action>\" or \"<Action>79</Action>\")\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"(?<auditrecord>\\<AuditRecord\\>[\\s\\S]+?</AuditRecord>)\"\n| parse XML field=auditrecord \"/AuditRecord/Audit_Type\" as Audit_Type nodrop | parse field=Audit_Type \"<Audit_Type>*</Audit_Type>\" as Audit_Type nodrop\n| parse XML field=auditrecord \"/AuditRecord/Session_Id\" as Session_Id nodrop | parse field=Session_Id \"<Session_Id>*</Session_Id>\" as Session_Id nodrop\n| parse XML field=auditrecord \"/AuditRecord/DB_User\" as databaseUser nodrop | parse field=databaseUser \"<DB_User>*</DB_User>\" as databaseUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/OS_User\" as clientUser nodrop | parse field=clientUser \"<OS_User>*</OS_User>\" as clientUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/Userhost\" as Userhost nodrop | parse field=Userhost \"<Userhost>*</Userhost>\" as Userhost nodrop\n| parse XML field=auditrecord \"/AuditRecord/Sql_Text\" as Sql_Text nodrop | parse field=Sql_Text \"<Sql_Text>*</Sql_Text>\" as Sql_Text nodrop | parse regex field=Sql_Text \"\\s+(?<Sql_Text>.*)\" nodrop\n| parse XML field=auditrecord \"/AuditRecord/Action\" as Action nodrop | parse field=Action \"<Action>*</Action>\" as Action nodrop\n| parse XML field=auditrecord \"/AuditRecord/Returncode\" as status nodrop | parse field=status \"<Returncode>*</Returncode>\" as status nodrop\n| parse XML field=auditrecord \"/AuditRecord/Comment_Text\" as Comment_Text nodrop | parse field=Comment_Text \"<Comment_Text>*</Comment_Text>\" as Comment_Text nodrop\n| parse XML field=auditrecord \"/AuditRecord/Priv_Used\" as privilege nodrop | parse field=privilege \"<Priv_Used>*</Priv_Used>\" as privilege nodrop\n| parse XML field=auditrecord \"/AuditRecord/Terminal\" as clientTerminal nodrop | parse field=clientTerminal \"<Terminal>*</Terminal>\" as clientTerminal nodrop\n| parse field=Comment_Text \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Name\" as Object_Name nodrop | parse field=Object_Name \"<Object_Name>*</Object_Name>\" as Object_Name nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Schema\" as Object_Schema nodrop | parse field=Object_Schema \"<Object_Schema>*</Object_Schema>\" as Object_Schema nodrop\n| where Action in (\"52\", \"54\", \"55\", \"79\") // 52 CREATE ROLE, 54 DROP ROLE, 55 SET ROLE, 79 ALTER ROLE\n| fields Session_Id, databaseUser, clientUser, userHost, Action, Object_Name, Object_Schema, Sql_Text, status, clientTerminal, privilege\n| timeslice 1s\n| count as eventCount by _timeslice, Session_Id, databaseUser, clientUser, userHost, Action, Object_Name, Object_Schema, Sql_Text, status, clientTerminal, privilege\n| fields -eventCount\n| if (Action=\"52\", \"CREATE ROLE\", if (Action=\"54\", \"DROP ROLE\", if (Action=\"55\", \"SET ROLE\", \"ALTER ROLE\" ))) as Action\n| sort by _timeslice\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelD1EB486691EA194E",
+      "title": "DDL Activity Trend",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"column\",\"displayType\":\"stacked\"},\"series\":{},\"legend\":{\"enabled\":false},\"overrides\":[]}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"<AuditRecord>\" (\"<Action>1</Action>\" or \"<Action>12</Action>\" or \"<Action>15</Action>\" or \"<Action>62</Action>\" or \"<Action>85</Action>\" or \"<Action>21</Action>\" or \"<Action>22</Action>\" or \"<Action>9</Action>\" or \"<Action>10</Action>\" or \"<Action>11</Action>\" or \"<Action>13</Action>\" or \"<Action>14</Action>\" or \"<Action>16</Action>\" or \"<Action>19</Action>\" or \"<Action>20</Action>\" or \"<Action>18</Action>\" or \"<Action>109</Action>\" or \"<Action>115</Action>\" or \"<Action>17</Action>\" or \"<Action>108</Action>\" or \"<Action>114</Action>\" or \"<Action>28</Action>\" or \"<Action>29</Action>\" or \"<Action>117</Action>\" or \"<Action>63</Action>\" or \"<Action>64</Action>\" or \"<Action>5</Action>\" or \"<Action>30</Action>\" or \"<Action>104</Action>\" or \"<Action>106</Action>\" or \"<Action>31</Action>\" or \"<Action>105</Action>\" or \"<Action>107</Action>\")\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"(?<auditrecord>\\<AuditRecord\\>[\\s\\S]+?</AuditRecord>)\"\n| parse XML field=auditrecord \"/AuditRecord/Audit_Type\" as Audit_Type nodrop | parse field=Audit_Type \"<Audit_Type>*</Audit_Type>\" as Audit_Type nodrop\n| parse XML field=auditrecord \"/AuditRecord/Session_Id\" as Session_Id nodrop | parse field=Session_Id \"<Session_Id>*</Session_Id>\" as Session_Id nodrop\n| parse XML field=auditrecord \"/AuditRecord/DB_User\" as databaseUser nodrop | parse field=databaseUser \"<DB_User>*</DB_User>\" as databaseUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/OS_User\" as clientUser nodrop | parse field=clientUser \"<OS_User>*</OS_User>\" as clientUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/Userhost\" as Userhost nodrop | parse field=Userhost \"<Userhost>*</Userhost>\" as Userhost nodrop\n| parse XML field=auditrecord \"/AuditRecord/Sql_Text\" as Sql_Text nodrop | parse field=Sql_Text \"<Sql_Text>*</Sql_Text>\" as Sql_Text nodrop | parse regex field=Sql_Text \"\\s+(?<Sql_Text>.*)\" nodrop\n| parse XML field=auditrecord \"/AuditRecord/Action\" as Action nodrop | parse field=Action \"<Action>*</Action>\" as Action nodrop\n| parse XML field=auditrecord \"/AuditRecord/Returncode\" as status nodrop | parse field=status \"<Returncode>*</Returncode>\" as status nodrop\n| parse XML field=auditrecord \"/AuditRecord/Comment_Text\" as Comment_Text nodrop | parse field=Comment_Text \"<Comment_Text>*</Comment_Text>\" as Comment_Text nodrop\n| parse XML field=auditrecord \"/AuditRecord/Priv_Used\" as privilege nodrop | parse field=privilege \"<Priv_Used>*</Priv_Used>\" as privilege nodrop\n| parse XML field=auditrecord \"/AuditRecord/Terminal\" as clientTerminal nodrop | parse field=clientTerminal \"<Terminal>*</Terminal>\" as clientTerminal nodrop\n| parse field=Comment_Text \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Name\" as Object_Name nodrop | parse field=Object_Name \"<Object_Name>*</Object_Name>\" as Object_Name nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Schema\" as Object_Schema nodrop | parse field=Object_Schema \"<Object_Schema>*</Object_Schema>\" as Object_Schema nodrop\n| where Action in (\"1\", \"12\", \"15\", \"62\", \"85\", \"21\", \"22\", \"9\", \"10\", \"11\", \"13\", \"14\", \"16\", \"19\", \"20\", \"18\", \"109\", \"115\", \"17\", \"108\", \"114\", \"28\", \"29\", \"117\", \"63\", \"64\", \"5\", \"30\", \"104\", \"106\", \"31\", \"105\", \"107\") // 1 CREATE TABLE, 12 DROP TABLE, 15 ALTER TABLE, 62 ANALYZE TABLE and 85 TRUNCATE TABLE, 21 CREATE View, 22 Drop VIEW, 9 CREATE INDEX, 10 DROP INDEX, 11 ALTER INDEX, 13 CREATE SEQUENCE, 14 DROP SEQUENCE, 16 ALTER SEQUENCE, 19 CREATE SYNONYM, 20 DROP SYNONYM, 18 REVOKE OBJECT, 109 SYSTEM REVOKE, 115 REVOKE ROLE,17 GRANT OBJECT, 108 SYSTEM GRANT, 114 GRANT ROLE, 28 RENAME, 29 COMMENT, 117 USER COMMENT, 63 ANALYZE INDEX, 64 ANALYZE CLUSTER, 5 ALTER CLUSTER, 30 AUDIT OBJECT, 104 SYSTEM AUDIT, 106 AUDIT DEFAULT, 31 NOAUDIT OBJECT, 105 SYSTEM NOAUDIT, 107 NOAUDIT DEFAULT\n| if (Action=\"1\", \"CREATE TABLE\", if (Action=\"12\", \"DROP TABLE\", if (Action=\"15\", \"ALTER TABLE\", if (Action=\"62\", \"ANALYZE TABLE\", if (Action=\"85\", \"TRUNCATE TABLE\", if (Action=\"21\", \"CREATE VIEW\", if (Action=\"22\", \"DROP VIEW\", if (Action=\"9\", \"CREATE INDEX\",if (Action=\"10\", \"DROP INDEX\", if (Action=\"11\", \"ALTER INDEX\", if (Action=\"13\", \"CREATE SEQUENCE\", if (Action=\"14\", \"DROP SEQUENCE\", if (Action=\"16\", \"ALTER SEQUENCE\", if (Action=\"19\", \"CREATE SYNONYM\", if (Action=\"20\", \"DROP SYNONYM\", if (Action=\"18\", \"REVOKE OBJECT\", if (Action=\"109\", \"SYSTEM REVOKE\", if (Action=\"115\", \"REVOKE ROLE\", if (Action=\"17\", \"GRANT OBJECT\", if (Action=\"108\", \"SYSTEM GRANT\", if (Action=\"114\", \"GRANT ROLE\", if (Action=\"28\", \"RENAME\", if (Action=\"29\", \"COMMENT\", if (Action=\"117\", \"USER COMMENT\", if (Action=\"63\", \"ANALYZE INDEX\", if (Action=\"64\", \"ANALYZE CLUSTER\", if (Action=\"5\", \"ALTER CLUSTER\", if (Action=\"30\", \"AUDIT OBJECT\", if (Action=\"104\", \"SYSTEM AUDIT\", if (Action=\"106\", \"AUDIT DEFAULT\", if (Action=\"31\", \"NOAUDIT OBJECT\", if (Action=\"105\", \"SYSTEM NOAUDIT\", \"NOAUDIT DEFAULT\")))))))))))))))))))))))))))))))) as Action\n| fields Session_Id, databaseUser, clientUser, userHost, Action, status, Sql_Text, Object_Name, Object_Schema, clientTerminal, privilege\n| timeslice 1d\n| count as eventCount by _timeslice, Action\n| transpose row _timeslice column Action",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelEF5753B5B4498B4D",
+      "title": "Last 10 Recent DML Activities",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"<AuditRecord>\" (\"<Action>2</Action>\" or \"<Action>3</Action>\" or \"<Action>6</Action>\" or \"<Action>7</Action>\" or \"<Action>50</Action>\" or \"<Action>170</Action>\" or \"<Action>26</Action>\")\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"(?<auditrecord>\\<AuditRecord\\>[\\s\\S]+?</AuditRecord>)\"\n| parse XML field=auditrecord \"/AuditRecord/Audit_Type\" as Audit_Type nodrop | parse field=Audit_Type \"<Audit_Type>*</Audit_Type>\" as Audit_Type nodrop\n| parse XML field=auditrecord \"/AuditRecord/Session_Id\" as Session_Id nodrop | parse field=Session_Id \"<Session_Id>*</Session_Id>\" as Session_Id nodrop\n| parse XML field=auditrecord \"/AuditRecord/DB_User\" as databaseUser nodrop | parse field=databaseUser \"<DB_User>*</DB_User>\" as databaseUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/OS_User\" as clientUser nodrop | parse field=clientUser \"<OS_User>*</OS_User>\" as clientUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/Userhost\" as Userhost nodrop | parse field=Userhost \"<Userhost>*</Userhost>\" as Userhost nodrop\n| parse XML field=auditrecord \"/AuditRecord/Sql_Text\" as Sql_Text nodrop | parse field=Sql_Text \"<Sql_Text>*</Sql_Text>\" as Sql_Text nodrop | parse regex field=Sql_Text \"\\s+(?<Sql_Text>.*)\" nodrop\n| parse XML field=auditrecord \"/AuditRecord/Action\" as Action nodrop | parse field=Action \"<Action>*</Action>\" as Action nodrop\n| parse XML field=auditrecord \"/AuditRecord/Returncode\" as status nodrop | parse field=status \"<Returncode>*</Returncode>\" as status nodrop\n| parse XML field=auditrecord \"/AuditRecord/Comment_Text\" as Comment_Text nodrop | parse field=Comment_Text \"<Comment_Text>*</Comment_Text>\" as Comment_Text nodrop\n| parse XML field=auditrecord \"/AuditRecord/Priv_Used\" as privilege nodrop | parse field=privilege \"<Priv_Used>*</Priv_Used>\" as privilege nodrop\n| parse XML field=auditrecord \"/AuditRecord/Terminal\" as clientTerminal nodrop | parse field=clientTerminal \"<Terminal>*</Terminal>\" as clientTerminal nodrop\n| parse field=Comment_Text \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Name\" as Object_Name nodrop | parse field=Object_Name \"<Object_Name>*</Object_Name>\" as Object_Name nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Schema\" as Object_Schema nodrop | parse field=Object_Schema \"<Object_Schema>*</Object_Schema>\" as Object_Schema nodrop\n| where Action in (\"2\", \"3\", \"6\", \"7\", \"50\", \"170\", \"26\") // 2 INSERT, 3 SELECT, 6 UPDATE, 7 DELETE, 50 EXPLAIN, 170 CALL METHOD, 26 LOCK\n| fields Session_Id, databaseUser, clientUser, userHost, Action, status, Sql_Text, Object_Name, Object_Schema, clientTerminal, privilege\n| timeslice 1s\n| count as eventCount by _timeslice, Session_Id, databaseUser, clientUser, userHost, Action, Object_Name, Object_Schema, Sql_Text, status, clientTerminal, privilege\n| fields -eventCount\n| if (Action=\"2\", \"INSERT\", if (Action=\"3\", \"SELECT\", if (Action=\"6\", \"UPDATE\", if (Action=\"7\", \"DELETE\", if (Action=\"50\", \"EXPLAIN\", if (Action=\"170\", \"CALL METHOD\", \"LOCK\" )))))) as Action\n| sort by _timeslice\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelF4C7054D8E3A7947",
+      "title": "Last 10 Recent TCL Activities",
+      "visualSettings": "{\"general\":{\"mode\":\"timeSeries\",\"type\":\"table\"},\"series\":{}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": " db.cluster.name={{db.cluster.name}} deployment.environment={{deployment.environment}} sumo.datasource=oracle \"<AuditRecord>\" (\"<Action>44</Action>\" or \"<Action>45</Action>\" or \"<Action>46</Action>\" or \"<Action>48</Action>\")\n| json \"log\" as _rawlog nodrop \n| if (isEmpty(_rawlog), _raw, _rawlog) as oracle_log_message\n| parse regex field=oracle_log_message \"(?<auditrecord>\\<AuditRecord\\>[\\s\\S]+?</AuditRecord>)\"\n| parse XML field=auditrecord \"/AuditRecord/Audit_Type\" as Audit_Type nodrop | parse field=Audit_Type \"<Audit_Type>*</Audit_Type>\" as Audit_Type nodrop\n| parse XML field=auditrecord \"/AuditRecord/Session_Id\" as Session_Id nodrop | parse field=Session_Id \"<Session_Id>*</Session_Id>\" as Session_Id nodrop\n| parse XML field=auditrecord \"/AuditRecord/DB_User\" as databaseUser nodrop | parse field=databaseUser \"<DB_User>*</DB_User>\" as databaseUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/OS_User\" as clientUser nodrop | parse field=clientUser \"<OS_User>*</OS_User>\" as clientUser nodrop\n| parse XML field=auditrecord \"/AuditRecord/Userhost\" as Userhost nodrop | parse field=Userhost \"<Userhost>*</Userhost>\" as Userhost nodrop\n| parse XML field=auditrecord \"/AuditRecord/Sql_Text\" as Sql_Text nodrop | parse field=Sql_Text \"<Sql_Text>*</Sql_Text>\" as Sql_Text nodrop | parse regex field=Sql_Text \"\\s+(?<Sql_Text>.*)\" nodrop\n| parse XML field=auditrecord \"/AuditRecord/Action\" as Action nodrop | parse field=Action \"<Action>*</Action>\" as Action nodrop\n| parse XML field=auditrecord \"/AuditRecord/Returncode\" as status nodrop | parse field=status \"<Returncode>*</Returncode>\" as status nodrop\n| parse XML field=auditrecord \"/AuditRecord/Comment_Text\" as Comment_Text nodrop | parse field=Comment_Text \"<Comment_Text>*</Comment_Text>\" as Comment_Text nodrop\n| parse XML field=auditrecord \"/AuditRecord/Priv_Used\" as privilege nodrop | parse field=privilege \"<Priv_Used>*</Priv_Used>\" as privilege nodrop\n| parse XML field=auditrecord \"/AuditRecord/Terminal\" as clientTerminal nodrop | parse field=clientTerminal \"<Terminal>*</Terminal>\" as clientTerminal nodrop\n| parse field=Comment_Text \"(ADDRESS=(PROTOCOL=*)(HOST=*)(PORT=*))\" as clientProtocol, clientHost, clientPort nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Name\" as Object_Name nodrop | parse field=Object_Name \"<Object_Name>*</Object_Name>\" as Object_Name nodrop\n| parse XML field=auditrecord \"/AuditRecord/Object_Schema\" as Object_Schema nodrop | parse field=Object_Schema \"<Object_Schema>*</Object_Schema>\" as Object_Schema nodrop\n| where Action in (\"44\", \"45\", \"46\", \"48\") // 44 COMMIT, 45 ROLLBACK, 46 SAVEPOINT, 48 SET TRANSACTION\n| fields Session_Id, databaseUser, clientUser, userHost, Action, Object_Name, Object_Schema, Sql_Text, status, clientTerminal, privilege\n| timeslice 1s\n| count as eventCount by _timeslice, Session_Id, databaseUser, clientUser, userHost, Action, Object_Name, Object_Schema, Sql_Text, status, clientTerminal, privilege\n| fields -eventCount\n| if (Action=\"44\", \"COMMIT\", if (Action=\"45\", \"ROLLBACK\", if (Action=\"46\", \"SAVEPOINT\", \"SET TRANSACTION\" ))) as Action\n| sort by _timeslice\n| limit 10",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "db.cluster.name",
+      "displayName": "db.cluster.name",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\nsumo.datasource=oracle|count by db.cluster.name",
+        "field": "db.cluster.name"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "deployment.environment",
+      "displayName": "deployment.environment",
+      "defaultValue": "*",
+      "sourceDefinition": {
+        "variableSourceType": "LogQueryVariableSourceDefinition",
+        "query": "\nsumo.datasource=oracle|count by deployment.environment",
+        "field": "deployment.environment"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

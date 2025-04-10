@@ -1,0 +1,119 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Carbon Black Cloud - Enterprise EDR - Alert Summary",
+  "description": "The Carbon Black Cloud- Enterprise  EDR - Alerts Summary dashboard provides detailed information on the alerts in your environment, including alerts by mode, OS, report, and groups. The panels also show alert trends, recent alerts, and top users.",
+  "title": "Carbon Black Cloud - Enterprise EDR - Alert Summary",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-3h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelPANE-B09B76DC8EF20849",
+        "structure": "{\"height\":14,\"width\":24,\"x\":0,\"y\":13}"
+      },
+      {
+        "key": "panelPANE-C29124A089D1BA43",
+        "structure": "{\"height\":13,\"width\":24,\"x\":0,\"y\":0}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelPANE-B09B76DC8EF20849",
+      "title": "Watchlist Alerts with Rich Process Metadata",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":10,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "(_sourceCategory={{EventDataSource}}  or _sourceCategory={{AlertDataSource}} )(WATCHLIST or EDR) \n| join \n\n(json field=_raw  \"report_name\", \"process_guid\", \"id\", \"alert_url\" , \"severity\", \"device_name\",\"device_username\", \"device_target_value\", \"threat_id\", \"device_os\", \"type\", \"process_name\", \"reason\", \"backend_timestamp\" as report_name, process_guid, alert_id, alert_url ,severity ,device_name, user,target_priority, incident_id, device_os, type, process_name, reason, backend_timestamp nodrop //s3\n| where type =\"WATCHLIST\"\n| parse regex field=process_name \"(?<process_name>[^\\\\//]*)$\"\n| count by process_guid,report_name , alert_id, alert_url ,severity ,device_name, user,target_priority, incident_id, device_os, type, process_name, reason, backend_timestamp) \n\nas alert,\n\n(json field=_raw \"event_origin\",  \"process_guid\", \"process_cmdline\", \"parent_cmdline\", \"process_username\" as event_origin, process_guid, process_cmdline, parent_cmdline, process_username nodrop\n| where event_origin=\"EDR\"\n| count by  event_origin, process_guid, process_cmdline, parent_cmdline, process_username)\n\nas event\n\non alert.process_guid = event.process_guid\n| tourl (alert_alert_url, alert_alert_id) as alert_id\n| count by alert_backend_timestamp, alert_id, alert_device_name,alert_report_name ,alert_severity, alert_reason, event_process_cmdline, event_parent_cmdline, event_process_username\n| fields - _count",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-C29124A089D1BA43",
+      "title": "Alert Summary",
+      "visualSettings": "{\"title\":{\"fontSize\":14},\"axes\":{\"axisX\":{\"titleFontSize\":12,\"labelFontSize\":12},\"axisY\":{\"titleFontSize\":12,\"labelFontSize\":12}},\"series\":{},\"general\":{\"type\":\"table\",\"displayType\":\"default\",\"paginationPageSize\":10,\"fontSize\":12,\"mode\":\"distribution\"},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory={{AlertDataSource}}  \n| json field=_raw \"id\", \"alert_url\" , \"severity\", \"device_name\",\"device_username\", \"device_target_value\", \"threat_id\", \"device_os\", \"type\", \"sensor_action\", \"process_name\", \"reason\", \"backend_timestamp\",\"ioc_id\" as alert_id, alert_url ,severity ,device_name, user,target_priority, incident_id, device_os, type, sensor_action, process_name, reason, backend_timestamp,ioc_id nodrop //s3\n| where type =\"WATCHLIST\"\n| parse regex field=process_name \"(?<process_name>[^\\\\//]*)$\"\n| count by alert_id,backend_timestamp ,severity,  device_name, device_os, process_name,reason\n| count by backend_timestamp ,severity,  device_name, device_os, process_name,reason",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Auto",
+          "timeSource": "Message",
+          "outputCardinalityLimit": 1000
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [
+    {
+      "id": null,
+      "name": "EventDataSource",
+      "displayName": "EventDataSource",
+      "defaultValue": "Labs/CarbonBlackCloudEvents",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/CarbonBlackCloudEvents"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    },
+    {
+      "id": null,
+      "name": "AlertDataSource",
+      "displayName": "AlertDataSource",
+      "defaultValue": "Labs/CarbonBlackCloudAlerts",
+      "sourceDefinition": {
+        "variableSourceType": "CsvVariableSourceDefinition",
+        "values": "Labs/CarbonBlackCloudAlerts"
+      },
+      "allowMultiSelect": false,
+      "includeAllOption": true,
+      "hideFromUI": false,
+      "valueType": "Any"
+    }
+  ],
+  "coloringRules": []
+}

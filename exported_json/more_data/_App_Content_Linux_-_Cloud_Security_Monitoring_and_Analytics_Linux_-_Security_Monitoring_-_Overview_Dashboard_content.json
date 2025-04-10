@@ -1,0 +1,276 @@
+{
+  "type": "DashboardV2SyncDefinition",
+  "name": "Linux - Security Monitoring - Overview",
+  "description": "Summary of measurements and trending across security relevant counts.",
+  "title": "Linux - Security Monitoring - Overview",
+  "theme": "Dark",
+  "topologyLabelMap": {
+    "data": {}
+  },
+  "refreshInterval": 0,
+  "timeRange": {
+    "type": "BeginBoundedTimeRange",
+    "from": {
+      "type": "RelativeTimeRangeBoundary",
+      "relativeTime": "-1h"
+    },
+    "to": null
+  },
+  "layout": {
+    "layoutType": "Grid",
+    "layoutStructures": [
+      {
+        "key": "panelEF7FD0648F357840",
+        "structure": "{\"height\":5,\"width\":12,\"x\":0,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-21DC5E3E84822A47",
+        "structure": "{\"height\":5,\"width\":12,\"x\":12,\"y\":0}"
+      },
+      {
+        "key": "panelPANE-E2E5F64E8E79694E",
+        "structure": "{\"height\":5,\"width\":12,\"x\":12,\"y\":5}"
+      },
+      {
+        "key": "panelPANE-42E4B6358ABE3A41",
+        "structure": "{\"height\":5,\"width\":12,\"x\":0,\"y\":5}"
+      },
+      {
+        "key": "panelPANE-0D27365FBFC0994E",
+        "structure": "{\"height\":5,\"width\":12,\"x\":0,\"y\":10}"
+      },
+      {
+        "key": "panelPANE-8666A2FF9D44B945",
+        "structure": "{\"height\":5,\"width\":12,\"x\":12,\"y\":15}"
+      },
+      {
+        "key": "panelPANE-A61EBF06B27AFA4F",
+        "structure": "{\"height\":5,\"width\":12,\"x\":0,\"y\":15}"
+      },
+      {
+        "key": "panelPANE-7D85722DBFDF0A49",
+        "structure": "{\"height\":5,\"width\":12,\"x\":12,\"y\":10}"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": null,
+      "key": "panelEF7FD0648F357840",
+      "title": "Successful Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\"},\"series\":{},\"svp\":{\"option\":\"Sum\",\"label\":\"Logins\",\"sparkline\":{\"show\":true,\"color\":\"\"},\"gauge\":{\"show\":false}}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| timeslice 1m\n| count as eventCount by _timeslice\n| fillmissing timeslice(1m)\n| sort _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-21DC5E3E84822A47",
+      "title": "Failed Logins",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Failures\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"authentication failure\" or \"FAILED SU\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| if (message matches \"sshd[*\", \"ssh\", \"\") as protocol\n| where dest_user!=\"\"\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip\n| timeslice 1m\n| count as eventCount by _timeslice\n| fillmissing timeslice(1m)\n| sort _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-E2E5F64E8E79694E",
+      "title": "Root Login Failures",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Failures\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"authentication failure\" or \"FAILED SU\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S*)\\s+\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<message>[^;]+)\" nodrop\n| parse \"ruser=* rhost=* user=*\" as src_user, src_host, dest_user nodrop\n| parse \"ruser= rhost=* user=*\" as src_host, dest_user nodrop\n| parse \" user=*\\\"\" as dest_user nodrop\n| parse \"Authentication failure for * from *\" as dest_user, src_host nodrop\n| parse \"FAILED SU (to *) * on\" as dest_user, src_user nodrop\n| parse regex \"FAILED LOGIN (?:SESSION|\\d+) FROM (?:\\S+) FOR (?<dest_user>\\S+),\" nodrop\n| where src_user=\"root\" or dest_user=\"root\"\n| if (message matches \"sshd[*\", \"ssh\", \"\") as protocol\n| where dest_user!=\"\"\n| if (src_user=\"\", dest_user, src_user) as src_user\n| if (src_host=\" \" or isEmpty(src_host), _sourceHost, src_host) as src_host | src_host as src_ip\n| timeslice 1m\n| count as eventCount by _timeslice\n| fillmissing timeslice(1m)\n| sort _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-42E4B6358ABE3A41",
+      "title": "Root Login Success",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Logins\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* (\"su:\" or \"sudo:\" or \"sshd:\" or \"sshd[\" or \"pam:\") ((\"Accepted\" and \"pam\") or \"session\" or (\"to\" and \"on\")) !\"closed\"\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<_sourceHost>\\S*)\\s\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\w*):\\s+(?<message>.*)$\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s(?<dest_host>\\S*)\\s(?:\\S*)\\[\\d+\\]:\\s+(?<message>.*)$\" nodrop \n| parse field=message \"pam_unix(*:*):\" as deamon, ltype nodrop | if (deamon=\"sshd\", \"ssh\", \"\") as protocol | fields -deamon, ltype\n| parse \"session * for user * by *(uid=\" as action, dest_user, src_user nodrop\n| parse regex \"session (?<action>\\w*) for user (?<dest_user>\\S*)\" nodrop\n| parse \"rhost=* \" as src_host nodrop\n| parse \"Accepted * for * from * port * *\" as type, dest_user, src_host, src_port, protocol nodrop\n| where dest_user!=\"\"\n| where src_user=\"root\" or dest_user=\"root\"\n| if (isEmpty(message),\"Authentication successful\",message) as message\n| if (isEmpty(src_host),_sourceHost,src_host) as src_host | src_host as src_ip\n| if (isEmpty(src_user),dest_user,src_user) as src_user\n| timeslice 1m\n| count as eventCount by _timeslice\n| fillmissing timeslice(1m)\n| sort _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-0D27365FBFC0994E",
+      "title": "Accounts Created",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Accounts\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* \"useradd\" and (\"new user\" or \"new account\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S+)\\s+\\w*\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<msg>.+)$\" nodrop\n| parse field=msg \"name=*, UID=\" as dest_user nodrop\n| parse field=msg \"name=*, UID=*, GID=*, home=*, shell=*\" as dest_user, UID, GID, home, shell nodrop\n| parse field=msg \", shell=*\\\"\" as shell nodrop\n| parse field=msg \"account=*, uid=*, gid=*, home=*, shell=*\" as dest_user, UID, GID, home, shell nodrop\n| parse field=msg \"account=*, uid=\" as dest_user nodrop\n| \"Local Server\" as type | _sourceHost as dest_ip\n| timeslice 1m\n| count as eventCount by _timeslice\n| fillmissing timeslice(1m)\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-8666A2FF9D44B945",
+      "title": "Total Services",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Services\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":false,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security*\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<message>.+)$\" nodrop\n| if (isEmpty(dest_host), _sourceHost, dest_host) as dest_host\n| parse regex \"(?<service>\\w*)\\[\\d+\\]:\\s+\" \n| where !isEmpty(service)\n| count as eventCount by service\n| count as services",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-A61EBF06B27AFA4F",
+      "title": "sudo Attempts",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Attempts\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* sudo\n| extract \"(?<process>\\w*):\\s+(?<src_user>[^ ]+?)\\s+:.+?USER=(?<dest_user>[^ ]+?)\\s+\" nodrop\n| where process=\"sudo\"\n| timeslice 1m\n| count as eventCount by _timeslice\n| fillmissing timeslice(1m)\n| sort _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    },
+    {
+      "id": null,
+      "key": "panelPANE-7D85722DBFDF0A49",
+      "title": "Accounts Deleted",
+      "visualSettings": "{\"general\":{\"mode\":\"singleValueMetrics\",\"type\":\"svp\",\"displayType\":\"default\"},\"title\":{\"fontSize\":14},\"svp\":{\"option\":\"Sum\",\"label\":\"Accounts\",\"useBackgroundColor\":false,\"useNoData\":false,\"noDataString\":\"No data\",\"hideData\":false,\"hideLabel\":false,\"rounding\":2,\"valueFontSize\":24,\"labelFontSize\":14,\"thresholds\":[{\"from\":null,\"to\":null,\"color\":\"#16943E\"},{\"from\":null,\"to\":null,\"color\":\"#DFBE2E\"},{\"from\":null,\"to\":null,\"color\":\"#BF2121\"}],\"sparkline\":{\"show\":true,\"color\":\"#222D3B\"},\"gauge\":{\"show\":false}},\"series\":{},\"legend\":{\"enabled\":false}}",
+      "keepVisualSettingsConsistentWithParent": true,
+      "panelType": "SumoSearchPanel",
+      "queries": [
+        {
+          "transient": false,
+          "queryString": "_sourceCategory = Labs/OS/linux/Security* ((\"userdel\" and \"delete user\") or \"account deleted\")\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<_sourceHost>\\S+)\\s+\\w*\" nodrop\n| parse regex \"\\S*\\s+\\d+\\s+\\d+:\\d+:\\d+\\s+(?<dest_host>\\S*)\\s+(?<process>\\w*)(?:\\[\\d+\\]:|:)\\s*(?<msg>.+)$\" nodrop\n| dest_host as dest_ip\n| parse field=msg \"delete user '*'\" as dest_user nodrop\n| parse \"account=*, group=*, gid=\" as dest_user, dest_group nodrop\n| parse \"account=*, uid=\" as dest_user nodrop \n| timeslice 1m\n| count as eventCount by _timeslice\n| fillmissing timeslice(1m)\n| sort by _timeslice",
+          "queryType": "Logs",
+          "queryKey": "A",
+          "metricsQueryMode": null,
+          "metricsQueryData": null,
+          "tracesQueryData": null,
+          "spansQueryData": null,
+          "parseMode": "Manual",
+          "timeSource": "Message",
+          "outputCardinalityLimit": null
+        }
+      ],
+      "description": "",
+      "timeRange": null,
+      "coloringRules": null,
+      "linkedDashboards": []
+    }
+  ],
+  "variables": [],
+  "coloringRules": []
+}

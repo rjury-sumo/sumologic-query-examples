@@ -1,0 +1,15 @@
+{
+  "type": "SavedSearchWithScheduleSyncDefinition",
+  "name": "Last Successful Login for a specific user",
+  "search": {
+    "queryText": "_sourceCategory = Labs/windows-jsonformat  \"\\\"Channel\\\":\\\"Security\\\"\" \"\\\"EventID\\\":\\\"4624\\\"\" myuser  _sourceName=Security \n// provide username you want to search for in place of myuser\n| json \"EventID\", \"Computer\", \"Message\", \"Keywords\", \"EventData.SubjectUserName\",  \"EventData.SubjectDomainName\", \"EventData.TargetUserName\", \"EventData.TargetDomainName\", \"EventData.IpAddress\", \"EventData.IpPort\", \"Channel\", \"Level\", \"EventData.LogonType\" as event_id, host, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel, level, logon_type nodrop\n| parse regex field=msg_summary \"Client Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Client Port:\\s+?(?<src_port>[\\d-]+)\" nodrop  \n| parse regex field=msg_summary \"Source Network Address:\\s+(?<src_ip>[^\\r]+?)\\r[\\s\\S]+?Source Port:\\s+?(?<src_port>[\\d-]+)\" nodrop\n| parse regex field=msg_summary \"Client Name:\\s+(?<src_host>[^\\r]+?)\\r[\\s\\S]+?Client Address:[\\s\\r]+(?<src_ip>[^\\r]+)\" nodrop\n| where event_id = \"4624\" and logon_type in (\"2\",\"7\",\"8\",\"10\",\"11\") and dest_user matches \"myuser\" // provide username you want to search for in place of myuser\n| first(_messagetime) as last_login by host, src_user, src_domain, src_ip, src_port, dest_user, dest_domain, logon_type, src_host\n| sort by last_login \n| formatDate(fromMillis(last_login), \"MM-dd-yyyy HH:mm:ss z\") as last_login",
+    "byReceiptTime": false,
+    "viewName": "",
+    "viewStartTime": "1970-01-01T00:00:00Z",
+    "queryParameters": [],
+    "parsingMode": "Manual",
+    "defaultTimeRange": "-14d"
+  },
+  "searchSchedule": null,
+  "description": ""
+}
