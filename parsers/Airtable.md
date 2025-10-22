@@ -1,16 +1,69 @@
 # Parsers For Airtable
 
-| use_case | parser |
-|--- | --- |
-| Airtable/Overview/Action by Status Over Time | _sourceCategory={{_sourceCategory}} <br>\| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop |
-| Airtable/Overview/Actions Over Time | _sourceCategory={{_sourceCategory}} <br>\| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop |
-| Airtable/Overview/Audit Log Summary | _sourceCategory={{_sourceCategory}} <br>\| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop |
-| Airtable/Overview/Distribution of Actions | _sourceCategory={{_sourceCategory}} <br>\| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop |
-| Airtable/Overview/Distribution of Audit Logs by API | _sourceCategory={{_sourceCategory}} <br>\| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop |
-| Airtable/Overview/Geo Location of Clients | _sourceCategory={{_sourceCategory}} <br>\| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop |
-| Airtable/Overview/Top 10 Actions by Success Ratio | _sourceCategory={{_sourceCategory}} <br>\| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop |
-| Airtable/Overview/Top 10 Active Users | _sourceCategory={{_sourceCategory}} <br>\| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop |
-| Airtable/Overview/Total Audit Logs | _sourceCategory={{_sourceCategory}} <br>\| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop |
-| Airtable/Overview/Total Failed Execution | _sourceCategory={{_sourceCategory}} <br>\| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop |
-| Airtable/Overview/Total Users | _sourceCategory={{_sourceCategory}} <br>\| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop |
+**Airtable/Overview/Action by Status Over Time**
+```
+_sourceCategory={{_sourceCategory}} 
+| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop
+```
+
+**Airtable/Overview/Actions Over Time**
+```
+_sourceCategory={{_sourceCategory}} 
+| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop
+```
+
+**Airtable/Overview/Audit Log Summary**
+```
+_sourceCategory={{_sourceCategory}} 
+| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop
+```
+
+**Airtable/Overview/Distribution of Actions**
+```
+_sourceCategory={{_sourceCategory}} 
+| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop
+```
+
+**Airtable/Overview/Distribution of Audit Logs by API**
+```
+_sourceCategory={{_sourceCategory}} 
+| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop
+```
+
+**Airtable/Overview/Geo Location of Clients**
+```
+_sourceCategory={{_sourceCategory}} 
+| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop
+```
+
+**Airtable/Overview/Top 10 Actions by Success Ratio**
+```
+_sourceCategory={{_sourceCategory}} 
+| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop
+```
+
+**Airtable/Overview/Top 10 Active Users**
+```
+_sourceCategory={{_sourceCategory}} 
+| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop
+```
+
+**Airtable/Overview/Total Audit Logs**
+```
+_sourceCategory={{_sourceCategory}} 
+| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop
+```
+
+**Airtable/Overview/Total Failed Execution**
+```
+_sourceCategory={{_sourceCategory}} 
+| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop
+```
+
+**Airtable/Overview/Total Users**
+```
+_sourceCategory={{_sourceCategory}} 
+| Json "enterpriseaccountid", "originatinguserid", "apiname", "apiversion", "actionid", "client.ipaddress", "request.requestid", "request.starttime", "request.modelclassname", "request.modelid", "request.action", "response.success" as enterprise_account_id, originating_user_id, api_name, api_version, action_id, ipaddress, requestid, starttime, modelclassname, modelid, action, success nodrop
+```
+
 

@@ -1,52 +1,314 @@
 # Parsers For Postman
 
-| use_case | parser |
-|--- | --- |
-| Postman/Collections, Requests & Team Activity/Collections with Authentication Auth Type Trend | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id" <br>\| json "collection.info._postman_id", "collection.info.name", "collection.auth.type", "collection.item[*].request.method" as postmanId, name, authType, methodList nodrop |
-| Postman/Collections, Requests & Team Activity/Collections with Authentication by Auth Type | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id" <br>\| json "collection.info._postman_id", "collection.info.name", "collection.auth.type", "collection.item[*].request.method" as postmanId, name, authType, methodList nodrop |
-| Postman/Collections, Requests & Team Activity/Integrated collections | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id"<br>\| json "collection.info._postman_id", "collection.info.name", "collection.item[*].request.method" as postmanId, name, methodList nodrop |
-| Postman/Collections, Requests & Team Activity/Methods by Collection | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id" <br>\| json "collection.info._postman_id", "collection.info.name", "collection.item[*].id", "collection.item[*].request.method" as postmanId, name, requestIdList, methodList nodrop<br>\| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi<br>\| where postmanId matches "{{postmanId}}" and name matches "{{name}}" and  method matches "{{method}}" <br>\| first(methodList) by postmanId<br>\| extract field=_first "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi  |
-| Postman/Collections, Requests & Team Activity/Recent Collection Events | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id" <br>\| json "collection.info._postman_id", "collection.info.name", "collection.info.schema", "collection.auth.type", "collection.item[*].request.method" as postmanId, name, schema, authType, methodList nodrop |
-| Postman/Collections, Requests & Team Activity/Recent Team Activity Updates - Collection | _sourceCategory={{Logsdatasource}}  action model collection<br>\| json "model", "action", "model_name", "collection_name", "collection_uid", "model_uid", "user_name", "message" as model, action, modelName, collectionName, collectionUid, modelUid, userName, message nodrop |
-| Postman/Collections, Requests & Team Activity/Recent Team Activity Updates - Requests | _sourceCategory={{Logsdatasource}}  action model request<br>\| json "model", "action", "model_name", "collection_name", "collection_uid", "model_uid", "user_name", "message" as model, action, modelName, collectionName, collectionUid, modelUid, userName, message nodrop |
-| Postman/Collections, Requests & Team Activity/Requests by Collection | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id"<br>\| json "collection.info._postman_id", "collection.info.name", "collection.item[*].id", "collection.item[*].request.method" as postmanId, name, requestIdList, methodList nodrop<br>\| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi<br>\| where method matches "{{method}}" and postmanId matches "{{postmanId}}" and name matches "{{name}}"<br>\| extract field=requestIdList "\"?(?<requestId>[\w\s\-&.,]*)\"?[,\n\]]" multi |
-| Postman/Collections, Requests & Team Activity/Requests by Method | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id" <br>\| json "collection.info._postman_id", "collection.info.name", "collection.item[*].id", "collection.item[*].request.method" as postmanId, name, requestIdList, methodList nodrop<br>\| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi<br>\| where postmanId matches "{{postmanId}}" and name matches "{{name}}" and  method matches "{{method}}" <br>\| first(methodList) by postmanId<br>\| extract field=_first "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi  |
-| Postman/Collections, Requests & Team Activity/Requests with Authentication by Auth Type | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id"<br>\| json "collection.info._postman_id", "collection.info.name", "collection.item[*].request.auth.type", "collection.item[*].request.method" as postmanId, name, authTypeList, methodList nodrop<br>\| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi<br>\| where method matches "{{method}}" and postmanId matches "{{postmanId}}" and name matches "{{name}}"<br>\| first(postmanId) by postmanId, authTypeList<br>\| extract field=authTypeList "\"?(?<authType>[\w\s\-&.,]*)\"?[,\n\]]" multi |
-| Postman/Collections, Requests & Team Activity/Team Activities by Model | _sourceCategory={{Logsdatasource}}  action model<br>\| json "model", "action" as model, action |
-| Postman/Collections, Requests & Team Activity/Team Activities by User Trend | _sourceCategory={{Logsdatasource}}  action model<br>\| json "model", "action", "user_name" as model, action, userName nodrop |
-| Postman/Collections, Requests & Team Activity/Team Activities Model Trend | _sourceCategory={{Logsdatasource}}  action model<br>\| json "model", "action" as model, action |
-| Postman/Collections, Requests & Team Activity/Top Body Modes for Requests | _sourceCategory={{Logsdatasource}}  "_postman_id"<br>\| json "collection.info._postman_id", "collection.info.name", "collection.item[*].request.body.mode", "collection.item[*].request.method" as postmanId, name, bodyModeList, methodList nodrop<br>\| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi<br>\| where postmanId matches "{{postmanId}}" and name matches "{{name}}" and  method matches "{{method}}" <br>\| first(bodyModeList) by postmanId<br>\| extract field=_first "\"?(?<bodyMode>[\w\s\-&.,]*)\"?[,\n\]]" multi  |
-| Postman/Collections, Requests & Team Activity/Top Collections and Models with Team Activities | _sourceCategory={{Logsdatasource}}  action model<br>\| json "model","action", "model_name", "collection_name", "collection_uid", "model_uid"  as model, action, modelName, collectionName, collectionUid, modelUid nodrop |
-| Postman/Collections, Requests & Team Activity/Top Header Keys for Requests | _sourceCategory={{Logsdatasource}}  collection "_postman_id" <br>\| json "collection.info._postman_id", "collection.info.name", "collection.item[*].request.header[*].key", "collection.item[*].request.method" as postmanId, name, headerKeyList, methodList nodrop<br>\| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi<br>\| where method matches "{{method}}" and postmanId matches "{{postmanId}}" and name matches "{{name}}"<br>\| first(headerKeyList) by postmanId<br>\| extract field=_first "\"?(?<headerKey>[\w\s\-&.,]*)\"?[,\n\]]" multi  |
-| Postman/Collections, Requests & Team Activity/Top Users by Team Activities | _sourceCategory={{Logsdatasource}}  action model<br>\| json "model", "action", "model_name", "collection_name", "collection_uid", "model_uid", "user_name" as model, action, modelName, collectionName, collectionUid, modelUid, userName nodrop |
-| Postman/Collections, Requests & Team Activity/Total Requests | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id"<br>\| json "collection.info._postman_id", "collection.info.name", "collection.item[*].id", "collection.item[*].request.method" as postmanId, name, requestIdList, methodList nodrop<br>\| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi<br>\| where method matches "{{method}}" and postmanId matches "{{postmanId}}" and name matches "{{name}}"<br>\| extract field=requestIdList "\"?(?<requestId>[\w\s\-&.,]*)\"?[,\n\]]" multi |
-| Postman/Monitors/Average Latency | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.responseLatency", "monitor_name" as collectionName, responseLatency, monitorName nodrop |
-| Postman/Monitors/Average Latency - Outlier | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.responseLatency", "monitor_name" as collectionName, responseLatency, monitorName nodrop |
-| Postman/Monitors/Errors | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.errorCount", "monitor_name" as collectionName, errorCount, monitorName nodrop |
-| Postman/Monitors/Errors by Monitor | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.errorCount", "monitor_name" as collectionName, errorCount, monitorName nodrop |
-| Postman/Monitors/Errors Over Time | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.failedTestCount", "metrics.passedTestCount", "monitor_name", "metrics.errorCount"as collectionName, failedTestCount, passedTestCount, monitorName, errorCount nodrop |
-| Postman/Monitors/Failed Tests | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.failedTestCount", "monitor_name" as collectionName, failedTestCount, monitorName nodrop |
-| Postman/Monitors/Failed Tests by Monitor | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.failedTestCount", "monitor_name" as collectionName, failedTestCount, monitorName nodrop |
-| Postman/Monitors/Failed Tests Over Time | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.failedTestCount", "metrics.passedTestCount", "monitor_name" as collectionName, failedTestCount, passedTestCount, monitorName nodrop |
-| Postman/Monitors/Monitors | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.requestCount", "monitor_name", "metrics.responseLatency" as collectionName, requestCount, monitorName, responseLatency nodrop |
-| Postman/Monitors/Passed Tests | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.passedTestCount", "monitor_name" as collectionName, passedTestCount, monitorName nodrop |
-| Postman/Monitors/Passed Tests Over Time | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.failedTestCount", "metrics.passedTestCount", "monitor_name" as collectionName, failedTestCount, passedTestCount, monitorName nodrop |
-| Postman/Monitors/Requests Over Time | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.failedTestCount", "metrics.passedTestCount", "monitor_name", "metrics.requestCount" as collectionName, failedTestCount, passedTestCount, monitorName, requestCount nodrop |
-| Postman/Monitors/Response Latency by Monitor | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.requestCount", "monitor_name", "metrics.responseLatency" as collectionName, requestCount, monitorName, responseLatency nodrop |
-| Postman/Monitors/Total Requests | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.requestCount", "monitor_name" as collectionName, requestCount, monitorName nodrop |
-| Postman/Monitors/Warnings | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.warningCount", "monitor_name" as collectionName, warningCount, monitorName nodrop |
-| Postman/Monitors/Warnings by Monitor | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.warningCount", "monitor_name" as collectionName, warningCount, monitorName nodrop |
-| Postman/Monitors/Warnings Over Time | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.failedTestCount", "metrics.passedTestCount", "monitor_name", "metrics.warningCount"as collectionName, failedTestCount, passedTestCount, monitorName, warningCount nodrop |
-| Postman/Overview/Average Latency | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.responseLatency", "monitor_name" as collectionName, responseLatency, monitorName nodrop |
-| Postman/Overview/Collections with Authentication by Auth Type | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id" <br>\| json "collection.info._postman_id", "collection.info.name", "collection.auth.type", "collection.item[*].request.method" as postmanId, name, authType, methodList nodrop |
-| Postman/Overview/Errors | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.errorCount", "monitor_name" as collectionName, errorCount, monitorName nodrop |
-| Postman/Overview/Errors by Monitor | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.errorCount", "monitor_name" as collectionName, errorCount, monitorName nodrop |
-| Postman/Overview/Failed Tests | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.failedTestCount", "monitor_name" as collectionName, failedTestCount, monitorName nodrop |
-| Postman/Overview/Failed Tests by Monitor | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.failedTestCount", "monitor_name" as collectionName, failedTestCount, monitorName nodrop |
-| Postman/Overview/Integrated Collections | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id"<br>\| json "collection.info._postman_id", "collection.info.name", "collection.item[*].request.method" as postmanId, name, methodList nodrop |
-| Postman/Overview/Passed Tests | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.passedTestCount", "monitor_name" as collectionName, passedTestCount, monitorName nodrop |
-| Postman/Overview/Response Latency by Monitor | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.requestCount", "monitor_name", "metrics.responseLatency" as collectionName, requestCount, monitorName, responseLatency nodrop |
-| Postman/Overview/Team Activities by Model | _sourceCategory={{Logsdatasource}}  action model<br>\| json "model", "action" as model, action |
-| Postman/Overview/Total Requests | _sourceCategory={{Logsdatasource}}  "collection" "_postman_id"<br>\| json "collection.info._postman_id", "collection.info.name", "collection.item[*].id", "collection.item[*].request.method" as postmanId, name, requestIdList, methodList nodrop<br>\| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi<br>\| where method matches "{{method}}" and postmanId matches "{{postmanId}}" and name matches "{{name}}"<br>\| extract field=requestIdList "\"?(?<requestId>[\w\s\-&.,]*)\"?[,\n\]]" multi |
-| Postman/Overview/Warnings | _sourceCategory={{Logsdatasource}}  "collection_name" "metrics"<br>\| json "collection_name", "metrics.warningCount", "monitor_name" as collectionName, warningCount, monitorName nodrop |
+**Postman/Collections, Requests & Team Activity/Collections with Authentication Auth Type Trend**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id" 
+| json "collection.info._postman_id", "collection.info.name", "collection.auth.type", "collection.item[*].request.method" as postmanId, name, authType, methodList nodrop
+```
+
+**Postman/Collections, Requests & Team Activity/Collections with Authentication by Auth Type**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id" 
+| json "collection.info._postman_id", "collection.info.name", "collection.auth.type", "collection.item[*].request.method" as postmanId, name, authType, methodList nodrop
+```
+
+**Postman/Collections, Requests & Team Activity/Integrated collections**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id"
+| json "collection.info._postman_id", "collection.info.name", "collection.item[*].request.method" as postmanId, name, methodList nodrop
+```
+
+**Postman/Collections, Requests & Team Activity/Methods by Collection**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id" 
+| json "collection.info._postman_id", "collection.info.name", "collection.item[*].id", "collection.item[*].request.method" as postmanId, name, requestIdList, methodList nodrop
+| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi
+| where postmanId matches "{{postmanId}}" and name matches "{{name}}" and  method matches "{{method}}" 
+| first(methodList) by postmanId
+| extract field=_first "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi 
+```
+
+**Postman/Collections, Requests & Team Activity/Recent Collection Events**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id" 
+| json "collection.info._postman_id", "collection.info.name", "collection.info.schema", "collection.auth.type", "collection.item[*].request.method" as postmanId, name, schema, authType, methodList nodrop
+```
+
+**Postman/Collections, Requests & Team Activity/Recent Team Activity Updates - Collection**
+```
+_sourceCategory={{Logsdatasource}}  action model collection
+| json "model", "action", "model_name", "collection_name", "collection_uid", "model_uid", "user_name", "message" as model, action, modelName, collectionName, collectionUid, modelUid, userName, message nodrop
+```
+
+**Postman/Collections, Requests & Team Activity/Recent Team Activity Updates - Requests**
+```
+_sourceCategory={{Logsdatasource}}  action model request
+| json "model", "action", "model_name", "collection_name", "collection_uid", "model_uid", "user_name", "message" as model, action, modelName, collectionName, collectionUid, modelUid, userName, message nodrop
+```
+
+**Postman/Collections, Requests & Team Activity/Requests by Collection**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id"
+| json "collection.info._postman_id", "collection.info.name", "collection.item[*].id", "collection.item[*].request.method" as postmanId, name, requestIdList, methodList nodrop
+| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi
+| where method matches "{{method}}" and postmanId matches "{{postmanId}}" and name matches "{{name}}"
+| extract field=requestIdList "\"?(?<requestId>[\w\s\-&.,]*)\"?[,\n\]]" multi
+```
+
+**Postman/Collections, Requests & Team Activity/Requests by Method**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id" 
+| json "collection.info._postman_id", "collection.info.name", "collection.item[*].id", "collection.item[*].request.method" as postmanId, name, requestIdList, methodList nodrop
+| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi
+| where postmanId matches "{{postmanId}}" and name matches "{{name}}" and  method matches "{{method}}" 
+| first(methodList) by postmanId
+| extract field=_first "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi 
+```
+
+**Postman/Collections, Requests & Team Activity/Requests with Authentication by Auth Type**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id"
+| json "collection.info._postman_id", "collection.info.name", "collection.item[*].request.auth.type", "collection.item[*].request.method" as postmanId, name, authTypeList, methodList nodrop
+| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi
+| where method matches "{{method}}" and postmanId matches "{{postmanId}}" and name matches "{{name}}"
+| first(postmanId) by postmanId, authTypeList
+| extract field=authTypeList "\"?(?<authType>[\w\s\-&.,]*)\"?[,\n\]]" multi
+```
+
+**Postman/Collections, Requests & Team Activity/Team Activities by Model**
+```
+_sourceCategory={{Logsdatasource}}  action model
+| json "model", "action" as model, action
+```
+
+**Postman/Collections, Requests & Team Activity/Team Activities by User Trend**
+```
+_sourceCategory={{Logsdatasource}}  action model
+| json "model", "action", "user_name" as model, action, userName nodrop
+```
+
+**Postman/Collections, Requests & Team Activity/Team Activities Model Trend**
+```
+_sourceCategory={{Logsdatasource}}  action model
+| json "model", "action" as model, action
+```
+
+**Postman/Collections, Requests & Team Activity/Top Body Modes for Requests**
+```
+_sourceCategory={{Logsdatasource}}  "_postman_id"
+| json "collection.info._postman_id", "collection.info.name", "collection.item[*].request.body.mode", "collection.item[*].request.method" as postmanId, name, bodyModeList, methodList nodrop
+| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi
+| where postmanId matches "{{postmanId}}" and name matches "{{name}}" and  method matches "{{method}}" 
+| first(bodyModeList) by postmanId
+| extract field=_first "\"?(?<bodyMode>[\w\s\-&.,]*)\"?[,\n\]]" multi 
+```
+
+**Postman/Collections, Requests & Team Activity/Top Collections and Models with Team Activities**
+```
+_sourceCategory={{Logsdatasource}}  action model
+| json "model","action", "model_name", "collection_name", "collection_uid", "model_uid"  as model, action, modelName, collectionName, collectionUid, modelUid nodrop
+```
+
+**Postman/Collections, Requests & Team Activity/Top Header Keys for Requests**
+```
+_sourceCategory={{Logsdatasource}}  collection "_postman_id" 
+| json "collection.info._postman_id", "collection.info.name", "collection.item[*].request.header[*].key", "collection.item[*].request.method" as postmanId, name, headerKeyList, methodList nodrop
+| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi
+| where method matches "{{method}}" and postmanId matches "{{postmanId}}" and name matches "{{name}}"
+| first(headerKeyList) by postmanId
+| extract field=_first "\"?(?<headerKey>[\w\s\-&.,]*)\"?[,\n\]]" multi 
+```
+
+**Postman/Collections, Requests & Team Activity/Top Users by Team Activities**
+```
+_sourceCategory={{Logsdatasource}}  action model
+| json "model", "action", "model_name", "collection_name", "collection_uid", "model_uid", "user_name" as model, action, modelName, collectionName, collectionUid, modelUid, userName nodrop
+```
+
+**Postman/Collections, Requests & Team Activity/Total Requests**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id"
+| json "collection.info._postman_id", "collection.info.name", "collection.item[*].id", "collection.item[*].request.method" as postmanId, name, requestIdList, methodList nodrop
+| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi
+| where method matches "{{method}}" and postmanId matches "{{postmanId}}" and name matches "{{name}}"
+| extract field=requestIdList "\"?(?<requestId>[\w\s\-&.,]*)\"?[,\n\]]" multi
+```
+
+**Postman/Monitors/Average Latency**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.responseLatency", "monitor_name" as collectionName, responseLatency, monitorName nodrop
+```
+
+**Postman/Monitors/Average Latency - Outlier**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.responseLatency", "monitor_name" as collectionName, responseLatency, monitorName nodrop
+```
+
+**Postman/Monitors/Errors**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.errorCount", "monitor_name" as collectionName, errorCount, monitorName nodrop
+```
+
+**Postman/Monitors/Errors by Monitor**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.errorCount", "monitor_name" as collectionName, errorCount, monitorName nodrop
+```
+
+**Postman/Monitors/Errors Over Time**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.failedTestCount", "metrics.passedTestCount", "monitor_name", "metrics.errorCount"as collectionName, failedTestCount, passedTestCount, monitorName, errorCount nodrop
+```
+
+**Postman/Monitors/Failed Tests**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.failedTestCount", "monitor_name" as collectionName, failedTestCount, monitorName nodrop
+```
+
+**Postman/Monitors/Failed Tests by Monitor**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.failedTestCount", "monitor_name" as collectionName, failedTestCount, monitorName nodrop
+```
+
+**Postman/Monitors/Failed Tests Over Time**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.failedTestCount", "metrics.passedTestCount", "monitor_name" as collectionName, failedTestCount, passedTestCount, monitorName nodrop
+```
+
+**Postman/Monitors/Monitors**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.requestCount", "monitor_name", "metrics.responseLatency" as collectionName, requestCount, monitorName, responseLatency nodrop
+```
+
+**Postman/Monitors/Passed Tests**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.passedTestCount", "monitor_name" as collectionName, passedTestCount, monitorName nodrop
+```
+
+**Postman/Monitors/Passed Tests Over Time**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.failedTestCount", "metrics.passedTestCount", "monitor_name" as collectionName, failedTestCount, passedTestCount, monitorName nodrop
+```
+
+**Postman/Monitors/Requests Over Time**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.failedTestCount", "metrics.passedTestCount", "monitor_name", "metrics.requestCount" as collectionName, failedTestCount, passedTestCount, monitorName, requestCount nodrop
+```
+
+**Postman/Monitors/Response Latency by Monitor**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.requestCount", "monitor_name", "metrics.responseLatency" as collectionName, requestCount, monitorName, responseLatency nodrop
+```
+
+**Postman/Monitors/Total Requests**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.requestCount", "monitor_name" as collectionName, requestCount, monitorName nodrop
+```
+
+**Postman/Monitors/Warnings**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.warningCount", "monitor_name" as collectionName, warningCount, monitorName nodrop
+```
+
+**Postman/Monitors/Warnings by Monitor**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.warningCount", "monitor_name" as collectionName, warningCount, monitorName nodrop
+```
+
+**Postman/Monitors/Warnings Over Time**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.failedTestCount", "metrics.passedTestCount", "monitor_name", "metrics.warningCount"as collectionName, failedTestCount, passedTestCount, monitorName, warningCount nodrop
+```
+
+**Postman/Overview/Average Latency**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.responseLatency", "monitor_name" as collectionName, responseLatency, monitorName nodrop
+```
+
+**Postman/Overview/Collections with Authentication by Auth Type**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id" 
+| json "collection.info._postman_id", "collection.info.name", "collection.auth.type", "collection.item[*].request.method" as postmanId, name, authType, methodList nodrop
+```
+
+**Postman/Overview/Errors**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.errorCount", "monitor_name" as collectionName, errorCount, monitorName nodrop
+```
+
+**Postman/Overview/Errors by Monitor**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.errorCount", "monitor_name" as collectionName, errorCount, monitorName nodrop
+```
+
+**Postman/Overview/Failed Tests**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.failedTestCount", "monitor_name" as collectionName, failedTestCount, monitorName nodrop
+```
+
+**Postman/Overview/Failed Tests by Monitor**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.failedTestCount", "monitor_name" as collectionName, failedTestCount, monitorName nodrop
+```
+
+**Postman/Overview/Integrated Collections**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id"
+| json "collection.info._postman_id", "collection.info.name", "collection.item[*].request.method" as postmanId, name, methodList nodrop
+```
+
+**Postman/Overview/Passed Tests**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.passedTestCount", "monitor_name" as collectionName, passedTestCount, monitorName nodrop
+```
+
+**Postman/Overview/Response Latency by Monitor**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.requestCount", "monitor_name", "metrics.responseLatency" as collectionName, requestCount, monitorName, responseLatency nodrop
+```
+
+**Postman/Overview/Team Activities by Model**
+```
+_sourceCategory={{Logsdatasource}}  action model
+| json "model", "action" as model, action
+```
+
+**Postman/Overview/Total Requests**
+```
+_sourceCategory={{Logsdatasource}}  "collection" "_postman_id"
+| json "collection.info._postman_id", "collection.info.name", "collection.item[*].id", "collection.item[*].request.method" as postmanId, name, requestIdList, methodList nodrop
+| extract field=methodList "\"?(?<method>[\w\s\-&.,]*)\"?[,\n\]]" multi
+| where method matches "{{method}}" and postmanId matches "{{postmanId}}" and name matches "{{name}}"
+| extract field=requestIdList "\"?(?<requestId>[\w\s\-&.,]*)\"?[,\n\]]" multi
+```
+
+**Postman/Overview/Warnings**
+```
+_sourceCategory={{Logsdatasource}}  "collection_name" "metrics"
+| json "collection_name", "metrics.warningCount", "monitor_name" as collectionName, warningCount, monitorName nodrop
+```
+
 

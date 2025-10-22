@@ -1,20 +1,93 @@
 # Parsers For iLert
 
-| use_case | parser |
-|--- | --- |
-| iLert/Overview/Alert by Priority | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Alert by Source | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Alert by Time Spends | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Alerts by Event Type | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Alerts Current Status | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Alerts Flow | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Avg Time to Resolve Alerts | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Event Type Trend | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/High Priority Alert | _sourceCategory={{Logsdatasource}}  "HIGH"<br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Pending Alerts | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Recent Alerts Summary | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Resolved Alerts | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Source Trend | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Top Active Responder | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
-| iLert/Overview/Unique Alert Generated | _sourceCategory={{Logsdatasource}} <br>\| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop |
+**iLert/Overview/Alert by Priority**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Alert by Source**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Alert by Time Spends**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Alerts by Event Type**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Alerts Current Status**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Alerts Flow**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Avg Time to Resolve Alerts**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Event Type Trend**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/High Priority Alert**
+```
+_sourceCategory={{Logsdatasource}}  "HIGH"
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Pending Alerts**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Recent Alerts Summary**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Resolved Alerts**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Source Trend**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Top Active Responder**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
+**iLert/Overview/Unique Alert Generated**
+```
+_sourceCategory={{Logsdatasource}} 
+| json "id", "summary", "details", "reportTime", "status", "eventType", "priority", "alertSource.name", "assignedTo.username", "assignedTo.email", "responders[0].user.username", "responders[0].user.email" as id, summary, detail, reportTime, status, eventType, priority, alertSource, assignedUserName, assignedEmail, responderUserName, responderEmail nodrop
+```
+
 

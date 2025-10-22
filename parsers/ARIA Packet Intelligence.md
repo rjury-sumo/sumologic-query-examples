@@ -1,21 +1,99 @@
 # Parsers For ARIA Packet Intelligence
 
-| use_case | parser |
-|--- | --- |
-| ARIA Packet Intelligence/ARIA PI - Network Traffic Visibility/Frequent Internal Destinations | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Network Traffic Visibility/Frequent Internal Sources | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Network Traffic Visibility/Geo IP of Traffic Sources | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Network Traffic Visibility/Traffic by Type | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Intrusion Events | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Intrusion Events Over Time | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Intrusion Traffic | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Policy Violation | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Policy Violation Traffic | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Policy Violations Over Time | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Threat Summary/Ransomware Events | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Threat Summary/Ransomware Events Over Time | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/ARIA PI - Threat Summary/Ransomware Traffic | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/Query example 2/Query example 2 | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/Query example/Query example | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
-| ARIA Packet Intelligence/Traffic by Type/Traffic by Type | _sourceCategory={{_sourceCategory}} <br>\| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags |
+**ARIA Packet Intelligence/ARIA PI - Network Traffic Visibility/Frequent Internal Destinations**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Network Traffic Visibility/Frequent Internal Sources**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Network Traffic Visibility/Geo IP of Traffic Sources**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Network Traffic Visibility/Traffic by Type**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Intrusion Events**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Intrusion Events Over Time**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Intrusion Traffic**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Policy Violation**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Policy Violation Traffic**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Threat Summary/Possible Policy Violations Over Time**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Threat Summary/Ransomware Events**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Threat Summary/Ransomware Events Over Time**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/ARIA PI - Threat Summary/Ransomware Traffic**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/Query example 2/Query example 2**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/Query example/Query example**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
+**ARIA Packet Intelligence/Traffic by Type/Traffic by Type**
+```
+_sourceCategory={{_sourceCategory}} 
+| parse "\"hostName\":\"*\",\"product\":\"*\",\"metaData\":{\"flowID\":*,\"flowStart\":*,\"flowEnd\":*,\"pktsSent\":*,\"pktsRcvd\":*,\"bytesSent\":*,\"bytesRcvd\":*,\"srcMac\":\"*\",\"dstMac\":\"*\",\"vlanId\":*,\"srcIP\":\"*\",\"dstIP\":\"*\",\"srcTOS\":*,\"dstTOS\":*,\"l4Proto\":*,\"srcPort\":*,\"dstPort\":*,\"tcpFlags\":*}}" as HostName,Product,FlowID,FlowStart,FlowEnd,PktsSent,PktsRcvd,BytesSent,BytesRcvd,SrcMac,DstMac,VlanID,SrcIP,DstIP,SrcTos,DstTos,Protocol,SrcPort,DstPort,TcpFlags
+```
+
 

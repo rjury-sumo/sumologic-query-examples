@@ -1,34 +1,386 @@
 # Parsers For PCI Compliance For Windows JSON - OpenTelemetry
 
-| use_case | parser |
-|--- | --- |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/Actions by Privileged Accounts | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\""<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/Policy Changes | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} ("\"channel\":\"System\"" or "\"channel\":\"Security\"") ("Audit Policy Change" or "System audit policy was changed" or *policy*change*)<br>\| json "event_id.id", "computer", "message", "event_data", "keywords" as event_id, host, msg_summary, event_data, msg_type nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/Service Execution Trend | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" 7036<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary,event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse regex field=msg_summary "The (?<service>\w.+?) service entered the (?<state>\w+) state" nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/Service Stopped | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" 7036 "stopped state"<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse regex field=msg_summary "The (?<service>\w.+?) service entered the (?<state>\w+) state" nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/System Restarted | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4608<br>\| json "event_id.id", "computer", "message" as event_id, host, msg_summary nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/System Time Change | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} (("\"channel\":\"System\"" or "\"channel\":\"Security\"") (35 or 37 or 4616))<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/Tampering Audit Logs | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} ("\"channel\":\"System\"" or "\"channel\":\"Security\"") (1102 or 517 or 104)<br>\| json "event_id.id", "computer", "message" as event_id, host, msg_summary nodrop<br>\| json "details.Subject.Logon ID", "details.Subject.Domain Name" as src_user, src_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Created | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4720<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Deleted | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4726<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Disabled | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4725<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Disabled, Not Deleted Over 1 Day | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" (4726 or 4725)<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Enabled | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4722<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary,event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Locked Out | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4740<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Logged Off | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4634<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 10 - Login Activity/Default Login - Failure | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"<br>\| json "event_id.id", "computer", "message", "event_data", "channel", "keywords" as event_id, host, msg_summary,event_data, channel, Keywords nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop<br>\| parse field=event_data "\"IpAddress\":\"*\"" as src_ip<br>\| parse field=event_data "\"IpPort\":\"*\"" as src_port<br>\| parse field=event_data "\"LogonType\":\"*\"" as logon_type<br>\| parse field=event_data "\"WorkstationName\":\"*\"" as src_host<br>\| parse field=event_data "\"Status\":\"*\"" as status<br>\| parse field=event_data "\"SubStatus\":\"*\"" as sub_status<br>\| status as result_code<br>\| sub_status as failure_code<br>\| json "details.Failure Information.Failure Reason" as failure_reason |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 10 - Login Activity/Default Login - Success | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}}<br>"\"channel\":\"Security\"" 4624 <br>\| json "event_id.id", "computer", "message", "keywords", "event_data", "channel", "level" as event_id, host, msg_summary, Keywords, event_data, channel, level nodrop<br>\| json "event_id.id", "computer", "message", "event_data", "channel", "keywords" as event_id, host, msg_summary,event_data, channel, Keywords nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop<br>\| parse field=event_data "\"IpAddress\":\"*\"" as src_ip<br>\| parse field=event_data "\"IpPort\":\"*\"" as src_port<br>\| parse field=event_data "\"LogonType\":\"*\"" as logon_type<br>\| parse field=event_data "\"WorkstationName\":\"*\"" as src_host |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 10 - Login Activity/Failed Logins | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"<br>\| json "event_id.id", "computer", "message", "event_data", "channel", "keywords" as event_id, host, msg_summary,event_data, channel, Keywords nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop<br>\| parse field=event_data "\"IpAddress\":\"*\"" as src_ip<br>\| parse field=event_data "\"IpPort\":\"*\"" as src_port<br>\| parse field=event_data "\"LogonType\":\"*\"" as logon_type<br>\| parse field=event_data "\"WorkstationName\":\"*\"" as src_host<br>\| parse field=event_data "\"Status\":\"*\"" as status<br>\| parse field=event_data "\"SubStatus\":\"*\"" as sub_status<br>\| status as result_code<br>\| sub_status as failure_code<br>\| json "details.Failure Information.Failure Reason" as failure_reason |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 10 - Login Activity/Successful Logins | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4624 <br>\| json "event_id.id", "computer", "message", "keywords", "event_data", "channel", "level" as event_id, host, msg_summary, Keywords, event_data, channel, level nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop<br>\| parse field=event_data "\"IpAddress\":\"*\"" as src_ip<br>\| parse field=event_data "\"IpPort\":\"*\"" as src_port<br>\| parse field=event_data "\"WorkstationName\":\"*\"" as src_host<br>\| parse field=event_data "\"LogonType\":\"*\"" as logon_type |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 10 - Login Activity/Sucessful Logins | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4624 <br>\| json "event_id.id", "computer", "message", "keywords", "event_data", "channel", "level" as event_id, host, msg_summary, Keywords, event_data, channel, level nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop<br>\| parse field=event_data "\"IpAddress\":\"*\"" as src_ip<br>\| parse field=event_data "\"IpPort\":\"*\"" as src_port |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 06 - Windows Updates Activity/All Windows Updates | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" (19 or 20)<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop<br>\| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop<br>\| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as error_code, Update nodrop<br>\| if(isBlank(src_user), "Unknown", src_user) as src_user<br>\| if(isBlank(src_domain), "Unknown", src_domain) as src_domain<br>\| if(isBlank(dest_user), "Unknown", dest_user) as dest_user<br>\| if(isBlank(dest_domain), "Unknown", dest_domain) as dest_domain<br>\| where event_id in ("19", "20") and host matches "{{host.name}}" and _collector matches "{{collector}}" and _sourceHost matches "{{sourcehost}}" and src_user matches "{{src_user}}" and src_domain matches "{{src_domain}}" and dest_user matches "{{dest_user}}" and dest_domain matches "{{dest_domain}}"<br>\| if(msg_summary matches "Installation Failure*", "Update/Failure", if (msg_summary matches "Installation Successful*", "Update/Success", "Update/Attempt")) as %"Installation Status"<br>\| fields -_raw <br>\| host as %"Destination Host"<br>\| parse field=Update "(*)" as kbnum nodrop  |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 06 - Windows Updates Activity/Recent Windows Update Failures | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" (19 or 20)<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop<br>\| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop<br>\| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as error_code, Update nodrop<br>\| if(isBlank(src_user), "Unknown", src_user) as src_user<br>\| if(isBlank(src_domain), "Unknown", src_domain) as src_domain<br>\| if(isBlank(dest_user), "Unknown", dest_user) as dest_user<br>\| if(isBlank(dest_domain), "Unknown", dest_domain) as dest_domain<br>\| where event_id in ("19", "20") and host matches "{{host.name}}" and _collector matches "{{collector}}" and _sourceHost matches "{{sourcehost}}" and src_user matches "{{src_user}}" and src_domain matches "{{src_domain}}" and dest_user matches "{{dest_user}}" and dest_domain matches "{{dest_domain}}"<br>\| if(msg_summary matches "Installation Failure*", "Update/Failure", if (msg_summary matches "Installation Successful*", "Update/Success", "Update/Attempt")) as %"Installation Status"<br>\| fields -_raw<br>\| host as %"Destination Host"<br>\| timeslice 1s<br>\| withtime %"Installation Status" <br>\| most_recent(%"Installation Status_withtime") as %"LastStatus" by %"Destination Host", update, _timeslice<br>\| parse field=Update "(*)" as kbnum nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 06 - Windows Updates Activity/Windows Update Summary | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" (19 or 20)<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop<br>\| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop<br>\| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as error_code, Update nodrop<br>\| if(isBlank(src_user), "Unknown", src_user) as src_user<br>\| if(isBlank(src_domain), "Unknown", src_domain) as src_domain<br>\| if(isBlank(dest_user), "Unknown", dest_user) as dest_user<br>\| if(isBlank(dest_domain), "Unknown", dest_domain) as dest_domain<br>\| where event_id in ("19", "20") and host matches "{{host.name}}" and _collector matches "{{collector}}" and _sourceHost matches "{{sourcehost}}" and src_user matches "{{src_user}}" and src_domain matches "{{src_domain}}" and dest_user matches "{{dest_user}}" and dest_domain matches "{{dest_domain}}"<br>\| if(msg_summary matches "Installation Failure*", "Update/Failure", if (msg_summary matches "Installation Successful*", "Update/Success", "Update/Attempt")) as %"Installation Status"<br>\| fields -_raw<br>\| host as %"Destination Host"<br>\| timeslice 1s<br>\| withtime %"Installation Status" <br>\| most_recent(%"Installation Status_withtime") as %"LastStatus" by %"Destination Host", update, _timeslice<br>\| parse field=Update "(*)" as kbnum nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 06 - Windows Updates Activity/Windows Update Summary by Host | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" (19 or 20)<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop<br>\| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop<br>\| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as error_code, Update nodrop<br>\| if(isBlank(src_user), "Unknown", src_user) as src_user<br>\| if(isBlank(src_domain), "Unknown", src_domain) as src_domain<br>\| if(isBlank(dest_user), "Unknown", dest_user) as dest_user<br>\| if(isBlank(dest_domain), "Unknown", dest_domain) as dest_domain<br>\| where event_id in ("19", "20") and host matches "{{host.name}}" and _collector matches "{{collector}}" and _sourceHost matches "{{sourcehost}}" and src_user matches "{{src_user}}" and src_domain matches "{{src_domain}}" and dest_user matches "{{dest_user}}" and dest_domain matches "{{dest_domain}}"<br>\| if(msg_summary matches "Installation Failure*", "Update/Failure", if (msg_summary matches "Installation Successful*", "Update/Success", "Update/Attempt")) as %"Installation Status"<br>\| fields -_raw<br>\| host as %"Destination Host"<br>\| timeslice 1s<br>\| withtime %"Installation Status" <br>\| most_recent(%"Installation Status_withtime") as %"LastStatus" by %"Destination Host", update, _timeslice<br>\| parse field=Update "(*)" as kbnum nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 06 - Windows Updates Activity/Windows Update Trend | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" (19 or 20)<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop<br>\| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop<br>\| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as error_code, Update nodrop<br>\| if(isBlank(src_user), "Unknown", src_user) as src_user<br>\| if(isBlank(src_domain), "Unknown", src_domain) as src_domain<br>\| if(isBlank(dest_user), "Unknown", dest_user) as dest_user<br>\| if(isBlank(dest_domain), "Unknown", dest_domain) as dest_domain<br>\| where event_id in ("19", "20") and host matches "{{host.name}}" and _collector matches "{{collector}}" and _sourceHost matches "{{sourcehost}}" and src_user matches "{{src_user}}" and src_domain matches "{{src_domain}}" and dest_user matches "{{dest_user}}" and dest_domain matches "{{dest_domain}}"<br>\| if(msg_summary matches "Installation Failure*", "Update/Failure", if (msg_summary matches "Installation Successful*", "Update/Success", "Update/Attempt")) as %"Installation Status"<br>\| fields -_raw<br>\| host as %"Destination Host"<br>\| timeslice 1s<br>\| withtime %"Installation Status" <br>\| most_recent(%"Installation Status_withtime") as %"LastStatus" by %"Destination Host", update, _timeslice<br>\| parse field=Update "(*)" as kbnum nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 08 - Other User Activity/Excessive Failed Access Attempts | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"<br>\| json "event_id.id", "computer", "message", "event_data", "channel", "keywords" as event_id, host, msg_summary,event_data, channel, Keywords nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop<br>\| parse field=event_data "\"LogonType\":\"*\"" as logon_type nodrop<br>\| parse field=event_data "\"IpAddress\":\"*\"" as src_ip<br>\| parse field=event_data "\"IpPort\":\"*\"" as src_port<br>\| parse field=event_data "\"WorkstationName\":\"*\"" as src_host<br>\| parse field=event_data "\"Status\":\"*\"" as status<br>\| parse field=event_data "\"SubStatus\":\"*\"" as sub_status<br>\| json "details.Failure Information.Failure Reason" as failure_reason |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 08 - Other User Activity/User Account Changed | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4738<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary,event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 08 - Other User Activity/User Account Enabled, not Logged in over 1 Day | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" (4722 or 4624)<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 08 - Other User Activity/User Account Password Changes | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}}  "\"channel\":\"Security\"" 4723<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary,event_data nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
-| PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 08 - Other User Activity/User Account Password Reset | sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4724<br>\| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary,event_data  nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop<br>\| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop<br>\| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop |
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/Actions by Privileged Accounts**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\""
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/Policy Changes**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} ("\"channel\":\"System\"" or "\"channel\":\"Security\"") ("Audit Policy Change" or "System audit policy was changed" or *policy*change*)
+| json "event_id.id", "computer", "message", "event_data", "keywords" as event_id, host, msg_summary, event_data, msg_type nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/Service Execution Trend**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" 7036
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary,event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse regex field=msg_summary "The (?<service>\w.+?) service entered the (?<state>\w+) state" nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/Service Stopped**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" 7036 "stopped state"
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse regex field=msg_summary "The (?<service>\w.+?) service entered the (?<state>\w+) state" nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/System Restarted**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4608
+| json "event_id.id", "computer", "message" as event_id, host, msg_summary nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/System Time Change**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} (("\"channel\":\"System\"" or "\"channel\":\"Security\"") (35 or 37 or 4616))
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/Tampering Audit Logs**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} ("\"channel\":\"System\"" or "\"channel\":\"Security\"") (1102 or 517 or 104)
+| json "event_id.id", "computer", "message" as event_id, host, msg_summary nodrop
+| json "details.Subject.Logon ID", "details.Subject.Domain Name" as src_user, src_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Created**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4720
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Deleted**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4726
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Disabled**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4725
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Disabled, Not Deleted Over 1 Day**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" (4726 or 4725)
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Enabled**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4722
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary,event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Locked Out**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4740
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 08, 10 - Account, User, System Monitoring/User Account Logged Off**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4634
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 10 - Login Activity/Default Login - Failure**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"
+| json "event_id.id", "computer", "message", "event_data", "channel", "keywords" as event_id, host, msg_summary,event_data, channel, Keywords nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+| parse field=event_data "\"IpAddress\":\"*\"" as src_ip
+| parse field=event_data "\"IpPort\":\"*\"" as src_port
+| parse field=event_data "\"LogonType\":\"*\"" as logon_type
+| parse field=event_data "\"WorkstationName\":\"*\"" as src_host
+| parse field=event_data "\"Status\":\"*\"" as status
+| parse field=event_data "\"SubStatus\":\"*\"" as sub_status
+| status as result_code
+| sub_status as failure_code
+| json "details.Failure Information.Failure Reason" as failure_reason
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 10 - Login Activity/Default Login - Success**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}}
+"\"channel\":\"Security\"" 4624 
+| json "event_id.id", "computer", "message", "keywords", "event_data", "channel", "level" as event_id, host, msg_summary, Keywords, event_data, channel, level nodrop
+| json "event_id.id", "computer", "message", "event_data", "channel", "keywords" as event_id, host, msg_summary,event_data, channel, Keywords nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+| parse field=event_data "\"IpAddress\":\"*\"" as src_ip
+| parse field=event_data "\"IpPort\":\"*\"" as src_port
+| parse field=event_data "\"LogonType\":\"*\"" as logon_type
+| parse field=event_data "\"WorkstationName\":\"*\"" as src_host
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 10 - Login Activity/Failed Logins**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"
+| json "event_id.id", "computer", "message", "event_data", "channel", "keywords" as event_id, host, msg_summary,event_data, channel, Keywords nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+| parse field=event_data "\"IpAddress\":\"*\"" as src_ip
+| parse field=event_data "\"IpPort\":\"*\"" as src_port
+| parse field=event_data "\"LogonType\":\"*\"" as logon_type
+| parse field=event_data "\"WorkstationName\":\"*\"" as src_host
+| parse field=event_data "\"Status\":\"*\"" as status
+| parse field=event_data "\"SubStatus\":\"*\"" as sub_status
+| status as result_code
+| sub_status as failure_code
+| json "details.Failure Information.Failure Reason" as failure_reason
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 10 - Login Activity/Successful Logins**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4624 
+| json "event_id.id", "computer", "message", "keywords", "event_data", "channel", "level" as event_id, host, msg_summary, Keywords, event_data, channel, level nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+| parse field=event_data "\"IpAddress\":\"*\"" as src_ip
+| parse field=event_data "\"IpPort\":\"*\"" as src_port
+| parse field=event_data "\"WorkstationName\":\"*\"" as src_host
+| parse field=event_data "\"LogonType\":\"*\"" as logon_type
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 02, 10 - Login Activity/Sucessful Logins**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4624 
+| json "event_id.id", "computer", "message", "keywords", "event_data", "channel", "level" as event_id, host, msg_summary, Keywords, event_data, channel, level nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+| parse field=event_data "\"IpAddress\":\"*\"" as src_ip
+| parse field=event_data "\"IpPort\":\"*\"" as src_port
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 06 - Windows Updates Activity/All Windows Updates**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" (19 or 20)
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop
+| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as error_code, Update nodrop
+| if(isBlank(src_user), "Unknown", src_user) as src_user
+| if(isBlank(src_domain), "Unknown", src_domain) as src_domain
+| if(isBlank(dest_user), "Unknown", dest_user) as dest_user
+| if(isBlank(dest_domain), "Unknown", dest_domain) as dest_domain
+| where event_id in ("19", "20") and host matches "{{host.name}}" and _collector matches "{{collector}}" and _sourceHost matches "{{sourcehost}}" and src_user matches "{{src_user}}" and src_domain matches "{{src_domain}}" and dest_user matches "{{dest_user}}" and dest_domain matches "{{dest_domain}}"
+| if(msg_summary matches "Installation Failure*", "Update/Failure", if (msg_summary matches "Installation Successful*", "Update/Success", "Update/Attempt")) as %"Installation Status"
+| fields -_raw 
+| host as %"Destination Host"
+| parse field=Update "(*)" as kbnum nodrop 
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 06 - Windows Updates Activity/Recent Windows Update Failures**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" (19 or 20)
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop
+| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as error_code, Update nodrop
+| if(isBlank(src_user), "Unknown", src_user) as src_user
+| if(isBlank(src_domain), "Unknown", src_domain) as src_domain
+| if(isBlank(dest_user), "Unknown", dest_user) as dest_user
+| if(isBlank(dest_domain), "Unknown", dest_domain) as dest_domain
+| where event_id in ("19", "20") and host matches "{{host.name}}" and _collector matches "{{collector}}" and _sourceHost matches "{{sourcehost}}" and src_user matches "{{src_user}}" and src_domain matches "{{src_domain}}" and dest_user matches "{{dest_user}}" and dest_domain matches "{{dest_domain}}"
+| if(msg_summary matches "Installation Failure*", "Update/Failure", if (msg_summary matches "Installation Successful*", "Update/Success", "Update/Attempt")) as %"Installation Status"
+| fields -_raw
+| host as %"Destination Host"
+| timeslice 1s
+| withtime %"Installation Status" 
+| most_recent(%"Installation Status_withtime") as %"LastStatus" by %"Destination Host", update, _timeslice
+| parse field=Update "(*)" as kbnum nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 06 - Windows Updates Activity/Windows Update Summary**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" (19 or 20)
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop
+| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as error_code, Update nodrop
+| if(isBlank(src_user), "Unknown", src_user) as src_user
+| if(isBlank(src_domain), "Unknown", src_domain) as src_domain
+| if(isBlank(dest_user), "Unknown", dest_user) as dest_user
+| if(isBlank(dest_domain), "Unknown", dest_domain) as dest_domain
+| where event_id in ("19", "20") and host matches "{{host.name}}" and _collector matches "{{collector}}" and _sourceHost matches "{{sourcehost}}" and src_user matches "{{src_user}}" and src_domain matches "{{src_domain}}" and dest_user matches "{{dest_user}}" and dest_domain matches "{{dest_domain}}"
+| if(msg_summary matches "Installation Failure*", "Update/Failure", if (msg_summary matches "Installation Successful*", "Update/Success", "Update/Attempt")) as %"Installation Status"
+| fields -_raw
+| host as %"Destination Host"
+| timeslice 1s
+| withtime %"Installation Status" 
+| most_recent(%"Installation Status_withtime") as %"LastStatus" by %"Destination Host", update, _timeslice
+| parse field=Update "(*)" as kbnum nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 06 - Windows Updates Activity/Windows Update Summary by Host**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" (19 or 20)
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop
+| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as error_code, Update nodrop
+| if(isBlank(src_user), "Unknown", src_user) as src_user
+| if(isBlank(src_domain), "Unknown", src_domain) as src_domain
+| if(isBlank(dest_user), "Unknown", dest_user) as dest_user
+| if(isBlank(dest_domain), "Unknown", dest_domain) as dest_domain
+| where event_id in ("19", "20") and host matches "{{host.name}}" and _collector matches "{{collector}}" and _sourceHost matches "{{sourcehost}}" and src_user matches "{{src_user}}" and src_domain matches "{{src_domain}}" and dest_user matches "{{dest_user}}" and dest_domain matches "{{dest_domain}}"
+| if(msg_summary matches "Installation Failure*", "Update/Failure", if (msg_summary matches "Installation Successful*", "Update/Success", "Update/Attempt")) as %"Installation Status"
+| fields -_raw
+| host as %"Destination Host"
+| timeslice 1s
+| withtime %"Installation Status" 
+| most_recent(%"Installation Status_withtime") as %"LastStatus" by %"Destination Host", update, _timeslice
+| parse field=Update "(*)" as kbnum nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 06 - Windows Updates Activity/Windows Update Trend**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"System\"" (19 or 20)
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop
+| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as error_code, Update nodrop
+| if(isBlank(src_user), "Unknown", src_user) as src_user
+| if(isBlank(src_domain), "Unknown", src_domain) as src_domain
+| if(isBlank(dest_user), "Unknown", dest_user) as dest_user
+| if(isBlank(dest_domain), "Unknown", dest_domain) as dest_domain
+| where event_id in ("19", "20") and host matches "{{host.name}}" and _collector matches "{{collector}}" and _sourceHost matches "{{sourcehost}}" and src_user matches "{{src_user}}" and src_domain matches "{{src_domain}}" and dest_user matches "{{dest_user}}" and dest_domain matches "{{dest_domain}}"
+| if(msg_summary matches "Installation Failure*", "Update/Failure", if (msg_summary matches "Installation Successful*", "Update/Success", "Update/Attempt")) as %"Installation Status"
+| fields -_raw
+| host as %"Destination Host"
+| timeslice 1s
+| withtime %"Installation Status" 
+| most_recent(%"Installation Status_withtime") as %"LastStatus" by %"Destination Host", update, _timeslice
+| parse field=Update "(*)" as kbnum nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 08 - Other User Activity/Excessive Failed Access Attempts**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"
+| json "event_id.id", "computer", "message", "event_data", "channel", "keywords" as event_id, host, msg_summary,event_data, channel, Keywords nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+| parse field=event_data "\"LogonType\":\"*\"" as logon_type nodrop
+| parse field=event_data "\"IpAddress\":\"*\"" as src_ip
+| parse field=event_data "\"IpPort\":\"*\"" as src_port
+| parse field=event_data "\"WorkstationName\":\"*\"" as src_host
+| parse field=event_data "\"Status\":\"*\"" as status
+| parse field=event_data "\"SubStatus\":\"*\"" as sub_status
+| json "details.Failure Information.Failure Reason" as failure_reason
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 08 - Other User Activity/User Account Changed**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4738
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary,event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 08 - Other User Activity/User Account Enabled, not Logged in over 1 Day**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" (4722 or 4624)
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary, event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 08 - Other User Activity/User Account Password Changes**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}}  "\"channel\":\"Security\"" 4723
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary,event_data nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
+**PCI Compliance For Windows JSON - OpenTelemetry/Windows - PCI Req 08 - Other User Activity/User Account Password Reset**
+```
+sumo.datasource=windows deployment.environment={{deployment.environment}} host.group={{host.group}} "\"channel\":\"Security\"" 4724
+| json "event_id.id", "computer", "message", "event_data" as event_id, host, msg_summary,event_data  nodrop
+| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user nodrop
+| parse field=event_data "\"SubjectDomainName\":\"*\"" as src_domain nodrop
+| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user nodrop
+| parse field=event_data "\"TargetDomainName\":\"*\"" as dest_domain nodrop
+```
+
 

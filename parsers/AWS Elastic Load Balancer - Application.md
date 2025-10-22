@@ -1,47 +1,435 @@
 # Parsers For AWS Elastic Load Balancer - Application
 
-| use_case | parser |
-|--- | --- |
-| AWS Elastic Load Balancer - Application/4XX and 5XX Status Codes by Backend Instance and ELB/4XX and 5XX Status Codes by Backend Instance and ELB | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/ALB Parser 2.0/ALB Parser 2.0 | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/4XX and 5XX Status Codes by Backend Instance and ELB | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop<br>\| fields - request, client, backend<br>// Parse all fields above, then aggregate |
-| AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Average Req and Resp Processing Time by ELB | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop<br>\| fields - request, client, backend<br>// Parse all fields above, then aggregate |
-| AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Average Target Processing Time by Target Group | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop<br>\| fields - request, client, backend<br>// Parse all fields above, then aggregate |
-| AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Browsers and Operating Systems | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop<br>\| fields - request, client, backend<br>// Parse all fields above, then aggregate |
-| AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Data Sent and Received in MB | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop<br>\| fields - request, client, backend<br>// Parse all fields above, then aggregate |
-| AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Requests by Geolocation | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop<br>\| fields - request, client, backend<br>// Parse all fields above, then aggregate |
-| AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Requests by Load Balancer | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Requests by SSL Protocol and Cipher | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Target Group Utilization | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 4XX Status Codes by Client/Backend Instance and Load Balancer 4XX Status Codes by Client | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 4XX Status Codes by Domain/Backend Instance and Load Balancer 4XX Status Codes by Domain | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 4XX Status Codes by Target Group/Backend Instance and Load Balancer 4XX Status Codes by Target Group | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 4XX Status Codes by URI/Backend Instance and Load Balancer 4XX Status Codes by URI | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 5XX Status Codes by Client/Backend Instance and Load Balancer 5XX Status Codes by Client | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 5XX Status Codes by Domain/Backend Instance and Load Balancer 5XX Status Codes by Domain | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 5XX Status Codes by Target Group/Backend Instance and Load Balancer 5XX Status Codes by Target Group | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 5XX Status Codes by URI/Backend Instance and Load Balancer 5XX Status Codes by URI | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "arn:* " as target_group_arn nodrop |
-| AWS Elastic Load Balancer - Application/Browsers and Operating Systems/Browsers and Operating Systems | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Failed Dispatch Monitoring/Failed Dispatch Monitoring | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Failed Dispatches by Backend/Failed Dispatches by Backend | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Failed Dispatches by Client/Failed Dispatches by Client | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Failed Dispatches By Target Group/Failed Dispatches By Target Group | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Failed Dispatches Count/Failed Dispatches Count | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * *" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Latency by Domain/Latency by Domain | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Latency by Load Balancer/Latency by Load Balancer | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop<br>\| fields - request, client, backend<br>// Parse all fields above, then aggregate |
-| AWS Elastic Load Balancer - Application/Latency by Protocol/Latency by Protocol | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * *" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Latency by Target Group/Latency by Target Group | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Latency by Top 20 Backend Instances/Latency by Top 20 Backend Instances | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Latency by Top 20 Clients/Latency by Top 20 Clients | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Latency by Top 20 URI/Latency by Top 20 URI | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Requests and Data Volume/Requests and Data Volume | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Requests by Geolocation/Requests by Geolocation | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Requests by Load Balancer Over Time/Requests by Load Balancer Over Time | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Requests by SSL Protocol and Cipher/Requests by SSL Protocol and Cipher | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Requests by Target Group Over Time/Requests by Target Group Over Time | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Requests by Type Over Time/Requests by Type Over Time | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Target Group Utilization/Target Group Utilization | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Total Process Time Latency 90th, 95 pct/Total Process Time Latency 90th, 95 pct | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Total Requests and Data Volume/Total Requests and Data Volume | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
-| AWS Elastic Load Balancer - Application/Total Requests by Load Balancer/Total Requests by Load Balancer | _sourceCategory = Labs/AWS/ALB<br>\| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id<br>\| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri<br>\| parse field=target_group_arn "* " as target_group_arn nodrop<br>\| parse field=client "*:*" as clientIP, port nodrop<br>\| parse field=backend "*:*" as backendIP, backend_port nodrop |
+**AWS Elastic Load Balancer - Application/4XX and 5XX Status Codes by Backend Instance and ELB/4XX and 5XX Status Codes by Backend Instance and ELB**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/ALB Parser 2.0/ALB Parser 2.0**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/4XX and 5XX Status Codes by Backend Instance and ELB**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+| fields - request, client, backend
+// Parse all fields above, then aggregate
+```
+
+**AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Average Req and Resp Processing Time by ELB**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+| fields - request, client, backend
+// Parse all fields above, then aggregate
+```
+
+**AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Average Target Processing Time by Target Group**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+| fields - request, client, backend
+// Parse all fields above, then aggregate
+```
+
+**AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Browsers and Operating Systems**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+| fields - request, client, backend
+// Parse all fields above, then aggregate
+```
+
+**AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Data Sent and Received in MB**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+| fields - request, client, backend
+// Parse all fields above, then aggregate
+```
+
+**AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Requests by Geolocation**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+| fields - request, client, backend
+// Parse all fields above, then aggregate
+```
+
+**AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Requests by Load Balancer**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Requests by SSL Protocol and Cipher**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/AWS ELB - Application - Overview - New/Target Group Utilization**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 4XX Status Codes by Client/Backend Instance and Load Balancer 4XX Status Codes by Client**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 4XX Status Codes by Domain/Backend Instance and Load Balancer 4XX Status Codes by Domain**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 4XX Status Codes by Target Group/Backend Instance and Load Balancer 4XX Status Codes by Target Group**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 4XX Status Codes by URI/Backend Instance and Load Balancer 4XX Status Codes by URI**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 5XX Status Codes by Client/Backend Instance and Load Balancer 5XX Status Codes by Client**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 5XX Status Codes by Domain/Backend Instance and Load Balancer 5XX Status Codes by Domain**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 5XX Status Codes by Target Group/Backend Instance and Load Balancer 5XX Status Codes by Target Group**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Backend Instance and Load Balancer 5XX Status Codes by URI/Backend Instance and Load Balancer 5XX Status Codes by URI**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "arn:* " as target_group_arn nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Browsers and Operating Systems/Browsers and Operating Systems**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Failed Dispatch Monitoring/Failed Dispatch Monitoring**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Failed Dispatches by Backend/Failed Dispatches by Backend**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Failed Dispatches by Client/Failed Dispatches by Client**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Failed Dispatches By Target Group/Failed Dispatches By Target Group**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Failed Dispatches Count/Failed Dispatches Count**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * *" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Latency by Domain/Latency by Domain**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Latency by Load Balancer/Latency by Load Balancer**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+| fields - request, client, backend
+// Parse all fields above, then aggregate
+```
+
+**AWS Elastic Load Balancer - Application/Latency by Protocol/Latency by Protocol**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * *" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, path
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Latency by Target Group/Latency by Target Group**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Latency by Top 20 Backend Instances/Latency by Top 20 Backend Instances**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Latency by Top 20 Clients/Latency by Top 20 Clients**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Latency by Top 20 URI/Latency by Top 20 URI**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Requests and Data Volume/Requests and Data Volume**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Requests by Geolocation/Requests by Geolocation**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Requests by Load Balancer Over Time/Requests by Load Balancer Over Time**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Requests by SSL Protocol and Cipher/Requests by SSL Protocol and Cipher**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Requests by Target Group Over Time/Requests by Target Group Over Time**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Requests by Type Over Time/Requests by Type Over Time**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Target Group Utilization/Target Group Utilization**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Total Process Time Latency 90th, 95 pct/Total Process Time Latency 90th, 95 pct**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Total Requests and Data Volume/Total Requests and Data Volume**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
+**AWS Elastic Load Balancer - Application/Total Requests by Load Balancer/Total Requests by Load Balancer**
+```
+_sourceCategory = Labs/AWS/ALB
+| parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as type, datetime, ELB_Server, client, backend, request_processing_time, target_processing_time, response_processing_time, elb_status_code, target_status_code, received_bytes, sent_bytes, request,user_agent,ssl_cipher,ssl_protocol,target_group_arn,trace_id
+| parse field=request "* *://*:*/* HTTP" as method, protocol, domain, server_port, uri
+| parse field=target_group_arn "* " as target_group_arn nodrop
+| parse field=client "*:*" as clientIP, port nodrop
+| parse field=backend "*:*" as backendIP, backend_port nodrop
+```
+
 

@@ -1,25 +1,139 @@
 # Parsers For Citrix Cloud
 
-| use_case | parser |
-|--- | --- |
-| Citrix Cloud/Administrator Overview/Actor Distribution | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Administrator Overview/Administrator Events Summary | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Administrator Overview/Administrators Created | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Administrator Overview/Administrators Deleted | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Administrator Overview/Administrators Invitation Status | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Administrator Overview/Event Type Distribution | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Administrator Overview/Pending Administrator Invitations | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop<br>\| where actor_type matches"{{actor_type}}"<br>\| where event_type matches"{{event_type}}"<br>\| where actor_name matches"{{actor_name}}"<br>\| where event_type matches("*platform/administrator/invite*")<br>\| where <br>   ![subquery:<br>   _sourceCategory={{_sourceCategory}} <br>   \| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Administrator Overview/Permissions Updated | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Administrator Overview/Recently Added Administrators | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Administrator Overview/Recently Invited Administrators | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop<br>\| where actor_type matches"{{actor_type}}"<br>\| where event_type matches"{{event_type}}"<br>\| where actor_name matches"{{actor_name}}"<br>\| where event_type matches("*platform/administrator/invite*")<br>\| where <br>   ![subquery:<br>   _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Client, Group Administrator Overview/Actor Distribution | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Client, Group Administrator Overview/Administrator Group Created | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Client, Group Administrator Overview/Administrator Group Deleted | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Client, Group Administrator Overview/Client Administrators Created | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Client, Group Administrator Overview/Client Administrators Deleted | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Client, Group Administrator Overview/Client, Group Administrator Events Summary | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Client, Group Administrator Overview/Event Type Distribution | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Client, Group Administrator Overview/Permissions Updated | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Client, Group Administrator Overview/Recently Added Administrator Groups | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
-| Citrix Cloud/Client, Group Administrator Overview/Recently Added Client Administrators | _sourceCategory={{_sourceCategory}} <br>\| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop |
+**Citrix Cloud/Administrator Overview/Actor Distribution**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Administrator Overview/Administrator Events Summary**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Administrator Overview/Administrators Created**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Administrator Overview/Administrators Deleted**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Administrator Overview/Administrators Invitation Status**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Administrator Overview/Event Type Distribution**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Administrator Overview/Pending Administrator Invitations**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+| where actor_type matches"{{actor_type}}"
+| where event_type matches"{{event_type}}"
+| where actor_name matches"{{actor_name}}"
+| where event_type matches("*platform/administrator/invite*")
+| where 
+   ![subquery:
+   _sourceCategory={{_sourceCategory}} 
+   | json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Administrator Overview/Permissions Updated**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Administrator Overview/Recently Added Administrators**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Administrator Overview/Recently Invited Administrators**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+| where actor_type matches"{{actor_type}}"
+| where event_type matches"{{event_type}}"
+| where actor_name matches"{{actor_name}}"
+| where event_type matches("*platform/administrator/invite*")
+| where 
+   ![subquery:
+   _sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Client, Group Administrator Overview/Actor Distribution**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Client, Group Administrator Overview/Administrator Group Created**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Client, Group Administrator Overview/Administrator Group Deleted**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Client, Group Administrator Overview/Client Administrators Created**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Client, Group Administrator Overview/Client Administrators Deleted**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Client, Group Administrator Overview/Client, Group Administrator Events Summary**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Client, Group Administrator Overview/Event Type Distribution**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Client, Group Administrator Overview/Permissions Updated**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Client, Group Administrator Overview/Recently Added Administrator Groups**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
+**Citrix Cloud/Client, Group Administrator Overview/Recently Added Client Administrators**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "recordId","eventType","targetDisplayName","targetEmail","beforeChanges.AccessType","afterChanges.AccessType","actorType","message.en-US","actorDisplayName" as record_id,event_type,target_name, target_email, access_type_before, access_type_after, actor_type, message, actor_name nodrop
+```
+
 

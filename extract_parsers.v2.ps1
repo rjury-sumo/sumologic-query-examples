@@ -63,12 +63,13 @@ foreach ($p in $parsers_db) {
 # format as markdown per app
 $mdp = @{}
 foreach ($app in $parsers_hash.Keys) {
-        $md = "# Parsers For $app`n`n| use_case | parser |`n|--- | --- |`n"
+        $md = "# Parsers For $app`n`n"
     foreach( $row in $parsers_hash[$app]) {
         $a = $row.app
         $u = $row.use_case
-        $p = (($row.parser) -replace '\r|\n','<br>' ).replace('|','\|')
-        $md += "| $u | $p |`n"
+       $p = $row.parser #-replace '\r|\n','<br>' ).replace('|','\|')
+       # $p = ($row.parser).replace('|','\|')
+        $md += "**$u**`n" + '```' + "`n" + $p + "`n" + '```' + "`n`n"
 
     }
     $mdp[$app] = $md

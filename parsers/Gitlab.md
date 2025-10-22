@@ -1,112 +1,1016 @@
 # Parsers For Gitlab
 
-| use_case | parser |
-|--- | --- |
-| Gitlab/Builds/Average Build Duration | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Build Duration (in sec)  by Build Name | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Build Duration (in sec)  by Project | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Build Duration (in sec)  by Stage Name | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Build Duration (in sec) by Repository | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Build Duration (in seconds) | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Builds  By Status | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Builds Failed | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status="failed"<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name" as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group  |
-| Gitlab/Builds/Builds Over Time | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Builds Status by Repository | _sourceCategory = Labs/gitlab  and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Builds Successful | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status="success"<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Last 15 Failed Builds | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status="failed"<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Last 15 Successful Builds | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status="success"<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Last 20 Builds Summary | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Outlier on Failed Builds | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status="failed"<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Builds/Top Slowest Build Stages | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop<br>\| split homepage delim='/' extract 4 as group |
-| Gitlab/Commits/Added Files | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  \| <br> json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,group nodrop<br>\| concat(homepage,"/-/commit/",head_commit) as commit_url<br>\| parse regex field=group "(?<group>.+)\/.+" <br>\| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"<br>\| where user matches "{{user}}" and repo_name matches "{{repository}}" and branch matches "{{branch}}" and project matches "{{project}}" and head_commit matches "{{head_commit}}" and group matches "{{group}}"<br>\| parse regex field=added "\"(?<added_files>[^\"]+)\"" multi  |
-| Gitlab/Commits/Commits Summary | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  \| <br> json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,group nodrop<br>\| concat(homepage,"/-/commit/",head_commit) as commit_url<br>\|  parse regex field=group "(?<group>.+)\/.+" <br>\| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)" |
-| Gitlab/Commits/Modified Files | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  \| <br> json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,project,group<br>\| concat(homepage,"/-/commit/",head_commit) as commit_url<br>\| parse regex field=group "(?<group>.+)\/.+" <br>\| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"<br>\| where user matches "{{user}}" and repo_name matches "{{repository}}" and branch matches "{{branch}}" and project matches "{{project}}" and head_commit matches "{{head_commit}}" and group matches "{{group}}"<br>\| parse regex field=modified "\"(?<modified_files>[^\"]+)\"" multi  |
-| Gitlab/Commits/Removed Files | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  \| <br> json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,group nodrop<br>\| concat(homepage,"/-/commit/",head_commit) as commit_url<br>\| parse regex field=group "(?<group>.+)\/.+" <br>\| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"<br>\| where user matches "{{user}}" and repo_name matches "{{repository}}" and branch matches "{{branch}}" and project matches "{{project}}" and head_commit matches "{{head_commit}}"  and group matches "{{group}}"<br>\| parse regex field=removed "\"(?<removed_files>[^\"]+)\"" multi  |
-| Gitlab/Commits/Total number of Commits by branch | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  \| <br> json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,project,group<br>\| concat(homepage,"/-/commit/",head_commit) as commit_url<br>\|  parse regex field=group "(?<group>.+)\/.+" <br>\| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)" |
-| Gitlab/Commits/Total number of Commits by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  \| <br> json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,project,group<br>\| concat(homepage,"/-/commit/",head_commit) as commit_url<br>\| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"<br>\| parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Commits/Total number of Commits by Repository | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  \| <br> json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,project,group<br>\| concat(homepage,"/-/commit/",head_commit) as commit_url<br>\| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Commits/Total number of Commits by User | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  \| <br> json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,project,group<br>\| concat(homepage,"/-/commit/",head_commit) as commit_url<br>\| parse regex field=group "(?<group>.+)\/.+" <br>\| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)" |
-| Gitlab/Deployments/Deployments by state | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status in ("failed", "success") <br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace"  as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Deployments/Deployments Failed | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status="failed"<br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace"  as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Deployments/Deployments Over Time | <br>_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status in ("failed", "success") <br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Deployments/Deployments Status by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status in ("failed", "success") <br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Deployments/Deployments Successful | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status="success"<br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Deployments/‎Last 15 Failed Deployments | <br>_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status ="failed"<br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Deployments/‎Last 15 Successful Deployments | <br>_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status ="success"<br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Deployments/‎Last 20 Deployments‎ Summary | <br>_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status in ("failed", "success") <br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Deployments/One Day Comparison | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status in ("failed", "success") <br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace"  as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Deployments/Outlier of Failed Deployments | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status="failed"<br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Deployments/Projects with Environment  by Failed Deployments | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status ="failed"<br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Issues/Avg Time to Close Issues by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="closed"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","object_attributes.closed_at","project.path_with_namespace"  as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,closed_date_time,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\| parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Issues/Avg Time to Close Issues by Repository | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="closed"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","object_attributes.closed_at","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,closed_date_time,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Issues/Issues by Label | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+" <br>\| where repo_name matches "{{repository}}" and user matches "{{user}}" and project matches "{{project}}" and issue_id matches "{{issue_id}}" and issue_state<br> matches "{{issue_state}}" and severity matches "{{severity}}" and issue_type matches "{{issue_type}}" and group matches "{{group}}" <br>\| parse regex field=labels "\"(?<label>[^\"]+)\"" multi nodrop |
-| Gitlab/Issues/Issues by Label Over Time | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="opened"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+" <br>\| where repo_name matches "{{repository}}" and user matches "{{user}}" and project matches "{{project}}" and issue_id matches "{{issue_id}}" and issue_state<br> matches "{{issue_state}}" and severity matches "{{severity}}" and issue_type matches "{{issue_type}}" and group matches "{{group}}"<br>\| parse regex field=labels "\"(?<label>[^\"]+)\"" multi nodrop |
-| Gitlab/Issues/Issues by Severity | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Issues/Issues by Severity Over Time | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="opened"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace"  as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+" <br>\| where repo_name matches "{{repository}}" and user matches "{{user}}" and project matches "{{project}}" and issue_id matches "{{issue_id}}" and issue_state<br> matches "{{issue_state}}" and severity matches "{{severity}}" and issue_type matches "{{issue_type}}" and group matches "{{group}}"<br>\| parse regex field=labels "\"(?<label>[^\"]+)\"" multi nodrop |
-| Gitlab/Issues/Issues by State | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group  nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Issues/Issues Closed | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="closed"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Issues/Issues Opened | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="opened"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Issues/Issues Opened Vs Closed | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state in ("closed","opened")<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Issues/Issues Reopened | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="opened"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Issues/Last 15 Opened and Unassigned Issues | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="opened"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Issues/Last 15 Opened Issues | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="opened"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Issues/Last 15 Reopened Issues | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state","object_attributes.action" as issue_state,action<br>\| where issue_state="opened" and action ="reopen"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Issues/Last 20 Issues Summary | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Issues/Open Issues by Assignee | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="opened"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+" <br>\| where repo_name matches "{{repository}}" and user matches "{{user}}" and project matches "{{project}}" and issue_id matches "{{issue_id}}" and issue_state<br> matches "{{issue_state}}" and severity matches "{{severity}}" and issue_type matches "{{issue_type}}" and group matches "{{group}}"<br>\|if(isEmpty(assignees),"[\"Unassigned\"]",assignees) as assignees<br>\| parse regex field=assignees"\"(?<assignee_name>[^\"]+)\"" multi  |
-| Gitlab/Issues/Open Issues by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace"  as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\| parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Issues/Open Issues by Repository | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace"  as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Issues/Top 15 Issues by Time taken to Close | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="closed"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","object_attributes.closed_at","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,closed_date_time,group nodrop<br>\| if (labels contains "incident","incident","issue") as issue_type<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Avg Duration to Merge Merge Requests by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\| where merge_request_state="merged"<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"    as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Merge Requests/Avg Duration to Merge Merge Requests by Repository | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\| where merge_request_state="merged"<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Avg Time to Merge Merge Requests by Assignees | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\| where merge_request_state="merged"<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","project.path_with_namespace" as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,assignees_name,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"<br>\| where user matches "{{user}}" and repo_name matches "{{repository}}" and project matches "{{project}}" and merge_request_id matches "{{merge_request_id}}" and group matches "{{group}}"<br>\| parseDate(created_time, "yyyy-MM-dd HH:mm:ss") as created_timestamp<br>\| parseDate(updated_time, "yyyy-MM-dd HH:mm:ss") as merged_timestamp<br>\| merged_timestamp - created_timestamp as ms_to_merge<br>\| ms_to_merge/1h as hours_to_merge<br>\| parse regex field=assignees_name "\"(?<assignee_name>[^\"]+)\"" multi |
-| Gitlab/Merge Requests/Last 10 Closed Merge Requests | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"<br>,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace"  as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,<br>assignees_name,commit_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Last 10 Open Merge Requests | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"<br>,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,<br>assignees_name,commit_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Last 10 Opened and Unassigned Merge Requests | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"<br>,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,<br>assignees_name,commit_id,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Last 10 ReOpened Merge Requests | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"<br>,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace"  as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,<br>assignees_name,commit_id,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+"<br>\| where user matches "{{user}}" and repository matches "{{repository}}" and project matches "{{project}}" and merge_request_id matches "{{merge_request_id}}" <br>and merge_request_state matches "{{merge_request_state}}" and group matches "{{group}}"<br>\| tourl(url,merge_request_id) as merge_request_id <br>\| tourl(url,title) as title <br>\| if(isEmpty(commit_id),"n/a",tourl (url,commit_id) )  as commit_id<br>\|if(isEmpty(assignees_name),"[\"Unassigned\"]",assignees_name) as assignees_name<br>\| parse regex field=assignees_name "\"(?<assignee_name>[^\"]+)\"" multi |
-| Gitlab/Merge Requests/Last 10 Review Comments on Merge Requests | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Note Hook"\|<br>json"merge_request.id","object_attributes.description","merge_request.state","object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","merge_request.url" ,"merge_request.title" ,"project.name","project.path_with_namespace" as  merge_request_id,comment,merge_request_state,created_date_time,updated_time,user,repository, review_url <br>,title,project,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Last 20 Merge Requests Summary | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"<br>,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,<br>assignees_name,commit_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+" <br>\| where user matches "{{user}}" and repository matches "{{repository}}" and project matches "{{project}}" and merge_request_id matches "{{merge_request_id}}" <br>and merge_request_state matches "{{merge_request_state}}" and group matches "{{group}}"<br>\| tourl(url,merge_request_id) as merge_request_id <br>\| tourl(url,title) as title <br>\| if(isEmpty(commit_id),"n/a",tourl (url,commit_id) )  as commit_id<br>\|if(isEmpty(assignees_name),"[\"Unassigned\"]",assignees_name) as assignees_name<br>\| parse regex field=assignees_name "\"(?<assignee_name>[^\"]+)\"" multi |
-| Gitlab/Merge Requests/Merge Requests by Source Branch to Target Branch | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Merge Requests/Merge Requests by State | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"  as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Merge Requests/Merge Requests by Target Branch | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"  as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Merge Requests Closed | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\| where merge_request_state="closed"<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace" as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Merge Requests/Merge Requests Merged | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace" as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Merge Requests Opened | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\| where merge_request_state="opened"<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Merge Requests Opened and Merged by Repository | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\| where merge_request_state in ("opened","merged")<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Merged Merge Requests by Assignee Name | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\| where merge_request_state="merged"<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,assignees_name,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+" <br>\| where user matches "{{user}}" and repo_name matches "{{repository}}" and project matches "{{project}}" and merge_request_id matches "{{merge_request_id}}" <br>and merge_request_state matches "{{merge_request_state}}" and group matches "{{group}}"<br>\| parse regex field=assignees_name "\"(?<assignee_name>[^\"]+)\"" multi |
-| Gitlab/Merge Requests/Opened Merge Requests by Creators | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\| where merge_request_state="opened"<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Merge Requests/Opened Merge Requests by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\| where merge_request_state="opened"<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"  as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Opened Merge Requests by Repository | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\| where merge_request_state="opened"<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace" as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Merge Requests/Top 10 Merge Requests by Time taken to Merge (in hrs) | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"<br>\|json "object_attributes.state" as merge_request_state<br>\| where merge_request_state="merged"<br>\|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"<br>,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace" as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,<br>assignees_name,commit_id,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Overview/Average Build Duration (seconds) by Project | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status in ("success", "failed")<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_duration","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,build_duration,project nodrop |
-| Gitlab/Overview/Avg. Pipelines Duration (sec) Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.status","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds" as pipeline_id,branch,commit_id,pipeline_status,pipeline_stages,created_date_time,finished_date_time,duration,user,project,builds_stage,builds_name,builds_status,builds nodrop |
-| Gitlab/Overview/Avg. Time (hrs) Taken to Close Issue by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "object_attributes.state" as issue_state<br>\| where issue_state="closed"<br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","object_attributes.closed_at" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,closed_date_time nodrop |
-| Gitlab/Overview/Builds Failed | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status="failed"<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,project |
-| Gitlab/Overview/Builds Successful | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status="success"<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,project |
-| Gitlab/Overview/Deployments Failed | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status="failed"<br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title nodrop |
-| Gitlab/Overview/Deployments Successful | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status="success"<br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title nodrop |
-| Gitlab/Overview/Failed Builds by Project | _sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" <br>\| json "build_status" as build_status<br>\| where build_status="failed"<br>\| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project |
-| Gitlab/Overview/Failed Deployments  by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status="failed"<br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title nodrop |
-| Gitlab/Overview/Failed Deployments by Environment | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" <br>\| json "status" as deployment_status<br>\| where deployment_status="failed"<br>\| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title nodrop |
-| Gitlab/Overview/Failed Pipelines by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\| json "object_attributes.status" as pipeline_status<br>\| where pipeline_status = "failed"<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration,user,project_name,builds_stage,builds_name,builds_status,builds,web_url |
-| Gitlab/Overview/Issues Closed | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.state","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,state,severity,action,repo_name,assignees,issue_id nodrop |
-| Gitlab/Overview/Issues Opened | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.state","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,state,severity,action,repo_name,assignees,issue_id nodrop |
-| Gitlab/Overview/Issues Reopened | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" <br>\| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.state","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,state,severity,action,repo_name,assignees,issue_id nodrop |
-| Gitlab/Overview/Pipelines Failed | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\| json "object_attributes.status" as pipeline_status<br>\| where pipeline_status = "failed"<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration,user,project_name,builds_stage,builds_name,builds_status,builds,web_url |
-| Gitlab/Overview/Pipelines Successful | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\| json "object_attributes.status" as pipeline_status<br>\| where pipeline_status = "success"<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration,user,project_name,builds_stage,builds_name,builds_status,builds,web_url |
-| Gitlab/Pipeline/10 Sowest Pipeline  Jobs | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status in ("failed","success")<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name<br>,jobs_status,jobs,web_url,commit_url,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+" <br>\| where user matches "{{user}}" and project matches "{{project}}" and pipeline_id matches "{{pipeline_id}}" and pipeline_status matches "{{pipeline_status}}" and group matches "{{group}}"<br>\| parse regex field = jobs "(?<json_added_blob>\{.*?(environment\"\:null}\|\}\}))" multi<br>\| json field= json_added_blob "id","stage","name","status","created_at","started_at","finished_at","duration","environment.name" as job_id,job_stage |
-| Gitlab/Pipeline/Average Pipelines Duration | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status in ("success", "failed")<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Pipeline/Avg Job Duration (in sec) by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status in ("failed","success")<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+" <br>\| where user matches "{{user}}" and project matches "{{project}}" and pipeline_id matches "{{pipeline_id}}" and pipeline_status matches "{{pipeline_status}}" and group matches "{{group}}"<br>\| parse regex field = builds "(?<json_added_blob>\{.*?(environment\"\:null}\|\}\}))" multi<br>\| json field= json_added_blob "id","stage","name","status","created_at","started_at","finished_at","duration","environment.name" as job_id,job_stage,job_name,job_status,job_created_at,job_started_at,job_finished_at,job_duration,job_enviroment |
-| Gitlab/Pipeline/Avg Pipleline Duration (in sec ) by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status in ("success", "failed")<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Pipeline/Avg Pipleline Duration (in sec) by Project | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status in("failed","success")<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Pipeline/Failed Jobs by Stages | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status = "failed"<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+" <br>\| where user matches "{{user}}" and project matches "{{project}}" and pipeline_id matches "{{pipeline_id}}" and pipeline_status matches "{{pipeline_status}}" and group matches "{{group}}"<br>\| parse regex field = builds "(?<json_added_blob>\{.*?(environment\"\:null}\|\}\}))" multi<br>\| json field= json_added_blob "id","stage","name","status","created_at","started_at","finished_at","duration","environment.name" as job_id,job_stage,job_name,job_status,job_created_at,job_started_at,job_finished_at,job_duration,job_enviroment |
-| Gitlab/Pipeline/Last 10 Failed Pipeline  Jobs | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status = "failed"<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+" <br>\| where user matches "{{user}}" and project matches "{{project}}" and pipeline_id matches "{{pipeline_id}}" and pipeline_status matches "{{pipeline_status}}" and group matches "{{group}}"<br>\| parse regex field = jobs "(?<json_added_blob>\{.*?(environment\"\:null}\|\}\}))" multi<br>\| json field= json_added_blob "id","stage","name","status","created_at","started_at","finished_at","duration","environment.name" as job_id,job_stage,job_name,job_status |
-| Gitlab/Pipeline/Last 10 Failed Pipelines | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status = "failed"<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Pipeline/Last 20 Pipeline Summary | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status in ("success", "failed")<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Pipeline/Outlier on Failed Pipelines | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status = "failed"<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Pipeline/Pipeline  by Status | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status in ("success", "failed")<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Pipeline/Pipelines  Over Time | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status in ("failed","success")<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage<br>,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Pipeline/Pipelines Failed | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status = "failed"<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+" |
-| Gitlab/Pipeline/Pipelines Successful | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status="success"<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Pipeline/Pipleline Duration (in sec) | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status in ("failed","success")<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\| parse regex field=group "(?<group>.+)\/.+"  |
-| Gitlab/Pipeline/Top 10 Sowest Pipeline | _sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" <br>\|json "object_attributes.status" as pipeline_status<br>\| where pipeline_status in ("failed","success")<br>\| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop<br>\|  parse regex field=group "(?<group>.+)\/.+"  |
+**Gitlab/Builds/Average Build Duration**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Build Duration (in sec)  by Build Name**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Build Duration (in sec)  by Project**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Build Duration (in sec)  by Stage Name**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Build Duration (in sec) by Repository**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Build Duration (in seconds)**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Builds  By Status**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Builds Failed**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status="failed"
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name" as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group 
+```
+
+**Gitlab/Builds/Builds Over Time**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Builds Status by Repository**
+```
+_sourceCategory = Labs/gitlab  and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Builds Successful**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status="success"
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Last 15 Failed Builds**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status="failed"
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Last 15 Successful Builds**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status="success"
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Last 20 Builds Summary**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Outlier on Failed Builds**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status="failed"
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","build_duration","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,build_duration,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Builds/Top Slowest Build Stages**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project nodrop
+| split homepage delim='/' extract 4 as group
+```
+
+**Gitlab/Commits/Added Files**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  | 
+ json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,group nodrop
+| concat(homepage,"/-/commit/",head_commit) as commit_url
+| parse regex field=group "(?<group>.+)\/.+" 
+| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"
+| where user matches "{{user}}" and repo_name matches "{{repository}}" and branch matches "{{branch}}" and project matches "{{project}}" and head_commit matches "{{head_commit}}" and group matches "{{group}}"
+| parse regex field=added "\"(?<added_files>[^\"]+)\"" multi 
+```
+
+**Gitlab/Commits/Commits Summary**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  | 
+ json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,group nodrop
+| concat(homepage,"/-/commit/",head_commit) as commit_url
+|  parse regex field=group "(?<group>.+)\/.+" 
+| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"
+```
+
+**Gitlab/Commits/Modified Files**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  | 
+ json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,project,group
+| concat(homepage,"/-/commit/",head_commit) as commit_url
+| parse regex field=group "(?<group>.+)\/.+" 
+| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"
+| where user matches "{{user}}" and repo_name matches "{{repository}}" and branch matches "{{branch}}" and project matches "{{project}}" and head_commit matches "{{head_commit}}" and group matches "{{group}}"
+| parse regex field=modified "\"(?<modified_files>[^\"]+)\"" multi 
+```
+
+**Gitlab/Commits/Removed Files**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  | 
+ json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,group nodrop
+| concat(homepage,"/-/commit/",head_commit) as commit_url
+| parse regex field=group "(?<group>.+)\/.+" 
+| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"
+| where user matches "{{user}}" and repo_name matches "{{repository}}" and branch matches "{{branch}}" and project matches "{{project}}" and head_commit matches "{{head_commit}}"  and group matches "{{group}}"
+| parse regex field=removed "\"(?<removed_files>[^\"]+)\"" multi 
+```
+
+**Gitlab/Commits/Total number of Commits by branch**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  | 
+ json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,project,group
+| concat(homepage,"/-/commit/",head_commit) as commit_url
+|  parse regex field=group "(?<group>.+)\/.+" 
+| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"
+```
+
+**Gitlab/Commits/Total number of Commits by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  | 
+ json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,project,group
+| concat(homepage,"/-/commit/",head_commit) as commit_url
+| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"
+| parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Commits/Total number of Commits by Repository**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  | 
+ json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,project,group
+| concat(homepage,"/-/commit/",head_commit) as commit_url
+| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Commits/Total number of Commits by User**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Push Hook"  | 
+ json  "repository.name" ,"ref", "total_commits_count" , "commits.[*].id" , "commits.[*].title","commits.[*].timestamp", "repository.homepage","commits.[*].author.name","commits.[*].added","commits.[*].modified","commits.[*].removed","checkout_sha","user_name","project.name","project.path_with_namespace" as repo_name,branch_path,commits_count,commit_id,commit_title,commit_timestamp,homepage ,author,added,modified,removed,head_commit,user,project,group
+| concat(homepage,"/-/commit/",head_commit) as commit_url
+| parse regex field=group "(?<group>.+)\/.+" 
+| parse regex field=branch_path ".*?\/.*?\/(?<branch>.*)"
+```
+
+**Gitlab/Deployments/Deployments by state**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status in ("failed", "success") 
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace"  as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Deployments/Deployments Failed**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status="failed"
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace"  as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Deployments/Deployments Over Time**
+```
+
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status in ("failed", "success") 
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Deployments/Deployments Status by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status in ("failed", "success") 
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Deployments/Deployments Successful**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status="success"
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Deployments/‎Last 15 Failed Deployments**
+```
+
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status ="failed"
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Deployments/‎Last 15 Successful Deployments**
+```
+
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status ="success"
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Deployments/‎Last 20 Deployments‎ Summary**
+```
+
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status in ("failed", "success") 
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Deployments/One Day Comparison**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status in ("failed", "success") 
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace"  as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop
+| parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Deployments/Outlier of Failed Deployments**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status="failed"
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Deployments/Projects with Environment  by Failed Deployments**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status ="failed"
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title","project.path_with_namespace" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title,group nodrop
+| parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Issues/Avg Time to Close Issues by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="closed"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","object_attributes.closed_at","project.path_with_namespace"  as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,closed_date_time,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+| parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Issues/Avg Time to Close Issues by Repository**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="closed"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","object_attributes.closed_at","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,closed_date_time,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Issues/Issues by Label**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+| where repo_name matches "{{repository}}" and user matches "{{user}}" and project matches "{{project}}" and issue_id matches "{{issue_id}}" and issue_state
+ matches "{{issue_state}}" and severity matches "{{severity}}" and issue_type matches "{{issue_type}}" and group matches "{{group}}" 
+| parse regex field=labels "\"(?<label>[^\"]+)\"" multi nodrop
+```
+
+**Gitlab/Issues/Issues by Label Over Time**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="opened"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+| where repo_name matches "{{repository}}" and user matches "{{user}}" and project matches "{{project}}" and issue_id matches "{{issue_id}}" and issue_state
+ matches "{{issue_state}}" and severity matches "{{severity}}" and issue_type matches "{{issue_type}}" and group matches "{{group}}"
+| parse regex field=labels "\"(?<label>[^\"]+)\"" multi nodrop
+```
+
+**Gitlab/Issues/Issues by Severity**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Issues/Issues by Severity Over Time**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="opened"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace"  as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+| where repo_name matches "{{repository}}" and user matches "{{user}}" and project matches "{{project}}" and issue_id matches "{{issue_id}}" and issue_state
+ matches "{{issue_state}}" and severity matches "{{severity}}" and issue_type matches "{{issue_type}}" and group matches "{{group}}"
+| parse regex field=labels "\"(?<label>[^\"]+)\"" multi nodrop
+```
+
+**Gitlab/Issues/Issues by State**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group  nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Issues/Issues Closed**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="closed"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Issues/Issues Opened**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="opened"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Issues/Issues Opened Vs Closed**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state in ("closed","opened")
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Issues/Issues Reopened**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="opened"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Issues/Last 15 Opened and Unassigned Issues**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="opened"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Issues/Last 15 Opened Issues**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="opened"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Issues/Last 15 Reopened Issues**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state","object_attributes.action" as issue_state,action
+| where issue_state="opened" and action ="reopen"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Issues/Last 20 Issues Summary**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Issues/Open Issues by Assignee**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="opened"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+| where repo_name matches "{{repository}}" and user matches "{{user}}" and project matches "{{project}}" and issue_id matches "{{issue_id}}" and issue_state
+ matches "{{issue_state}}" and severity matches "{{severity}}" and issue_type matches "{{issue_type}}" and group matches "{{group}}"
+|if(isEmpty(assignees),"[\"Unassigned\"]",assignees) as assignees
+| parse regex field=assignees"\"(?<assignee_name>[^\"]+)\"" multi 
+```
+
+**Gitlab/Issues/Open Issues by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace"  as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+| parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Issues/Open Issues by Repository**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","project.path_with_namespace"  as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Issues/Top 15 Issues by Time taken to Close**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="closed"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","object_attributes.closed_at","project.path_with_namespace" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,closed_date_time,group nodrop
+| if (labels contains "incident","incident","issue") as issue_type
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Avg Duration to Merge Merge Requests by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+| where merge_request_state="merged"
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"    as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Merge Requests/Avg Duration to Merge Merge Requests by Repository**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+| where merge_request_state="merged"
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Avg Time to Merge Merge Requests by Assignees**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+| where merge_request_state="merged"
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","project.path_with_namespace" as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,assignees_name,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+"
+| where user matches "{{user}}" and repo_name matches "{{repository}}" and project matches "{{project}}" and merge_request_id matches "{{merge_request_id}}" and group matches "{{group}}"
+| parseDate(created_time, "yyyy-MM-dd HH:mm:ss") as created_timestamp
+| parseDate(updated_time, "yyyy-MM-dd HH:mm:ss") as merged_timestamp
+| merged_timestamp - created_timestamp as ms_to_merge
+| ms_to_merge/1h as hours_to_merge
+| parse regex field=assignees_name "\"(?<assignee_name>[^\"]+)\"" multi
+```
+
+**Gitlab/Merge Requests/Last 10 Closed Merge Requests**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"
+,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace"  as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,
+assignees_name,commit_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Last 10 Open Merge Requests**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"
+,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,
+assignees_name,commit_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Last 10 Opened and Unassigned Merge Requests**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"
+,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,
+assignees_name,commit_id,group nodrop
+| parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Last 10 ReOpened Merge Requests**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"
+,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace"  as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,
+assignees_name,commit_id,group nodrop
+| parse regex field=group "(?<group>.+)\/.+"
+| where user matches "{{user}}" and repository matches "{{repository}}" and project matches "{{project}}" and merge_request_id matches "{{merge_request_id}}" 
+and merge_request_state matches "{{merge_request_state}}" and group matches "{{group}}"
+| tourl(url,merge_request_id) as merge_request_id 
+| tourl(url,title) as title 
+| if(isEmpty(commit_id),"n/a",tourl (url,commit_id) )  as commit_id
+|if(isEmpty(assignees_name),"[\"Unassigned\"]",assignees_name) as assignees_name
+| parse regex field=assignees_name "\"(?<assignee_name>[^\"]+)\"" multi
+```
+
+**Gitlab/Merge Requests/Last 10 Review Comments on Merge Requests**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Note Hook"|
+json"merge_request.id","object_attributes.description","merge_request.state","object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","merge_request.url" ,"merge_request.title" ,"project.name","project.path_with_namespace" as  merge_request_id,comment,merge_request_state,created_date_time,updated_time,user,repository, review_url 
+,title,project,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Last 20 Merge Requests Summary**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"
+,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,
+assignees_name,commit_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+| where user matches "{{user}}" and repository matches "{{repository}}" and project matches "{{project}}" and merge_request_id matches "{{merge_request_id}}" 
+and merge_request_state matches "{{merge_request_state}}" and group matches "{{group}}"
+| tourl(url,merge_request_id) as merge_request_id 
+| tourl(url,title) as title 
+| if(isEmpty(commit_id),"n/a",tourl (url,commit_id) )  as commit_id
+|if(isEmpty(assignees_name),"[\"Unassigned\"]",assignees_name) as assignees_name
+| parse regex field=assignees_name "\"(?<assignee_name>[^\"]+)\"" multi
+```
+
+**Gitlab/Merge Requests/Merge Requests by Source Branch to Target Branch**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Merge Requests/Merge Requests by State**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"  as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Merge Requests/Merge Requests by Target Branch**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"  as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+| parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Merge Requests Closed**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+| where merge_request_state="closed"
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace" as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Merge Requests/Merge Requests Merged**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace" as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Merge Requests Opened**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+| where merge_request_state="opened"
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Merge Requests Opened and Merged by Repository**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+| where merge_request_state in ("opened","merged")
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Merged Merge Requests by Assignee Name**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+| where merge_request_state="merged"
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,assignees_name,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+| where user matches "{{user}}" and repo_name matches "{{repository}}" and project matches "{{project}}" and merge_request_id matches "{{merge_request_id}}" 
+and merge_request_state matches "{{merge_request_state}}" and group matches "{{group}}"
+| parse regex field=assignees_name "\"(?<assignee_name>[^\"]+)\"" multi
+```
+
+**Gitlab/Merge Requests/Opened Merge Requests by Creators**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+| where merge_request_state="opened"
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"   as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Merge Requests/Opened Merge Requests by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+| where merge_request_state="opened"
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace"  as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Opened Merge Requests by Repository**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+| where merge_request_state="opened"
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds","object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","project.path_with_namespace" as action, title, created_time , updated_time,user,repo_name,branch_deleted, url,source_branch,target_branch,project,merge_request_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Merge Requests/Top 10 Merge Requests by Time taken to Merge (in hrs)**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Merge Request Hook"
+|json "object_attributes.state" as merge_request_state
+| where merge_request_state="merged"
+|json "object_attributes.action" ,"object_attributes.title", "object_attributes.created_at","object_attributes.updated_at","user.name","repository.name","object_attributes.merge_when_pipeline_succeeds"
+,"object_attributes.url","object_attributes.source_branch","object_attributes.target_branch","project.name","object_attributes.id","assignees[*].name","object_attributes.last_commit.id","project.path_with_namespace" as action, title, created_time , updated_time,user,repository,branch_deleted, url,source_branch,target_branch,project,merge_request_id,
+assignees_name,commit_id,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Overview/Average Build Duration (seconds) by Project**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status in ("success", "failed")
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_duration","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,build_duration,project nodrop
+```
+
+**Gitlab/Overview/Avg. Pipelines Duration (sec) Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.status","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds" as pipeline_id,branch,commit_id,pipeline_status,pipeline_stages,created_date_time,finished_date_time,duration,user,project,builds_stage,builds_name,builds_status,builds nodrop
+```
+
+**Gitlab/Overview/Avg. Time (hrs) Taken to Close Issue by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "object_attributes.state" as issue_state
+| where issue_state="closed"
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id","object_attributes.closed_at" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,severity,action,repo_name,assignees,issue_id,closed_date_time nodrop
+```
+
+**Gitlab/Overview/Builds Failed**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status="failed"
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,project
+```
+
+**Gitlab/Overview/Builds Successful**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status="success"
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,project
+```
+
+**Gitlab/Overview/Deployments Failed**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status="failed"
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title nodrop
+```
+
+**Gitlab/Overview/Deployments Successful**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status="success"
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title nodrop
+```
+
+**Gitlab/Overview/Failed Builds by Project**
+```
+_sourceCategory = Labs/gitlab   and %"x-gitlab-event"="Job Hook" 
+| json "build_status" as build_status
+| where build_status="failed"
+| json "build_created_at","build_id","build_name","build_status" ,"build_stage","user.name","repository.name","commit.message" , "repository.homepage","commit.sha","build_failure_reason","project_name"as build_date_time,build_id , build_name ,build_status,build_stage,user, repo_name,build_commit_message , homepage,commit_id,build_failure_reason,project
+```
+
+**Gitlab/Overview/Failed Deployments  by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status="failed"
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title nodrop
+```
+
+**Gitlab/Overview/Failed Deployments by Environment**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Deployment Hook" 
+| json "status" as deployment_status
+| where deployment_status="failed"
+| json "deployable_id","status_changed_at","environment","deployable_url","user.name","commit_url","project.name" ,"commit_title" as deployable_id,deployment_status_changed_at,environment,deployable_url,user ,commit_link,project,commit_title nodrop
+```
+
+**Gitlab/Overview/Failed Pipelines by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+| json "object_attributes.status" as pipeline_status
+| where pipeline_status = "failed"
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration,user,project_name,builds_stage,builds_name,builds_status,builds,web_url
+```
+
+**Gitlab/Overview/Issues Closed**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.state","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,state,severity,action,repo_name,assignees,issue_id nodrop
+```
+
+**Gitlab/Overview/Issues Opened**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.state","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,state,severity,action,repo_name,assignees,issue_id nodrop
+```
+
+**Gitlab/Overview/Issues Reopened**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Issue Hook" 
+| json "user.name","project.id","project.name","projec.web_url","object_attributes.created_at","object_attributes.title","object_attributes.url","labels[*].title","object_attributes.state","object_attributes.severity","object_attributes.action","repository.name","assignees[*].name","object_attributes.id" as user,project_id,project,project_url,created_date_time,title,issue_url,labels,state,severity,action,repo_name,assignees,issue_id nodrop
+```
+
+**Gitlab/Overview/Pipelines Failed**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+| json "object_attributes.status" as pipeline_status
+| where pipeline_status = "failed"
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration,user,project_name,builds_stage,builds_name,builds_status,builds,web_url
+```
+
+**Gitlab/Overview/Pipelines Successful**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+| json "object_attributes.status" as pipeline_status
+| where pipeline_status = "success"
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration,user,project_name,builds_stage,builds_name,builds_status,builds,web_url
+```
+
+**Gitlab/Pipeline/10 Sowest Pipeline  Jobs**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status in ("failed","success")
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name
+,jobs_status,jobs,web_url,commit_url,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+| where user matches "{{user}}" and project matches "{{project}}" and pipeline_id matches "{{pipeline_id}}" and pipeline_status matches "{{pipeline_status}}" and group matches "{{group}}"
+| parse regex field = jobs "(?<json_added_blob>\{.*?(environment\"\:null}|\}\}))" multi
+| json field= json_added_blob "id","stage","name","status","created_at","started_at","finished_at","duration","environment.name" as job_id,job_stage
+```
+
+**Gitlab/Pipeline/Average Pipelines Duration**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status in ("success", "failed")
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+| parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Pipeline/Avg Job Duration (in sec) by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status in ("failed","success")
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+| parse regex field=group "(?<group>.+)\/.+" 
+| where user matches "{{user}}" and project matches "{{project}}" and pipeline_id matches "{{pipeline_id}}" and pipeline_status matches "{{pipeline_status}}" and group matches "{{group}}"
+| parse regex field = builds "(?<json_added_blob>\{.*?(environment\"\:null}|\}\}))" multi
+| json field= json_added_blob "id","stage","name","status","created_at","started_at","finished_at","duration","environment.name" as job_id,job_stage,job_name,job_status,job_created_at,job_started_at,job_finished_at,job_duration,job_enviroment
+```
+
+**Gitlab/Pipeline/Avg Pipleline Duration (in sec ) by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status in ("success", "failed")
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Pipeline/Avg Pipleline Duration (in sec) by Project**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status in("failed","success")
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Pipeline/Failed Jobs by Stages**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status = "failed"
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+| where user matches "{{user}}" and project matches "{{project}}" and pipeline_id matches "{{pipeline_id}}" and pipeline_status matches "{{pipeline_status}}" and group matches "{{group}}"
+| parse regex field = builds "(?<json_added_blob>\{.*?(environment\"\:null}|\}\}))" multi
+| json field= json_added_blob "id","stage","name","status","created_at","started_at","finished_at","duration","environment.name" as job_id,job_stage,job_name,job_status,job_created_at,job_started_at,job_finished_at,job_duration,job_enviroment
+```
+
+**Gitlab/Pipeline/Last 10 Failed Pipeline  Jobs**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status = "failed"
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+| where user matches "{{user}}" and project matches "{{project}}" and pipeline_id matches "{{pipeline_id}}" and pipeline_status matches "{{pipeline_status}}" and group matches "{{group}}"
+| parse regex field = jobs "(?<json_added_blob>\{.*?(environment\"\:null}|\}\}))" multi
+| json field= json_added_blob "id","stage","name","status","created_at","started_at","finished_at","duration","environment.name" as job_id,job_stage,job_name,job_status
+```
+
+**Gitlab/Pipeline/Last 10 Failed Pipelines**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status = "failed"
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+| parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Pipeline/Last 20 Pipeline Summary**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status in ("success", "failed")
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+| parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Pipeline/Outlier on Failed Pipelines**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status = "failed"
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Pipeline/Pipeline  by Status**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status in ("success", "failed")
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+| parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Pipeline/Pipelines  Over Time**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status in ("failed","success")
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage
+,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+| parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Pipeline/Pipelines Failed**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status = "failed"
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+"
+```
+
+**Gitlab/Pipeline/Pipelines Successful**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status="success"
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace"  as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Pipeline/Pipleline Duration (in sec)**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status in ("failed","success")
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+| parse regex field=group "(?<group>.+)\/.+" 
+```
+
+**Gitlab/Pipeline/Top 10 Sowest Pipeline**
+```
+_sourceCategory = Labs/gitlab   %"x-gitlab-event"="Pipeline Hook" 
+|json "object_attributes.status" as pipeline_status
+| where pipeline_status in ("failed","success")
+| json "object_attributes.id","object_attributes.ref","object_attributes.sha","object_attributes.stages","object_attributes.created_at","object_attributes.finished_at","object_attributes.duration","user.name","project.name","builds[*].stage","builds[*].name","builds[*].status","builds","project.web_url","commit.url","project.path_with_namespace" as pipeline_id,branch,commit_id,pipeline_stages,created_date_time,finished_date_time,pipeline_duration_in_sec,user,project,jobs_stage,jobs_name,jobs_status,jobs,web_url,commit_url,group nodrop
+|  parse regex field=group "(?<group>.+)\/.+" 
+```
+
 

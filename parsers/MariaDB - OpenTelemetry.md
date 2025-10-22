@@ -1,39 +1,341 @@
 # Parsers For MariaDB - OpenTelemetry
 
-| use_case | parser |
-|--- | --- |
-| MariaDB - OpenTelemetry/MariaDB - Error Logs/Crash Recovery Attempts Over Time |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "Crash recovery"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop |
-| MariaDB - OpenTelemetry/MariaDB - Error Logs/Error Log Type Over Time |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} (Error or Warning or Note or Info or Information or DEBUG or CRITICAL)<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop |
-| MariaDB - OpenTelemetry/MariaDB - Error Logs/Log Reduce |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} ("ERROR" or "CRITICAL") <br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg |
-| MariaDB - OpenTelemetry/MariaDB - Error Logs/Server Start and Shutdown Events Over Time |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} ("ready for connections" or "Shutdown complete" or "Terminated." or "Normal shutdown" or "Shutting down" or "starting as process")<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop |
-| MariaDB - OpenTelemetry/MariaDB - Error Logs/Stopped Servers |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} ("ready for connections."  or "Terminated." or "Shutdown complete" or "Normal shutdown")<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop |
-| MariaDB - OpenTelemetry/MariaDB - Error Logs/Top Errors |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[ERROR]"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" |
-| MariaDB - OpenTelemetry/MariaDB - Error Logs/Top Warnings |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" |
-| MariaDB - OpenTelemetry/MariaDB - Failed Logins/Failed Login Attempts |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]" "Access denied for user"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop<br>\| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address |
-| MariaDB - OpenTelemetry/MariaDB - Failed Logins/Failed Login Attempts - Details |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]" "Access denied for user"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop<br>\| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address |
-| MariaDB - OpenTelemetry/MariaDB - Failed Logins/Failed Login Attempts - Location |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]" "Access denied for user"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop<br>\| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address |
-| MariaDB - OpenTelemetry/MariaDB - Failed Logins/Failed Login Over Time |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}}  "[Warning]" "Access denied for user"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop<br>\| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address |
-| MariaDB - OpenTelemetry/MariaDB - Failed Logins/Top 10 Hosts by Failed Login Attempts |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]" "Access denied for user"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop<br>\| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address |
-| MariaDB - OpenTelemetry/MariaDB - Failed Logins/Top 10 Users by Failed Login Attempts |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]" "Access denied for user"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop<br>\| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address |
-| MariaDB - OpenTelemetry/MariaDB - Overview/Errors |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[ERROR]"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" |
-| MariaDB - OpenTelemetry/MariaDB - Overview/Excessive Slow Queries (>=15 secs) |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4 |
-| MariaDB - OpenTelemetry/MariaDB - Overview/Failed Login Attempts |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "Access denied for user"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse field=mariadb_log_message "Access denied for user '*'@'*' (using password: YES)" as user, ip_address |
-| MariaDB - OpenTelemetry/MariaDB - Overview/Failed Login Attempts - Location |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "Access denied for user"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse field=mariadb_log_message "Access denied for user '*'@'*' (using password: YES)" as user, ip_address |
-| MariaDB - OpenTelemetry/MariaDB - Overview/Replication Errors |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} (("[ERROR]" and ("Slave I/O" or "Error reading packet from server" or "Slave SQL")) or "[Note] Error reading relay log event: slave SQL thread was killed")<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop |
-| MariaDB - OpenTelemetry/MariaDB - Overview/Slow Queries Over Time |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi |
-| MariaDB - OpenTelemetry/MariaDB - Overview/Top 10 Errors |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[ERROR]"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" |
-| MariaDB - OpenTelemetry/MariaDB - Overview/Top 10 Warnings |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" |
-| MariaDB - OpenTelemetry/MariaDB - Replication/Replication Start-Stop Events |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Note]" "SQL thread"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop<br>\| parse field=ErrorMsg "Slave SQL thread initialized, * replication in log '*' at position *, relay log '*' position: *" as State,ReplicationLog,ReplicationPosition,ReplayLog,RelayPosition nodrop<br>\| parse field=ErrorMsg "Slave SQL thread exiting, replication * in log '*' at position *" as state,ReplicationLog,RelayPosition nodrop |
-| MariaDB - OpenTelemetry/MariaDB - Replication/Replication Status Over Time |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} ("[Note]" or ("[ERROR]" ("Slave I/O" or "Error reading packet from server" or "Slave SQL")))<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop<br>\| parse field=ErrorMsg "Slave SQL thread initialized, * replication in log '*' at position *, relay log '*' position: *" as State,ReplicationLog,ReplicationPosition,ReplayLog,RelayPosition nodrop<br>\| parse field=ErrorMsg "Slave SQL thread * because it reached its UNTIL position *" as State, StoppedUntilPosition nodrop<br>\| parse field=ErrorMsg "Error reading relay log event: slave SQL thread was *" as state nodrop |
-| MariaDB - OpenTelemetry/MariaDB - Replication/Top Reasons for Replication Failures |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} (("[ERROR]" and ("Slave I/O" or "Error reading packet from server" or "Slave SQL")) or ("[Note] Error reading relay log event: slave SQL thread was killed"))<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop |
-| MariaDB - OpenTelemetry/MariaDB - Slow Queries/Avg Execution Time by Slow SQL Cmds |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4<br>\| parse regex field=query_block "SET timestamp=(?<set_timestamp>\d*);(?:\\n\|\n)(?<sql_cmd>[\s\S]*);" nodrop<br>\| parse regex field=sql_cmd "[^a-zA-Z]*(?<sql_cmd_type>[a-zA-Z]+)(?:\s\|\\n\|\n)" nodrop<br>\| parse field=sql_cmd "# administrator command: *" as admn_sql_cmd |
-| MariaDB - OpenTelemetry/MariaDB - Slow Queries/Excessive Slow Queries by Host |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4 |
-| MariaDB - OpenTelemetry/MariaDB - Slow Queries/Excessive Slow Queries Over Time |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4 |
-| MariaDB - OpenTelemetry/MariaDB - Slow Queries/Slow Queries by Client IPs |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ \s\[(?<ip_addr>\S*?)\]" nodrop<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]" nodrop // Pttrn1-vrtn1<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @\s+\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" nodrop // Pttrn1-vrtn2<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" // Pttrn1-vrtn3<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" nodrop // Pttrn2-vrtn4 |
-| MariaDB - OpenTelemetry/MariaDB - Slow Queries/Slow Queries by Hosts |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" nodrop // Pttrn2-vrtn4 |
-| MariaDB - OpenTelemetry/MariaDB - Slow Queries/Slow Queries by Users |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ \s\[(?<ip_addr>\S*?)\]" nodrop<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]" nodrop // Pttrn1-vrtn1<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @\s+\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" nodrop // Pttrn1-vrtn2<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" // Pttrn1-vrtn3<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" nodrop // Pttrn2-vrtn4 |
-| MariaDB - OpenTelemetry/MariaDB - Slow Queries/Slow Queries Over Time |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" nodrop // Pttrn2-vrtn4 |
-| MariaDB - OpenTelemetry/MariaDB - Slow Queries/Slow Query by Cmd Type |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi<br>\| parse regex field=query_block "SET timestamp=(?<set_timestamp>\d*);(?:\\n\|\n)(?<sql_cmd>[\s\S]*);" nodrop<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" nodrop // Pttrn2-vrtn4<br>\| num(query_time) as query_time<br>\| where query_time >= {{slow_query_latency}}<br>\| parse regex field=sql_cmd "[^a-zA-Z]*(?<sql_cmd_type>[a-zA-Z]+)(?:\s\|\\n\|\n)" nodrop<br>\| parse field=sql_cmd "# administrator command: *" as admn_sql_cmd |
-| MariaDB - OpenTelemetry/MariaDB - Slow Queries/Top 10 Excessive Slow Queries by Frequency |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ \s\[(?<ip_addr>\S*?)\]" nodrop<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]" nodrop // Pttrn1-vrtn1<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @\s+\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" nodrop // Pttrn1-vrtn2<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" // Pttrn1-vrtn3<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4<br>\| parse regex field=query_block "# Bytes_sent:\s+(?<bytes_sent>\d*)\s+Tmp_tables:\s+(?<tmp_tables>\d*)\s+Tmp_disk_tables:\s+(?<temp_disk_tables>\d*)\s+Tmp_table_sizes:\s+(?<tmp_table_sizes>\d*)\n" nodrop // Pttrn3-vrtn1<br>\| parse regex field=query_block "# Bytes_sent:\s+(?<bytes_sent>\d*)\n" nodrop // Pttrn3-vrtn2<br>\| parse regex field=query_block "SET timestamp=(?<set_timestamp>\d*);(?:\\n\|\n)(?<sql_cmd>[\s\S]*);" nodrop |
-| MariaDB - OpenTelemetry/MariaDB - Slow Queries/Top 10 Slow Queries by Average Execution Time |  sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"<br>\| json "log" nodrop<br>\| if (isEmpty(log), _raw, log) as mariadb_log_message<br>\| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ \s\[(?<ip_addr>\S*?)\]" nodrop<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]" nodrop // Pttrn1-vrtn1<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @\s+\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" nodrop // Pttrn1-vrtn2<br>\| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" // Pttrn1-vrtn3<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1<br>\| parse regex field=query_block "Schema: (?<schema>(?:\S*\|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3<br>\| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4<br>\| parse regex field=query_block "# Bytes_sent:\s+(?<bytes_sent>\d*)\s+Tmp_tables:\s+(?<tmp_tables>\d*)\s+Tmp_disk_tables:\s+(?<temp_disk_tables>\d*)\s+Tmp_table_sizes:\s+(?<tmp_table_sizes>\d*)\n" nodrop // Pttrn3-vrtn1<br>\| parse regex field=query_block "# Bytes_sent:\s+(?<bytes_sent>\d*)\n" nodrop // Pttrn3-vrtn2<br>\| parse regex field=query_block "SET timestamp=(?<set_timestamp>\d*);(?:\\n\|\n)(?<sql_cmd>[\s\S]*);" nodrop |
+**MariaDB - OpenTelemetry/MariaDB - Error Logs/Crash Recovery Attempts Over Time**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "Crash recovery"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Error Logs/Error Log Type Over Time**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} (Error or Warning or Note or Info or Information or DEBUG or CRITICAL)
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Error Logs/Log Reduce**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} ("ERROR" or "CRITICAL") 
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Error Logs/Server Start and Shutdown Events Over Time**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} ("ready for connections" or "Shutdown complete" or "Terminated." or "Normal shutdown" or "Shutting down" or "starting as process")
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Error Logs/Stopped Servers**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} ("ready for connections."  or "Terminated." or "Shutdown complete" or "Normal shutdown")
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Error Logs/Top Errors**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[ERROR]"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)"
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Error Logs/Top Warnings**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)"
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Failed Logins/Failed Login Attempts**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]" "Access denied for user"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Failed Logins/Failed Login Attempts - Details**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]" "Access denied for user"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Failed Logins/Failed Login Attempts - Location**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]" "Access denied for user"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Failed Logins/Failed Login Over Time**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}}  "[Warning]" "Access denied for user"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Failed Logins/Top 10 Hosts by Failed Login Attempts**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]" "Access denied for user"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Failed Logins/Top 10 Users by Failed Login Attempts**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]" "Access denied for user"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+| parse field=ErrorMsg "Access denied for user '*'@'*' (using password: YES)" as user, ip_address
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Overview/Errors**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[ERROR]"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)"
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Overview/Excessive Slow Queries (>=15 secs)**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Overview/Failed Login Attempts**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "Access denied for user"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse field=mariadb_log_message "Access denied for user '*'@'*' (using password: YES)" as user, ip_address
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Overview/Failed Login Attempts - Location**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "Access denied for user"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse field=mariadb_log_message "Access denied for user '*'@'*' (using password: YES)" as user, ip_address
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Overview/Replication Errors**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} (("[ERROR]" and ("Slave I/O" or "Error reading packet from server" or "Slave SQL")) or "[Note] Error reading relay log event: slave SQL thread was killed")
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Overview/Slow Queries Over Time**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Overview/Top 10 Errors**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[ERROR]"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)"
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Overview/Top 10 Warnings**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Warning]"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)"
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Replication/Replication Start-Stop Events**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "[Note]" "SQL thread"
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+| parse field=ErrorMsg "Slave SQL thread initialized, * replication in log '*' at position *, relay log '*' position: *" as State,ReplicationLog,ReplicationPosition,ReplayLog,RelayPosition nodrop
+| parse field=ErrorMsg "Slave SQL thread exiting, replication * in log '*' at position *" as state,ReplicationLog,RelayPosition nodrop
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Replication/Replication Status Over Time**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} ("[Note]" or ("[ERROR]" ("Slave I/O" or "Error reading packet from server" or "Slave SQL")))
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+| parse field=ErrorMsg "Slave SQL thread initialized, * replication in log '*' at position *, relay log '*' position: *" as State,ReplicationLog,ReplicationPosition,ReplayLog,RelayPosition nodrop
+| parse field=ErrorMsg "Slave SQL thread * because it reached its UNTIL position *" as State, StoppedUntilPosition nodrop
+| parse field=ErrorMsg "Error reading relay log event: slave SQL thread was *" as state nodrop
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Replication/Top Reasons for Replication Failures**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} (("[ERROR]" and ("Slave I/O" or "Error reading packet from server" or "Slave SQL")) or ("[Note] Error reading relay log event: slave SQL thread was killed"))
+| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
+| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Slow Queries/Avg Execution Time by Slow SQL Cmds**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4
+| parse regex field=query_block "SET timestamp=(?<set_timestamp>\d*);(?:\\n|\n)(?<sql_cmd>[\s\S]*);" nodrop
+| parse regex field=sql_cmd "[^a-zA-Z]*(?<sql_cmd_type>[a-zA-Z]+)(?:\s|\\n|\n)" nodrop
+| parse field=sql_cmd "# administrator command: *" as admn_sql_cmd
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Slow Queries/Excessive Slow Queries by Host**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Slow Queries/Excessive Slow Queries Over Time**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Slow Queries/Slow Queries by Client IPs**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ \s\[(?<ip_addr>\S*?)\]" nodrop
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]" nodrop // Pttrn1-vrtn1
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @\s+\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" nodrop // Pttrn1-vrtn2
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" // Pttrn1-vrtn3
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" nodrop // Pttrn2-vrtn4
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Slow Queries/Slow Queries by Hosts**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" nodrop // Pttrn2-vrtn4
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Slow Queries/Slow Queries by Users**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ \s\[(?<ip_addr>\S*?)\]" nodrop
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]" nodrop // Pttrn1-vrtn1
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @\s+\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" nodrop // Pttrn1-vrtn2
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" // Pttrn1-vrtn3
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" nodrop // Pttrn2-vrtn4
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Slow Queries/Slow Queries Over Time**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" nodrop // Pttrn2-vrtn4
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Slow Queries/Slow Query by Cmd Type**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+| parse regex field=query_block "SET timestamp=(?<set_timestamp>\d*);(?:\\n|\n)(?<sql_cmd>[\s\S]*);" nodrop
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" nodrop // Pttrn2-vrtn4
+| num(query_time) as query_time
+| where query_time >= {{slow_query_latency}}
+| parse regex field=sql_cmd "[^a-zA-Z]*(?<sql_cmd_type>[a-zA-Z]+)(?:\s|\\n|\n)" nodrop
+| parse field=sql_cmd "# administrator command: *" as admn_sql_cmd
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Slow Queries/Top 10 Excessive Slow Queries by Frequency**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ \s\[(?<ip_addr>\S*?)\]" nodrop
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]" nodrop // Pttrn1-vrtn1
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @\s+\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" nodrop // Pttrn1-vrtn2
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" // Pttrn1-vrtn3
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4
+| parse regex field=query_block "# Bytes_sent:\s+(?<bytes_sent>\d*)\s+Tmp_tables:\s+(?<tmp_tables>\d*)\s+Tmp_disk_tables:\s+(?<temp_disk_tables>\d*)\s+Tmp_table_sizes:\s+(?<tmp_table_sizes>\d*)\n" nodrop // Pttrn3-vrtn1
+| parse regex field=query_block "# Bytes_sent:\s+(?<bytes_sent>\d*)\n" nodrop // Pttrn3-vrtn2
+| parse regex field=query_block "SET timestamp=(?<set_timestamp>\d*);(?:\\n|\n)(?<sql_cmd>[\s\S]*);" nodrop
+```
+
+**MariaDB - OpenTelemetry/MariaDB - Slow Queries/Top 10 Slow Queries by Average Execution Time**
+```
+ sumo.datasource=mariadb deployment.environment={{deployment.environment}} db.cluster.name={{db.cluster.name}} "User@Host" "Query_time"
+| json "log" nodrop
+| if (isEmpty(log), _raw, log) as mariadb_log_message
+| parse regex field=mariadb_log_message "(?<query_block># User@Host:[\S\s]+?SET timestamp=\d+;[\S\s]+?;)" multi
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ \s\[(?<ip_addr>\S*?)\]" nodrop
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]" nodrop // Pttrn1-vrtn1
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @\s+\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" nodrop // Pttrn1-vrtn2
+| parse regex field=query_block "# User@Host: \S+?\[(?<user>\S*?)\] @ (?<host_name>\S+)\s\[(?<ip_addr>\S*?)\]\s+Id:\s+(?<Id>\d{1,10})" // Pttrn1-vrtn3
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d.]*)\s+Rows_examined:\s+(?<rows_examined>[\d.]*)\s+Rows_affected:\s+(?<rows_affected>[\d.]*)\s+Rows_read:\s+(?<rows_read>[\d.]*)\n" nodrop // Pttrn2-vrtn1
+| parse regex field=query_block "Schema: (?<schema>(?:\S*|\s)?)\s*Last_errno[\s\S]+?\s+Killed:\s+\d+\n" nodrop // Pttrn2-vrtn2
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)\s+Rows_affected:\s+(?<rows_affected>[\d]*)\s+" nodrop // Pttrn2-vrtn3
+| parse regex field=query_block "Query_time:\s+(?<query_time>[\d.]*)\s+Lock_time:\s+(?<lock_time>[\d.]*)\s+Rows_sent:\s+(?<rows_sent>[\d]*)\s+Rows_examined:\s+(?<rows_examined>[\d]*)" // Pttrn2-vrtn4
+| parse regex field=query_block "# Bytes_sent:\s+(?<bytes_sent>\d*)\s+Tmp_tables:\s+(?<tmp_tables>\d*)\s+Tmp_disk_tables:\s+(?<temp_disk_tables>\d*)\s+Tmp_table_sizes:\s+(?<tmp_table_sizes>\d*)\n" nodrop // Pttrn3-vrtn1
+| parse regex field=query_block "# Bytes_sent:\s+(?<bytes_sent>\d*)\n" nodrop // Pttrn3-vrtn2
+| parse regex field=query_block "SET timestamp=(?<set_timestamp>\d*);(?:\\n|\n)(?<sql_cmd>[\s\S]*);" nodrop
+```
+
 

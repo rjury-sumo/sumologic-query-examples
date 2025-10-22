@@ -1,81 +1,685 @@
 # Parsers For Azure Storage
 
-| use_case | parser |
-|--- | --- |
-| Azure Storage/ Audit control plane operations/Changes | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop |
-| Azure Storage/ Audit control plane operations/Changes - Read, Write and Delete | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| json "resultType", "category", "operationName" as resultType, category, operationName |
-| Azure Storage/ Audit control plane operations/Operations that caused server-side throttling errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| json "statusText" |
-| Azure Storage/ Audit control plane operations/Operations used | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| json "resultType", "category", "operationName" as resultType, category, operationName |
-| Azure Storage/ Audit control plane operations/Top 10 most common errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| json "statusText" |
-| Azure Storage/ Audit control plane operations/Top 10 operations that caused the most errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| json "statusText", "operationName" as statusText, operationName |
-| Azure Storage/ Failures/Failed request count by status text | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType  |
-| Azure Storage/ Failures/Failed Transaction by Category | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType  |
-| Azure Storage/ Failures/Failed Transactions | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType  |
-| Azure Storage/ Failures/Non-zero status code by storage account | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json "statusCode" as statusCode |
-| Azure Storage/ Failures/Recent failed request | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType  |
-| Azure Storage/ Performance/Top 10 high latency transactions | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json field=_raw "properties.responseBodySize", "properties.requestBodySize", "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "durationMs", "category", "operationName" as responseBodySize, requestBodySize, filePath, serviceType, clientRequestId, statusCode, durationMs, category, operationName nodrop |
-| Azure Storage/Access/Distribution by identity type | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| json "identity.type" as type |
-| Azure Storage/Access/Distribution by user agent | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| json "properties.userAgentHeader" as userAgentHeader |
-| Azure Storage/Access/Transactions by location | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| json "callerIpAddress" as callerIpAddress<br>\| where !isblank(callerIpAddress)<br>\| split callerIpAddress delim=':' extract 1 as src_ip, 2 as port |
-| Azure Storage/Access/Transactions by TLS version | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| json "properties.tlsVersion" as tlsVersion |
-| Azure Storage/Blob Service/Container Name by Failed Operations | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "operationName", "statusText" as uri, category, operationName, statusText<br>\| where service_type="BLOBSERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
-| Azure Storage/Blob Service/Read | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.responseBodySize" as uri, category, response_body_size<br>\| where category="StorageRead" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
-| Azure Storage/Blob Service/Read vs Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size |
-| Azure Storage/Blob Service/Reads by Container Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri","category", "properties.responseBodySize" as uri, category, response_body_size<br>\| where category="StorageRead" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
-| Azure Storage/Blob Service/Top 10 Resources by Failures | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.objectKey" as uri, category, statusText, objectKey<br>\| where service_type="BLOBSERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
-| Azure Storage/Blob Service/Top 10 Resources by Latency | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as uri, category, statusText, objectKey, server_latency<br>\| where service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
-| Azure Storage/Blob Service/Top 10 Resources by Reads(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.responseBodySize", "properties.objectKey" as uri, category, statusText, response_body_size, objectKey<br>\| where category="StorageRead" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
-| Azure Storage/Blob Service/Top 10 Resources by Writes(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.requestBodySize", "properties.objectKey" as uri, category, statusText, request_body_size, objectKey<br>\| where category="StorageWrite" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
-| Azure Storage/Blob Service/Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri","category", "properties.requestBodySize" as uri, category, request_body_size nodrop<br>\| where category="StorageWrite" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
-| Azure Storage/Blob Service/Writes by Container Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri","category", "properties.responseBodySize" as uri, category, response_body_size<br>\| where category="StorageWrite" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
-| Azure Storage/File Service/File Share by Failed Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "operationName" as uri, category, statusText, operationName<br>\| where service_type="FILESERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
-| Azure Storage/File Service/Read | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri","category", "properties.responseBodySize" as uri, category, response_body_size<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
-| Azure Storage/File Service/Read vs Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size |
-| Azure Storage/File Service/Reads by File Share | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.responseBodySize", "properties.objectKey" as uri, category, statusText, response_body_size, objectKey<br>\| where category="StorageRead" and service_type="FILESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
-| Azure Storage/File Service/Top 10 Resources by Failures | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.objectKey" as uri, category, statusText, objectKey<br>\| where service_type="FILESERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
-| Azure Storage/File Service/Top 10 Resources by Reads(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.responseBodySize" as uri, category, objectKey, response_body_size<br>\| where category="StorageRead" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
-| Azure Storage/File Service/Top 10 Resources by Server Latency | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as uri, category, statusText, objectKey, server_latency<br>\| where service_type="FILESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
-| Azure Storage/File Service/Top 10 Resources by Writes(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.requestBodySize" as uri, category, objectKey, request_body_size<br>\| where category="StorageWrite" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
-| Azure Storage/File Service/Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.requestBodySize" as uri, category, request_body_size<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
-| Azure Storage/File Service/Writes by File Share | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.requestBodySize", "properties.objectKey" as uri, category, statusText, request_body_size, objectKey<br>\| where category="StorageWrite" and service_type="FILESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
-| Azure Storage/Health/Alerts over time | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| json "category" |
-| Azure Storage/Health/Recent alerts | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| JSON "category", "resultType", "properties.eventTimestamp", "properties.operationName", "properties.status" as category, resultType, eventTimestamp, operationName, status<br>\| where category="Alert"<br>\| parse field=operationName "*/*/*" as category, operation_name, action nodrop |
-| Azure Storage/Health/Recent Resource health incidents | tenant_name={{tenant_name}}<br>provider_name={{provider_name}}<br>resource_type={{resource_type}}<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>\| JSON "category", "operationName", "time","level","resultType", "properties.title", "properties.details", "properties.currentHealthStatus", "properties.type", "properties.cause" as category, operationName, time,level,resultType, title, details, currentHealthStatus, type, cause nodrop<br>\| where category="ResourceHealth" and resourceId matches /STORAGEACCOUNTS/<br>\| parse field=operationName "*/*/*" as category, operation_name, action nodrop |
-| Azure Storage/Health/Recent Service Health incidents | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| JSON "category", "operationName", "time","level","resultType", "properties.incidentType", "properties.service", "properties.region", "properties.impactStartTime", "properties.impactMitigationTime", "properties.defaultLanguageTitle", "properties.stage" as category, operationName, time,level,resultType, incidentType, service, service_region, impactStartTime, impactMitigationTime, defaultLanguageTitle, stage nodrop<br>\| replace(toLowerCase(service_region), " ", "") as service_region<br>\| where category="ServiceHealth" and toUpperCase(service) matches /STORAGE/ and service_region matches "{{location}}"<br>\| parse field=operationName "*/*/*" as category, operation_name, action nodrop |
-| Azure Storage/Health/Resource health by event type | tenant_name={{tenant_name}}<br>provider_name={{provider_name}}<br>resource_type={{resource_type}}<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>\| JSON "category", "properties.currentHealthStatus" as category, currentHealthStatus |
-| Azure Storage/Health/Service Health by event type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| JSON "category", "properties.incidentType", "properties.service", "properties.region" as category, incidentType, service, service_region |
-| Azure Storage/Health/service health by event type-Time chart | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| JSON "category", "properties.incidentType", "properties.service", "properties.region" as category, incidentType, service, service_region |
-| Azure Storage/Health/Total alerts | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| json "category" |
-| Azure Storage/Operations/Non 200 status code by Service Type | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json "statusCode", "properties.serviceType" as statusCode, service_type |
-| Azure Storage/Operations/Storage Account Read Statistics | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts"<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json "category", "properties.responseBodySize", "properties.serverLatencyMs", "properties.serviceType" as category, response_body_size, server_latency, service_type |
-| Azure Storage/Operations/Storage Account Write Statistics | tenant_name=* subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts"<br>resource_name=*<br>location={{location}}<br>*STORAGE*<br>\| json "category", "properties.requestBodySize", "properties.serverLatencyMs","properties.serviceType" as category, request_body_size, server_latency, service_type   |
-| Azure Storage/Operations/Total read | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size |
-| Azure Storage/Operations/Total write | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json "category", "properties.requestBodySize" as category, request_body_size |
-| Azure Storage/Queue Service/Queue Name by Failed Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "operationName" as uri, category, objectKey, operationName<br>\| where service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Queue Service/Read | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}}<br>*STORAGE*<br>\| JSON "uri", "category", "properties.responseBodySize", "properties.objectKey" as uri, category, response_body_size, objectKey nodrop<br>\| where category="StorageRead" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Queue Service/Read vs Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size |
-| Azure Storage/Queue Service/Reads by Queue Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.responseBodySize" as uri, category, objectKey, response_body_size<br>\| where category="StorageRead" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Queue Service/Top 10 Resources by Failures | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey" as uri, category, objectKey<br>\| where service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Queue Service/Top 10 Resources by Reads(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.responseBodySize" as uri, category, objectKey, response_body_size<br>\| where category="StorageRead" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Queue Service/Top 10 Resources by Server Latency | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.serverLatencyMs" as uri, category, objectKey, server_latency<br>\| where service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Queue Service/Top 10 Resources by Writes(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.requestBodySize" as uri, category, objectKey, request_body_size<br>\| where category="StorageWrite" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Queue Service/Write | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.requestBodySize", "properties.objectKey" as uri, category, request_body_size, objectKey<br>\| where category="StorageWrite" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Queue Service/Writes by Queue Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.requestBodySize" as uri, category, objectKey, request_body_size<br>\| where category="StorageWrite" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Security and policy/Recent failed policy events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category", "resultType", "level", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, level, message, resource_location, entity<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop |
-| Azure Storage/Security and policy/Recent recommendation events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>location={{location}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category", "operationName", "resultType", "properties.recommendationImpact", "properties.recommendationName" as category, operationName, resultType, recommendationImpact, recommendationName<br>\| where category="Recommendation"<br>\| parse field=operationName "*/*/*/*" as provider, category, operation_name, action nodrop |
-| Azure Storage/Security and policy/Recent security events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>location={{location}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| Json "category", "properties.status", "properties.timeGeneratedUtc", "properties.processingEndTimeUtc", "properties.version", "properties.vendorName", "properties.productName", "properties.alertType", "properties.startTimeUtc", "properties.endTimeUtc", "properties.severity", "properties.isIncident", "properties.intent", "properties.compromisedEntity", "properties.alertDisplayName", "properties.description", "properties.productComponentName" as category, status, timeGeneratedUtc, processingEndTimeUtc, version, vendorName, productName, alertType, startTimeUtc, endTimeUtc, severity, isIncident, intent, compromisedEntity, alertDisplayName, description, productComponentName nodrop |
-| Azure Storage/Security and policy/Recent success policy events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category", "resultType", "level", "providers", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, level, providers, message, resource_location, entity nodrop<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop |
-| Azure Storage/Security and policy/Total denied policy events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, message, resourceLocation, entity<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop |
-| Azure Storage/Security and policy/Total recommendation events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>location={{location}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category" |
-| Azure Storage/Security and policy/Total security events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>location={{location}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category" |
-| Azure Storage/Table Service/Read | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size<br>\| where category="StorageRead" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Table Service/Read vs Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size |
-| Azure Storage/Table Service/Reads by Table Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size<br>\| where category="StorageRead" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Table Service/Table Name by Failed Operations | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "operationName", "statusText", "properties.objectKey" as category, operationName, statusText, objectKey<br>\| where service_type="TABLESERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Table Service/Top 10 Resources  by Failures | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "statusText", "properties.objectKey" as category,  statusText, objectKey<br>\| where service_type="TABLESERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Table Service/Top 10 Resources  by Server Latency | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| where service_type="TABLESERVICES"<br>\| JSON "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as category,  statusText, objectKey, server_latency<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Table Service/Top 10 Resources by Reads(MB) | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| json "category", "properties.responseBodySize", "properties.objectKey", "uri" as category, response_body_size, objectKey, uri<br>\| where category="StorageRead" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Table Service/Top 10 Resources by Writes(MB) | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.requestBodySize", "properties.objectKey", "uri" as category, request_body_size, objectKey, uri <br>\| where category="StorageWrite" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Table Service/Write | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}}<br>*STORAGE*<br>\| JSON "category", "properties.requestBodySize" as category, request_body_size<br>\| where category="StorageWrite" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
-| Azure Storage/Table Service/Writes by Table Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.requestBodySize" as category, request_body_size<br>\| where category="StorageWrite" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
+**Azure Storage/ Audit control plane operations/Changes**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}
+provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*
+| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop
+```
+
+**Azure Storage/ Audit control plane operations/Changes - Read, Write and Delete**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}
+provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*
+| json "resultType", "category", "operationName" as resultType, category, operationName
+```
+
+**Azure Storage/ Audit control plane operations/Operations that caused server-side throttling errors**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}
+provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*
+| json "statusText"
+```
+
+**Azure Storage/ Audit control plane operations/Operations used**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}
+provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*
+| json "resultType", "category", "operationName" as resultType, category, operationName
+```
+
+**Azure Storage/ Audit control plane operations/Top 10 most common errors**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}
+provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*
+| json "statusText"
+```
+
+**Azure Storage/ Audit control plane operations/Top 10 operations that caused the most errors**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}
+provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*
+| json "statusText", "operationName" as statusText, operationName
+```
+
+**Azure Storage/ Failures/Failed request count by status text**
+```
+tenant_name={{tenant_name}}
+provider_name="Microsoft.Storage"
+resource_type="storageAccounts"
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+location={{location}}
+*STORAGE*
+| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType 
+```
+
+**Azure Storage/ Failures/Failed Transaction by Category**
+```
+tenant_name={{tenant_name}}
+provider_name="Microsoft.Storage"
+resource_type="storageAccounts"
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+location={{location}}
+*STORAGE*
+| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType 
+```
+
+**Azure Storage/ Failures/Failed Transactions**
+```
+tenant_name={{tenant_name}}
+provider_name="Microsoft.Storage"
+resource_type="storageAccounts"
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+location={{location}}
+*STORAGE*
+| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType 
+```
+
+**Azure Storage/ Failures/Non-zero status code by storage account**
+```
+tenant_name={{tenant_name}}
+provider_name="Microsoft.Storage"
+resource_type="storageAccounts"
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+location={{location}}
+*STORAGE*
+| json "statusCode" as statusCode
+```
+
+**Azure Storage/ Failures/Recent failed request**
+```
+tenant_name={{tenant_name}}
+provider_name="Microsoft.Storage"
+resource_type="storageAccounts"
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+location={{location}}
+*STORAGE*
+| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType 
+```
+
+**Azure Storage/ Performance/Top 10 high latency transactions**
+```
+tenant_name={{tenant_name}}
+provider_name="Microsoft.Storage"
+resource_type="storageAccounts"
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+location={{location}}
+*STORAGE*
+| json field=_raw "properties.responseBodySize", "properties.requestBodySize", "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "durationMs", "category", "operationName" as responseBodySize, requestBodySize, filePath, serviceType, clientRequestId, statusCode, durationMs, category, operationName nodrop
+```
+
+**Azure Storage/Access/Distribution by identity type**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| json "identity.type" as type
+```
+
+**Azure Storage/Access/Distribution by user agent**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| json "properties.userAgentHeader" as userAgentHeader
+```
+
+**Azure Storage/Access/Transactions by location**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| json "callerIpAddress" as callerIpAddress
+| where !isblank(callerIpAddress)
+| split callerIpAddress delim=':' extract 1 as src_ip, 2 as port
+```
+
+**Azure Storage/Access/Transactions by TLS version**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| json "properties.tlsVersion" as tlsVersion
+```
+
+**Azure Storage/Blob Service/Container Name by Failed Operations**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "operationName", "statusText" as uri, category, operationName, statusText
+| where service_type="BLOBSERVICES" and statusText != "Success"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
+```
+
+**Azure Storage/Blob Service/Read**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.responseBodySize" as uri, category, response_body_size
+| where category="StorageRead" and service_type="BLOBSERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
+```
+
+**Azure Storage/Blob Service/Read vs Write**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "category", "properties.responseBodySize" as category, response_body_size
+```
+
+**Azure Storage/Blob Service/Reads by Container Name**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri","category", "properties.responseBodySize" as uri, category, response_body_size
+| where category="StorageRead" and service_type="BLOBSERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
+```
+
+**Azure Storage/Blob Service/Top 10 Resources by Failures**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "statusText", "properties.objectKey" as uri, category, statusText, objectKey
+| where service_type="BLOBSERVICES" and statusText != "Success"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
+```
+
+**Azure Storage/Blob Service/Top 10 Resources by Latency**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as uri, category, statusText, objectKey, server_latency
+| where service_type="BLOBSERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
+```
+
+**Azure Storage/Blob Service/Top 10 Resources by Reads(MB)**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "statusText", "properties.responseBodySize", "properties.objectKey" as uri, category, statusText, response_body_size, objectKey
+| where category="StorageRead" and service_type="BLOBSERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
+```
+
+**Azure Storage/Blob Service/Top 10 Resources by Writes(MB)**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "statusText", "properties.requestBodySize", "properties.objectKey" as uri, category, statusText, request_body_size, objectKey
+| where category="StorageWrite" and service_type="BLOBSERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
+```
+
+**Azure Storage/Blob Service/Write**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri","category", "properties.requestBodySize" as uri, category, request_body_size nodrop
+| where category="StorageWrite" and service_type="BLOBSERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
+```
+
+**Azure Storage/Blob Service/Writes by Container Name**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri","category", "properties.responseBodySize" as uri, category, response_body_size
+| where category="StorageWrite" and service_type="BLOBSERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
+```
+
+**Azure Storage/File Service/File Share by Failed Operations**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "statusText", "operationName" as uri, category, statusText, operationName
+| where service_type="FILESERVICES" and statusText != "Success"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
+```
+
+**Azure Storage/File Service/Read**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri","category", "properties.responseBodySize" as uri, category, response_body_size
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
+```
+
+**Azure Storage/File Service/Read vs Write**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "category", "properties.responseBodySize" as category, response_body_size
+```
+
+**Azure Storage/File Service/Reads by File Share**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "statusText", "properties.responseBodySize", "properties.objectKey" as uri, category, statusText, response_body_size, objectKey
+| where category="StorageRead" and service_type="FILESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
+```
+
+**Azure Storage/File Service/Top 10 Resources by Failures**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "statusText", "properties.objectKey" as uri, category, statusText, objectKey
+| where service_type="FILESERVICES" and statusText != "Success"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
+```
+
+**Azure Storage/File Service/Top 10 Resources by Reads(MB)**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.objectKey", "properties.responseBodySize" as uri, category, objectKey, response_body_size
+| where category="StorageRead" and service_type="TABLESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
+```
+
+**Azure Storage/File Service/Top 10 Resources by Server Latency**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as uri, category, statusText, objectKey, server_latency
+| where service_type="FILESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
+```
+
+**Azure Storage/File Service/Top 10 Resources by Writes(MB)**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.objectKey", "properties.requestBodySize" as uri, category, objectKey, request_body_size
+| where category="StorageWrite" and service_type="TABLESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
+```
+
+**Azure Storage/File Service/Write**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.requestBodySize" as uri, category, request_body_size
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
+```
+
+**Azure Storage/File Service/Writes by File Share**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "statusText", "properties.requestBodySize", "properties.objectKey" as uri, category, statusText, request_body_size, objectKey
+| where category="StorageWrite" and service_type="FILESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
+```
+
+**Azure Storage/Health/Alerts over time**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}
+| json "category"
+```
+
+**Azure Storage/Health/Recent alerts**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}
+| JSON "category", "resultType", "properties.eventTimestamp", "properties.operationName", "properties.status" as category, resultType, eventTimestamp, operationName, status
+| where category="Alert"
+| parse field=operationName "*/*/*" as category, operation_name, action nodrop
+```
+
+**Azure Storage/Health/Recent Resource health incidents**
+```
+tenant_name={{tenant_name}}
+provider_name={{provider_name}}
+resource_type={{resource_type}}
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+location={{location}}
+| JSON "category", "operationName", "time","level","resultType", "properties.title", "properties.details", "properties.currentHealthStatus", "properties.type", "properties.cause" as category, operationName, time,level,resultType, title, details, currentHealthStatus, type, cause nodrop
+| where category="ResourceHealth" and resourceId matches /STORAGEACCOUNTS/
+| parse field=operationName "*/*/*" as category, operation_name, action nodrop
+```
+
+**Azure Storage/Health/Recent Service Health incidents**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}
+| JSON "category", "operationName", "time","level","resultType", "properties.incidentType", "properties.service", "properties.region", "properties.impactStartTime", "properties.impactMitigationTime", "properties.defaultLanguageTitle", "properties.stage" as category, operationName, time,level,resultType, incidentType, service, service_region, impactStartTime, impactMitigationTime, defaultLanguageTitle, stage nodrop
+| replace(toLowerCase(service_region), " ", "") as service_region
+| where category="ServiceHealth" and toUpperCase(service) matches /STORAGE/ and service_region matches "{{location}}"
+| parse field=operationName "*/*/*" as category, operation_name, action nodrop
+```
+
+**Azure Storage/Health/Resource health by event type**
+```
+tenant_name={{tenant_name}}
+provider_name={{provider_name}}
+resource_type={{resource_type}}
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+location={{location}}
+| JSON "category", "properties.currentHealthStatus" as category, currentHealthStatus
+```
+
+**Azure Storage/Health/Service Health by event type**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}
+| JSON "category", "properties.incidentType", "properties.service", "properties.region" as category, incidentType, service, service_region
+```
+
+**Azure Storage/Health/service health by event type-Time chart**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}
+| JSON "category", "properties.incidentType", "properties.service", "properties.region" as category, incidentType, service, service_region
+```
+
+**Azure Storage/Health/Total alerts**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}
+| json "category"
+```
+
+**Azure Storage/Operations/Non 200 status code by Service Type**
+```
+tenant_name={{tenant_name}}
+provider_name="Microsoft.Storage"
+resource_type="storageAccounts"
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+location={{location}}
+*STORAGE*
+| json "statusCode", "properties.serviceType" as statusCode, service_type
+```
+
+**Azure Storage/Operations/Storage Account Read Statistics**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts"
+resource_name={{resource_name}}
+location={{location}}
+*STORAGE*
+| json "category", "properties.responseBodySize", "properties.serverLatencyMs", "properties.serviceType" as category, response_body_size, server_latency, service_type
+```
+
+**Azure Storage/Operations/Storage Account Write Statistics**
+```
+tenant_name=* subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts"
+resource_name=*
+location={{location}}
+*STORAGE*
+| json "category", "properties.requestBodySize", "properties.serverLatencyMs","properties.serviceType" as category, request_body_size, server_latency, service_type  
+```
+
+**Azure Storage/Operations/Total read**
+```
+tenant_name={{tenant_name}}
+provider_name="Microsoft.Storage"
+resource_type="storageAccounts"
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+location={{location}}
+*STORAGE*
+| JSON "category", "properties.responseBodySize" as category, response_body_size
+```
+
+**Azure Storage/Operations/Total write**
+```
+tenant_name={{tenant_name}}
+provider_name="Microsoft.Storage"
+resource_type="storageAccounts"
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+location={{location}}
+*STORAGE*
+| json "category", "properties.requestBodySize" as category, request_body_size
+```
+
+**Azure Storage/Queue Service/Queue Name by Failed Operations**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.objectKey", "operationName" as uri, category, objectKey, operationName
+| where service_type="QUEUESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
+| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Queue Service/Read**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}}
+*STORAGE*
+| JSON "uri", "category", "properties.responseBodySize", "properties.objectKey" as uri, category, response_body_size, objectKey nodrop
+| where category="StorageRead" and service_type="QUEUESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
+| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Queue Service/Read vs Write**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "category", "properties.responseBodySize" as category, response_body_size
+```
+
+**Azure Storage/Queue Service/Reads by Queue Name**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.objectKey", "properties.responseBodySize" as uri, category, objectKey, response_body_size
+| where category="StorageRead" and service_type="QUEUESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
+| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Queue Service/Top 10 Resources by Failures**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.objectKey" as uri, category, objectKey
+| where service_type="QUEUESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
+| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Queue Service/Top 10 Resources by Reads(MB)**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.objectKey", "properties.responseBodySize" as uri, category, objectKey, response_body_size
+| where category="StorageRead" and service_type="QUEUESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
+| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Queue Service/Top 10 Resources by Server Latency**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.objectKey", "properties.serverLatencyMs" as uri, category, objectKey, server_latency
+| where service_type="QUEUESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
+| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Queue Service/Top 10 Resources by Writes(MB)**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.objectKey", "properties.requestBodySize" as uri, category, objectKey, request_body_size
+| where category="StorageWrite" and service_type="QUEUESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
+| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Queue Service/Write**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.requestBodySize", "properties.objectKey" as uri, category, request_body_size, objectKey
+| where category="StorageWrite" and service_type="QUEUESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
+| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Queue Service/Writes by Queue Name**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "uri", "category", "properties.objectKey", "properties.requestBodySize" as uri, category, objectKey, request_body_size
+| where category="StorageWrite" and service_type="QUEUESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
+| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Security and policy/Recent failed policy events**
+```
+tenant_name={{tenant_name}}
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+provider_name={{provider_name}}
+| JSON "category", "resultType", "level", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, level, message, resource_location, entity
+| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop
+| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop
+```
+
+**Azure Storage/Security and policy/Recent recommendation events**
+```
+tenant_name={{tenant_name}}
+subscription_id={{subscription_id}}
+location={{location}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+provider_name={{provider_name}}
+| JSON "category", "operationName", "resultType", "properties.recommendationImpact", "properties.recommendationName" as category, operationName, resultType, recommendationImpact, recommendationName
+| where category="Recommendation"
+| parse field=operationName "*/*/*/*" as provider, category, operation_name, action nodrop
+```
+
+**Azure Storage/Security and policy/Recent security events**
+```
+tenant_name={{tenant_name}}
+subscription_id={{subscription_id}}
+location={{location}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+provider_name={{provider_name}}
+| Json "category", "properties.status", "properties.timeGeneratedUtc", "properties.processingEndTimeUtc", "properties.version", "properties.vendorName", "properties.productName", "properties.alertType", "properties.startTimeUtc", "properties.endTimeUtc", "properties.severity", "properties.isIncident", "properties.intent", "properties.compromisedEntity", "properties.alertDisplayName", "properties.description", "properties.productComponentName" as category, status, timeGeneratedUtc, processingEndTimeUtc, version, vendorName, productName, alertType, startTimeUtc, endTimeUtc, severity, isIncident, intent, compromisedEntity, alertDisplayName, description, productComponentName nodrop
+```
+
+**Azure Storage/Security and policy/Recent success policy events**
+```
+tenant_name={{tenant_name}}
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+provider_name={{provider_name}}
+| JSON "category", "resultType", "level", "providers", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, level, providers, message, resource_location, entity nodrop
+| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop
+| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop
+```
+
+**Azure Storage/Security and policy/Total denied policy events**
+```
+tenant_name={{tenant_name}}
+subscription_id={{subscription_id}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+provider_name={{provider_name}}
+| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, message, resourceLocation, entity
+| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop
+| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop
+```
+
+**Azure Storage/Security and policy/Total recommendation events**
+```
+tenant_name={{tenant_name}}
+subscription_id={{subscription_id}}
+location={{location}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+provider_name={{provider_name}}
+| JSON "category"
+```
+
+**Azure Storage/Security and policy/Total security events**
+```
+tenant_name={{tenant_name}}
+subscription_id={{subscription_id}}
+location={{location}}
+resource_group={{resource_group}}
+resource_name={{resource_name}}
+provider_name={{provider_name}}
+| JSON "category"
+```
+
+**Azure Storage/Table Service/Read**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "category", "properties.responseBodySize" as category, response_body_size
+| where category="StorageRead" and service_type="TABLESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
+| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Table Service/Read vs Write**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "category", "properties.responseBodySize" as category, response_body_size
+```
+
+**Azure Storage/Table Service/Reads by Table Name**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "category", "properties.responseBodySize" as category, response_body_size
+| where category="StorageRead" and service_type="TABLESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
+| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Table Service/Table Name by Failed Operations**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "category", "operationName", "statusText", "properties.objectKey" as category, operationName, statusText, objectKey
+| where service_type="TABLESERVICES" and statusText != "Success"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
+| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Table Service/Top 10 Resources  by Failures**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "category", "statusText", "properties.objectKey" as category,  statusText, objectKey
+| where service_type="TABLESERVICES" and statusText != "Success"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
+| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Table Service/Top 10 Resources  by Server Latency**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| where service_type="TABLESERVICES"
+| JSON "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as category,  statusText, objectKey, server_latency
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
+| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Table Service/Top 10 Resources by Reads(MB)**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| json "category", "properties.responseBodySize", "properties.objectKey", "uri" as category, response_body_size, objectKey, uri
+| where category="StorageRead" and service_type="TABLESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop
+| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Table Service/Top 10 Resources by Writes(MB)**
+```
+tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "category", "properties.requestBodySize", "properties.objectKey", "uri" as category, request_body_size, objectKey, uri 
+| where category="StorageWrite" and service_type="TABLESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop
+| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Table Service/Write**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}}
+*STORAGE*
+| JSON "category", "properties.requestBodySize" as category, request_body_size
+| where category="StorageWrite" and service_type="TABLESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
+| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
+```
+
+**Azure Storage/Table Service/Writes by Table Name**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*
+| JSON "category", "properties.requestBodySize" as category, request_body_size
+| where category="StorageWrite" and service_type="TABLESERVICES"
+| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
+| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
+```
+
 

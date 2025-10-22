@@ -1,41 +1,293 @@
 # Parsers For Squid Proxy
 
-| use_case | parser |
-|--- | --- |
-| Squid Proxy/Activity Trend/Bytes Served | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message  nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Activity Trend/Denied Request Trend | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy *DENIED*<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Activity Trend/Non 2xx Response actions | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Activity Trend/Recent Denied Requests | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy *DENIED*<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Activity Trend/Remote Hosts Traffic by Requests | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Activity Trend/Request Trend by Squid Action | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Activity Trend/Success (2xx) Response Actions | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Activity Trend/Time Spent to Serve Request | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/HTTP Response Analysis/Client Errors | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/HTTP Response Analysis/Client Errors (HTTP Response) - Outlier | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/HTTP Response Analysis/HTTP Response | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/HTTP Response Analysis/HTTP Response Trend | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/HTTP Response Analysis/Redirections | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/HTTP Response Analysis/Redirections (HTTP Response) - Outlier | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/HTTP Response Analysis/Server Errors | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/HTTP Response Analysis/Server Errors (HTTP Response) - Outlier | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/HTTP Response Analysis/URLs Experiencing Client Errors | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/HTTP Response Analysis/URLs Experiencing Redirections | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/HTTP Response Analysis/URLs Experiencing Server Errors | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Overview/4xx Status Codes by Server | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| if (isEmpty(pod),_sourceHost,pod) as _sourceHost<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Overview/5xx Status Codes by Server | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| if (isEmpty(pod),_sourceHost,pod) as _sourceHost<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Overview/Denied Requests | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy *DENIED*<br>\| json "message" nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Overview/Destination Locations | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Overview/HTTP Method | _sourceCategory = Labs/squid* proxy_cluster=* component=proxy proxy_system=squidproxy<br>\| json "message" nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Overview/Top 10 URLs with 4XX Errors | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Overview/Top 10 URLs with 5xx Errors | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Overview/Top Access Denied URLs | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy<br>\| json "message" nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Overview/Top Destination | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy<br>\| json "message" nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Overview/Top Remote Hosts | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy<br>\| json "message" nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Overview/Top URLs Accessed | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} proxy_system=squidproxy<br>\| json "message" nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Quality of Service/Cacheable Content Response Time (ms) | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Quality of Service/Destination Experiencing avg response time more than 5 Seconds | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Quality of Service/Overall Content Response Time (ms) | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Quality of Service/Response Time For TCP_DENIED Action (ms) | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Quality of Service/Response Time For TCP_MISS Action (ms) | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
-| Squid Proxy/Quality of Service/Response Time For TCP_TUNNEL Action (ms) | _sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy<br>\| json "log" as message nodrop <br>\| if (isEMpty(message), _raw, message) as message<br>\| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s\|$]+?)(?:\s+\|$)" nodrop \| parse field = message "Connection: *\\r\\n" as connection_status nodrop \| parse field = message "Host: *\\r\\n" as host nodrop \| parse field = message "User-Agent: *\\r\\n" as user_agent nodrop \| parse field = message "TE: *\\r\\n" as te nodrop |
+**Squid Proxy/Activity Trend/Bytes Served**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message  nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Activity Trend/Denied Request Trend**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy *DENIED*
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Activity Trend/Non 2xx Response actions**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Activity Trend/Recent Denied Requests**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy *DENIED*
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Activity Trend/Remote Hosts Traffic by Requests**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Activity Trend/Request Trend by Squid Action**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Activity Trend/Success (2xx) Response Actions**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Activity Trend/Time Spent to Serve Request**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/HTTP Response Analysis/Client Errors**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/HTTP Response Analysis/Client Errors (HTTP Response) - Outlier**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/HTTP Response Analysis/HTTP Response**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/HTTP Response Analysis/HTTP Response Trend**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/HTTP Response Analysis/Redirections**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/HTTP Response Analysis/Redirections (HTTP Response) - Outlier**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/HTTP Response Analysis/Server Errors**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/HTTP Response Analysis/Server Errors (HTTP Response) - Outlier**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/HTTP Response Analysis/URLs Experiencing Client Errors**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/HTTP Response Analysis/URLs Experiencing Redirections**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/HTTP Response Analysis/URLs Experiencing Server Errors**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Overview/4xx Status Codes by Server**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| if (isEmpty(pod),_sourceHost,pod) as _sourceHost
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Overview/5xx Status Codes by Server**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| if (isEmpty(pod),_sourceHost,pod) as _sourceHost
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Overview/Denied Requests**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy *DENIED*
+| json "message" nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Overview/Destination Locations**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Overview/HTTP Method**
+```
+_sourceCategory = Labs/squid* proxy_cluster=* component=proxy proxy_system=squidproxy
+| json "message" nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Overview/Top 10 URLs with 4XX Errors**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Overview/Top 10 URLs with 5xx Errors**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}}  proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Overview/Top Access Denied URLs**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy
+| json "message" nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Overview/Top Destination**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy
+| json "message" nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Overview/Top Remote Hosts**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} component=proxy proxy_system=squidproxy
+| json "message" nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Overview/Top URLs Accessed**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} proxy_system=squidproxy
+| json "message" nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[\w]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Quality of Service/Cacheable Content Response Time (ms)**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Quality of Service/Destination Experiencing avg response time more than 5 Seconds**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Quality of Service/Overall Content Response Time (ms)**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Quality of Service/Response Time For TCP_DENIED Action (ms)**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Quality of Service/Response Time For TCP_MISS Action (ms)**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
+**Squid Proxy/Quality of Service/Response Time For TCP_TUNNEL Action (ms)**
+```
+_sourceCategory = Labs/squid* proxy_cluster={{proxy_cluster}} (_sourcehost={{host}} or pod={{host}}) proxy_system=squidproxy
+| json "log" as message nodrop 
+| if (isEMpty(message), _raw, message) as message
+| parse regex field = message "(?<time>[\d.]+)\s+(?<elapsed>[\d]+)\s+(?<remotehost>[^\s]+)\s+(?<action>[^/]+)/(?<status_code>[\d]+)\s+(?<bytes>[\d]+)\s+(?<method>[^\s]+)\s+(?<url>[^\s]+)\s(?<rfc931>[^\s]+)\s+(?<peerstatus>[^/]+)/(?<peerhost>[^\s]+)\s+(?<type>[^\s|$]+?)(?:\s+|$)" nodrop | parse field = message "Connection: *\\r\\n" as connection_status nodrop | parse field = message "Host: *\\r\\n" as host nodrop | parse field = message "User-Agent: *\\r\\n" as user_agent nodrop | parse field = message "TE: *\\r\\n" as te nodrop
+```
+
 

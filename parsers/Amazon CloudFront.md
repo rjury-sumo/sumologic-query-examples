@@ -1,30 +1,152 @@
 # Parsers For Amazon CloudFront
 
-| use_case | parser |
-|--- | --- |
-| Amazon CloudFront/Latency Monitoring/90th 95th 99th Pct Time_taken Trend | _sourceCategory={{AccessLogsdatasource}}   <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid<br>\| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t" |
-| Amazon CloudFront/Latency Monitoring/Average Latency Time by CloudFront Edge | _sourceCategory={{AccessLogsdatasource}}   <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid<br>\| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t" |
-| Amazon CloudFront/Latency Monitoring/Average Latency Time in Seconds  by Region | _sourceCategory={{AccessLogsdatasource}}   <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid<br>\| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t" |
-| Amazon CloudFront/Latency Monitoring/Global Latency Time in Seconds | _sourceCategory={{AccessLogsdatasource}}   <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid<br>\| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t" |
-| Amazon CloudFront/Latency Monitoring/Longest Latency by GeoLocation | _sourceCategory={{AccessLogsdatasource}}   <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid<br>\| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t" |
-| Amazon CloudFront/Latency Monitoring/Outlier - Average Latency Time | _sourceCategory={{AccessLogsdatasource}}   <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid<br>\| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t" |
-| Amazon CloudFront/Latency Monitoring/Outlier - Average Latency Time by Edge Location | _sourceCategory={{AccessLogsdatasource}}   <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid<br>\| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t" |
-| Amazon CloudFront/Overview/Cache Hit and Miss | _sourceCategory={{AccessLogsdatasource}}  ("hit" or "miss" or "RefreshHit")<br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid |
-| Amazon CloudFront/Overview/Client Geo Distribution | _sourceCategory={{AccessLogsdatasource}} <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid |
-| Amazon CloudFront/Overview/HTTP Status Codes Over Time | _sourceCategory={{AccessLogsdatasource}}  \| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid |
-| Amazon CloudFront/Overview/Number of Unique Visitors | _sourceCategory={{AccessLogsdatasource}} \| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid |
-| Amazon CloudFront/Overview/Requests Served by Edge Location | _sourceCategory={{AccessLogsdatasource}}  <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid |
-| Amazon CloudFront/Overview/Visitor Access Platforms | _sourceCategory={{AccessLogsdatasource}}  <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid  |
-| Amazon CloudFront/Visitor Statistics/Client Geo Distribution | _sourceCategory={{AccessLogsdatasource}} <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid |
-| Amazon CloudFront/Visitor Statistics/Requests Served by Edge Location | _sourceCategory={{AccessLogsdatasource}}  <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid |
-| Amazon CloudFront/Visitor Statistics/Unique Visitors Over Time | _sourceCategory={{AccessLogsdatasource}} \| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid  |
-| Amazon CloudFront/Visitor Statistics/Visitor Access Platforms | _sourceCategory={{AccessLogsdatasource}}  <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid  |
-| Amazon CloudFront/Visitor Statistics/Visitor Browsers and Devices | _sourceCategory={{AccessLogsdatasource}} \| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid  |
-| Amazon CloudFront/Visitor Statistics/Visitor Session Duration Distribution Histogram | _sourceCategory={{AccessLogsdatasource}} \| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid  |
-| Amazon CloudFront/Web Operations/Cache Hit and Miss Over Time | _sourceCategory={{AccessLogsdatasource}}  ("hit" or "miss" or "RefreshHit")<br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid  |
-| Amazon CloudFront/Web Operations/Client and Server Errors Over Time | _sourceCategory={{AccessLogsdatasource}}  \| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid  |
-| Amazon CloudFront/Web Operations/Edge Result | _sourceCategory={{AccessLogsdatasource}}  \| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid |
-| Amazon CloudFront/Web Operations/HTTP Response Classes | _sourceCategory={{AccessLogsdatasource}}  <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status_code,referer,user_agent,uri_query,cookie,edgeresult,requestid  |
-| Amazon CloudFront/Web Operations/HTTP Status Codes Over Time | _sourceCategory={{AccessLogsdatasource}}  \| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid  |
-| Amazon CloudFront/Web Operations/Traffic and Megabytes Served | _sourceCategory={{AccessLogsdatasource}}  <br>\| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid  |
+**Amazon CloudFront/Latency Monitoring/90th 95th 99th Pct Time_taken Trend**
+```
+_sourceCategory={{AccessLogsdatasource}}   
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t"
+```
+
+**Amazon CloudFront/Latency Monitoring/Average Latency Time by CloudFront Edge**
+```
+_sourceCategory={{AccessLogsdatasource}}   
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t"
+```
+
+**Amazon CloudFront/Latency Monitoring/Average Latency Time in Seconds  by Region**
+```
+_sourceCategory={{AccessLogsdatasource}}   
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t"
+```
+
+**Amazon CloudFront/Latency Monitoring/Global Latency Time in Seconds**
+```
+_sourceCategory={{AccessLogsdatasource}}   
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t"
+```
+
+**Amazon CloudFront/Latency Monitoring/Longest Latency by GeoLocation**
+```
+_sourceCategory={{AccessLogsdatasource}}   
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t"
+```
+
+**Amazon CloudFront/Latency Monitoring/Outlier - Average Latency Time**
+```
+_sourceCategory={{AccessLogsdatasource}}   
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t"
+```
+
+**Amazon CloudFront/Latency Monitoring/Outlier - Average Latency Time by Edge Location**
+```
+_sourceCategory={{AccessLogsdatasource}}   
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+| parse regex field = requestid "(?<time_taken>\d{1,3}\.\d\d\d)\t"
+```
+
+**Amazon CloudFront/Overview/Cache Hit and Miss**
+```
+_sourceCategory={{AccessLogsdatasource}}  ("hit" or "miss" or "RefreshHit")
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+```
+
+**Amazon CloudFront/Overview/Client Geo Distribution**
+```
+_sourceCategory={{AccessLogsdatasource}} 
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+```
+
+**Amazon CloudFront/Overview/HTTP Status Codes Over Time**
+```
+_sourceCategory={{AccessLogsdatasource}}  | parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+```
+
+**Amazon CloudFront/Overview/Number of Unique Visitors**
+```
+_sourceCategory={{AccessLogsdatasource}} | parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+```
+
+**Amazon CloudFront/Overview/Requests Served by Edge Location**
+```
+_sourceCategory={{AccessLogsdatasource}}  
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+```
+
+**Amazon CloudFront/Overview/Visitor Access Platforms**
+```
+_sourceCategory={{AccessLogsdatasource}}  
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid 
+```
+
+**Amazon CloudFront/Visitor Statistics/Client Geo Distribution**
+```
+_sourceCategory={{AccessLogsdatasource}} 
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+```
+
+**Amazon CloudFront/Visitor Statistics/Requests Served by Edge Location**
+```
+_sourceCategory={{AccessLogsdatasource}}  
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+```
+
+**Amazon CloudFront/Visitor Statistics/Unique Visitors Over Time**
+```
+_sourceCategory={{AccessLogsdatasource}} | parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid 
+```
+
+**Amazon CloudFront/Visitor Statistics/Visitor Access Platforms**
+```
+_sourceCategory={{AccessLogsdatasource}}  
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid 
+```
+
+**Amazon CloudFront/Visitor Statistics/Visitor Browsers and Devices**
+```
+_sourceCategory={{AccessLogsdatasource}} | parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid 
+```
+
+**Amazon CloudFront/Visitor Statistics/Visitor Session Duration Distribution Histogram**
+```
+_sourceCategory={{AccessLogsdatasource}} | parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid 
+```
+
+**Amazon CloudFront/Web Operations/Cache Hit and Miss Over Time**
+```
+_sourceCategory={{AccessLogsdatasource}}  ("hit" or "miss" or "RefreshHit")
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid 
+```
+
+**Amazon CloudFront/Web Operations/Client and Server Errors Over Time**
+```
+_sourceCategory={{AccessLogsdatasource}}  | parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid 
+```
+
+**Amazon CloudFront/Web Operations/Edge Result**
+```
+_sourceCategory={{AccessLogsdatasource}}  | parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid
+```
+
+**Amazon CloudFront/Web Operations/HTTP Response Classes**
+```
+_sourceCategory={{AccessLogsdatasource}}  
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status_code,referer,user_agent,uri_query,cookie,edgeresult,requestid 
+```
+
+**Amazon CloudFront/Web Operations/HTTP Status Codes Over Time**
+```
+_sourceCategory={{AccessLogsdatasource}}  | parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,_ftime,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid 
+```
+
+**Amazon CloudFront/Web Operations/Traffic and Megabytes Served**
+```
+_sourceCategory={{AccessLogsdatasource}}  
+| parse "*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*" as _filedate,time,edgeloc, scbytes, c_ip,method,cs_host,uri_stem,status,referer,user_agent,uri_query,cookie,edgeresult,requestid 
+```
+
 

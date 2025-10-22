@@ -1,53 +1,432 @@
 # Parsers For CrowdStrike - Falcon V2
 
-| use_case | parser |
-|--- | --- |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/API clients Events | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent 	CreateAPIClient<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time<br>\| formatDate(fromMillis(operation_time), "MM/dd/yyyy HH:mm:ss:SSS") as operation_time<br>\| parse regex "name\",[\s]+\"ValueString\": \"(?<name>.+)\""<br>\| parse regex "scope\(s\)\",[\s]+\"ValueString\": \"(?<scope>.+)\"" |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Authentication Operations | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Authentication Operations - One Day Time Comparison | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Authentication Operations over Time | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Create User Event | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent 	createUser<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time<br>\| formatDate(fromMillis(operation_time), "MM/dd/yyyy HH:mm:ss:SSS") as operation_time<br>\| where success="true"<br>\| json "event.AuditKeyValues[0].ValueString" as target_user |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Failed Events | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent 	<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Geo Location of Authentication Events | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent <br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Grant User Role Events | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent grantUserRoles<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time<br>\| formatDate(fromMillis(operation_time), "MM/dd/yyyy HH:mm:ss:SSS") as operation_time<br>\| where success="true"<br>\| parse regex "roles\",[\s]+\"ValueString\": \"(?<updated_roles>.+)\""<br>\| parse regex "target_name\",[\s]+\"ValueString\": \"(?<target_user>.+)\"" |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Requested Auth Secret Reset Event | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent 	resetAuthSecret<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time<br>\| formatDate(fromMillis(operation_time), "MM/dd/yyyy HH:mm:ss:SSS") as operation_time<br>\| where success="true"<br>\| json "event.AuditKeyValues[0].ValueString" as target_user |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Success 2FA Authenticate Events | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent 	twoFactorAuthenticate<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/User Auth Without 2FA | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent userAuthenticate<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Geo Location of Detection Status Update Events | _sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent <br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="UserActivityAuditEvent"<br>\| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, src_user, user_ip, service_name, audit_values |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Operation Name | _sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="UserActivityAuditEvent"<br>\| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Quarantined Files | _sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="UserActivityAuditEvent"<br>\| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values<br>\| where operation_name="quarantined_file_update"  <br>\| parse regex field=audit_values "\"ValueString\":\"(?<file_id>.+)\",\"Key\":\"quarantined_file_id\"" |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Quarantined Files Count | _sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="UserActivityAuditEvent"<br>\| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Update Group | _sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent <br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="UserActivityAuditEvent"<br>\| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, src_user, user_ip, service_name, changed_values |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Update Policy | _sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent <br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="UserActivityAuditEvent"<br>\| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, src_user, user_ip, service_name, changed_values |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Blocked Detections | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme<br>\| tourl(falconHost_link, event_time,"Detected at: ","") as detection_URL<br>\| json "event.PatternDispositionFlags.ProcessBlocked" as isProcessBlocked |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection based on Command Line Execution | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme<br>\| tourl(falconHost_link, event_time,"Detected at: ","") as detection_URL<br>\| json   "event.ParentImageFileName", "event.ParentCommandLine", "event.GrandparentImageFileName", "event.GrandparentCommandLine" as  ParentImageFileName, ParentCommandLine, GrandparentImageFileName, GrandparentCommandLine |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection by Host | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection by Severity | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection by Severity - One Day Time Comparison | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection by Tactic | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection by User | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection Count | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection Summary | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/File based Detections | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Severity | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/SHA based Detections | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Trending IOCs | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Active Sensors | _sourceCategory = Labs/CrowdStrikeV2<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.SensorId" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, sensor_id nodrop |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Breakdown by Operation Name | _sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="UserActivityAuditEvent"<br>\| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Detection Update Events - Outlier | _sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="UserActivityAuditEvent"<br>\| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Detections by Objective | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Detections by Tactic | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Detections by Technique | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Detections for the Past 7 Days | _sourceCategory = Labs/CrowdStrikeV2<br>_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Events | _sourceCategory = Labs/CrowdStrikeV2<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Events - One Day Time Comparison | _sourceCategory = Labs/CrowdStrikeV2<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Events Over Time | _sourceCategory = Labs/CrowdStrikeV2<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Failed User Login Events | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent (userAuthenticate or twoFactorAuthenticate)<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Login Events - Outlier | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent (userAuthenticate or twoFactorAuthenticate)<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Operation Name - One Day Time Comparison | _sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="UserActivityAuditEvent"<br>\| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values |
-| CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Successful User Login Events | _sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent (userAuthenticate or twoFactorAuthenticate)<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time |
-| CrowdStrike - Falcon V2/High Severity Detections by Host/High Severity Detections by Host | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/High Severity Detections by User/High Severity Detections by User | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/High Severity Detections/High Severity Detections | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
-| CrowdStrike - Falcon V2/High Severity Trending IOCs/High Severity Trending IOCs | _sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent<br>\| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time<br>\| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time<br>\| where event_type="DetectionSummaryEvent"<br>\| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme |
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/API clients Events**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent 	CreateAPIClient
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+| formatDate(fromMillis(operation_time), "MM/dd/yyyy HH:mm:ss:SSS") as operation_time
+| parse regex "name\",[\s]+\"ValueString\": \"(?<name>.+)\""
+| parse regex "scope\(s\)\",[\s]+\"ValueString\": \"(?<scope>.+)\""
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Authentication Operations**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Authentication Operations - One Day Time Comparison**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Authentication Operations over Time**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Create User Event**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent 	createUser
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+| formatDate(fromMillis(operation_time), "MM/dd/yyyy HH:mm:ss:SSS") as operation_time
+| where success="true"
+| json "event.AuditKeyValues[0].ValueString" as target_user
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Failed Events**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent 	
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Geo Location of Authentication Events**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent 
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Grant User Role Events**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent grantUserRoles
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+| formatDate(fromMillis(operation_time), "MM/dd/yyyy HH:mm:ss:SSS") as operation_time
+| where success="true"
+| parse regex "roles\",[\s]+\"ValueString\": \"(?<updated_roles>.+)\""
+| parse regex "target_name\",[\s]+\"ValueString\": \"(?<target_user>.+)\""
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Requested Auth Secret Reset Event**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent 	resetAuthSecret
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+| formatDate(fromMillis(operation_time), "MM/dd/yyyy HH:mm:ss:SSS") as operation_time
+| where success="true"
+| json "event.AuditKeyValues[0].ValueString" as target_user
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/Success 2FA Authenticate Events**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent 	twoFactorAuthenticate
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Authentication - New/User Auth Without 2FA**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent userAuthenticate
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Geo Location of Detection Status Update Events**
+```
+_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent 
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="UserActivityAuditEvent"
+| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, src_user, user_ip, service_name, audit_values
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Operation Name**
+```
+_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="UserActivityAuditEvent"
+| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Quarantined Files**
+```
+_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="UserActivityAuditEvent"
+| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values
+| where operation_name="quarantined_file_update"  
+| parse regex field=audit_values "\"ValueString\":\"(?<file_id>.+)\",\"Key\":\"quarantined_file_id\""
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Quarantined Files Count**
+```
+_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent quarantined action_taken
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="UserActivityAuditEvent"
+| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Update Group**
+```
+_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent 
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="UserActivityAuditEvent"
+| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, src_user, user_ip, service_name, changed_values
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detection Status Update - New/Update Policy**
+```
+_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent 
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="UserActivityAuditEvent"
+| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, src_user, user_ip, service_name, changed_values
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Blocked Detections**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+| tourl(falconHost_link, event_time,"Detected at: ","") as detection_URL
+| json "event.PatternDispositionFlags.ProcessBlocked" as isProcessBlocked
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection based on Command Line Execution**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+| tourl(falconHost_link, event_time,"Detected at: ","") as detection_URL
+| json   "event.ParentImageFileName", "event.ParentCommandLine", "event.GrandparentImageFileName", "event.GrandparentCommandLine" as  ParentImageFileName, ParentCommandLine, GrandparentImageFileName, GrandparentCommandLine
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection by Host**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection by Severity**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection by Severity - One Day Time Comparison**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection by Tactic**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection by User**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection Count**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Detection Summary**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/File based Detections**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Severity**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/SHA based Detections**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon -  Detections - New/Trending IOCs**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Active Sensors**
+```
+_sourceCategory = Labs/CrowdStrikeV2
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.SensorId" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, sensor_id nodrop
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Breakdown by Operation Name**
+```
+_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="UserActivityAuditEvent"
+| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Detection Update Events - Outlier**
+```
+_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="UserActivityAuditEvent"
+| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Detections by Objective**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Detections by Tactic**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Detections by Technique**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Detections for the Past 7 Days**
+```
+_sourceCategory = Labs/CrowdStrikeV2
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Events**
+```
+_sourceCategory = Labs/CrowdStrikeV2
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Events - One Day Time Comparison**
+```
+_sourceCategory = Labs/CrowdStrikeV2
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Events Over Time**
+```
+_sourceCategory = Labs/CrowdStrikeV2
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Failed User Login Events**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent (userAuthenticate or twoFactorAuthenticate)
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Login Events - Outlier**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent (userAuthenticate or twoFactorAuthenticate)
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Operation Name - One Day Time Comparison**
+```
+_sourceCategory = Labs/CrowdStrikeV2  UserActivityAuditEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="UserActivityAuditEvent"
+| json "event.OperationName",  "event.UserId", "event.UserIp", "event.ServiceName", "event.AuditKeyValues" as operation_name, user_id, src_user, service_name, audit_values
+```
+
+**CrowdStrike - Falcon V2/CrowdStrike - Falcon - Overview - New/Successful User Login Events**
+```
+_sourceCategory = Labs/CrowdStrikeV2  AuthActivityAuditEvent (userAuthenticate or twoFactorAuthenticate)
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| json "event.UserId", "event.UserIp", "event.OperationName", "event.ServiceName", "event.Success", "event.UTCTimestamp" as src_user, user_ip, operation_name, service_name, success, operation_time
+```
+
+**CrowdStrike - Falcon V2/High Severity Detections by Host/High Severity Detections by Host**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/High Severity Detections by User/High Severity Detections by User**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/High Severity Detections/High Severity Detections**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
+**CrowdStrike - Falcon V2/High Severity Trending IOCs/High Severity Trending IOCs**
+```
+_sourceCategory = Labs/CrowdStrikeV2  DetectionSummaryEvent
+| json "metadata.eventType", "metadata.customerIDString", "metadata.eventCreationTime" as event_type, customer_id, event_time
+| formatDate(fromMillis(event_time), "MM/dd/yyyy HH:mm:ss:SSS") as event_time
+| where event_type="DetectionSummaryEvent"
+| json  "event.Tactic","event.Technique", "event.Objective", "event.ComputerName", "event.UserName", "event.DetectId", "event.DetectDescription", "event.Severity", "event.SeverityName", "event.FileName", "event.FilePath", "event.CommandLine", "event.MD5String", "event.SHA1String", "event.MachineDomain" , "event.FalconHostLink", "event.IOCType", "event.IOCValue", "event.LocalIP", "event.MACAddress", "event.ProcessEndTime" as tactic, technique, objective, computer_name, user_name, detect_id, detect_desc, severity, severity_name, file_name, file_path, cmd_line, md5_string, sha1_string, machine_domain, falconHost_link, IOC_Ttype, IOC_value, local_ip, mac_adderess, process_endTIme
+```
+
 

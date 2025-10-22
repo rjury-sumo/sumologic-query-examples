@@ -1,62 +1,460 @@
 # Parsers For Windows 7+ - 2008 (Legacy)
 
-| use_case | parser |
-|--- | --- |
-| Windows 7+ - 2008 (Legacy)/(Kerberos) Failed Logins on the Domain Controller or Member Servers/(Kerberos) Failed Logins on the Domain Controller or Member Servers | _sourceCategory={{Logsdatasource}}  _sourceName=Security (4771 or 4776 or 4768) ("EventCode = 4771;" or "EventCode = 4776;" or "EventCode = 4768;") "Audit Failure"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop \| parse "Type = \"*\";" as msg_type nodrop<br>\| parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop \| parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop<br>\| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s*\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop |
-| Windows 7+ - 2008 (Legacy)/(NTLM) Failed Logins/(NTLM) Failed Logins | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4776 "EventCode = 4776;" "Audit Failure"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop<br>\| parse "Type = \"*\";" as msg_type nodrop<br>\| parse regex "Authentication Package:\s+(?<Authentication_Package>[^\r]+)\r[\s\S]+?Logon Account:\s+(?<logon_account>[^\r]+)\r[\s\S]+?Source Workstation:\s+(?<workstation>[^\r]+)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop |
-| Windows 7+ - 2008 (Legacy)/Account Policy Changes/Account Policy Changes | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4739 "EventCode = 4739;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Domain:[\s\S]+?Domain Name:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/All Directory Service Changes/All Directory Service Changes | _sourceCategory={{Logsdatasource}}  _sourceName=Security (5136 or 5137 or 5138 or 5139 or 5141) ("EventCode = 5136;" or "EventCode = 5137;" or "EventCode = 5138;" or "EventCode = 5139;" or "EventCode = 5141;")<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop \| parse "Category = *;" as category nodrop \| parse "CategoryString = \"*\";" as CategoryString nodrop \| parse "Type = \"*\";" as type nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Directory Service:[\s\S]+?Name:\s+(?<directory_service_name>[^\r]+?)\r[\s\S]+?Type:\s+(?<directory_service_type>[^\r\"]+?)\r" nodrop \| parse regex "DN:\t(?<object_dn>.*)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/All Directory Service Object Creations/All Directory Service Object Creations | _sourceCategory={{Logsdatasource}}  _sourceName=Security 5137 "EventCode = 5137;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop \| parse "Category = *;" as category nodrop \| parse "CategoryString = \"*\";" as CategoryString nodrop \| parse "Type = \"*\";" as type nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Directory Service:[\s\S]+?Name:\s+(?<directory_service_name>[^\r]+?)\r[\s\S]+?Type:\s+(?<directory_service_type>[^\r\"]+?)\r" nodrop \| parse regex "DN:\t(?<object_dn>.*)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/All User Account Changes/All User Account Changes | _sourceCategory={{Logsdatasource}}  _sourceName=Security "User Account Management"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse "CategoryString = \"*\";" as category nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)(?:\r\|\";)" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r" nodrop<br>\| parse regex "Changed Attributes:\s+(?<changedAttributes>[\s\S]*?)Additional Information:" nodrop |
-| Windows 7+ - 2008 (Legacy)/Audit Log Cleared/Audit Log Cleared | _sourceCategory={{Logsdatasource}}  _sourceName=Security (1102 or 517) ("EventCode = 1102;" or "EventCode = 517;")<br>\| parse "EventCode = *;" as event_id \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop \| parse "User = \"*\"" as src_user nodrop  |
-| Windows 7+ - 2008 (Legacy)/Audit Policy Changes/Audit Policy Changes | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4719 "EventCode = 4719;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/Changes to Administrative Groups/Changes to Administrative Groups | _sourceCategory={{Logsdatasource}}  _sourceName=Security ("Security Group Management" or "Category = 13826;") (created or modified or changed or removed or added)<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Subcategory:\s+(?<Subcategory>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted) Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop \| parse "Category = *;" as category nodrop \| parse "CategoryString = \"*\";" as categoryString nodrop |
-| Windows 7+ - 2008 (Legacy)/Failed Logins Over time/Failed Logins Over time | _sourceCategory={{Logsdatasource}}  _sourceName=Security (4625 or 4771) ("EventCode = 4625;" or "EventCode = 4771;")<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/Failed Updates by Host/Failed Updates by Host | _sourceCategory={{Logsdatasource}}  "Installation Failure" and ("Content Install" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=update "(*)." as kbnum nodrop |
-| Windows 7+ - 2008 (Legacy)/Failed Updates by KB Number/Failed Updates by KB Number | _sourceCategory={{Logsdatasource}}  "Installation Failure" and ("Content Install" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=update "(*)." as kbnum nodrop |
-| Windows 7+ - 2008 (Legacy)/Firewall Changes/Firewall Changes | _sourceCategory={{Logsdatasource}}  _sourceName=Security (4946 or 4947 or 4948) ("EventCode = 4946;" or "EventCode = 4947;" or "EventCode = 4948;")<br>\| parse "EventCode = *;" as event_id<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+?)(?:\r\|\.;)" nodrop |
-| Windows 7+ - 2008 (Legacy)/Multiple Failed Logins by Same User/Multiple Failed Logins by Same User | _sourceCategory={{Logsdatasource}}  _sourceName=Security (4771 or 4776 or 4768 or 4625) ("EventCode = 4771;" or "EventCode = 4776;" or "EventCode = 4768;" or "EventCode = 4625;")<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop \| parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop \| parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop \| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s*\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse "Type = \"*\";" as type |
-| Windows 7+ - 2008 (Legacy)/Multiple Failed Logins on Local Machine/Multiple Failed Logins on Local Machine | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4625 "EventCode = 4625;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/New Accounts Created/New Accounts Created | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4720 "EventCode = 4720;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/Recent Policy Changes/Recent Policy Changes | _sourceCategory={{Logsdatasource}}  _sourceName=Security (4902 or 4904 or 4905 or 4906 or 4907 or 4912 or 4715 or 4719 or "Audit Policy Change" or "System audit policy was changed" or *policy*change* or "Policy Change")<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop<br>\| parse regex "CategoryString = \"(?<category>[^\"]+?)\";[\s\S]+?Logfile = \"Security\"" nodrop |
-| Windows 7+ - 2008 (Legacy)/Report Messages/Report Messages | _sourceCategory={{Logsdatasource}}  ("Report" or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)." as kbnum nodrop |
-| Windows 7+ - 2008 (Legacy)/Service Events by Type/Service Events by Type | _sourceCategory={{Logsdatasource}}  _sourceName=System "Service Control Manager"<br>\| parse "Type = \"*\";" as msg_type nodrop \| parse "SourceName = \"*\";" as event_source nodrop |
-| Windows 7+ - 2008 (Legacy)/Service Installed/Service Installed | _sourceCategory={{Logsdatasource}}  ((_sourceName=System and "EventCode = 7045") or (_sourceName=Security and "EventCode = 4697"))<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop<br>\| parse regex "Service Name:\s+(?<service_name>[^\r]+?)\r[\s\S]+?Service File Name:\s+(?:\"\|\s*)(?<service_filename>[^\"\r]+?)(?:\"\|\r)[\s\S]+?Service Type:\s+(?<service_type>[^\r]+?)\r[\s\S]+?Service Start Type:\s+(?<service_start_type>[^\r]+)\r[\s\S]+?Service Account:\s+(?<service_account>[^\"]+)\";" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/Service Starts/Service Starts | _sourceCategory={{Logsdatasource}}  _sourceName=System 7036 "running state" "EventCode = 7036;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop<br>\| parse regex field=msg_summary "The (?<service_name>\w.+?) service entered the (?<service_state>\w+) state" nodrop |
-| Windows 7+ - 2008 (Legacy)/Service Stops/Service Stops | _sourceCategory={{Logsdatasource}}  _sourceName=System 7036 "stopped state" "EventCode = 7036;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop<br>\| parse regex field=msg_summary "The (?<service_name>\w.+?) service entered the (?<service_state>\w+) state" nodrop |
-| Windows 7+ - 2008 (Legacy)/Successful Group Creations/Successful Group Creations | _sourceCategory={{Logsdatasource}}  _sourceName=Security (4727 or 4731 or 4754) ("EventCode = 4727;" or "EventCode = 4731;" or "EventCode = 4754;")<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r\"]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted\|\s*)\s*Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop |
-| Windows 7+ - 2008 (Legacy)/Successful Logons Over time/Successful Logons Over time | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4624 "EventCode = 4624;"<br>\| parse "EventCode = *;" as event_id \| parse "Computer = \"*\";" as comp_name nodrop \| parse "ComputerName = \"*\";" as comp_name nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop |
-| Windows 7+ - 2008 (Legacy)/Successful Updates by Host/Successful Updates by Host | _sourceCategory={{Logsdatasource}}  "Installation Successful" and ("Content Install" or "EventCode = 19" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)" as kbnum nodrop |
-| Windows 7+ - 2008 (Legacy)/Successful Updates by KB number/Successful Updates by KB number | _sourceCategory={{Logsdatasource}}  "Installation Successful" and ("Content Install" or "EventCode = 19" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)" as kbnum nodrop |
-| Windows 7+ - 2008 (Legacy)/System Restarted/System Restarted | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4608 "EventCode = 4608;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop |
-| Windows 7+ - 2008 (Legacy)/Top Error Codes/Top Error Codes | _sourceCategory={{Logsdatasource}}  (AutomaticUpdates or Report or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop \| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*(?:\s+0x\|hr\s=\s)(?<errorcode>[0-9a-fA-F]+)" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)." as kbnum nodrop |
-| Windows 7+ - 2008 (Legacy)/Top Reasons for Failed Logins/Top Reasons for Failed Logins | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4625 "EventCode = 4625;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/Top Security Events/Top Security Events | _sourceCategory={{Logsdatasource}}  _sourceName=Security<br>\| parse "EventCode = *;" as event_id |
-| Windows 7+ - 2008 (Legacy)/Unauthorized Account Creations/Unauthorized Account Creations | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4720 "EventCode = 4720;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/Update Results by KB number/Update Results by KB number | _sourceCategory={{Logsdatasource}}  AutomaticUpdates (AutomaticUpdates or Report or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<update_result>(?:Success\|Failure)).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)" as kbnum nodrop \| parse field=msg_summary "Installation *: " as update_result nodrop |
-| Windows 7+ - 2008 (Legacy)/User Account Changed/User Account Changed | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4738 "EventCode = 4738;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop \| parse regex "Changed Attributes:\s+(?<changedAttributes>[\s\S]*?)Additional Information:" |
-| Windows 7+ - 2008 (Legacy)/User Account Deleted/User Account Deleted | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4726 "EventCode = 4726;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/User Added to Administrative Groups/User Added to Administrative Groups | _sourceCategory={{Logsdatasource}}  _sourceName=Security (4728 or 4732 or 4746 or 4751 or 4756 or 4761) ("EventCode = 4728;" or "EventCode = 4732;" or "EventCode = 4746;" or "EventCode = 4751;" or "EventCode = 4756;" or "EventCode = 4761;" )<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted) Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop  |
-| Windows 7+ - 2008 (Legacy)/User Added to Group/User Added to Group | _sourceCategory={{Logsdatasource}}  _sourceName=Security (4728 or 4732 or 4746 or 4751 or 4756 or 4761) ("EventCode = 4728;" or "EventCode = 4732;" or "EventCode = 4746;" or "EventCode = 4751;" or "EventCode = 4756;" or "EventCode = 4761;" )<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted) Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop  |
-| Windows 7+ - 2008 (Legacy)/User Locked-out/User Locked-out | _sourceCategory={{Logsdatasource}}  _sourceName=Security (4740 or 644)<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop   <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/User Password Changes/User Password Changes | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4723 "EventCode = 4723;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/User Password Reset Attempts/User Password Reset Attempts | _sourceCategory={{Logsdatasource}}  _sourceName=Security 4724 "EventCode = 4724;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)(?:\r\|\";)" nodrop |
-| Windows 7+ - 2008 (Legacy)/Windows - Default/Errors and Warnings Over Time | _sourceCategory={{Logsdatasource}}  (error or warning)<br>\| parse "Type = \"*\";" as evtType |
-| Windows 7+ - 2008 (Legacy)/Windows - Default/Event Distribution Over Time | _sourceCategory={{Logsdatasource}}  (System or Security or Application) Win32_NTLogEvent<br>\| parse "Logfile = \"*\";" as _sourceName |
-| Windows 7+ - 2008 (Legacy)/Windows - Default/System Operations | _sourceCategory={{Logsdatasource}}   Security (4608 or 4946 or 4947 or 4948 or 4727 or 4731 or 4754 or 4720)<br>\| parse "EventCode = *;" as event_id<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop |
-| Windows 7+ - 2008 (Legacy)/Windows - Default/Top 10 Service Operations | _sourceCategory={{Logsdatasource}}  Service Control Manager 7036 "service entered"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"The (?<service>\w.+?) service entered the (?<state>\w+) state" |
-| Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Breakdown by Keyword Tag | _sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message<br>\| parse "Type = \"*\";" as EventType |
-| Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Error Keyword - LogReduce | _sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message<br>\| parse "Type = \"*\";" as EventType |
-| Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Error Keyword - One Day Time Comparison | _sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message<br>\| parse "Type = \"*\";" as EventType |
-| Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Error Keyword - Outlier | _sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message<br>\| parse "Type = \"*\";" as EventType |
-| Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Error Keyword by Computer and Message | _sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message<br>\| parse "Type = \"*\";" as EventType |
-| Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Error Keyword Trend | _sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message<br>\| parse "Type = \"*\";" as EventType |
-| Windows 7+ - 2008 (Legacy)/Windows - Login Status/Failed Logins by Hour | _sourceCategory={{Logsdatasource}}  (4625 or 4771 or 4768) ("EventCode = 4625;" or "EventCode = 4771;" or "EventCode = 4768;") // 4625 or 4771 - Login Failures, 4768 - A Kerberos authentication ticket (TGT) was requested<br>\| parse "EventCode = *;" as event_id<br>\| parse "Computer = \"*\";" as comp_name nodrop \| parse "ComputerName = \"*\";" as comp_name nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Failure Reason:\s\s(?<fail_reason>[^.]+?)[.][\s\S]+?Status:[\s\S]+?Sub Status:\s\s(?<result_code>0x[A-Fa-f\d]+)\b" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop |
-| Windows 7+ - 2008 (Legacy)/Windows - Login Status/Logins by Hour | _sourceCategory={{Logsdatasource}}  (4624 or 4625 or 4771 or 4776 or 4768) ("EventCode = 4624;" or "EventCode = 4625;" or "EventCode = 4771;" or "EventCode = 4776;" or "EventCode = 4768;")<br>// 4624 - Login Success, 4625 or 4771 - Login Failures, 4776 - Domain Controller - Credential validation, 4768 - A Kerberos authentication ticket (TGT) was requested<br>\| parse "EventCode = *;" as event_id<br>\| parse "Type = \"*\"" as msg_type |
-| Windows 7+ - 2008 (Legacy)/Windows - Login Status/Successful Logins | _sourceCategory={{Logsdatasource}}  4624 "EventCode = 4624;" // 4624 - Login Success<br>\| parse "EventCode = *;" as event_id<br>\| parse "Computer = \"*\";" as comp_name nodrop \| parse "ComputerName = \"*\";" as comp_name nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop |
-| Windows 7+ - 2008 (Legacy)/Windows - Login Status/Successful RDP Reconnects | _sourceCategory={{Logsdatasource}}  4778 "EventCode = 4778;"<br>\| parse "EventCode = *;" as event_id<br>\| parse "Computer = \"*\";" as comp_name nodrop \| parse "ComputerName = \"*\";" as comp_name nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Session:[\s\S]+?Session Name:\s+(?<session_name>[^\r]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+?)\r" nodrop |
-| Windows 7+ - 2008 (Legacy)/Windows - Overview/Changes to Administrative Groups | _sourceCategory={{Logsdatasource}}  ("Security Group Management" or "Category = 13826;") (created or modified or changed or removed or added) // _sourceName=Security<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Subcategory:\s+(?<Subcategory>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted) Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop \| parse "Category = *;" as category nodrop \| parse "CategoryString = \"*\";" as categoryString nodrop |
-| Windows 7+ - 2008 (Legacy)/Windows - Overview/Recent Policy Changes | _sourceCategory={{Logsdatasource}}  (4902 or 4904 or 4905 or 4906 or 4907 or 4912 or 4715 or 4719 or "Audit Policy Change" or "System audit policy was changed" or *policy*change* or "Policy Change")<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop<br>\| parse regex "CategoryString = \"(?<category>[^\"]+?)\";[\s\S]+?Logfile = \"Security\"" nodrop |
-| Windows 7+ - 2008 (Legacy)/Windows - Overview/System Restarts | _sourceCategory={{Logsdatasource}}  4608 "EventCode = 4608;"<br>\| parse "EventCode = *;" as event_id |
-| Windows 7+ - 2008 (Legacy)/Windows - Overview/Top Windows Update Error Codes | _sourceCategory={{Logsdatasource}}  (AutomaticUpdates or Report or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop \| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*(?:\s+0x\|hr\s=\s)(?<errorcode>[0-9a-fA-F]+)" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)." as kbnum nodrop |
+**Windows 7+ - 2008 (Legacy)/(Kerberos) Failed Logins on the Domain Controller or Member Servers/(Kerberos) Failed Logins on the Domain Controller or Member Servers**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security (4771 or 4776 or 4768) ("EventCode = 4771;" or "EventCode = 4776;" or "EventCode = 4768;") "Audit Failure"
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop | parse "Type = \"*\";" as msg_type nodrop
+| parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop | parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop
+| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop | parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s*\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/(NTLM) Failed Logins/(NTLM) Failed Logins**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4776 "EventCode = 4776;" "Audit Failure"
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop
+| parse "Type = \"*\";" as msg_type nodrop
+| parse regex "Authentication Package:\s+(?<Authentication_Package>[^\r]+)\r[\s\S]+?Logon Account:\s+(?<logon_account>[^\r]+)\r[\s\S]+?Source Workstation:\s+(?<workstation>[^\r]+)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Account Policy Changes/Account Policy Changes**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4739 "EventCode = 4739;"
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Domain:[\s\S]+?Domain Name:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/All Directory Service Changes/All Directory Service Changes**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security (5136 or 5137 or 5138 or 5139 or 5141) ("EventCode = 5136;" or "EventCode = 5137;" or "EventCode = 5138;" or "EventCode = 5139;" or "EventCode = 5141;")
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop | parse "Category = *;" as category nodrop | parse "CategoryString = \"*\";" as CategoryString nodrop | parse "Type = \"*\";" as type nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Directory Service:[\s\S]+?Name:\s+(?<directory_service_name>[^\r]+?)\r[\s\S]+?Type:\s+(?<directory_service_type>[^\r\"]+?)\r" nodrop | parse regex "DN:\t(?<object_dn>.*)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/All Directory Service Object Creations/All Directory Service Object Creations**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 5137 "EventCode = 5137;"
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop | parse "Category = *;" as category nodrop | parse "CategoryString = \"*\";" as CategoryString nodrop | parse "Type = \"*\";" as type nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Directory Service:[\s\S]+?Name:\s+(?<directory_service_name>[^\r]+?)\r[\s\S]+?Type:\s+(?<directory_service_type>[^\r\"]+?)\r" nodrop | parse regex "DN:\t(?<object_dn>.*)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/All User Account Changes/All User Account Changes**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security "User Account Management"
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse "CategoryString = \"*\";" as category nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)(?:\r|\";)" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r" nodrop
+| parse regex "Changed Attributes:\s+(?<changedAttributes>[\s\S]*?)Additional Information:" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Audit Log Cleared/Audit Log Cleared**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security (1102 or 517) ("EventCode = 1102;" or "EventCode = 517;")
+| parse "EventCode = *;" as event_id | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop | parse "User = \"*\"" as src_user nodrop 
+```
+
+**Windows 7+ - 2008 (Legacy)/Audit Policy Changes/Audit Policy Changes**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4719 "EventCode = 4719;"
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Changes to Administrative Groups/Changes to Administrative Groups**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security ("Security Group Management" or "Category = 13826;") (created or modified or changed or removed or added)
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse regex "Subcategory:\s+(?<Subcategory>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New|Deleted) Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop | parse "Category = *;" as category nodrop | parse "CategoryString = \"*\";" as categoryString nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Failed Logins Over time/Failed Logins Over time**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security (4625 or 4771) ("EventCode = 4625;" or "EventCode = 4771;")
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop | parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Failed Updates by Host/Failed Updates by Host**
+```
+_sourceCategory={{Logsdatasource}}  "Installation Failure" and ("Content Install" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)
+| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop | parse field=update "(*)." as kbnum nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Failed Updates by KB Number/Failed Updates by KB Number**
+```
+_sourceCategory={{Logsdatasource}}  "Installation Failure" and ("Content Install" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)
+| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop | parse field=update "(*)." as kbnum nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Firewall Changes/Firewall Changes**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security (4946 or 4947 or 4948) ("EventCode = 4946;" or "EventCode = 4947;" or "EventCode = 4948;")
+| parse "EventCode = *;" as event_id
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r]+?)(?:\r|\.;)" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Multiple Failed Logins by Same User/Multiple Failed Logins by Same User**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security (4771 or 4776 or 4768 or 4625) ("EventCode = 4771;" or "EventCode = 4776;" or "EventCode = 4768;" or "EventCode = 4625;")
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop | parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop | parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop | parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop | parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop | parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s*\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop | parse "Type = \"*\";" as type
+```
+
+**Windows 7+ - 2008 (Legacy)/Multiple Failed Logins on Local Machine/Multiple Failed Logins on Local Machine**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4625 "EventCode = 4625;"
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop | parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/New Accounts Created/New Accounts Created**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4720 "EventCode = 4720;"
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Recent Policy Changes/Recent Policy Changes**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security (4902 or 4904 or 4905 or 4906 or 4907 or 4912 or 4715 or 4719 or "Audit Policy Change" or "System audit policy was changed" or *policy*change* or "Policy Change")
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop
+| parse regex "CategoryString = \"(?<category>[^\"]+?)\";[\s\S]+?Logfile = \"Security\"" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Report Messages/Report Messages**
+```
+_sourceCategory={{Logsdatasource}}  ("Report" or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)
+| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop | parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop | parse field=update "(*)." as kbnum nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Service Events by Type/Service Events by Type**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=System "Service Control Manager"
+| parse "Type = \"*\";" as msg_type nodrop | parse "SourceName = \"*\";" as event_source nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Service Installed/Service Installed**
+```
+_sourceCategory={{Logsdatasource}}  ((_sourceName=System and "EventCode = 7045") or (_sourceName=Security and "EventCode = 4697"))
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop
+| parse regex "Service Name:\s+(?<service_name>[^\r]+?)\r[\s\S]+?Service File Name:\s+(?:\"|\s*)(?<service_filename>[^\"\r]+?)(?:\"|\r)[\s\S]+?Service Type:\s+(?<service_type>[^\r]+?)\r[\s\S]+?Service Start Type:\s+(?<service_start_type>[^\r]+)\r[\s\S]+?Service Account:\s+(?<service_account>[^\"]+)\";" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Service Starts/Service Starts**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=System 7036 "running state" "EventCode = 7036;"
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop
+| parse regex field=msg_summary "The (?<service_name>\w.+?) service entered the (?<service_state>\w+) state" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Service Stops/Service Stops**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=System 7036 "stopped state" "EventCode = 7036;"
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop
+| parse regex field=msg_summary "The (?<service_name>\w.+?) service entered the (?<service_state>\w+) state" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Successful Group Creations/Successful Group Creations**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security (4727 or 4731 or 4754) ("EventCode = 4727;" or "EventCode = 4731;" or "EventCode = 4754;")
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r\"]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?(?:New|Deleted|\s*)\s*Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Successful Logons Over time/Successful Logons Over time**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4624 "EventCode = 4624;"
+| parse "EventCode = *;" as event_id | parse "Computer = \"*\";" as comp_name nodrop | parse "ComputerName = \"*\";" as comp_name nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Successful Updates by Host/Successful Updates by Host**
+```
+_sourceCategory={{Logsdatasource}}  "Installation Successful" and ("Content Install" or "EventCode = 19" or _sourceName=*WindowsUpdate.log)
+| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop | parse field=update "(*)" as kbnum nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Successful Updates by KB number/Successful Updates by KB number**
+```
+_sourceCategory={{Logsdatasource}}  "Installation Successful" and ("Content Install" or "EventCode = 19" or _sourceName=*WindowsUpdate.log)
+| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop | parse field=update "(*)" as kbnum nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/System Restarted/System Restarted**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4608 "EventCode = 4608;"
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Top Error Codes/Top Error Codes**
+```
+_sourceCategory={{Logsdatasource}}  (AutomaticUpdates or Report or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)
+| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop | parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*(?:\s+0x|hr\s=\s)(?<errorcode>[0-9a-fA-F]+)" nodrop
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop | parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop | parse field=update "(*)." as kbnum nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Top Reasons for Failed Logins/Top Reasons for Failed Logins**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4625 "EventCode = 4625;"
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop | parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Top Security Events/Top Security Events**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security
+| parse "EventCode = *;" as event_id
+```
+
+**Windows 7+ - 2008 (Legacy)/Unauthorized Account Creations/Unauthorized Account Creations**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4720 "EventCode = 4720;"
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Update Results by KB number/Update Results by KB number**
+```
+_sourceCategory={{Logsdatasource}}  AutomaticUpdates (AutomaticUpdates or Report or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)
+| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<update_result>(?:Success|Failure)).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop | parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop | parse field=update "(*)" as kbnum nodrop | parse field=msg_summary "Installation *: " as update_result nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/User Account Changed/User Account Changed**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4738 "EventCode = 4738;"
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop | parse regex "Changed Attributes:\s+(?<changedAttributes>[\s\S]*?)Additional Information:"
+```
+
+**Windows 7+ - 2008 (Legacy)/User Account Deleted/User Account Deleted**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4726 "EventCode = 4726;"
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/User Added to Administrative Groups/User Added to Administrative Groups**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security (4728 or 4732 or 4746 or 4751 or 4756 or 4761) ("EventCode = 4728;" or "EventCode = 4732;" or "EventCode = 4746;" or "EventCode = 4751;" or "EventCode = 4756;" or "EventCode = 4761;" )
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New|Deleted) Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
+```
+
+**Windows 7+ - 2008 (Legacy)/User Added to Group/User Added to Group**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security (4728 or 4732 or 4746 or 4751 or 4756 or 4761) ("EventCode = 4728;" or "EventCode = 4732;" or "EventCode = 4746;" or "EventCode = 4751;" or "EventCode = 4756;" or "EventCode = 4761;" )
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New|Deleted) Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
+```
+
+**Windows 7+ - 2008 (Legacy)/User Locked-out/User Locked-out**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security (4740 or 644)
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop   
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/User Password Changes/User Password Changes**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4723 "EventCode = 4723;"
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/User Password Reset Attempts/User Password Reset Attempts**
+```
+_sourceCategory={{Logsdatasource}}  _sourceName=Security 4724 "EventCode = 4724;"
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)(?:\r|\";)" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Default/Errors and Warnings Over Time**
+```
+_sourceCategory={{Logsdatasource}}  (error or warning)
+| parse "Type = \"*\";" as evtType
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Default/Event Distribution Over Time**
+```
+_sourceCategory={{Logsdatasource}}  (System or Security or Application) Win32_NTLogEvent
+| parse "Logfile = \"*\";" as _sourceName
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Default/System Operations**
+```
+_sourceCategory={{Logsdatasource}}   Security (4608 or 4946 or 4947 or 4948 or 4727 or 4731 or 4754 or 4720)
+| parse "EventCode = *;" as event_id
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Default/Top 10 Service Operations**
+```
+_sourceCategory={{Logsdatasource}}  Service Control Manager 7036 "service entered"
+| parse "EventCode = *;" as event_id nodrop
+| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
+| parse regex "Message = \"The (?<service>\w.+?) service entered the (?<state>\w+) state"
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Breakdown by Keyword Tag**
+```
+_sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)
+| parse "EventCode = *;" as EventCode
+| parse "Computer = \"*\";" as Computer
+| parse "Message = \"*\";" as Message
+| parse "Type = \"*\";" as EventType
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Error Keyword - LogReduce**
+```
+_sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)
+| parse "EventCode = *;" as EventCode
+| parse "Computer = \"*\";" as Computer
+| parse "Message = \"*\";" as Message
+| parse "Type = \"*\";" as EventType
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Error Keyword - One Day Time Comparison**
+```
+_sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)
+| parse "EventCode = *;" as EventCode
+| parse "Computer = \"*\";" as Computer
+| parse "Message = \"*\";" as Message
+| parse "Type = \"*\";" as EventType
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Error Keyword - Outlier**
+```
+_sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)
+| parse "EventCode = *;" as EventCode
+| parse "Computer = \"*\";" as Computer
+| parse "Message = \"*\";" as Message
+| parse "Type = \"*\";" as EventType
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Error Keyword by Computer and Message**
+```
+_sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)
+| parse "EventCode = *;" as EventCode
+| parse "Computer = \"*\";" as Computer
+| parse "Message = \"*\";" as Message
+| parse "Type = \"*\";" as EventType
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Event Errors/Error Keyword Trend**
+```
+_sourceCategory={{Logsdatasource}}  (error or exception or timeout or fail)
+| parse "EventCode = *;" as EventCode
+| parse "Computer = \"*\";" as Computer
+| parse "Message = \"*\";" as Message
+| parse "Type = \"*\";" as EventType
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Login Status/Failed Logins by Hour**
+```
+_sourceCategory={{Logsdatasource}}  (4625 or 4771 or 4768) ("EventCode = 4625;" or "EventCode = 4771;" or "EventCode = 4768;") // 4625 or 4771 - Login Failures, 4768 - A Kerberos authentication ticket (TGT) was requested
+| parse "EventCode = *;" as event_id
+| parse "Computer = \"*\";" as comp_name nodrop | parse "ComputerName = \"*\";" as comp_name nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Failure Reason:\s\s(?<fail_reason>[^.]+?)[.][\s\S]+?Status:[\s\S]+?Sub Status:\s\s(?<result_code>0x[A-Fa-f\d]+)\b" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Login Status/Logins by Hour**
+```
+_sourceCategory={{Logsdatasource}}  (4624 or 4625 or 4771 or 4776 or 4768) ("EventCode = 4624;" or "EventCode = 4625;" or "EventCode = 4771;" or "EventCode = 4776;" or "EventCode = 4768;")
+// 4624 - Login Success, 4625 or 4771 - Login Failures, 4776 - Domain Controller - Credential validation, 4768 - A Kerberos authentication ticket (TGT) was requested
+| parse "EventCode = *;" as event_id
+| parse "Type = \"*\"" as msg_type
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Login Status/Successful Logins**
+```
+_sourceCategory={{Logsdatasource}}  4624 "EventCode = 4624;" // 4624 - Login Success
+| parse "EventCode = *;" as event_id
+| parse "Computer = \"*\";" as comp_name nodrop | parse "ComputerName = \"*\";" as comp_name nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Login Status/Successful RDP Reconnects**
+```
+_sourceCategory={{Logsdatasource}}  4778 "EventCode = 4778;"
+| parse "EventCode = *;" as event_id
+| parse "Computer = \"*\";" as comp_name nodrop | parse "ComputerName = \"*\";" as comp_name nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Session:[\s\S]+?Session Name:\s+(?<session_name>[^\r]+?)\r" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+?)\r" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Overview/Changes to Administrative Groups**
+```
+_sourceCategory={{Logsdatasource}}  ("Security Group Management" or "Category = 13826;") (created or modified or changed or removed or added) // _sourceName=Security
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse regex "Subcategory:\s+(?<Subcategory>[^\r]+?)\r" nodrop
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New|Deleted) Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop 
+| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop | parse "Category = *;" as category nodrop | parse "CategoryString = \"*\";" as categoryString nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Overview/Recent Policy Changes**
+```
+_sourceCategory={{Logsdatasource}}  (4902 or 4904 or 4905 or 4906 or 4907 or 4912 or 4715 or 4719 or "Audit Policy Change" or "System audit policy was changed" or *policy*change* or "Policy Change")
+| parse "EventCode = *;" as event_id nodrop
+| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop
+| parse regex "CategoryString = \"(?<category>[^\"]+?)\";[\s\S]+?Logfile = \"Security\"" nodrop
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Overview/System Restarts**
+```
+_sourceCategory={{Logsdatasource}}  4608 "EventCode = 4608;"
+| parse "EventCode = *;" as event_id
+```
+
+**Windows 7+ - 2008 (Legacy)/Windows - Overview/Top Windows Update Error Codes**
+```
+_sourceCategory={{Logsdatasource}}  (AutomaticUpdates or Report or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)
+| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop | parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*(?:\s+0x|hr\s=\s)(?<errorcode>[0-9a-fA-F]+)" nodrop
+| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop | parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop | parse field=update "(*)." as kbnum nodrop
+```
+
 

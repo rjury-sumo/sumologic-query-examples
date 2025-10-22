@@ -1,41 +1,239 @@
 # Parsers For Cisco Meraki - C2C
 
-| use_case | parser |
-|--- | --- |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Blocked Connections | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Blocked Events | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Events by Type | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Files Scanned | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Geo Locations of Attack Origins | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Geo Locations of Attack Targets | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Infected Hosts | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Malicious Files | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Threat Severity | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Threats Trend Analysis | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Top Clients by Events | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Total Events | _sourceCategory={{Logsdatasource}}   eventType<br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Air Marshal Overview | _sourceCategory={{Logsdatasource}}   wiredMacs<br>\| json "ssid", "channels", "firstSeen", "lastSeen", "wiredMacs", "wiredVlans", "wiredLastSeen","bssids[*].bssid","bssids[*].detectedBy[*].device","bssids[*].detectedBy[*].rssi" as ssid, channels, first_seen, last_seen, wired_macs, wired_vlans, wired_last_seen,bssids,devices,rssi_values nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Clients Summary | _sourceCategory={{Logsdatasource}}   networkId<br>\| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurred_at, network_id, type, description, category, client_id, client_description, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Event Types Breakdown | _sourceCategory={{Logsdatasource}}   networkId<br>\| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurredAt, networkId, type, description, category, clientId, clientDescription, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Events by SSID |  _sourceCategory={{Logsdatasource}}   networkId<br>\| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurredAt, networkId, type, description, category, client_id, client_description, clientMac, deviceSerial, deviceName, ssid, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Geo Locations of Clients | _sourceCategory={{Logsdatasource}}   networkId<br>\| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurred_at, network_id, type, description, category, client_id, client_description, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Network Activity | _sourceCategory={{Logsdatasource}}   networkId<br>\| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurredAt, networkId, type, description, category, clientId, clientDescription, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Recent Events | _sourceCategory={{Logsdatasource}}   networkId<br>\| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurred_at, network_id, type, description, category, client_id, client_description, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Risky Geo Locations | _sourceCategory={{Logsdatasource}}   networkId<br>\| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurred_at, network_id, type, description, category, client_id, client_description, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop<br><br>//filters<br>\| where type matches "{{event_type}}"<br><br>\| count as frequency by network_id, client_ip<br>\| where isValidIPv4(client_ip) or isValidIPv6(client_ip)<br>\| where !isNull(client_ip)<br>\| lookup latitude, longitude, country_code from geo://location on ip = client_ip<br>\| lookup country_code from https://sumologic-app-data.s3.amazonaws.com/riskycountries.csv on country_code=country_code |
-| Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Top 10 Network Activity Channels | _sourceCategory={{Logsdatasource}}   wiredMacs<br>\| json "ssid", "channels", "firstSeen", "lastSeen", "wiredMacs", "wiredVlans", "wiredLastSeen","bssids[*].bssid","bssids[*].detectedBy[*].device","bssids[*].detectedBy[*].rssi" as ssid, channels, first_seen, last_seen, wired_macs, wired_vlans, wired_last_seen,bssids,devices,rssi_values nodrop<br>\| extract field=channels "\"?(?<channel>[\d+]*?)\"?[,\n\]]" multi |
-| Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Total Activities | _sourceCategory={{Logsdatasource}}   wiredMacs<br>\| json "ssid", "channels", "firstSeen", "lastSeen", "wiredMacs", "wiredVlans", "wiredLastSeen","bssids[*].bssid","bssids[*].detectedBy[*].device","bssids[*].detectedBy[*].rssi" as ssid, channels, first_seen, last_seen, wired_macs, wired_vlans, wired_last_seen,bssids,devices,rssi_values nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/API Enabled Organizations | _sourceCategory={{Logsdatasource}}   licensing<br>\| json "id", "name", "url", "api.enabled", "licensing.model", "cloud.region.name", "management.details.[*].name", "management.details.[*].value" as id, name, url, enabled, model, region, management_name, management_value nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Configuration Change Frequency | _sourceCategory={{Logsdatasource}}   adminId<br>\| json "ts", "adminName", "adminEmail", "adminId", "page", "label" as date_time, adminName, adminEmail, adminId, page, label nodrop<br><br>//filters<br>\| parse "\"label\": \"*/" as activity |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Configuration Change Summary | _sourceCategory={{Logsdatasource}}   adminId<br>\| json "ts", "adminName", "adminEmail", "adminId", "page", "label" as date_time, admin_name, admin_email, admin_id, page, label nodrop<br><br>//filters<br>\| parse "\"label\": \"*/" as activity |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Events by Activity | _sourceCategory={{Logsdatasource}}   adminId<br>\| json "ts", "adminName", "adminEmail", "adminId", "page", "label" as ts, admin_name, admin_email, admin_id, page, label nodrop<br><br>\| parse "\"label\": \"*/" as activity |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Geo Locations of Top Threats | _sourceCategory={{Logsdatasource}}   <br>\| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as ts, eventType, clientName, clientMac, clientIp, srcIp, destIp, protocol, uri, canonicalName, destinationPort, fileType, fileSizeBytes, disposition, action, deviceMac, priority, classification, message, signature, ruleId nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Network Summary | _sourceCategory={{Logsdatasource}}   organizationId<br>\| json "id", "organizationId", "name", "productTypes", "timeZone", "tags", "enrollmentString", "url", "notes", "isBoundToConfigTemplate" as id, organization_id, name, product_types, time_zone, tags, enrollment_string, url, notes, is_bound_to_config_template nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Networks by Product Type | _sourceCategory={{Logsdatasource}}   organizationId<br>\| json "id", "organizationId", "name", "productTypes", "timeZone", "tags", "enrollmentString", "url", "notes", "isBoundToConfigTemplate" as id, organization_id, name, product_types, time_zone, tags, enrollment_string, url, notes, is_bound_to_config_template nodrop<br><br>\| extract field=product_types "\"?(?<product_types>[\w\s\-&.,]*)\"?[,\n\]]" multi |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Networks by Time Zone | _sourceCategory={{Logsdatasource}}   organizationId<br>\| json "id", "organizationId", "name", "productTypes", "timeZone", "tags", "enrollmentString", "url", "notes", "isBoundToConfigTemplate" as id, organization_id, name, product_types, time_zone, tags, enrollment_string, url, notes, is_bound_to_config_template nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Organizations by Cloud Region | _sourceCategory={{Logsdatasource}}   licensing<br>\| json "id", "name", "url", "api.enabled", "licensing.model", "cloud.region.name", "management.details.[*].name", "management.details.[*].value" as id, name, url, enabled, model, region, management_name, management_value nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Organizations Summary | _sourceCategory={{Logsdatasource}}   licensing<br>\| json "id", "name", "url", "api.enabled", "licensing.model", "cloud.region.name", "management.details.[*].name", "management.details.[*].value" as id, name, url, enabled, model, region, management_name, management_value nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Top 10 Active Admins | _sourceCategory={{Logsdatasource}}   adminId<br>\| json "ts", "adminName", "adminEmail", "adminId", "page", "label" as ts, admin_name, admin_email, admin_id, page, label nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Total Admin Logs | _sourceCategory={{Logsdatasource}}   adminId<br>\| json "ts", "adminName", "adminEmail", "adminId", "page", "label" as ts, admin_name, admin_email, admin_id, page, label nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Total Network Logs | _sourceCategory={{Logsdatasource}}   organizationId<br>\| json "id", "organizationId", "name", "productTypes", "timeZone", "tags", "enrollmentString", "url", "notes", "isBoundToConfigTemplate" as id, organization_id, name, product_types, time_zone, tags, enrollment_string, url, notes, is_bound_to_config_template nodrop |
-| Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Total Organizations | _sourceCategory={{Logsdatasource}}   licensing<br>\| json "id", "name", "url", "api.enabled", "licensing.model", "cloud.region.name", "management.details.[*].name", "management.details.[*].value" as id, name, url, enabled, model, region, management_name, management_value nodrop |
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Blocked Connections**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Blocked Events**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Events by Type**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Files Scanned**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Geo Locations of Attack Origins**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Geo Locations of Attack Targets**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Infected Hosts**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Malicious Files**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Threat Severity**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Threats Trend Analysis**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Top Clients by Events**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Appliance Security Events/Total Events**
+```
+_sourceCategory={{Logsdatasource}}   eventType
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as date_time, event_type, client_name, client_mac, client_ip, src_ip, dest_ip, protocol, uri, canonical_name, dest_port, file_type, file_size_bytes, disposition, action, device_mac, priority, classification, message, signature, rule_id nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Air Marshal Overview**
+```
+_sourceCategory={{Logsdatasource}}   wiredMacs
+| json "ssid", "channels", "firstSeen", "lastSeen", "wiredMacs", "wiredVlans", "wiredLastSeen","bssids[*].bssid","bssids[*].detectedBy[*].device","bssids[*].detectedBy[*].rssi" as ssid, channels, first_seen, last_seen, wired_macs, wired_vlans, wired_last_seen,bssids,devices,rssi_values nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Clients Summary**
+```
+_sourceCategory={{Logsdatasource}}   networkId
+| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurred_at, network_id, type, description, category, client_id, client_description, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Event Types Breakdown**
+```
+_sourceCategory={{Logsdatasource}}   networkId
+| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurredAt, networkId, type, description, category, clientId, clientDescription, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Events by SSID**
+```
+ _sourceCategory={{Logsdatasource}}   networkId
+| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurredAt, networkId, type, description, category, client_id, client_description, clientMac, deviceSerial, deviceName, ssid, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Geo Locations of Clients**
+```
+_sourceCategory={{Logsdatasource}}   networkId
+| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurred_at, network_id, type, description, category, client_id, client_description, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Network Activity**
+```
+_sourceCategory={{Logsdatasource}}   networkId
+| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurredAt, networkId, type, description, category, clientId, clientDescription, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Recent Events**
+```
+_sourceCategory={{Logsdatasource}}   networkId
+| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurred_at, network_id, type, description, category, client_id, client_description, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Risky Geo Locations**
+```
+_sourceCategory={{Logsdatasource}}   networkId
+| json "occurredAt", "networkId", "type", "description", "category", "clientId", "clientDescription", "clientMac", "deviceSerial", "deviceName", "ssidNumber", "eventData.radio", "eventData.vap", "eventData.client_mac", "eventData.client_ip", "eventData.channel", "eventData.rssi", "eventData.aid" as occurred_at, network_id, type, description, category, client_id, client_description, clientMac, deviceSerial, deviceName, ssidNumber, radio, vap, client_mac, client_ip, channel, rssi, aid nodrop
+
+//filters
+| where type matches "{{event_type}}"
+
+| count as frequency by network_id, client_ip
+| where isValidIPv4(client_ip) or isValidIPv6(client_ip)
+| where !isNull(client_ip)
+| lookup latitude, longitude, country_code from geo://location on ip = client_ip
+| lookup country_code from https://sumologic-app-data.s3.amazonaws.com/riskycountries.csv on country_code=country_code
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Top 10 Network Activity Channels**
+```
+_sourceCategory={{Logsdatasource}}   wiredMacs
+| json "ssid", "channels", "firstSeen", "lastSeen", "wiredMacs", "wiredVlans", "wiredLastSeen","bssids[*].bssid","bssids[*].detectedBy[*].device","bssids[*].detectedBy[*].rssi" as ssid, channels, first_seen, last_seen, wired_macs, wired_vlans, wired_last_seen,bssids,devices,rssi_values nodrop
+| extract field=channels "\"?(?<channel>[\d+]*?)\"?[,\n\]]" multi
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Network Events and Air Marshal/Total Activities**
+```
+_sourceCategory={{Logsdatasource}}   wiredMacs
+| json "ssid", "channels", "firstSeen", "lastSeen", "wiredMacs", "wiredVlans", "wiredLastSeen","bssids[*].bssid","bssids[*].detectedBy[*].device","bssids[*].detectedBy[*].rssi" as ssid, channels, first_seen, last_seen, wired_macs, wired_vlans, wired_last_seen,bssids,devices,rssi_values nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/API Enabled Organizations**
+```
+_sourceCategory={{Logsdatasource}}   licensing
+| json "id", "name", "url", "api.enabled", "licensing.model", "cloud.region.name", "management.details.[*].name", "management.details.[*].value" as id, name, url, enabled, model, region, management_name, management_value nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Configuration Change Frequency**
+```
+_sourceCategory={{Logsdatasource}}   adminId
+| json "ts", "adminName", "adminEmail", "adminId", "page", "label" as date_time, adminName, adminEmail, adminId, page, label nodrop
+
+//filters
+| parse "\"label\": \"*/" as activity
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Configuration Change Summary**
+```
+_sourceCategory={{Logsdatasource}}   adminId
+| json "ts", "adminName", "adminEmail", "adminId", "page", "label" as date_time, admin_name, admin_email, admin_id, page, label nodrop
+
+//filters
+| parse "\"label\": \"*/" as activity
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Events by Activity**
+```
+_sourceCategory={{Logsdatasource}}   adminId
+| json "ts", "adminName", "adminEmail", "adminId", "page", "label" as ts, admin_name, admin_email, admin_id, page, label nodrop
+
+| parse "\"label\": \"*/" as activity
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Geo Locations of Top Threats**
+```
+_sourceCategory={{Logsdatasource}}   
+| json "ts", "eventType", "clientName", "clientMac", "clientIp", "srcIp", "destIp", "protocol", "uri", "canonicalName", "destinationPort", "fileType", "fileSizeBytes", "disposition", "action", "deviceMac", "priority", "classification", "message", "signature", "ruleId"  as ts, eventType, clientName, clientMac, clientIp, srcIp, destIp, protocol, uri, canonicalName, destinationPort, fileType, fileSizeBytes, disposition, action, deviceMac, priority, classification, message, signature, ruleId nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Network Summary**
+```
+_sourceCategory={{Logsdatasource}}   organizationId
+| json "id", "organizationId", "name", "productTypes", "timeZone", "tags", "enrollmentString", "url", "notes", "isBoundToConfigTemplate" as id, organization_id, name, product_types, time_zone, tags, enrollment_string, url, notes, is_bound_to_config_template nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Networks by Product Type**
+```
+_sourceCategory={{Logsdatasource}}   organizationId
+| json "id", "organizationId", "name", "productTypes", "timeZone", "tags", "enrollmentString", "url", "notes", "isBoundToConfigTemplate" as id, organization_id, name, product_types, time_zone, tags, enrollment_string, url, notes, is_bound_to_config_template nodrop
+
+| extract field=product_types "\"?(?<product_types>[\w\s\-&.,]*)\"?[,\n\]]" multi
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Networks by Time Zone**
+```
+_sourceCategory={{Logsdatasource}}   organizationId
+| json "id", "organizationId", "name", "productTypes", "timeZone", "tags", "enrollmentString", "url", "notes", "isBoundToConfigTemplate" as id, organization_id, name, product_types, time_zone, tags, enrollment_string, url, notes, is_bound_to_config_template nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Organizations by Cloud Region**
+```
+_sourceCategory={{Logsdatasource}}   licensing
+| json "id", "name", "url", "api.enabled", "licensing.model", "cloud.region.name", "management.details.[*].name", "management.details.[*].value" as id, name, url, enabled, model, region, management_name, management_value nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Organizations Summary**
+```
+_sourceCategory={{Logsdatasource}}   licensing
+| json "id", "name", "url", "api.enabled", "licensing.model", "cloud.region.name", "management.details.[*].name", "management.details.[*].value" as id, name, url, enabled, model, region, management_name, management_value nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Top 10 Active Admins**
+```
+_sourceCategory={{Logsdatasource}}   adminId
+| json "ts", "adminName", "adminEmail", "adminId", "page", "label" as ts, admin_name, admin_email, admin_id, page, label nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Total Admin Logs**
+```
+_sourceCategory={{Logsdatasource}}   adminId
+| json "ts", "adminName", "adminEmail", "adminId", "page", "label" as ts, admin_name, admin_email, admin_id, page, label nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Total Network Logs**
+```
+_sourceCategory={{Logsdatasource}}   organizationId
+| json "id", "organizationId", "name", "productTypes", "timeZone", "tags", "enrollmentString", "url", "notes", "isBoundToConfigTemplate" as id, organization_id, name, product_types, time_zone, tags, enrollment_string, url, notes, is_bound_to_config_template nodrop
+```
+
+**Cisco Meraki - C2C/Cisco Meraki - Organization Overview/Total Organizations**
+```
+_sourceCategory={{Logsdatasource}}   licensing
+| json "id", "name", "url", "api.enabled", "licensing.model", "cloud.region.name", "management.details.[*].name", "management.details.[*].value" as id, name, url, enabled, model, region, management_name, management_value nodrop
+```
+
 

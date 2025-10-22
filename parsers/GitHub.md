@@ -1,27 +1,140 @@
 # Parsers For GitHub
 
-| use_case | parser |
-|--- | --- |
-| GitHub/Issue opened in last 24 Hours/Issue opened in last 24 Hours | _sourceCategory = Labs/Github  issue  opened<br>\| json "action", "issue.id", "issue.number", "issue.title" , "issue.state", "issue.created_at", "issue.updated_at", "issue.closed_at", "issue.body", "issue.user.login", "issue.url", "repository.name", "repository.open_issues_count"  as action,  issue_ID, issue_num, issue_title, state, createdAt, updatedAt, closedAt, body, user, url, repo_name, repoOpenIssueCnt |
-| GitHub/Overview - New/Commits by Repository | _sourceCategory = Labs/Github "commits" "https://api.github.com/repos"<br>\| json  "commits[*].id[*]", "repository.name", "pusher.name"  as  commit_size, repo_name, user |
-| GitHub/Overview - New/Commits Over Time | _sourceCategory = Labs/Github "commits"  "https://api.github.com/repos"<br>\| json  "commits[*].id[*]", "repository.name", "pusher.name" as  commit_size, repo_name, user |
-| GitHub/Overview - New/Issues Opened, Closed and Reopened by Repository | _sourceCategory = Labs/Github and ( "opened" or "closed" or "reopened" ) <br>\| json "action", "issue.id", "issue.number", "issue.title" , "issue.state", "issue.created_at", "issue.updated_at", "issue.closed_at", "issue.body", "issue.user.login", "issue.url", "repository.name", "repository.open_issues_count"  as action,  issue_ID, issue_num, issue_title, state, createdAt, updatedAt, closedAt, body, user, url, repo_name, repoOpenIssueCnt |
-| GitHub/Overview - New/Issues Opened, Closed Over Time | _sourceCategory = Labs/Github "issue"<br>\| json "action", "issue.id", "issue.number", "issue.title" , "issue.state", "issue.created_at", "issue.updated_at", "issue.closed_at", "issue.body", "issue.user.login", "issue.url", "repository.name", "repository.open_issues_count"  as action,  issue_ID, issue_num, issue_title, state, createdAt, updatedAt, closedAt, body, user, url, repo_name, repoOpenIssueCnt |
-| GitHub/Overview - New/Open Issues | _sourceCategory = Labs/Github open "issue"<br>\| json "action", "issue.id", "issue.number", "issue.title" , "issue.state", "issue.created_at", "issue.updated_at", "issue.closed_at", "issue.body", "issue.user.login", "issue.url", "repository.name", "repository.open_issues_count"  as axn,  id, issue_num, title, state, created_date, updatedAt, closedAt, body, user, url, repo_name, repoOpenIssueCnt |
-| GitHub/Overview - New/Open Pull Requests | _sourceCategory = Labs/Github "pull_request"<br>\| json "action", "pull_request.title", "number", "pull_request.created_at", "pull_request.user.login", "repository.name" as action, title, id, created_time, user, repo_name |
-| GitHub/Overview - New/Pull Requests Opened by Repository | _sourceCategory = Labs/Github "opened" "pull_request"<br>\| json "action", "pull_request.state", "pull_request.title", "pull_request.body", "pull_request.created_at","pull_request.updated_at", "pull_request.user.login", "repository.name" as action, pull_req_state, tittle, body, created_time, updated_time, user, repo_name |
-| GitHub/Overview - New/Pull Requests Opened Over Time | _sourceCategory = Labs/Github "pull_request"<br>\| json "action", "pull_request.state", "pull_request.title", "pull_request.body", "pull_request.created_at","pull_request.updated_at", "pull_request.user.login", "repository.name" as action, pull_req_state, tittle, body, created_time, updated_time, user, repo_name |
-| GitHub/Overview - New/Top 10 Users by Commit | _sourceCategory = Labs/Github "commits" repository pusher<br>\| json "ref", "commits[0].timestamp", "commits[*].distinct[*]" ,"pusher.name",  "repository.name" as ref, commit_time, commits ,user, repo_name |
-| GitHub/Pull Requests opened in last 24 Hours/Pull Requests opened in last 24 Hours | _sourceCategory = Labs/Github "pull_request"<br>\| json "action", "pull_request.state", "pull_request.title", "pull_request.body", "pull_request.created_at","pull_request.updated_at", "pull_request.user.login", "repository.full_name", "pull_request.merged", "pull_request.html_url" as  action, pull_req_state, title, body, created_time, updated_time, user, repo_name, merge,url<br>\| parse regex field=repo_name "^\S+\/(?<repo>\S+)$" |
-| GitHub/Security - New/Fork Count by Repository Over Time | _sourceCategory = Labs/Github<br>\| json  "repository.name" as  repo_name |
-| GitHub/Security - New/Members Added, Removed | _sourceCategory = Labs/Github<br>\| Json "action", "scope", "member.login", "member.id", "member.type",  "team.name", "team.permission", "organization.login" as action, scope, member_name, member_id, member_type, team_name, team_permission, org_login |
-| GitHub/Security - New/Private Repositories Made Public | _sourceCategory = Labs/Github  and  ( not action and not pull_request and not "\"team\":" not ref_type not state)<br>\| json "repository.name", "sender.login", "repository.private","repository.owner.login" as repo_name, sender_login, private, owner_login |
-| GitHub/Security - New/Repositories Created | _sourceCategory = Labs/Github and ( action not pull_request not closed not opened not position not line not page_name not distinct)<br>\| json "repository.name", "sender.login", "repository.private" as rep_name, sender_login, private |
-| GitHub/Security - New/Teams Added to Repository | _sourceCategory = Labs/Github<br>\| json "team.name", "team.permission", "repository.name" as team_name, team_permission, repo_name |
-| GitHub/Still Opened Pull Requests/Still Opened Pull Requests | _sourceCategory = Labs/Github "pull_request"<br>\| json "action", "pull_request.title", "number", "pull_request.created_at","pull_request.user.login", "repository.name", "pull_request._links.html.href" as action, title, id, created_time, user, repo_name, review_url |
-| GitHub/User Activity - New/Commits by User | _sourceCategory = Labs/Github "commits" repository pusher<br>\| json "ref", "commits[0].timestamp", "commits[*].distinct[*]" ,"pusher.name",  "repository.name" as ref, commit_time, commits ,user, repo_name |
-| GitHub/User Activity - New/File Type Added by User | _sourceCategory = Labs/Github<br>\| json "commits[*].added[*]", "pusher.name",  "repository.name" as  files_added, user, repo_name<br>\| where files_added != "[]"<br>\| parse regex field=files_added "\.(?<file_type>[\w]+)[\",\|\"]" multi |
-| GitHub/User Activity - New/Files Added per Branch | _sourceCategory = Labs/Github<br>\| json "ref", "commits[*].added[*]", "repository.name", "pusher.name" as branch, files, repo_name, user<br>\| where files != "[]"<br>\| parse regex field=branch "^\S+\/\S+\/(?<branch_name>\S+)$" |
-| GitHub/User Activity - New/Files Changed per Pull Request | _sourceCategory = Labs/Github<br>\| json "action", "pull_request.state", "pull_request.title", "pull_request.body", "pull_request.created_at","pull_request.updated_at", "pull_request.user.login", "repository.name","pull_request.merged", "pull_request.changed_files", "number" as action, pull_req_state, title, body, created_time, updated_time, user, repo_name, merge, changed_files, id |
-| GitHub/User Activity - New/Review Comments by User | _sourceCategory = Labs/Github<br>\| json "comment.user.login","comment.body", "comment.created_at", "pull_request.id", "pull_request.title", "repository.name" as user, body, created_at, id, title, repo_name |
+**GitHub/Issue opened in last 24 Hours/Issue opened in last 24 Hours**
+```
+_sourceCategory = Labs/Github  issue  opened
+| json "action", "issue.id", "issue.number", "issue.title" , "issue.state", "issue.created_at", "issue.updated_at", "issue.closed_at", "issue.body", "issue.user.login", "issue.url", "repository.name", "repository.open_issues_count"  as action,  issue_ID, issue_num, issue_title, state, createdAt, updatedAt, closedAt, body, user, url, repo_name, repoOpenIssueCnt
+```
+
+**GitHub/Overview - New/Commits by Repository**
+```
+_sourceCategory = Labs/Github "commits" "https://api.github.com/repos"
+| json  "commits[*].id[*]", "repository.name", "pusher.name"  as  commit_size, repo_name, user
+```
+
+**GitHub/Overview - New/Commits Over Time**
+```
+_sourceCategory = Labs/Github "commits"  "https://api.github.com/repos"
+| json  "commits[*].id[*]", "repository.name", "pusher.name" as  commit_size, repo_name, user
+```
+
+**GitHub/Overview - New/Issues Opened, Closed and Reopened by Repository**
+```
+_sourceCategory = Labs/Github and ( "opened" or "closed" or "reopened" ) 
+| json "action", "issue.id", "issue.number", "issue.title" , "issue.state", "issue.created_at", "issue.updated_at", "issue.closed_at", "issue.body", "issue.user.login", "issue.url", "repository.name", "repository.open_issues_count"  as action,  issue_ID, issue_num, issue_title, state, createdAt, updatedAt, closedAt, body, user, url, repo_name, repoOpenIssueCnt
+```
+
+**GitHub/Overview - New/Issues Opened, Closed Over Time**
+```
+_sourceCategory = Labs/Github "issue"
+| json "action", "issue.id", "issue.number", "issue.title" , "issue.state", "issue.created_at", "issue.updated_at", "issue.closed_at", "issue.body", "issue.user.login", "issue.url", "repository.name", "repository.open_issues_count"  as action,  issue_ID, issue_num, issue_title, state, createdAt, updatedAt, closedAt, body, user, url, repo_name, repoOpenIssueCnt
+```
+
+**GitHub/Overview - New/Open Issues**
+```
+_sourceCategory = Labs/Github open "issue"
+| json "action", "issue.id", "issue.number", "issue.title" , "issue.state", "issue.created_at", "issue.updated_at", "issue.closed_at", "issue.body", "issue.user.login", "issue.url", "repository.name", "repository.open_issues_count"  as axn,  id, issue_num, title, state, created_date, updatedAt, closedAt, body, user, url, repo_name, repoOpenIssueCnt
+```
+
+**GitHub/Overview - New/Open Pull Requests**
+```
+_sourceCategory = Labs/Github "pull_request"
+| json "action", "pull_request.title", "number", "pull_request.created_at", "pull_request.user.login", "repository.name" as action, title, id, created_time, user, repo_name
+```
+
+**GitHub/Overview - New/Pull Requests Opened by Repository**
+```
+_sourceCategory = Labs/Github "opened" "pull_request"
+| json "action", "pull_request.state", "pull_request.title", "pull_request.body", "pull_request.created_at","pull_request.updated_at", "pull_request.user.login", "repository.name" as action, pull_req_state, tittle, body, created_time, updated_time, user, repo_name
+```
+
+**GitHub/Overview - New/Pull Requests Opened Over Time**
+```
+_sourceCategory = Labs/Github "pull_request"
+| json "action", "pull_request.state", "pull_request.title", "pull_request.body", "pull_request.created_at","pull_request.updated_at", "pull_request.user.login", "repository.name" as action, pull_req_state, tittle, body, created_time, updated_time, user, repo_name
+```
+
+**GitHub/Overview - New/Top 10 Users by Commit**
+```
+_sourceCategory = Labs/Github "commits" repository pusher
+| json "ref", "commits[0].timestamp", "commits[*].distinct[*]" ,"pusher.name",  "repository.name" as ref, commit_time, commits ,user, repo_name
+```
+
+**GitHub/Pull Requests opened in last 24 Hours/Pull Requests opened in last 24 Hours**
+```
+_sourceCategory = Labs/Github "pull_request"
+| json "action", "pull_request.state", "pull_request.title", "pull_request.body", "pull_request.created_at","pull_request.updated_at", "pull_request.user.login", "repository.full_name", "pull_request.merged", "pull_request.html_url" as  action, pull_req_state, title, body, created_time, updated_time, user, repo_name, merge,url
+| parse regex field=repo_name "^\S+\/(?<repo>\S+)$"
+```
+
+**GitHub/Security - New/Fork Count by Repository Over Time**
+```
+_sourceCategory = Labs/Github
+| json  "repository.name" as  repo_name
+```
+
+**GitHub/Security - New/Members Added, Removed**
+```
+_sourceCategory = Labs/Github
+| Json "action", "scope", "member.login", "member.id", "member.type",  "team.name", "team.permission", "organization.login" as action, scope, member_name, member_id, member_type, team_name, team_permission, org_login
+```
+
+**GitHub/Security - New/Private Repositories Made Public**
+```
+_sourceCategory = Labs/Github  and  ( not action and not pull_request and not "\"team\":" not ref_type not state)
+| json "repository.name", "sender.login", "repository.private","repository.owner.login" as repo_name, sender_login, private, owner_login
+```
+
+**GitHub/Security - New/Repositories Created**
+```
+_sourceCategory = Labs/Github and ( action not pull_request not closed not opened not position not line not page_name not distinct)
+| json "repository.name", "sender.login", "repository.private" as rep_name, sender_login, private
+```
+
+**GitHub/Security - New/Teams Added to Repository**
+```
+_sourceCategory = Labs/Github
+| json "team.name", "team.permission", "repository.name" as team_name, team_permission, repo_name
+```
+
+**GitHub/Still Opened Pull Requests/Still Opened Pull Requests**
+```
+_sourceCategory = Labs/Github "pull_request"
+| json "action", "pull_request.title", "number", "pull_request.created_at","pull_request.user.login", "repository.name", "pull_request._links.html.href" as action, title, id, created_time, user, repo_name, review_url
+```
+
+**GitHub/User Activity - New/Commits by User**
+```
+_sourceCategory = Labs/Github "commits" repository pusher
+| json "ref", "commits[0].timestamp", "commits[*].distinct[*]" ,"pusher.name",  "repository.name" as ref, commit_time, commits ,user, repo_name
+```
+
+**GitHub/User Activity - New/File Type Added by User**
+```
+_sourceCategory = Labs/Github
+| json "commits[*].added[*]", "pusher.name",  "repository.name" as  files_added, user, repo_name
+| where files_added != "[]"
+| parse regex field=files_added "\.(?<file_type>[\w]+)[\",|\"]" multi
+```
+
+**GitHub/User Activity - New/Files Added per Branch**
+```
+_sourceCategory = Labs/Github
+| json "ref", "commits[*].added[*]", "repository.name", "pusher.name" as branch, files, repo_name, user
+| where files != "[]"
+| parse regex field=branch "^\S+\/\S+\/(?<branch_name>\S+)$"
+```
+
+**GitHub/User Activity - New/Files Changed per Pull Request**
+```
+_sourceCategory = Labs/Github
+| json "action", "pull_request.state", "pull_request.title", "pull_request.body", "pull_request.created_at","pull_request.updated_at", "pull_request.user.login", "repository.name","pull_request.merged", "pull_request.changed_files", "number" as action, pull_req_state, title, body, created_time, updated_time, user, repo_name, merge, changed_files, id
+```
+
+**GitHub/User Activity - New/Review Comments by User**
+```
+_sourceCategory = Labs/Github
+| json "comment.user.login","comment.body", "comment.created_at", "pull_request.id", "pull_request.title", "repository.name" as user, body, created_at, id, title, repo_name
+```
+
 

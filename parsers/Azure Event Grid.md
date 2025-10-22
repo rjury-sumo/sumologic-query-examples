@@ -1,26 +1,152 @@
 # Parsers For Azure Event Grid
 
-| use_case | parser |
-|--- | --- |
-| Azure Event Grid/Administrative Operations/ Applications by Operation Type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop |
-| Azure Event Grid/Administrative Operations/Distribution  by Operation Type (Read, Write and Delete) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid |
-| Azure Event Grid/Administrative Operations/Distribution by Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid<br>\| where (resultType="Accept" or resultType="Success") and category="Administrative" <br>\| parse field=operationName "*/*/*" as provider_name, resource_type, operation_name |
-| Azure Event Grid/Administrative Operations/Distribution by Status | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category" as resultType, category |
-| Azure Event Grid/Administrative Operations/Recent Delete Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "properties.entity", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop |
-| Azure Event Grid/Administrative Operations/Recent Write Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop |
-| Azure Event Grid/Administrative Operations/Top 10 Operations That Caused The Most Errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative<br>\| json "resultType", "operationName", "properties.statusMessage", "category"  as resultType, operationName, failureMessage, category nodrop<br>\| parse field=operationname "*/*/*" as provider_name, resource_type, operation nodrop |
-| Azure Event Grid/Errors/Top 10 Failed Delivery Destinations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DeliveryFailures<br>\| json "category", "message" as category, message<br>\| where category="DeliveryFailures"<br>\| parse field=message "urlPath=*," as url_path |
-| Azure Event Grid/Errors/Top 10 Failed Topics | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} (DeliveryFailures or PublishFailures)<br>\| json "category", "eventSubscriptionName" as category, eventSubscriptionName |
-| Azure Event Grid/Errors/Top 3 Delivery Failures by Event Subscription | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DeliveryFailures<br>\| json "category", "eventSubscriptionName","message" as category, eventSubscriptionName, message<br>\| where category="DeliveryFailures"<br>\| parse field=message "Status:*ErrorCode" as status |
-| Azure Event Grid/Errors/Top 3 Publish Failures by Topic | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}}<br>\| json "category", "message" as category, message<br>\| where category="PublishFailures"<br>\| parse field=message "errorMessage=*" as error_message |
-| Azure Event Grid/Overview/Authentication Types | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DataPlaneRequests<br>\| json "category", "properties.aggregatedRequests[*]" as category, events<br>\| parse regex field=events "(?<request_info>\{(?:[^\{\}]\|\{[^\{\}]*\})*\})" multi<br>\| where category="DataPlaneRequests"<br>\| json field=request_info "authentication.type", "totalOperations" as type, totalOperations |
-| Azure Event Grid/Overview/Delivery and Publish Failures Trend by Topic | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PublishFailures<br>\| json "category" as category |
-| Azure Event Grid/Overview/Requests by Location | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DataPlaneRequests<br>\| json "category", "properties.aggregatedRequests[*]" as category, events<br>\| parse regex field=events "(?<request_info>\{(?:[^\{\}]\|\{[^\{\}]*\})*\})" multi<br>\| where category="DataPlaneRequests"<br>\| json field=request_info "clientIpAddress", "totalOperations" as clientIpAddress, totalOperations |
-| Azure Event Grid/Overview/Requests by Network Access Type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DataPlaneRequests<br>\| json "category", "properties.aggregatedRequests[*]" as category, events<br>\| parse regex field=events "(?<request_info>\{(?:[^\{\}]\|\{[^\{\}]*\})*\})" multi<br>\| where category="DataPlaneRequests"<br>\| json field=request_info "networkAccess", "totalOperations" as networkAccess, totalOperations |
-| Azure Event Grid/Overview/Requests by Operation Status | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DataPlaneRequests<br>\| json "category", "properties.aggregatedRequests[*]" as category, events<br>\| parse regex field=events "(?<request_info>\{(?:[^\{\}]\|\{[^\{\}]*\})*\})" multi<br>\| where category="DataPlaneRequests"<br>\| json field=request_info "operationResult", "totalOperations" as operationResult, totalOperations |
-| Azure Event Grid/Policy and Recommendations/Failed Policy Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} location={{location}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy Failure<br>\| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity", "properties.policies" as category, resultType, message, resourceLocation, entity, policies |
-| Azure Event Grid/Policy and Recommendations/Recent Recommendation Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Recommendation<br>\| JSON "category", "operationName", "resultType", "properties.recommendationName", "properties.recommendationCategory", "properties.recommendationImpact", "properties.recommendationResourceLink" as category, operationName, resultType, recommendationName, recommendationCategory, recommendationImpact, recommendationResourceLink <br>\| where category="Recommendation"<br>\| parse field=operationName "*/*/*/*" as provider, category, operation_name, action nodrop |
-| Azure Event Grid/Policy and Recommendations/Total Failed Policy Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy Failure<br>\| JSON "category", "resultType" as category, resultType |
-| Azure Event Grid/Policy and Recommendations/Total Recommendation Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Recommendation<br>\| JSON "category" |
-| Azure Event Grid/Policy and Recommendations/Total Success Policy Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy <br>\| JSON "category", "resultType" as category, resultType |
+**Azure Event Grid/Administrative Operations/ Applications by Operation Type**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative 
+| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop
+```
+
+**Azure Event Grid/Administrative Operations/Distribution  by Operation Type (Read, Write and Delete)**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative 
+| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid
+```
+
+**Azure Event Grid/Administrative Operations/Distribution by Operations**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative 
+| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid
+| where (resultType="Accept" or resultType="Success") and category="Administrative" 
+| parse field=operationName "*/*/*" as provider_name, resource_type, operation_name
+```
+
+**Azure Event Grid/Administrative Operations/Distribution by Status**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative 
+| json "resultType", "category" as resultType, category
+```
+
+**Azure Event Grid/Administrative Operations/Recent Delete Operations**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative 
+| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "properties.entity", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop
+```
+
+**Azure Event Grid/Administrative Operations/Recent Write Operations**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative 
+| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop
+```
+
+**Azure Event Grid/Administrative Operations/Top 10 Operations That Caused The Most Errors**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative
+| json "resultType", "operationName", "properties.statusMessage", "category"  as resultType, operationName, failureMessage, category nodrop
+| parse field=operationname "*/*/*" as provider_name, resource_type, operation nodrop
+```
+
+**Azure Event Grid/Errors/Top 10 Failed Delivery Destinations**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DeliveryFailures
+| json "category", "message" as category, message
+| where category="DeliveryFailures"
+| parse field=message "urlPath=*," as url_path
+```
+
+**Azure Event Grid/Errors/Top 10 Failed Topics**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} (DeliveryFailures or PublishFailures)
+| json "category", "eventSubscriptionName" as category, eventSubscriptionName
+```
+
+**Azure Event Grid/Errors/Top 3 Delivery Failures by Event Subscription**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DeliveryFailures
+| json "category", "eventSubscriptionName","message" as category, eventSubscriptionName, message
+| where category="DeliveryFailures"
+| parse field=message "Status:*ErrorCode" as status
+```
+
+**Azure Event Grid/Errors/Top 3 Publish Failures by Topic**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}}
+| json "category", "message" as category, message
+| where category="PublishFailures"
+| parse field=message "errorMessage=*" as error_message
+```
+
+**Azure Event Grid/Overview/Authentication Types**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DataPlaneRequests
+| json "category", "properties.aggregatedRequests[*]" as category, events
+| parse regex field=events "(?<request_info>\{(?:[^\{\}]|\{[^\{\}]*\})*\})" multi
+| where category="DataPlaneRequests"
+| json field=request_info "authentication.type", "totalOperations" as type, totalOperations
+```
+
+**Azure Event Grid/Overview/Delivery and Publish Failures Trend by Topic**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PublishFailures
+| json "category" as category
+```
+
+**Azure Event Grid/Overview/Requests by Location**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DataPlaneRequests
+| json "category", "properties.aggregatedRequests[*]" as category, events
+| parse regex field=events "(?<request_info>\{(?:[^\{\}]|\{[^\{\}]*\})*\})" multi
+| where category="DataPlaneRequests"
+| json field=request_info "clientIpAddress", "totalOperations" as clientIpAddress, totalOperations
+```
+
+**Azure Event Grid/Overview/Requests by Network Access Type**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DataPlaneRequests
+| json "category", "properties.aggregatedRequests[*]" as category, events
+| parse regex field=events "(?<request_info>\{(?:[^\{\}]|\{[^\{\}]*\})*\})" multi
+| where category="DataPlaneRequests"
+| json field=request_info "networkAccess", "totalOperations" as networkAccess, totalOperations
+```
+
+**Azure Event Grid/Overview/Requests by Operation Status**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} DataPlaneRequests
+| json "category", "properties.aggregatedRequests[*]" as category, events
+| parse regex field=events "(?<request_info>\{(?:[^\{\}]|\{[^\{\}]*\})*\})" multi
+| where category="DataPlaneRequests"
+| json field=request_info "operationResult", "totalOperations" as operationResult, totalOperations
+```
+
+**Azure Event Grid/Policy and Recommendations/Failed Policy Events**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} location={{location}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy Failure
+| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity", "properties.policies" as category, resultType, message, resourceLocation, entity, policies
+```
+
+**Azure Event Grid/Policy and Recommendations/Recent Recommendation Events**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Recommendation
+| JSON "category", "operationName", "resultType", "properties.recommendationName", "properties.recommendationCategory", "properties.recommendationImpact", "properties.recommendationResourceLink" as category, operationName, resultType, recommendationName, recommendationCategory, recommendationImpact, recommendationResourceLink 
+| where category="Recommendation"
+| parse field=operationName "*/*/*/*" as provider, category, operation_name, action nodrop
+```
+
+**Azure Event Grid/Policy and Recommendations/Total Failed Policy Events**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy Failure
+| JSON "category", "resultType" as category, resultType
+```
+
+**Azure Event Grid/Policy and Recommendations/Total Recommendation Events**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Recommendation
+| JSON "category"
+```
+
+**Azure Event Grid/Policy and Recommendations/Total Success Policy Events**
+```
+tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy 
+| JSON "category", "resultType" as category, resultType
+```
+
 

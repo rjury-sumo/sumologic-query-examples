@@ -1,14 +1,75 @@
 # Parsers For ActiveMQ
 
-| use_case | parser |
-|--- | --- |
-| ActiveMQ/Logs/Add Events | messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) "started" "Apache ActiveMQ"<br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "*\|*\|*\|*\|*" as timedate,severity,msg,class,address \| count as count by timedate,msg \| sort by timedate \| fields timedate,msg |
-| ActiveMQ/Logs/Error Over Time | messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) ("ERROR" or "Could not accept connection")<br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "*\|*\|*\|*\|*" as timedate,severity,msg,class,address \|trim(severity) as severity  |
-| ActiveMQ/Logs/Events by Severity | messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) <br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "*\|*\|*\|*\|*" as timedate,severity,msg,class,address \|trim(severity) as severity \| count by severity |
-| ActiveMQ/Logs/Last 10 Errors and Warnings | messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) ("ERROR" or "WARN")<br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "*\|*\|*\|*\|*" as timedate,severity,msg,class,address \|trim(severity) as severity \| count as count by severity,msg,timedate \| sort by count,timedate \| limit 10 \| fields timedate,severity,msg |
-| ActiveMQ/Logs/Last 25 Log Messages | messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) <br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "*\|*\|*\|*\|*" as timedate,severity,msg,class,address \|limit 25 \| trim(severity) as severity \|count as count by timedate,msg,severity \| sort by timedate \|  fields timedate,severity,msg |
-| ActiveMQ/Logs/Log Reduce | messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) <br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "*\|*\|*\|*\|*" as timedate,severity,msg,class,address  \| trim(severity) as severity \| limit 10000\|logreduce by msg \| _count as count \| sort by count |
-| ActiveMQ/Logs/Reset Events | messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) "shutdown" "Apache ActiveMQ"<br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "*\|*\|*\|*\|*" as timedate,severity,msg,class,address  \| count as count by timedate,msg \| sort by timedate \| fields timedate,msg |
-| ActiveMQ/Logs/Top 10 Errors | messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) ("ERROR" or "Could not accept connection")<br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "*\|*\|*\|*\|*" as timedate,severity,msg,class,address \|trim(severity) as severity \| count as count by severity,msg \| sort by count \| limit 10 |
-| ActiveMQ/Overview/Last 10 Errors | messaging_system="activemq" messaging_cluster={{messaging_cluster}} ("error" or "ERROR" or "Error") <br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "*\|*\|*" as datetime,severity,msg |
+**ActiveMQ/Logs/Add Events**
+```
+messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) "started" "Apache ActiveMQ"
+| json "log" as _rawlog nodrop
+| if(isEmpty(_rawlog),_raw,_rawlog) as _raw
+| parse "*|*|*|*|*" as timedate,severity,msg,class,address | count as count by timedate,msg | sort by timedate | fields timedate,msg
+```
+
+**ActiveMQ/Logs/Error Over Time**
+```
+messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) ("ERROR" or "Could not accept connection")
+| json "log" as _rawlog nodrop
+| if(isEmpty(_rawlog),_raw,_rawlog) as _raw
+| parse "*|*|*|*|*" as timedate,severity,msg,class,address |trim(severity) as severity 
+```
+
+**ActiveMQ/Logs/Events by Severity**
+```
+messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) 
+| json "log" as _rawlog nodrop
+| if(isEmpty(_rawlog),_raw,_rawlog) as _raw
+| parse "*|*|*|*|*" as timedate,severity,msg,class,address |trim(severity) as severity | count by severity
+```
+
+**ActiveMQ/Logs/Last 10 Errors and Warnings**
+```
+messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) ("ERROR" or "WARN")
+| json "log" as _rawlog nodrop
+| if(isEmpty(_rawlog),_raw,_rawlog) as _raw
+| parse "*|*|*|*|*" as timedate,severity,msg,class,address |trim(severity) as severity | count as count by severity,msg,timedate | sort by count,timedate | limit 10 | fields timedate,severity,msg
+```
+
+**ActiveMQ/Logs/Last 25 Log Messages**
+```
+messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) 
+| json "log" as _rawlog nodrop
+| if(isEmpty(_rawlog),_raw,_rawlog) as _raw
+| parse "*|*|*|*|*" as timedate,severity,msg,class,address |limit 25 | trim(severity) as severity |count as count by timedate,msg,severity | sort by timedate |  fields timedate,severity,msg
+```
+
+**ActiveMQ/Logs/Log Reduce**
+```
+messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) 
+| json "log" as _rawlog nodrop
+| if(isEmpty(_rawlog),_raw,_rawlog) as _raw
+| parse "*|*|*|*|*" as timedate,severity,msg,class,address  | trim(severity) as severity | limit 10000|logreduce by msg | _count as count | sort by count
+```
+
+**ActiveMQ/Logs/Reset Events**
+```
+messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) "shutdown" "Apache ActiveMQ"
+| json "log" as _rawlog nodrop
+| if(isEmpty(_rawlog),_raw,_rawlog) as _raw
+| parse "*|*|*|*|*" as timedate,severity,msg,class,address  | count as count by timedate,msg | sort by timedate | fields timedate,msg
+```
+
+**ActiveMQ/Logs/Top 10 Errors**
+```
+messaging_cluster=* messaging_system="activemq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) ("ERROR" or "Could not accept connection")
+| json "log" as _rawlog nodrop
+| if(isEmpty(_rawlog),_raw,_rawlog) as _raw
+| parse "*|*|*|*|*" as timedate,severity,msg,class,address |trim(severity) as severity | count as count by severity,msg | sort by count | limit 10
+```
+
+**ActiveMQ/Overview/Last 10 Errors**
+```
+messaging_system="activemq" messaging_cluster={{messaging_cluster}} ("error" or "ERROR" or "Error") 
+| json "log" as _rawlog nodrop
+| if(isEmpty(_rawlog),_raw,_rawlog) as _raw
+| parse "*|*|*" as datetime,severity,msg
+```
+
 

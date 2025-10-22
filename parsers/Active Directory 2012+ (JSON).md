@@ -1,36 +1,242 @@
 # Parsers For Active Directory 2012+ (JSON)
 
-| use_case | parser |
-|--- | --- |
-| Active Directory 2012+ (JSON)/Account Lock Out Events/Account Lock Out Events | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4740\""  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel", "keywords" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel, keywords nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/Active Directory Service Activity/Category Over Time | _sourceCategory={{_sourceCategory}} <br>\| json "EventID", "Computer", "Message", "Task" as event_id, host, msg_summary, task nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/Active Directory Service Activity/Object Creation | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4720 or 4741 or 4727 or 4731 or 4744 or 4749 or 4754 or 4759 or 4783 or 5137 or 4902 or 4790)  _sourceName=Security<br>\| json "EventID", "Computer", "Message" as event_id, host, msg_summary nodrop |
-| Active Directory 2012+ (JSON)/Active Directory Service Activity/Object Deletion | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4726 or 4743 or 4730 or 4734 or 4748 or 4753 or 4758 or 4763 or 4789 or 4659 or 4660 or 5141)  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.LogonType", "Channel" as event_id, host, msg_summary, logon_type, channel nodrop |
-| Active Directory 2012+ (JSON)/Active Directory Service Activity/off Activity | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" ("\"EventID\":\"4624\"" or "\"EventID\":\"4634\"")  _sourceName=Security<br>\| json "EventID", "Computer", "EventData.SubjectUserName",  "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.LogonType", "EventData.LogonGuid", "EventData.SubjectLogonId", "EventData.TargetLogonId", "Channel", "Message"  as event_id, host, src_user, src_domain, dest_user, dest_domain, logon_type, LogonGuid, SubjectLogonId, TargetLogonId, channel, msg_summary nodrop |
-| Active Directory 2012+ (JSON)/Active Directory Service Activity/Rights Management | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" ("\"EventID\":\"4704\"" or "\"EventID\":\"4705\"")  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "Keywords", "Channel", "Level", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.SubjectLogonId", "EventData.PrivilegeList" as event_id, host, msg_summary, Keywords, channel, Level, src_user, src_domain, src_logonid, PrivilegeList nodrop |
-| Active Directory 2012+ (JSON)/Active Directory Service Activity/Top 10 Messages | _sourceCategory={{_sourceCategory}} <br>\| json "EventID", "Computer", "Message" as event_id, host, msg_summary nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/Active Directory Service Failures/Admin Activity by Category | _sourceCategory={{_sourceCategory}}  Task <br>\| json "EventID", "Computer", "Level", "Message", "Keywords", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel", "Task" as event_id, host, event_type, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, channel, task nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/Active Directory Service Failures/All Failures by IP | _sourceCategory={{_sourceCategory}}  ("fatal" or "failure" or "error" or "Audit Failure") <br>\| json "EventID", "Computer", "Keywords", "EventData.IpAddress" as event_id, host, Keywords, src_ip nodrop |
-| Active Directory 2012+ (JSON)/Active Directory Service Failures/Audit Failures Over Time | _sourceCategory={{_sourceCategory}}  "\"Keywords\":\"Audit Failure\""<br>\| json "EventID", "Computer", "Keywords" as event_id, host, keywords nodrop |
-| Active Directory 2012+ (JSON)/Active Directory Service Failures/Successes vs Failures | _sourceCategory={{_sourceCategory}}  Keywords<br>\| json "EventID", "Computer", "Keywords" as event_id, host, keywords nodrop |
-| Active Directory 2012+ (JSON)/Directory Service Object Changes/Directory Service Object Changes | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (5136 or 5137 or 5138 or 5139 or 5141)  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.SubjectLogonId", "EventData.DSName", "EventData.DSType", "EventData.ObjectDN", "EventData.ObjectClass", "EventData.AttributeValue", "Task", "Keywords", "Channel", "Level" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, AttributeValue, task, Keywords, channel, level nodrop<br>\| where event_id in ("5136", "5137", "5138", "5139", "5141") and channel = "Security"<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/Failed User Logins/Failed User Logins | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.LogonType", "EventData.FailureReason", "EventData.IpAddress", "EventData.IpPort", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.WorkstationName", "Channel", "EventData.Status", "EventData.SubStatus", "EventData.Workstation", "Keywords" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop<br>\| parse regex field=msg_summary "Failure Information:\s+Failure Reason:\s+(?<failure_reason>[^.\r]+?)[.\r]" nodrop<br>\| parse regex field=msg_summary "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop<br>\| parse regex field=msg_summary "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/Last Successful Login for a specific user/Last Successful Login for a specific user | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4624\"" myuser  _sourceName=Security <br>// provide username you want to search for in place of myuser<br>\| json "EventID", "Computer", "Message", "Keywords", "EventData.SubjectUserName",  "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.IpAddress", "EventData.IpPort", "Channel", "Level", "EventData.LogonType" as event_id, host, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel, level, logon_type nodrop<br>\| parse regex field=msg_summary "Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  <br>\| parse regex field=msg_summary "Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop<br>\| parse regex field=msg_summary "Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop |
-| Active Directory 2012+ (JSON)/Last Successful Login Report/Last Successful Login Report | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4624\""  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "Keywords", "EventData.SubjectUserName",  "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.IpAddress", "EventData.IpPort", "Channel", "Level", "EventData.LogonType" as event_id, host, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel, level, logon_type nodrop<br>\| parse regex field=msg_summary "Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  <br>\| parse regex field=msg_summary "Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop<br>\| parse regex field=msg_summary "Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop |
-| Active Directory 2012+ (JSON)/Login attempts to disabled accounts/Login attempts to disabled accounts | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "Audit Failure" ("\"EventID\":\"4625\"" or "\"EventID\":\"4768\"" or "\"EventID\":\"4771\"" or "\"EventID\":\"4776\"" or "\"EventID\":\"4769\"") ("currently disabled" or 0xc0000072)  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.LogonType", "EventData.FailureReason", "EventData.IpAddress", "EventData.IpPort", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.WorkstationName", "Channel", "EventData.Status", "EventData.SubStatus", "EventData.Workstation", "Keywords" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop<br>\| parse regex field=msg_summary "Failure Information:\s+Failure Reason:\s+(?<failure_reason>[^.\r]+?)[.\r]" nodrop<br>\| parse regex field=msg_summary "Failure Information:\s+(?<test>.*)" nodrop<br>\| parse regex field=msg_summary "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop<br>\| parse regex field=msg_summary "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/New Account Creation/New Account Creation | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4720\""  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/New Computer Account Creation/New Computer Account Creation | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4741\"" "computer account was created"  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.SamAccountName", "EventData.HomeDirectory", "Channel", "Task", "Keywords" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, SamAccountName, HomeDirectory, channel, task, Keywords nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/New Group Creation/New Group Creation | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" ("\"EventID\":\"4727\"" or "\"EventID\":\"4731\"" or "\"EventID\":\"4754\"")  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/OU Creation/OU Creation | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"5137\""  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.SubjectLogonId", "EventData.DSName", "EventData.DSType", "EventData.ObjectDN", "EventData.ObjectClass", "Task", "Keywords", "Channel", "Level" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level nodrop<br>\| where event_id = "5137" and channel = "Security"<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/OU Deletion/OU Deletion | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"5141\""  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.SubjectLogonId", "EventData.DSName", "EventData.DSType", "EventData.ObjectDN", "EventData.ObjectClass", "Task", "Keywords", "Channel", "Level" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level nodrop<br>\| where event_id = "5141" and channel = "Security"<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/Password Change Attempts/Password Change Attempts | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4723\""  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/Password Reset Attempts/Password Reset Attempts | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4724\""  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/Policy Changes/Policy Changes | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4902 or 4904 or 4905 or 4906 or 4907 or 4912 or 4715 or 4719 or 4739 or "Audit Policy Change" or "System audit policy was changed" or *policy*change* or "Policy Change")  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel", "Task" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel, task nodrop<br>\| where event_id in ("4902", "4904", "4905", "4906", "4907", "4912", "4715", "4719", "4739") or msg_summary matches "System audit policy was changed" or msg_summary matches "*policy*change*"<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/Successful User Logins/Successful User Logins | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4624\""  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "Keywords", "EventData.SubjectUserName",  "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.IpAddress", "EventData.IpPort", "Channel", "Level", "EventData.LogonType" as event_id, host, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel, level, logon_type nodrop<br>\| parse regex field=msg_summary "Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  <br>\| parse regex field=msg_summary "Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop<br>\| parse regex field=msg_summary "Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/Top 10 Domain Controllers with Most Login Failures/Top 10 Domain Controllers with Most Login Failures | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.LogonType", "EventData.FailureReason", "EventData.IpAddress", "EventData.IpPort", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.WorkstationName", "Channel", "EventData.Status", "EventData.SubStatus", "EventData.Workstation", "Keywords" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop<br>\| parse regex field=msg_summary "Failure Information:\s+Failure Reason:\s+(?<failure_reason>[^.\r]+?)[.\r]" nodrop<br>\| parse regex field=msg_summary "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop<br>\| parse regex field=msg_summary "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop<br>\| parse regex field=msg_summary "Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  <br>\| parse regex field=msg_summary "Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop<br>\| parse regex field=msg_summary "Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop |
-| Active Directory 2012+ (JSON)/Top 10 Domain Controllers with the Most Login Failure Rate/Top 10 Domain Controllers with the Most Login Failure Rate | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4624 or 4625 or 4771 or 4776 or 4768 or 4769)  _sourceName=Security<br>// 4624 - Login Success, 4625 or 4771 - Login Failures, 4776 - Domain Controller - Credential validation, 4768 - A Kerberos authentication ticket (TGT) was requested, 4769 - A Kerberos service ticket was requested<br>\| json "EventID", "Computer", "Level", "Message", "Keywords", "Channel" as event_id, host, event_type, msg_summary, Keywords, channel nodrop |
-| Active Directory 2012+ (JSON)/Top 10 Domains with Most Login Failures/Top 10 Domains with Most Login Failures | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.LogonType", "EventData.FailureReason", "EventData.IpAddress", "EventData.IpPort", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.WorkstationName", "Channel", "EventData.Status", "EventData.SubStatus", "EventData.Workstation", "Keywords" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop<br>\| parse regex field=msg_summary "Failure Information:\s+Failure Reason:\s+(?<failure_reason>[^.\r]+?)[.\r]" nodrop<br>\| parse regex field=msg_summary "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop<br>\| parse regex field=msg_summary "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop |
-| Active Directory 2012+ (JSON)/Trend of new users and disabled users over time/Trend of new users and disabled users over time | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" ("\"EventID\":\"4720\"" or "\"EventID\":\"4725\"")  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/User Account Changes/User Account Changes | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" ("13824" or "4720" or "4722" or "4723" or "4724" or "4725" or "4726" or "4738" or "4740" or "4767" or "4780" or "4781" or "4794" or "5376" or "5377")  _sourceName=Security<br>\| json "EventID", "Computer", "Level", "Message", "Keywords", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel", "Task" as event_id, host, event_type, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, channel, task nodrop<br>\| parse regex field=msg_summary "Changed Attributes:\s+(?<changedAttributes>[\s\S]*?)Additional Information:" nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
-| Active Directory 2012+ (JSON)/User added to group/User added to group | _sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4728 or 4732 or 4746 or 4751 or 4756 or 4761)  _sourceName=Security<br>\| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.GroupName", "EventData.GroupDomain", "Channel", "EventData.MemberName" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, group_name, group_domain, channel, MemberName nodrop<br>\| parse regex field=msg_summary "Subject:[\s\S]+?Account Name:[\s\S]+?Member:[\s\S]+?Security ID:\s+(?<member_user_name>[^\r\"]+?)\r[\s\S]+?Account Name:[\s\S]+?Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop <br>\| where event_id in ("4728", "4732", "4746", "4751", "4756", "4761")<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
+**Active Directory 2012+ (JSON)/Account Lock Out Events/Account Lock Out Events**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4740\""  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel", "keywords" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel, keywords nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Active Directory Service Activity/Category Over Time**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "EventID", "Computer", "Message", "Task" as event_id, host, msg_summary, task nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Active Directory Service Activity/Object Creation**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4720 or 4741 or 4727 or 4731 or 4744 or 4749 or 4754 or 4759 or 4783 or 5137 or 4902 or 4790)  _sourceName=Security
+| json "EventID", "Computer", "Message" as event_id, host, msg_summary nodrop
+```
+
+**Active Directory 2012+ (JSON)/Active Directory Service Activity/Object Deletion**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4726 or 4743 or 4730 or 4734 or 4748 or 4753 or 4758 or 4763 or 4789 or 4659 or 4660 or 5141)  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.LogonType", "Channel" as event_id, host, msg_summary, logon_type, channel nodrop
+```
+
+**Active Directory 2012+ (JSON)/Active Directory Service Activity/off Activity**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" ("\"EventID\":\"4624\"" or "\"EventID\":\"4634\"")  _sourceName=Security
+| json "EventID", "Computer", "EventData.SubjectUserName",  "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.LogonType", "EventData.LogonGuid", "EventData.SubjectLogonId", "EventData.TargetLogonId", "Channel", "Message"  as event_id, host, src_user, src_domain, dest_user, dest_domain, logon_type, LogonGuid, SubjectLogonId, TargetLogonId, channel, msg_summary nodrop
+```
+
+**Active Directory 2012+ (JSON)/Active Directory Service Activity/Rights Management**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" ("\"EventID\":\"4704\"" or "\"EventID\":\"4705\"")  _sourceName=Security
+| json "EventID", "Computer", "Message", "Keywords", "Channel", "Level", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.SubjectLogonId", "EventData.PrivilegeList" as event_id, host, msg_summary, Keywords, channel, Level, src_user, src_domain, src_logonid, PrivilegeList nodrop
+```
+
+**Active Directory 2012+ (JSON)/Active Directory Service Activity/Top 10 Messages**
+```
+_sourceCategory={{_sourceCategory}} 
+| json "EventID", "Computer", "Message" as event_id, host, msg_summary nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Active Directory Service Failures/Admin Activity by Category**
+```
+_sourceCategory={{_sourceCategory}}  Task 
+| json "EventID", "Computer", "Level", "Message", "Keywords", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel", "Task" as event_id, host, event_type, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, channel, task nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Active Directory Service Failures/All Failures by IP**
+```
+_sourceCategory={{_sourceCategory}}  ("fatal" or "failure" or "error" or "Audit Failure") 
+| json "EventID", "Computer", "Keywords", "EventData.IpAddress" as event_id, host, Keywords, src_ip nodrop
+```
+
+**Active Directory 2012+ (JSON)/Active Directory Service Failures/Audit Failures Over Time**
+```
+_sourceCategory={{_sourceCategory}}  "\"Keywords\":\"Audit Failure\""
+| json "EventID", "Computer", "Keywords" as event_id, host, keywords nodrop
+```
+
+**Active Directory 2012+ (JSON)/Active Directory Service Failures/Successes vs Failures**
+```
+_sourceCategory={{_sourceCategory}}  Keywords
+| json "EventID", "Computer", "Keywords" as event_id, host, keywords nodrop
+```
+
+**Active Directory 2012+ (JSON)/Directory Service Object Changes/Directory Service Object Changes**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (5136 or 5137 or 5138 or 5139 or 5141)  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.SubjectLogonId", "EventData.DSName", "EventData.DSType", "EventData.ObjectDN", "EventData.ObjectClass", "EventData.AttributeValue", "Task", "Keywords", "Channel", "Level" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, AttributeValue, task, Keywords, channel, level nodrop
+| where event_id in ("5136", "5137", "5138", "5139", "5141") and channel = "Security"
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Failed User Logins/Failed User Logins**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.LogonType", "EventData.FailureReason", "EventData.IpAddress", "EventData.IpPort", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.WorkstationName", "Channel", "EventData.Status", "EventData.SubStatus", "EventData.Workstation", "Keywords" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop
+| parse regex field=msg_summary "Failure Information:\s+Failure Reason:\s+(?<failure_reason>[^.\r]+?)[.\r]" nodrop
+| parse regex field=msg_summary "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop
+| parse regex field=msg_summary "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Last Successful Login for a specific user/Last Successful Login for a specific user**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4624\"" myuser  _sourceName=Security 
+// provide username you want to search for in place of myuser
+| json "EventID", "Computer", "Message", "Keywords", "EventData.SubjectUserName",  "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.IpAddress", "EventData.IpPort", "Channel", "Level", "EventData.LogonType" as event_id, host, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel, level, logon_type nodrop
+| parse regex field=msg_summary "Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  
+| parse regex field=msg_summary "Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop
+| parse regex field=msg_summary "Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Last Successful Login Report/Last Successful Login Report**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4624\""  _sourceName=Security
+| json "EventID", "Computer", "Message", "Keywords", "EventData.SubjectUserName",  "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.IpAddress", "EventData.IpPort", "Channel", "Level", "EventData.LogonType" as event_id, host, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel, level, logon_type nodrop
+| parse regex field=msg_summary "Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  
+| parse regex field=msg_summary "Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop
+| parse regex field=msg_summary "Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Login attempts to disabled accounts/Login attempts to disabled accounts**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "Audit Failure" ("\"EventID\":\"4625\"" or "\"EventID\":\"4768\"" or "\"EventID\":\"4771\"" or "\"EventID\":\"4776\"" or "\"EventID\":\"4769\"") ("currently disabled" or 0xc0000072)  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.LogonType", "EventData.FailureReason", "EventData.IpAddress", "EventData.IpPort", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.WorkstationName", "Channel", "EventData.Status", "EventData.SubStatus", "EventData.Workstation", "Keywords" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop
+| parse regex field=msg_summary "Failure Information:\s+Failure Reason:\s+(?<failure_reason>[^.\r]+?)[.\r]" nodrop
+| parse regex field=msg_summary "Failure Information:\s+(?<test>.*)" nodrop
+| parse regex field=msg_summary "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop
+| parse regex field=msg_summary "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/New Account Creation/New Account Creation**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4720\""  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/New Computer Account Creation/New Computer Account Creation**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4741\"" "computer account was created"  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.SamAccountName", "EventData.HomeDirectory", "Channel", "Task", "Keywords" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, SamAccountName, HomeDirectory, channel, task, Keywords nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/New Group Creation/New Group Creation**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" ("\"EventID\":\"4727\"" or "\"EventID\":\"4731\"" or "\"EventID\":\"4754\"")  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/OU Creation/OU Creation**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"5137\""  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.SubjectLogonId", "EventData.DSName", "EventData.DSType", "EventData.ObjectDN", "EventData.ObjectClass", "Task", "Keywords", "Channel", "Level" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level nodrop
+| where event_id = "5137" and channel = "Security"
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/OU Deletion/OU Deletion**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"5141\""  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.SubjectLogonId", "EventData.DSName", "EventData.DSType", "EventData.ObjectDN", "EventData.ObjectClass", "Task", "Keywords", "Channel", "Level" as event_id, host, msg_summary, src_user, src_domain, src_LogonId, directory_service_name, directory_service_type, object_dn, object_class, task, Keywords, channel, level nodrop
+| where event_id = "5141" and channel = "Security"
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Password Change Attempts/Password Change Attempts**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4723\""  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Password Reset Attempts/Password Reset Attempts**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4724\""  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Policy Changes/Policy Changes**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4902 or 4904 or 4905 or 4906 or 4907 or 4912 or 4715 or 4719 or 4739 or "Audit Policy Change" or "System audit policy was changed" or *policy*change* or "Policy Change")  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel", "Task" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel, task nodrop
+| where event_id in ("4902", "4904", "4905", "4906", "4907", "4912", "4715", "4719", "4739") or msg_summary matches "System audit policy was changed" or msg_summary matches "*policy*change*"
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Successful User Logins/Successful User Logins**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" "\"EventID\":\"4624\""  _sourceName=Security
+| json "EventID", "Computer", "Message", "Keywords", "EventData.SubjectUserName",  "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.IpAddress", "EventData.IpPort", "Channel", "Level", "EventData.LogonType" as event_id, host, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, src_ip, src_port, channel, level, logon_type nodrop
+| parse regex field=msg_summary "Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  
+| parse regex field=msg_summary "Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop
+| parse regex field=msg_summary "Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Top 10 Domain Controllers with Most Login Failures/Top 10 Domain Controllers with Most Login Failures**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.LogonType", "EventData.FailureReason", "EventData.IpAddress", "EventData.IpPort", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.WorkstationName", "Channel", "EventData.Status", "EventData.SubStatus", "EventData.Workstation", "Keywords" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop
+| parse regex field=msg_summary "Failure Information:\s+Failure Reason:\s+(?<failure_reason>[^.\r]+?)[.\r]" nodrop
+| parse regex field=msg_summary "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop
+| parse regex field=msg_summary "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop
+| parse regex field=msg_summary "Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  
+| parse regex field=msg_summary "Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop
+| parse regex field=msg_summary "Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Top 10 Domain Controllers with the Most Login Failure Rate/Top 10 Domain Controllers with the Most Login Failure Rate**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4624 or 4625 or 4771 or 4776 or 4768 or 4769)  _sourceName=Security
+// 4624 - Login Success, 4625 or 4771 - Login Failures, 4776 - Domain Controller - Credential validation, 4768 - A Kerberos authentication ticket (TGT) was requested, 4769 - A Kerberos service ticket was requested
+| json "EventID", "Computer", "Level", "Message", "Keywords", "Channel" as event_id, host, event_type, msg_summary, Keywords, channel nodrop
+```
+
+**Active Directory 2012+ (JSON)/Top 10 Domains with Most Login Failures/Top 10 Domains with Most Login Failures**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4771 or 4776 or 4768 or 4769 or 4625) "Audit Failure"  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.LogonType", "EventData.FailureReason", "EventData.IpAddress", "EventData.IpPort", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.WorkstationName", "Channel", "EventData.Status", "EventData.SubStatus", "EventData.Workstation", "Keywords" as event_id, host, msg_summary, logon_type, fail_reason, src_ip, src_port, src_user, src_domain, dest_user, dest_domain, src_host, channel, status, sub_status, work_station, Keywords nodrop
+| parse regex field=msg_summary "Failure Information:\s+Failure Reason:\s+(?<failure_reason>[^.\r]+?)[.\r]" nodrop
+| parse regex field=msg_summary "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop
+| parse regex field=msg_summary "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop
+```
+
+**Active Directory 2012+ (JSON)/Trend of new users and disabled users over time/Trend of new users and disabled users over time**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" ("\"EventID\":\"4720\"" or "\"EventID\":\"4725\"")  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, channel nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/User Account Changes/User Account Changes**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" ("13824" or "4720" or "4722" or "4723" or "4724" or "4725" or "4726" or "4738" or "4740" or "4767" or "4780" or "4781" or "4794" or "5376" or "5377")  _sourceName=Security
+| json "EventID", "Computer", "Level", "Message", "Keywords", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "Channel", "Task" as event_id, host, event_type, msg_summary, Keywords, src_user, src_domain, dest_user, dest_domain, channel, task nodrop
+| parse regex field=msg_summary "Changed Attributes:\s+(?<changedAttributes>[\s\S]*?)Additional Information:" nodrop
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
+**Active Directory 2012+ (JSON)/User added to group/User added to group**
+```
+_sourceCategory={{_sourceCategory}}  "\"Channel\":\"Security\"" (4728 or 4732 or 4746 or 4751 or 4756 or 4761)  _sourceName=Security
+| json "EventID", "Computer", "Message", "EventData.SubjectUserName", "EventData.SubjectDomainName", "EventData.TargetUserName", "EventData.TargetDomainName", "EventData.GroupName", "EventData.GroupDomain", "Channel", "EventData.MemberName" as event_id, host, msg_summary, src_user, src_domain, dest_user, dest_domain, group_name, group_domain, channel, MemberName nodrop
+| parse regex field=msg_summary "Subject:[\s\S]+?Account Name:[\s\S]+?Member:[\s\S]+?Security ID:\s+(?<member_user_name>[^\r\"]+?)\r[\s\S]+?Account Name:[\s\S]+?Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
+| where event_id in ("4728", "4732", "4746", "4751", "4756", "4761")
+| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
+```
+
 

@@ -1,26 +1,221 @@
 # Parsers For Google Cloud Load Balancing
 
-| use_case | parser |
-|--- | --- |
-| Google Cloud Load Balancing/Google Cloud Load Balancing Recent Requests/Google Cloud Load Balancing Recent Requests | _sourceCategory={{Logsdatasource}}  data logName resource timestamp<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest", "message.data.timestamp" as labels, http_request, timestamp<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=http_request "requestMethod", "remoteIp", "responseSize", "requestSize", "status" as method, remote_ip, bytes_sent, bytes_received, status |
-| Google Cloud Load Balancing/Overview/4XX and 5XX Status Codes | _sourceCategory={{Logsdatasource}}  data logName resource timestamp<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=http_request "status" as status_code |
-| Google Cloud Load Balancing/Overview/Browsers and Operating Systems | _sourceCategory={{Logsdatasource}}  data logName resource type userAgent<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=http_request "userAgent" as user_agent<br>// Parse all fields above, then aggregate |
-| Google Cloud Load Balancing/Overview/Bytes Sent and Received | _sourceCategory={{Logsdatasource}}  logName resource "\"type\":\"http_load_balancer\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=http_request "requestSize", "responseSize" as request_size, response_size |
-| Google Cloud Load Balancing/Overview/Request Location | _sourceCategory={{Logsdatasource}}  logName resource type data<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=http_request "remoteIp" as remote_ip |
-| Google Cloud Load Balancing/Overview/Requests by Load Balancer | _sourceCategory={{Logsdatasource}}  logName resource "\"type\":\"http_load_balancer\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer |
-| Google Cloud Load Balancing/Overview/Severity Over Time | _sourceCategory={{Logsdatasource}}  logName resource "\"type\":\"http_load_balancer\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.severity" as labels, severity<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer |
-| Google Cloud Load Balancing/Request Analysis/KBs Sent, Received by Number of Requests | _sourceCategory={{Logsdatasource}}  data logName resource type<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=http_request "requestSize", "responseSize" as request_size, response_size |
-| Google Cloud Load Balancing/Request Analysis/Number of Requests - Outlier | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels" as labels<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer |
-| Google Cloud Load Balancing/Request Analysis/Request Location | _sourceCategory={{Logsdatasource}}  data logName resource type<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=http_request "remoteIp" as remote_ip |
-| Google Cloud Load Balancing/Request Analysis/Requests by Load Balancer Over Time | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels" as labels<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer |
-| Google Cloud Load Balancing/Request Analysis/Requests by Type Over Time | _sourceCategory={{Logsdatasource}}  data logName resource timestamp<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=http_request "requestMethod" as method |
-| Google Cloud Load Balancing/Request Analysis/Total Requests by Load Balancer | _sourceCategory={{Logsdatasource}}  data logName resource type<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels" as labels<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer |
-| Google Cloud Load Balancing/Status Analysis/4XX Status Code Locations | _sourceCategory={{Logsdatasource}}  data logName resource type<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request<br>\| json field=http_request "status" as status<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=http_request "remoteIp" as remote_ip |
-| Google Cloud Load Balancing/Status Analysis/4XX Status Codes per Load Balancer | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest.status" as labels, status<br>\| where status matches "40*"<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer |
-| Google Cloud Load Balancing/Status Analysis/5XX Status Code Locations | _sourceCategory={{Logsdatasource}}  data logName resource type<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request<br>\| json field=http_request "status" as status<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=http_request "remoteIp" as remote_ip |
-| Google Cloud Load Balancing/Status Analysis/5XX Status Codes per Load Balancer | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest.status" as labels, status<br>\| where status matches "50*"<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer |
-| Google Cloud Load Balancing/Status Analysis/Status Codes Over Time | _sourceCategory={{Logsdatasource}}  data logName resource timestamp <br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=http_request "status" as status |
-| Google Cloud Load Balancing/Status Analysis/Status Codes per Load Balancer | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest.status" as labels, status<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer |
-| Google Cloud Load Balancing/Status Analysis/Status Codes per Project | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.httpRequest.status" as labels, status<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer |
-| Google Cloud Load Balancing/Status Analysis/Status Details Breakdown | _sourceCategory={{Logsdatasource}}  data logName resource type <br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer<br>\| json field=payload "statusDetails" as status |
+**Google Cloud Load Balancing/Google Cloud Load Balancing Recent Requests/Google Cloud Load Balancing Recent Requests**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource timestamp
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest", "message.data.timestamp" as labels, http_request, timestamp
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=http_request "requestMethod", "remoteIp", "responseSize", "requestSize", "status" as method, remote_ip, bytes_sent, bytes_received, status
+```
+
+**Google Cloud Load Balancing/Overview/4XX and 5XX Status Codes**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource timestamp
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=http_request "status" as status_code
+```
+
+**Google Cloud Load Balancing/Overview/Browsers and Operating Systems**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource type userAgent
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=http_request "userAgent" as user_agent
+// Parse all fields above, then aggregate
+```
+
+**Google Cloud Load Balancing/Overview/Bytes Sent and Received**
+```
+_sourceCategory={{Logsdatasource}}  logName resource "\"type\":\"http_load_balancer\""
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=http_request "requestSize", "responseSize" as request_size, response_size
+```
+
+**Google Cloud Load Balancing/Overview/Request Location**
+```
+_sourceCategory={{Logsdatasource}}  logName resource type data
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=http_request "remoteIp" as remote_ip
+```
+
+**Google Cloud Load Balancing/Overview/Requests by Load Balancer**
+```
+_sourceCategory={{Logsdatasource}}  logName resource "\"type\":\"http_load_balancer\""
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+```
+
+**Google Cloud Load Balancing/Overview/Severity Over Time**
+```
+_sourceCategory={{Logsdatasource}}  logName resource "\"type\":\"http_load_balancer\""
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.severity" as labels, severity
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+```
+
+**Google Cloud Load Balancing/Request Analysis/KBs Sent, Received by Number of Requests**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource type
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=http_request "requestSize", "responseSize" as request_size, response_size
+```
+
+**Google Cloud Load Balancing/Request Analysis/Number of Requests - Outlier**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels" as labels
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+```
+
+**Google Cloud Load Balancing/Request Analysis/Request Location**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource type
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=http_request "remoteIp" as remote_ip
+```
+
+**Google Cloud Load Balancing/Request Analysis/Requests by Load Balancer Over Time**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels" as labels
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+```
+
+**Google Cloud Load Balancing/Request Analysis/Requests by Type Over Time**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource timestamp
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=http_request "requestMethod" as method
+```
+
+**Google Cloud Load Balancing/Request Analysis/Total Requests by Load Balancer**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource type
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels" as labels
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+```
+
+**Google Cloud Load Balancing/Status Analysis/4XX Status Code Locations**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource type
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request
+| json field=http_request "status" as status
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=http_request "remoteIp" as remote_ip
+```
+
+**Google Cloud Load Balancing/Status Analysis/4XX Status Codes per Load Balancer**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest.status" as labels, status
+| where status matches "40*"
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+```
+
+**Google Cloud Load Balancing/Status Analysis/5XX Status Code Locations**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource type
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request
+| json field=http_request "status" as status
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=http_request "remoteIp" as remote_ip
+```
+
+**Google Cloud Load Balancing/Status Analysis/5XX Status Codes per Load Balancer**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest.status" as labels, status
+| where status matches "50*"
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+```
+
+**Google Cloud Load Balancing/Status Analysis/Status Codes Over Time**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource timestamp 
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest" as labels, http_request
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=http_request "status" as status
+```
+
+**Google Cloud Load Balancing/Status Analysis/Status Codes per Load Balancer**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest.status" as labels, status
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+```
+
+**Google Cloud Load Balancing/Status Analysis/Status Codes per Project**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"http_load_balancer\""
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.httpRequest.status" as labels, status
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+```
+
+**Google Cloud Load Balancing/Status Analysis/Status Details Breakdown**
+```
+_sourceCategory={{Logsdatasource}}  data logName resource type 
+| json "message.data.resource.type" as type
+| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
+| where type = "http_load_balancer" and log_name matches "projects/*/logs/requests"
+| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
+| json field=labels "project_id", "zone", "url_map_name" as project, zone, load_balancer
+| json field=payload "statusDetails" as status
+```
+
 

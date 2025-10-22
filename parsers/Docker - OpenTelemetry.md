@@ -1,13 +1,81 @@
 # Parsers For Docker - OpenTelemetry
 
-| use_case | parser |
-|--- | --- |
-| Docker - OpenTelemetry/Docker - Overview/Container Events - One Day Time Comparison | sumo.datasource=docker<br>\| json field=_raw "status" as state<br>\| json field=_raw "Type" as type<br>\| json field=_raw "Actor.Attributes.image" as image<br>\| json field=_raw "Actor.Attributes.name" as name |
-| Docker - OpenTelemetry/Docker - Overview/Containers by State | sumo.datasource=docker<br>\| json field=_raw "status" as state<br>\| json field=_raw "Type" as type<br>\| json field=_raw "Actor.Attributes.image" as image<br>\| json field=_raw "Actor.Attributes.name" as name<br>\| json field=_raw "time" as event_time |
-| Docker - OpenTelemetry/Docker - Overview/Docker Events Over Time | sumo.datasource=docker<br>\| json field=_raw "status" as state<br>\| json field=_raw "Type" as type<br>\| json field=_raw "Actor.Attributes.image" as image<br>\| json field=_raw "Actor.Attributes.name" as name |
-| Docker - OpenTelemetry/Docker - Overview/Number of Containers Killed | sumo.datasource=docker<br>\| json field=_raw "status" as state<br>\| where state in ( "kill")<br>\| json field=_raw "Type" as type<br>\| json field=_raw "Actor.Attributes.image" as image<br>\| json field=_raw "Actor.Attributes.name" as name |
-| Docker - OpenTelemetry/Docker - Overview/Number of Containers Paused | sumo.datasource=docker<br>\| json field=_raw "status" as state<br>\| where state in ( "pause")<br>\| json field=_raw "Type" as type<br>\| json field=_raw "Actor.Attributes.image" as image<br>\| json field=_raw "Actor.Attributes.name" as name |
-| Docker - OpenTelemetry/Docker - Overview/Number of Containers Started | sumo.datasource=docker<br>\| json field=_raw "status" as state<br>// we are looking in to start as re starting container generate two events - 1 start, 2 re start. So count only start is good <br>\| where state in ( "start")<br>\| json field=_raw "Type" as type<br>\| json field=_raw "Actor.Attributes.image" as image<br>\| json field=_raw "Actor.Attributes.name" as name |
-| Docker - OpenTelemetry/Docker - Overview/Number of Containers Stopped | sumo.datasource=docker<br>\| json field=_raw "status" as state<br>\| where state in ( "stop")<br>\| json field=_raw "Type" as type<br>\| json field=_raw "Actor.Attributes.image" as image<br>\| json field=_raw "Actor.Attributes.name" as name |
-| Docker - OpenTelemetry/Docker - Overview/Number of Docker Hosts | sumo.datasource=docker<br>\| json field=_raw "status" as state<br>\| json field=_raw "Type" as type<br>\| json field=_raw "Actor.Attributes.image" as image<br>\| json field=_raw "Actor.Attributes.name" as name |
+**Docker - OpenTelemetry/Docker - Overview/Container Events - One Day Time Comparison**
+```
+sumo.datasource=docker
+| json field=_raw "status" as state
+| json field=_raw "Type" as type
+| json field=_raw "Actor.Attributes.image" as image
+| json field=_raw "Actor.Attributes.name" as name
+```
+
+**Docker - OpenTelemetry/Docker - Overview/Containers by State**
+```
+sumo.datasource=docker
+| json field=_raw "status" as state
+| json field=_raw "Type" as type
+| json field=_raw "Actor.Attributes.image" as image
+| json field=_raw "Actor.Attributes.name" as name
+| json field=_raw "time" as event_time
+```
+
+**Docker - OpenTelemetry/Docker - Overview/Docker Events Over Time**
+```
+sumo.datasource=docker
+| json field=_raw "status" as state
+| json field=_raw "Type" as type
+| json field=_raw "Actor.Attributes.image" as image
+| json field=_raw "Actor.Attributes.name" as name
+```
+
+**Docker - OpenTelemetry/Docker - Overview/Number of Containers Killed**
+```
+sumo.datasource=docker
+| json field=_raw "status" as state
+| where state in ( "kill")
+| json field=_raw "Type" as type
+| json field=_raw "Actor.Attributes.image" as image
+| json field=_raw "Actor.Attributes.name" as name
+```
+
+**Docker - OpenTelemetry/Docker - Overview/Number of Containers Paused**
+```
+sumo.datasource=docker
+| json field=_raw "status" as state
+| where state in ( "pause")
+| json field=_raw "Type" as type
+| json field=_raw "Actor.Attributes.image" as image
+| json field=_raw "Actor.Attributes.name" as name
+```
+
+**Docker - OpenTelemetry/Docker - Overview/Number of Containers Started**
+```
+sumo.datasource=docker
+| json field=_raw "status" as state
+// we are looking in to start as re starting container generate two events - 1 start, 2 re start. So count only start is good 
+| where state in ( "start")
+| json field=_raw "Type" as type
+| json field=_raw "Actor.Attributes.image" as image
+| json field=_raw "Actor.Attributes.name" as name
+```
+
+**Docker - OpenTelemetry/Docker - Overview/Number of Containers Stopped**
+```
+sumo.datasource=docker
+| json field=_raw "status" as state
+| where state in ( "stop")
+| json field=_raw "Type" as type
+| json field=_raw "Actor.Attributes.image" as image
+| json field=_raw "Actor.Attributes.name" as name
+```
+
+**Docker - OpenTelemetry/Docker - Overview/Number of Docker Hosts**
+```
+sumo.datasource=docker
+| json field=_raw "status" as state
+| json field=_raw "Type" as type
+| json field=_raw "Actor.Attributes.image" as image
+| json field=_raw "Actor.Attributes.name" as name
+```
+
 
