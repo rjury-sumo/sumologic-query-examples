@@ -1,285 +1,41 @@
 # Parsers For VMware
 
-## Parser:
-```
-| parse ",,,user=*,,," as user
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "computeResource=*,,," as cluster 
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "eventType=*,,," as event_type
-| parse "host=*,,," as esx_host
-| parse "user=*,,," as user
-| parse "vm=*,,," as vm 
-| parse "computeResource=*,,," as cluster
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "eventType=*,,," as event_type
-| parse "host=*,,," as esx_host 
-| parse "vm=*,,," as vm 
-| parse "computeResource=*,,," as cluster
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "eventType=*,,," as event_type
-| parse "host=*,,," as esx_host 
-| parse "vm=*,,," as vm 
-| parse "computeResource=*,,," as cluster nodrop
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "eventType=*,,," as event_type
-| parse "host=*,,," as esx_host 
-| parse "vm=*,,," as vm nodrop
-| parse "computeResource=*,,," as cluster nodrop
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "eventType=*,,," as event_type 
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "eventType=*,,," as event_type 
-| parse "host=*,,," as esx_host nodrop
-| parse "vm=*,,," as vm nodrop
-| parse "computeResource=*,,," as cluster nodrop
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "host=*,,," as esx_host
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "host=*,,," as esx_host
-| parse " on * " as guest_vm
-| parse "message=Alarm '*'" as alarm_mesg
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "host=*,,," as esx_host
-| parse "computeResource=*,,," as cluster
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "host=*,,," as esx_host
-| parse "vm=*,,," as vm
-| parse "computeResource=*,,," as cluster
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "message=*,,," as err_msg
-| parse "computeResource=*,,," as cluster
-| parse "host=*,,," as esx_host
-| parse "eventType=*,,," as event_type
-| parse "vm=*,,," as vm nodrop
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "message=*,,," as err_msg
-| parse "computeResource=*,,," as cluster
-| parse "host=*,,," as esx_host nodrop
-| parse "eventType=*,,," as event_type nodrop
-| parse "vm=*,,," as vm nodrop
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "message=*,,," as err_msg
-| parse "host=*,,," as esx_host
-| parse "eventType=*,,," as event_type
-| parse "vm=*,,," as vm nodrop
-| parse "computeResource=*,,," as cluster 
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "message=*,,," as err_msg
-| parse "host=*,,," as esx_host
-| parse "eventType=*,,," as event_type 
-| parse "vm=*,,," as vm nodrop
-| parse "computeResource=*,,," as cluster
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "message=*,,," as err_msg
-| parse "host=*,,," as esx_host
-| parse "vm=*,,," as vm
-| parse "eventType=*,,," as event_type nodrop
-| parse "computeResource=*,,," as cluster nodrop
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "message=*,,," as err_msg
-| parse "host=*,,," as esx_host nodrop
-| parse "eventType=*,,," as event_type
-| parse "vm=*,,," as vm nodrop
-| parse "computeResource=*,,," as cluster nodrop
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "message=Alarm '*' on * changed from * to *,,," as alarm_mesg,hostname,old_status,new_status
-| parse "host=*,,," as esx_host nodrop
-| parse "eventType=*,,," as event_type nodrop
-| parse "vm=*,,," as vm nodrop
-| parse "computeResource=*,,," as cluster nodrop
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "message=Task:*,,," as task
-| parse "host=*,,," as esx_host nodrop
-| parse "eventType=*,,," as event_type nodrop
-| parse "vm=*,,," as vm nodrop
-| parse "computeResource=*,,," as cluster nodrop
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "vm=*,,," as vm
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse "vm=*,,," as vm
-| parse "host=*,,," as esx_host
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
-
-
-## Parser:
-```
-| parse regex "(?:message=User)\s(?<user>.*?)\s(?<task>logged out|logged in|.*)(?:\s.*,,,)"
- 
-```
-### Use Cases:
-Clusters with Frequent Errors, ESXi Hosts per Cluster, General VM Errors, Infrastructure Summary, Most Active Users, Primary VM Failures by ESXi Hosts, Top 10 Host's facing Errors, Top 10 VM's facing Errors, Unique Clusters, Unique ESXi Hosts, Unique Virtual Machines, vCenter Alarms, vCenter Alarms by Hosts, vCenter Alarms by Hosts and VMs, vCenter Tasks Trend, vCenter User Activity, Virtual Machine Operations by User, Virtual Machine Operations Over Time, VM Failures by ESXi Hosts, VM Fault Tolerance Errors, VM Mac Address and UUID Conflicts, VM Power Off Failures, VM Power On Failures, VM Upgrade Failures by ESXi Hosts, VM with Failures per ESXi Host, VMware - Frequent Virtual Machine Power Offs, VMware - Multiple Virtual Machines stopped, VMware - Virtual Machine Creations, VMware - Virtual Machine Creations and Deletions over Time, VMware - Virtual Machine Deletions, vSphere Errors Across Clusters, vSphere Errors Across ESXi Hosts, vSphere Errors Trend, vSphere Most Recent Error Events, vSphere Top 10 Error Events
-
+| use_case | parser |
+|--- | --- |
+| VMware/Frequent Virtual Machine Power Offs/VMware - Frequent Virtual Machine Power Offs | _sourceCategory={{Logsdatasource}}  AND ("is powered off" OR "is suspended") <br> \| parse "vm=*,,," as vm<br> \| parse "host=*,,," as esx_host |
+| VMware/Multiple Virtual Machines stopped/VMware - Multiple Virtual Machines stopped | _sourceCategory={{Logsdatasource}}  AND ("is powered off" OR "is suspended") <br> \| parse "vm=*,,," as vm<br> \| parse "host=*,,," as esx_host |
+| VMware/Overview/ESXi Hosts per Cluster | _sourceCategory={{Logsdatasource}} <br> \| parse "host=*,,," as esx_host<br> \| parse "computeResource=*,,," as cluster |
+| VMware/Overview/Infrastructure Summary | _sourceCategory={{Logsdatasource}} <br> \| parse "host=*,,," as esx_host<br> \| parse "vm=*,,," as vm<br> \| parse "computeResource=*,,," as cluster |
+| VMware/Overview/Most Active Users |  _sourceCategory={{Logsdatasource}}  and "user="<br>\| parse ",,,user=*,,," as user |
+| VMware/Overview/Unique Clusters | _sourceCategory={{Logsdatasource}}  and ("host=")<br> \| parse "computeResource=*,,," as cluster  |
+| VMware/Overview/Unique ESXi Hosts | _sourceCategory={{Logsdatasource}}  and ("host=")<br> \| parse "host=*,,," as esx_host |
+| VMware/Overview/Unique Virtual Machines | _sourceCategory={{Logsdatasource}}  and ("vm=")<br> \| parse "vm=*,,," as vm |
+| VMware/Overview/vCenter Alarms | _sourceCategory={{Logsdatasource}}  and "AlarmStatusChangedEvent"<br> \| parse "message=Alarm '*' on * changed from * to *,,," as alarm_mesg,hostname,old_status,new_status<br> \| parse "host=*,,," as esx_host nodrop<br> \| parse "eventType=*,,," as event_type nodrop<br> \| parse "vm=*,,," as vm nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Overview/vCenter Alarms by Hosts | _sourceCategory={{Logsdatasource}}  "message=Alarm"<br>\| parse "host=*,,," as esx_host<br>\| parse " on * " as guest_vm<br>\| parse "message=Alarm '*'" as alarm_mesg |
+| VMware/Overview/vCenter Alarms by Hosts and VMs | _sourceCategory={{Logsdatasource}}  "message=Alarm"<br>\| parse "host=*,,," as esx_host<br>\| parse " on * " as guest_vm<br>\| parse "message=Alarm '*'" as alarm_mesg |
+| VMware/Overview/vCenter Tasks Trend | _sourceCategory={{Logsdatasource}}  and "TaskEvent"<br> \| parse "message=Task:*,,," as task<br> \| parse "host=*,,," as esx_host nodrop<br> \| parse "eventType=*,,," as event_type nodrop<br> \| parse "vm=*,,," as vm nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Overview/vCenter User Activity |  _sourceCategory={{Logsdatasource}} <br> \| parse regex "(?:message=User)\s(?<user>.*?)\s(?<task>logged out\|logged in\|.*)(?:\s.*,,,)" |
+| VMware/Overview/Virtual Machine Operations by User |  _sourceCategory={{Logsdatasource}}  and ("VmCreatedEvent" OR "VmClonedEvent" OR ("VmMigratedEvent")  OR ("VmRemovedEvent"))<br> \| parse "eventType=*,,," as event_type<br> \| if(event_type matches "*VmCreatedEvent*" OR event_type matches "*VmClonedEvent*","creations","") as type <br> \| if(event_type matches "*VmMigratedEvent*","migrations",type) as type<br> \| if(event_type matches "*VmRemovedEvent*","deletions",type) as type<br> \| parse "host=*,,," as esx_host<br> \| parse "user=*,,," as user<br> \| parse "vm=*,,," as vm <br> \| parse "computeResource=*,,," as cluster |
+| VMware/Overview/Virtual Machine Operations Over Time |  _sourceCategory={{Logsdatasource}}  and ("VmCreatedEvent" OR "VmClonedEvent" OR ("VmMigratedEvent") OR ("VmRemovedEvent"))<br> \| parse "eventType=*,,," as event_type <br> \| parse "host=*,,," as esx_host nodrop<br> \| parse "vm=*,,," as vm nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Overview/VM Failures by ESXi Hosts | _sourceCategory={{Logsdatasource}}  and ("VmPrimaryFailoverEvent")<br> \| parse "message=*,,," as err_msg<br> \| parse "host=*,,," as esx_host<br> \| parse "vm=*,,," as vm<br> \| parse "eventType=*,,," as event_type nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Overview/VM with Failures per ESXi Host | _sourceCategory={{Logsdatasource}}  and ("error" or "fail" or "critical")<br> \| parse "eventType=*,,," as event_type<br> \| parse "host=*,,," as esx_host <br> \| parse "vm=*,,," as vm <br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Overview/vSphere Errors Across Clusters | _sourceCategory={{Logsdatasource}}  and ("error" or "fail" or "critical")<br> \| parse "message=*,,," as err_msg<br> \| parse "computeResource=*,,," as cluster<br> \| parse "host=*,,," as esx_host nodrop<br> \| parse "eventType=*,,," as event_type nodrop<br> \| parse "vm=*,,," as vm nodrop |
+| VMware/vCenter Errors - Analysis/Clusters with Frequent Errors | _sourceCategory={{Logsdatasource}}  and ("error" or "fail" or "critical")<br> \| parse "eventType=*,,," as event_type<br> \| parse "host=*,,," as esx_host <br> \| parse "vm=*,,," as vm <br> \| parse "computeResource=*,,," as cluster |
+| VMware/vCenter Errors - Analysis/Top 10 Host's facing Errors | _sourceCategory={{Logsdatasource}}  and ("error" or "fail" or "critical")<br> \| parse "eventType=*,,," as event_type<br> \| parse "host=*,,," as esx_host <br> \| parse "vm=*,,," as vm <br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/vCenter Errors - Analysis/vSphere Errors Across Clusters | _sourceCategory={{Logsdatasource}}  and ("error" or "fail" or "critical")<br> \| parse "message=*,,," as err_msg<br> \| parse "computeResource=*,,," as cluster<br> \| parse "host=*,,," as esx_host<br> \| parse "eventType=*,,," as event_type<br> \| parse "vm=*,,," as vm nodrop |
+| VMware/vCenter Errors - Analysis/vSphere Errors Across ESXi Hosts | _sourceCategory={{Logsdatasource}}  and ("error" or "fail" or "critical")<br> \| parse "message=*,,," as err_msg<br> \| parse "host=*,,," as esx_host<br> \| parse "eventType=*,,," as event_type <br> \| parse "vm=*,,," as vm nodrop<br> \| parse "computeResource=*,,," as cluster |
+| VMware/vCenter Errors - Analysis/vSphere Errors Trend | _sourceCategory={{Logsdatasource}}  and ("error" or "fail" or "critical")<br> \| parse "message=*,,," as err_msg<br> \| parse "host=*,,," as esx_host<br> \| parse "eventType=*,,," as event_type<br> \| parse "vm=*,,," as vm nodrop<br> \| parse "computeResource=*,,," as cluster  |
+| VMware/vCenter Errors - Analysis/vSphere Most Recent Error Events | _sourceCategory={{Logsdatasource}}  and *ErrorEvent<br> \| parse "message=*,,," as err_msg<br> \| parse "host=*,,," as esx_host nodrop<br> \| parse "eventType=*,,," as event_type<br> \| parse "vm=*,,," as vm nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/vCenter Errors - Analysis/vSphere Top 10 Error Events | _sourceCategory={{Logsdatasource}}  and *ErrorEvent<br> \| parse "message=*,,," as err_msg<br> \| parse "host=*,,," as esx_host nodrop<br> \| parse "eventType=*,,," as event_type<br> \| parse "vm=*,,," as vm nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Virtual Machine Creations and Deletions over Time/VMware - Virtual Machine Creations and Deletions over Time | _sourceCategory={{Logsdatasource}}  ( "VmCreatedEvent" or "VmClonedEvent" or "VmRemovedEvent") <br>\| parse "eventType=*,,," as event_type  |
+| VMware/Virtual Machine Creations/VMware - Virtual Machine Creations | _sourceCategory={{Logsdatasource}}  and "VmCreatedEvent" or "VmClonedEvent" <br>\| parse "user=*,,,eventType=*,,,vm=*,,,host=*,,,datacenter=*,,,computeResource=*,,,key=*,,,chainId=*" as user, event_type, vm, host, datacenter, cluster, key, chainid |
+| VMware/Virtual Machine Deletions/VMware - Virtual Machine Deletions | _sourceCategory={{Logsdatasource}}  "VmRemovedEvent" <br>\| parse "user=*,,,eventType=*,,,vm=*,,,host=*,,,datacenter=*,,,computeResource=*,,,key=*,,,chainId=*" as user, event_type, vm, host, datacenter, cluster, key, chainid |
+| VMware/Virtual Machine Errors - Analysis/General VM Errors | _sourceCategory={{Logsdatasource}}  and ("GeneralVmErrorEvent")<br> \| parse "message=*,,," as err_msg<br> \| parse "host=*,,," as esx_host<br> \| parse "vm=*,,," as vm<br> \| parse "eventType=*,,," as event_type nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Virtual Machine Errors - Analysis/Primary VM Failures by ESXi Hosts | _sourceCategory={{Logsdatasource}}  and ("VmPrimaryFailoverEvent")<br> \| parse "message=*,,," as err_msg<br> \| parse "host=*,,," as esx_host<br> \| parse "vm=*,,," as vm<br> \| parse "eventType=*,,," as event_type nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Virtual Machine Errors - Analysis/Top 10 VM's facing Errors | _sourceCategory={{Logsdatasource}}  and ("error" or "fail" or "critical")<br> \| parse "eventType=*,,," as event_type<br> \| parse "host=*,,," as esx_host <br> \| parse "vm=*,,," as vm <br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Virtual Machine Errors - Analysis/VM Fault Tolerance Errors | _sourceCategory={{Logsdatasource}}  and ("VmDasUpdateErrorEvent" or "VmSecondaryDisabledBySystemEvent")<br> \| parse "eventType=*,,," as event_type<br> \| parse "host=*,,," as esx_host <br> \| parse "vm=*,,," as vm nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Virtual Machine Errors - Analysis/VM Mac Address and UUID Conflicts | _sourceCategory={{Logsdatasource}}  and ("VmInstanceUuidConflictEvent" or "VmMacConflictEvent")<br> \| parse "eventType=*,,," as event_type<br> \| parse "host=*,,," as esx_host <br> \| parse "vm=*,,," as vm <br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Virtual Machine Errors - Analysis/VM Power Off Failures | _sourceCategory={{Logsdatasource}}  and ("VmFailedToPowerOffEvent")<br> \| parse "message=*,,," as err_msg<br> \| parse "host=*,,," as esx_host<br> \| parse "vm=*,,," as vm<br> \| parse "eventType=*,,," as event_type nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Virtual Machine Errors - Analysis/VM Power On Failures | _sourceCategory={{Logsdatasource}}  and ("VmFailedToPowerOnEvent")<br> \| parse "message=*,,," as err_msg<br> \| parse "host=*,,," as esx_host<br> \| parse "vm=*,,," as vm<br> \| parse "eventType=*,,," as event_type nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
+| VMware/Virtual Machine Errors - Analysis/VM Upgrade Failures by ESXi Hosts | _sourceCategory={{Logsdatasource}}  and ("VmUpgradeFailedEvent")<br> \| parse "message=*,,," as err_msg<br> \| parse "host=*,,," as esx_host<br> \| parse "vm=*,,," as vm<br> \| parse "eventType=*,,," as event_type nodrop<br> \| parse "computeResource=*,,," as cluster nodrop |
 

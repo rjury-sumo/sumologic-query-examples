@@ -1,266 +1,31 @@
 # Parsers For Active Directory Legacy
 
-## Parser:
-```
-| parse "EventCode = *;" as event_id | parse "Computer = \"*\";" as dest_host nodrop | parse "ComputerName = \"*\";" as dest_host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  
-| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, Failed User Logins, Last Successful Login for a specific user, Last Successful Login Report, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion, Password Change Attempts, Password Reset Attempts, Policy Changes, Successful User Logins, Trend of new users and disabled users over time, User added to group
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id | parse "Computer = \"*\";" as dest_host nodrop | parse "ComputerName = \"*\";" as dest_host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  
-| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop 
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, Failed User Logins, Last Successful Login for a specific user, Last Successful Login Report, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion, Policy Changes, Trend of new users and disabled users over time, User added to group
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)(?:\r|\";)" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, Failed User Logins, Last Successful Login for a specific user, Last Successful Login Report, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion, Password Change Attempts, Password Reset Attempts, Policy Changes, Trend of new users and disabled users over time, User added to group
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as comp_name nodrop | parse "ComputerName = \"*\";" as comp_name nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse "CategoryString = \"*\";" as CategoryString nodrop | parse regex "Subcategory:\s+(?<subcategory>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop 
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r|\";)" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion, Policy Changes
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, Failed User Logins, Last Successful Login for a specific user, Last Successful Login Report, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion, Password Change Attempts, Policy Changes, Trend of new users and disabled users over time, User added to group
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop   
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop
-| parse regex "Directory Service:[\s\S]+?Name:\s+(?<directory_ServiceName>[^\r]+?)\r" nodrop
-| parse "Object:\r\n\tDN:\t*\r\n\tGUID" as dest_ou nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop
-| parse regex "Directory Service:[\s\S]+?Name:\s+(?<directory_ServiceName>[^\r]+?)\r" nodrop
-| parse regex "Directory Service:[\s\S]+?Type:\s+(?<directory_ServiceType>[^\r]+?)\r" nodrop
-| parse "Object:\r\n\tDN:\t*\r\n\tGUID" as dest_ou nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r|\";)" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion, Policy Changes, Trend of new users and disabled users over time
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New|Deleted) Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop 
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion, Policy Changes, Trend of new users and disabled users over time, User added to group
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r\"]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?(?:New|Deleted|\s*)\s*Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse "CategoryString = \"*\";" as CategoryString nodrop | parse regex "Subcategory:\s+(?<subcategory>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop 
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r|\";)" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse "CategoryString = \"*\";" as CategoryString nodrop | parse regex "Subcategory:\s+(?<subcategory>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop 
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r|\";)" nodrop
-| parse regex "Directory Service:[\s\S]+?Name:\s+(?<directory_ServiceName>[^\r]+?)\r" nodrop | parse regex "Directory Service:[\s\S]+?Type:\s+(?<directory_ServiceType>[^\r]+?)\r" nodrop | parse "Object:\r\n\tDN:\t*\r\n\tGUID" as dest_ou nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse "CategoryString = \"*\";" as CategoryString nodrop | parse regex "Subcategory:\s+(?<subcategory>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r|\";)" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, Failed User Logins, Last Successful Login for a specific user, Last Successful Login Report, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion, Password Change Attempts, Password Reset Attempts, Policy Changes, Successful User Logins, Top 10 Domain Controllers with Most Login Failures, Top 10 Domain Controllers with the Most Login Failure Rate, Top 10 Domains with Most Login Failures, Trend of new users and disabled users over time, User Account Changes, User added to group
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse "CategoryString = \"*\";" as CategoryString nodrop | parse regex "Subcategory:\s+(?<subcategory>[^\r]+?)\r" nodrop | parse "Type = \"*\";" as msg_type | parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop 
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r|\";)" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, LDAP Replication Failures
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop | parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r|\";)" nodrop | parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop | parse "Type = \"*\";" as type | parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop | parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop  
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, LDAP Replication Failures, Login attempts to disabled accounts
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop | parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop | parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop | parse "Type = \"*\";" as type | parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop | parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, Failed User Logins, Last Successful Login for a specific user, Last Successful Login Report, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion, Password Change Attempts, Password Reset Attempts, Policy Changes, Successful User Logins, Top 10 Domain Controllers with Most Login Failures, Top 10 Domain Controllers with the Most Login Failure Rate, Top 10 Domains with Most Login Failures, Trend of new users and disabled users over time, User added to group
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop | parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop | parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop | parse "Type = \"*\";" as type | parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop | parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop 
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, Failed User Logins, Last Successful Login for a specific user, Last Successful Login Report, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion, Password Change Attempts, Password Reset Attempts, Policy Changes, Successful User Logins, Top 10 Domain Controllers with Most Login Failures, Top 10 Domain Controllers with the Most Login Failure Rate, Trend of new users and disabled users over time, User added to group
-
-
-
-## Parser:
-```
-| parse regex "^Computer SearchBase==\"(?<searchBase>[^\"]+)\" DistinguishedName==\"(?<computerDN>[^\"]+)\" Name==\"(?<computerName>[^\"]+)\" ObjectGUID==\"(?<computerGUID>[^ ]+)\" DNSHostName==\"(?<computerDNSName>[^\" ]+)\" OperatingSystem==\"(?<computerOS>[^\"]+)\" IPv4Address==\"(?<computerIP>[^ ]+)\"" 
- 
-```
-### Use Cases:
-Account Lock Out Events, Computer OS per Domain, Directory Service Object Changes, Failed User Logins, Groups per Domain, Last Successful Login for a specific user, Last Successful Login Report, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, Organizational Units per Domain, OU Creation, OU Deletion, Password Change Attempts, Password Reset Attempts, Policy Changes, Successful User Logins, Top 10 Domain Controllers with Most Login Failures, Top 10 Domain Controllers with the Most Login Failure Rate, Top 10 Domains with Most Login Failures, Topology, Trend of new users and disabled users over time, User Account Changes, User added to group
-
-
-
-## Parser:
-```
-| parse regex "^DomainController DName==\"(?<domainDN>[^ \"]+)\" DomainName==\"(?<domainName>[^\"]+)\" Forest==\"(?<forest>[^\"]+)\" NetBIOSName==\"(?<NetBiosName>[^\"]+)\" ControllerHostName==\"(?<dcHostName>[^\"]+)\" IP==\"(?<dcIP>[^ ]+)\" Site==\"(?<site>[^ ]+)\"" | count by forest,site,domainDN,NetBiosName | 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, Failed User Logins, Last Successful Login for a specific user, Last Successful Login Report, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, OU Creation, OU Deletion, Password Change Attempts, Password Reset Attempts, Policy Changes, Successful User Logins, Top 10 Domain Controllers with Most Login Failures, Top 10 Domain Controllers with the Most Login Failure Rate, Top 10 Domains with Most Login Failures, Topology, Trend of new users and disabled users over time, User Account Changes, User added to group
-
-
-
-## Parser:
-```
-| parse regex "^Group SearchBase==\"(?<searchBase>[^\"]+)\" DistinguishedName==\"(?<groupDN>[^\"]+)\" Name==\"(?<groupName>[^\"]+)\" ObjectGUID==\"(?<groupGUID>[^ ]+)\" GroupCategory==\"(?<groupCat>[^\"]*)\"" | searchBase as Domain 
- 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, Failed User Logins, Groups per Domain, Last Successful Login for a specific user, Last Successful Login Report, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, Organizational Units per Domain, OU Creation, OU Deletion, Password Change Attempts, Password Reset Attempts, Policy Changes, Successful User Logins, Top 10 Domain Controllers with Most Login Failures, Top 10 Domain Controllers with the Most Login Failure Rate, Top 10 Domains with Most Login Failures, Topology, Trend of new users and disabled users over time, User Account Changes, User added to group
-
-
-
-## Parser:
-```
-| parse regex "^OU SearchBase==\"(?<searchBase>[^\"]+)\" DistinguishedName==\"(?<ouDN>[^\"]+)\" Name==\"(?<ouName>[^\"]+)\" ObjectGUID==\"(?<ouGUID>[^ ]+)\"" | searchBase as domain | 
-```
-### Use Cases:
-Account Lock Out Events, Directory Service Object Changes, Failed User Logins, Last Successful Login for a specific user, Last Successful Login Report, LDAP Replication Failures, Login attempts to disabled accounts, New Account Creation, New Computer Account Creation, New Group Creation, Organizational Units per Domain, OU Creation, OU Deletion, Password Change Attempts, Password Reset Attempts, Policy Changes, Successful User Logins, Top 10 Domain Controllers with Most Login Failures, Top 10 Domain Controllers with the Most Login Failure Rate, Top 10 Domains with Most Login Failures, Topology, Trend of new users and disabled users over time, User Account Changes, User added to group
-
+| use_case | parser |
+|--- | --- |
+| Active Directory Legacy/Account Lock Out Events/Account Lock Out Events | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4740 or 644) ("EventCode = 4740;" or "EventCode = 644;")<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop   <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r" nodrop |
+| Active Directory Legacy/Active Directory Information - New/Computer OS per Domain | _sourceCategory = Labs/Windows/OS/Windows "Computer" <br>\| parse regex "^Computer SearchBase==\"(?<searchBase>[^\"]+)\" DistinguishedName==\"(?<computerDN>[^\"]+)\" Name==\"(?<computerName>[^\"]+)\" ObjectGUID==\"(?<computerGUID>[^ ]+)\" DNSHostName==\"(?<computerDNSName>[^\" ]+)\" OperatingSystem==\"(?<computerOS>[^\"]+)\" IPv4Address==\"(?<computerIP>[^ ]+)\""  |
+| Active Directory Legacy/Active Directory Information - New/Groups per Domain | _sourceCategory = Labs/Windows/OS/Windows "Group" <br>\| parse regex "^Group SearchBase==\"(?<searchBase>[^\"]+)\" DistinguishedName==\"(?<groupDN>[^\"]+)\" Name==\"(?<groupName>[^\"]+)\" ObjectGUID==\"(?<groupGUID>[^ ]+)\" GroupCategory==\"(?<groupCat>[^\"]*)\"" \| searchBase as Domain  |
+| Active Directory Legacy/Active Directory Information - New/Organizational Units per Domain | _sourceCategory = Labs/Windows/OS/Windows "OU" \| parse regex "^OU SearchBase==\"(?<searchBase>[^\"]+)\" DistinguishedName==\"(?<ouDN>[^\"]+)\" Name==\"(?<ouName>[^\"]+)\" ObjectGUID==\"(?<ouGUID>[^ ]+)\"" \| searchBase as domain \| count_distinct(ouDN) as OrganizationalUnits by domain |
+| Active Directory Legacy/Active Directory Information - New/Topology | _sourceCategory = Labs/Windows/OS/Windows "DomainController" \| parse regex "^DomainController DName==\"(?<domainDN>[^ \"]+)\" DomainName==\"(?<domainName>[^\"]+)\" Forest==\"(?<forest>[^\"]+)\" NetBIOSName==\"(?<NetBiosName>[^\"]+)\" ControllerHostName==\"(?<dcHostName>[^\"]+)\" IP==\"(?<dcIP>[^ ]+)\" Site==\"(?<site>[^ ]+)\"" \| count by forest,site,domainDN,NetBiosName \| fields - _count |
+| Active Directory Legacy/Directory Service Object Changes/Directory Service Object Changes | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security "Directory Service Changes" <br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse "CategoryString = \"*\";" as CategoryString nodrop \| parse regex "Subcategory:\s+(?<subcategory>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r\|\";)" nodrop<br>\| parse regex "Directory Service:[\s\S]+?Name:\s+(?<directory_ServiceName>[^\r]+?)\r" nodrop \| parse regex "Directory Service:[\s\S]+?Type:\s+(?<directory_ServiceType>[^\r]+?)\r" nodrop \| parse "Object:\r\n\tDN:\t*\r\n\tGUID" as dest_ou nodrop |
+| Active Directory Legacy/Failed User Logins/Failed User Logins | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4625 or 4768 or 4771 or 4776) ("EventCode = 4625;" or "EventCode = 4768;" or "EventCode = 4771;" or "EventCode = 4776;")<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop \| parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop \| parse "Type = \"*\";" as type \| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop  |
+| Active Directory Legacy/Last Successful Login for a specific user/Last Successful Login for a specific user | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4624 "EventCode = 4624;" myuser <br>\| parse "EventCode = *;" as event_id \| parse "Computer = \"*\";" as dest_host nodrop \| parse "ComputerName = \"*\";" as dest_host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop  |
+| Active Directory Legacy/Last Successful Login Report/Last Successful Login Report | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4624 "EventCode = 4624;" <br>\| parse "EventCode = *;" as event_id \| parse "Computer = \"*\";" as dest_host nodrop \| parse "ComputerName = \"*\";" as dest_host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop  |
+| Active Directory Legacy/LDAP Replication Failures/LDAP Replication Failures | _sourceCategory = Labs/Windows/OS/Windows (_sourceName="Directory Service" or _sourceName=Security) <br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse "CategoryString = \"*\";" as CategoryString nodrop \| parse regex "Subcategory:\s+(?<subcategory>[^\r]+?)\r" nodrop \| parse "Type = \"*\";" as msg_type \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r\|\";)" nodrop |
+| Active Directory Legacy/Login attempts to disabled accounts/Login attempts to disabled accounts | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4625 or 4768 or 4771 or 4776) ("EventCode = 4625;" or "EventCode = 4768;" or "EventCode = 4771;" or "EventCode = 4776;") "Account currently disabled" <br> \| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r\|\";)" nodrop \| parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop \| parse "Type = \"*\";" as type \| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop   |
+| Active Directory Legacy/New Account Creation/New Account Creation | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4720 "EventCode = 4720;" <br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop |
+| Active Directory Legacy/New Computer Account Creation/New Computer Account Creation | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security "EventCode = 4741;" "computer account" "was created"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse "CategoryString = \"*\";" as CategoryString nodrop \| parse regex "Subcategory:\s+(?<subcategory>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r\|\";)" nodrop |
+| Active Directory Legacy/New Group Creation/New Group Creation | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4727 or 4731 or 4754) ("EventCode = 4727;" or "EventCode = 4731;" or "EventCode = 4754;")<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r\"]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted\|\s*)\s*Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop |
+| Active Directory Legacy/OU Creation/OU Creation | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 5137 "EventCode = 5137;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop<br>\| parse regex "Directory Service:[\s\S]+?Name:\s+(?<directory_ServiceName>[^\r]+?)\r" nodrop<br>\| parse "Object:\r\n\tDN:\t*\r\n\tGUID" as dest_ou nodrop |
+| Active Directory Legacy/OU Deletion/OU Deletion | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 5141 "EventCode = 5141;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop<br>\| parse regex "Directory Service:[\s\S]+?Name:\s+(?<directory_ServiceName>[^\r]+?)\r" nodrop<br>\| parse regex "Directory Service:[\s\S]+?Type:\s+(?<directory_ServiceType>[^\r]+?)\r" nodrop<br>\| parse "Object:\r\n\tDN:\t*\r\n\tGUID" as dest_ou nodrop |
+| Active Directory Legacy/Password Change Attempts/Password Change Attempts | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4723 "EventCode = 4723;" <br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop |
+| Active Directory Legacy/Password Reset Attempts/Password Reset Attempts | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 "EventCode = 4724;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)(?:\r\|\";)" nodrop |
+| Active Directory Legacy/Policy Changes/Policy Changes | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security "Policy Change"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as comp_name nodrop \| parse "ComputerName = \"*\";" as comp_name nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse "CategoryString = \"*\";" as CategoryString nodrop \| parse regex "Subcategory:\s+(?<subcategory>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r\|\";)" nodrop |
+| Active Directory Legacy/Successful User Logins/Successful User Logins | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4624 "EventCode = 4624;"<br>\| parse "EventCode = *;" as event_id \| parse "Computer = \"*\";" as dest_host nodrop \| parse "ComputerName = \"*\";" as dest_host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop  <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Client Name:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Client Address:[\s\r]+(?<src_ip>[^\r]+)" nodrop |
+| Active Directory Legacy/Top 10 Domain Controllers with Most Login Failures/Top 10 Domain Controllers with Most Login Failures | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4625 or 4768 or 4771 or 4776) ("EventCode = 4625;" or "EventCode = 4768;" or "EventCode = 4771;" or "EventCode = 4776;") <br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop \| parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop \| parse "Type = \"*\";" as type \| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop  |
+| Active Directory Legacy/Top 10 Domain Controllers with the Most Login Failure Rate/Top 10 Domain Controllers with the Most Login Failure Rate | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4624 or 4625 or 4768 or 4771 or 4776) ("EventCode = 4624;" or "EventCode = 4625;" or "EventCode = 4768;" or "EventCode = 4771;" or "EventCode = 4776;") <br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop \| parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop \| parse "Type = \"*\";" as type \| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop  |
+| Active Directory Legacy/Top 10 Domains with Most Login Failures/Top 10 Domains with Most Login Failures | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4625 or 4768 or 4771 or 4776) ("EventCode = 4625;" or "EventCode = 4768;" or "EventCode = 4771;" or "EventCode = 4776;") <br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop \| parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop \| parse "Type = \"*\";" as type \| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop |
+| Active Directory Legacy/Trend of new users and disabled users over time/Trend of new users and disabled users over time | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4720 or 4725) ("EventCode = 4720;" or "EventCode = 4725;")<br>\| timeslice by 1d <br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r\|\";)" nodrop |
+| Active Directory Legacy/User Account Changes/User Account Changes | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security "User Account Management" <br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse "CategoryString = \"*\";" as CategoryString nodrop \| parse regex "Subcategory:\s+(?<subcategory>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)(?:\r\|\";)" nodrop |
+| Active Directory Legacy/User added to group/User added to group | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4728 or 4732 or 4746 or 4751 or 4756 or 4761) ("EventCode = 4728;" or "EventCode = 4732;" or "EventCode = 4746;" or "EventCode = 4751;" or "EventCode = 4756;" or "EventCode = 4761;" )<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted) Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop  |
 

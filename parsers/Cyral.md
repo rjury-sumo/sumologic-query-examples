@@ -1,485 +1,59 @@
 # Parsers For Cyral
 
-## Parser:
-```
-| json "activityTypes","identity.group","request.statementType" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Activity by SSO Group, Data Reads Breakdown, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "activityTypes","repo.name","sidecar.name" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Repo, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "activityTypes","sidecar.name","repo.name" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "activityTypes","sidecar.name","repo.name","client.host" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "activityTypes","sidecar.name","repo.name","identity.repoUser","identity.endUser","activityTime","client.host","client.applicationName" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "identity.group","client.applicationName" nodrop
-| json "request.datasetsAccessed[*].accessType" as accessType
- 
-```
-### Use Cases:
-Total Reads
-
-
-
-## Parser:
-```
-| json "identity.group","client.applicationName","activityTime","response.records","response.bytes","repo.name","identity.repoUser","client.connectionId" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Data Reads Breakdown, Modifications, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Total Reads
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","client.applicationName","response.records" nodrop
- 
-```
-### Use Cases:
-Data Reads Breakdown, Modifications, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Total Reads
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","client.applicationName","response.records","client.host" nodrop
- 
-```
-### Use Cases:
-Modifications, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} Hosts by Sum Records, Total Reads
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","client.applicationName","response.records","repo.name" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Records Read, Data Reads Breakdown, Modifications, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Repos By Sum Records, Total Reads
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","client.applicationName","response.records","request.statementType" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Reads Breakdown, Modifications, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","request.statementType" nodrop
-| json "request.datasetsAccessed[*].accessType" as accessType
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","request.statementType","activityTime","response.records","response.bytes","repo.name","identity.repoUser","client.connectionId" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}}  Most Recent Sessions by Session End, {{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}}  Repo Users By Sum Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","request.statementType","response.bytes" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}}  Most Recent Sessions by Session End, {{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}}  Repo Users By Sum Records, Top {{topKLimit}}  Repos By Sum Records, Top {{topKLimit}} Applications by Sum Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","request.statementType","response.records" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}}  Most Recent Sessions by Session End, {{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}}  Repo Users By Sum Records, Top {{topKLimit}}  Repos By Sum Records, Top {{topKLimit}} Applications by Sum Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","request.statementType","response.records","client.applicationName" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}}  Most Recent Sessions by Session End, {{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}}  Repo Users By Sum Records, Top {{topKLimit}}  Repos By Sum Records, Top {{topKLimit}} Applications by Sum Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","request.statementType","response.records","identity.repoUser" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}}  Repo Users By Sum Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","request.statementType","response.records","repo.name" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}}  Most Recent Sessions by Session End, {{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}}  Repo Users By Sum Records, Top {{topKLimit}}  Repos By Sum Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "identity.group","identity.endUser","request.statementType","response.records","repo.name" nodrop
-| json "request.datasetsAccessed[*].accessType" as accessType nodrop
-| json "request.datasetsAccessed[*].dataset" as dataSet nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}}  Repo Users By Sum Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "identity.group","request.statementType" nodrop
-| json "request.datasetsAccessed[*].accessType" as accessType nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Reads Breakdown, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "identity.group","request.statementType","activityTime","identity.endUser","identity.repoUser" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Reads Breakdown, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "identity.group","request.statementType","activityTypes","identity.endUser" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Reads Breakdown, Modifications, Number of Users, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "identity.group","request.statementType","identity.endUser" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Reads Breakdown, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "identity.group","request.statementType","response.message","response.bytes" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Reads Breakdown, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "identity.group","request.statementType","response.message","response.executionTimeNanos" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Reads Breakdown, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "identity.group","request.statementType","response.message","response.records" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Activity by SSO Group, Data Reads Breakdown, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "identity.group","response.message","client.applicationName","response.bytes" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Reads Breakdown, Modifications, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads
-
-
-
-## Parser:
-```
-| json "identity.group","response.message","client.applicationName","response.executionTimeNanos" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Execution Time, Avg Records Read, Data Reads Breakdown, Modifications, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Repos By Sum Records, Total Reads
-
-
-
-## Parser:
-```
-| json "identity.group","response.message","client.applicationName","response.records" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Records Read, Data Reads Breakdown, Modifications, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Total Reads
-
-
-
-## Parser:
-```
-| json "identity.group","response.message","identity.endUser","request.statementType","response.records" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}}  Most Recent Sessions by Session End, {{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}}  Repo Users By Sum Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "policyViolated","request.statementType","sidecar.name","repo.name","request.datasetsAccessed","request.statement" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Users With Violations, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "policyViolated","request.statementType","sidecar.name","repo.name","request.datasetsAccessed","request.statement","response.records","client.connectionTime","identity.group","identity.endUser","client.applicationName","client.host" nodrop
-| parse regex field=%"request.statement" "^SELECT (?<Fields>.*) FROM (?<TableName>[a-z_\.\-A-Z$]*\b)"
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Users With Violations, Total Reads, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "policyViolated","sidecar.name","repo.name" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "policyViolated","sidecar.name","repo.name" nodrop
-| json "policyViolations[*].policyName" as policyName
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Users With Violations, Total Reads, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "policyViolated","sidecar.name","repo.name","activityTime" nodrop
-| json "policyViolations[*].policyName" as policyName nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Anomalous Read Access, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "policyViolated","sidecar.name","repo.name","activityTime","identity.endUser","identity.group","identity.repoUser" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Users With Violations, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "policyViolated","sidecar.name","repo.name","client.applicationName" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Users With Violations, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "policyViolated","sidecar.name","repo.name","identity.endUser" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Users With Violations, Total Reads, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "policyViolated","sidecar.name","repo.name","request.datasetsAccessed","request.statementType" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Users With Violations, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "policyViolations[*].policyName" as policyName nodrop
-| json "policyViolations[*].severity" as policySeverity nodrop
-| json "policyViolations[*].accessType" as accessType nodrop
-| json "policyViolated" as policyViolated nodrop
-| json "client.applicationName" as applicationName nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Avg Execution Time, Avg Records Read, Data Reads Breakdown, Modifications, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads
-
-
-
-## Parser:
-```
-| json "policyViolations[*].policyName" as policyName nodrop
-| json "policyViolations[*].severity" as policySeverity nodrop
-| json "policyViolations[*].accessType" as policyAccessType nodrop
-| json "identity.group","identity.endUser","request.statementType","policyViolated" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "request.datasetsAccessed[*].accessType" as accessType nodrop
-| json "request.datasetsAccessed[*].dataset" as dataset nodrop
-| json "client.applicationName","request.statementType","response.records","identity.endUser","repo.name" nodrop
- 
-```
-### Use Cases:
-Modifications, Total Reads
-
-
-
-## Parser:
-```
-| json "request.datasetsAccessed[*].accessType" as accessType nodrop
-| json "request.datasetsAccessed[*].dataset" as dataset nodrop
-| json "client.applicationName","response.records","identity.endUser","repo.name" nodrop
- 
-```
-### Use Cases:
-Data Reads Breakdown, Modifications, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} Hosts by Sum Records, Total Reads
-
-
-
-## Parser:
-```
-| json "request.datasetsAccessed[*].accessType" as dataSetAccessType nodrop
-| json "request.datasetsAccessed[*].dataset" as dataSetAccessedDataSet nodrop
-| json "identity.group","repo.name","response.records","identity.endUser","request.statementType" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}}  Most Recent Sessions by Session End, {{topKLimit}} Most Recent Authentication Failures, {{topKLimit}} Most Recent Sessions, Anomalous Read Access, Apps With Violations, Avg Bytes Read, Avg Execution Time, Avg Records Read, Bottom {{topKLimit}} SELECT Queries Without a Policy, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Policies Not In Use, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Repos With Violations, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Statement Types Without Policy, Suspicious Activity, Suspicious Activity By Geography, Suspicious Activity By Repo, Top {{topKLimit}}  Repo Users By Sum Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policies Not Used in Past 30 Days, Top {{topKLimit}} Policies Violated, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Queries Without a Policy, Top {{topKLimit}} Repos By Sum Records, Top {{topKLimit}} Suspicious IPs, Top {{topKLimit}} Users With Violations, Total Reads, Total Violations, User Statement Type Trend by Sum of Records, Users With Violations
-
-
-
-## Parser:
-```
-| json "request.fieldsAccessed[*].label" as fieldLabel nodrop
-| json "identity.group" as SSOGroup nodrop
-| json "request.statementType" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Anomalous Read Access, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Activity by SSO Group, Data Reads Breakdown, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
-
-
-## Parser:
-```
-| json "request.fieldsAccessed[*].label" as fieldLabel nodrop
-| json "identity.group","request.statementType" nodrop
- 
-```
-### Use Cases:
-{{topKLimit}} Most Recent Sessions, Anomalous Read Access, Avg Bytes Read, Avg Execution Time, Avg Records Read, Data Activity by SSO Group, Data Reads Breakdown, Groups By Statement Category, Inactive Users, Modifications, Number of Users, Queries By User - Aggregate, Query Trend By User, Recent Activity By User, Requests by SSO Group, Statement Type Breakdown by Sum of Records, Top {{topKLimit}} End Users By Sum Records, Top {{topKLimit}} Hosts by Sum Records, Top {{topKLimit}} Policy Violations, Top {{topKLimit}} Repos By Sum Records, Total Reads, User Statement Type Trend by Sum of Records
-
+| use_case | parser |
+|--- | --- |
+| Cyral/Application Activity Details/{{topKLimit}} Most Recent Sessions | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","client.applicationName","activityTime","response.records","response.bytes","repo.name","identity.repoUser","client.connectionId" nodrop |
+| Cyral/Application Activity Details/Avg Bytes Read | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","response.message","client.applicationName","response.bytes" nodrop |
+| Cyral/Application Activity Details/Avg Execution Time | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","response.message","client.applicationName","response.executionTimeNanos" nodrop |
+| Cyral/Application Activity Details/Avg Records Read | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","response.message","client.applicationName","response.records" nodrop |
+| Cyral/Application Activity Details/Data Reads Breakdown | (_sourceCategory={{Logsdatasource}}  )<br>\| json "request.datasetsAccessed[*].accessType" as accessType nodrop<br>\| json "request.datasetsAccessed[*].dataset" as dataset nodrop<br>\| json "client.applicationName","response.records","identity.endUser","repo.name" nodrop |
+| Cyral/Application Activity Details/Modifications | (_sourceCategory={{Logsdatasource}}  )<br>\| json "request.datasetsAccessed[*].accessType" as accessType nodrop<br>\| json "request.datasetsAccessed[*].dataset" as dataset nodrop<br>\| json "client.applicationName","request.statementType","response.records","identity.endUser","repo.name" nodrop |
+| Cyral/Application Activity Details/Statement Type Breakdown by Sum of Records | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","client.applicationName","response.records","request.statementType" nodrop |
+| Cyral/Application Activity Details/Top {{topKLimit}} End Users By Sum Records | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","client.applicationName","response.records" nodrop |
+| Cyral/Application Activity Details/Top {{topKLimit}} Hosts by Sum Records | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","client.applicationName","response.records","client.host" nodrop |
+| Cyral/Application Activity Details/Top {{topKLimit}} Policy Violations | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolations[*].policyName" as policyName nodrop<br>\| json "policyViolations[*].severity" as policySeverity nodrop<br>\| json "policyViolations[*].accessType" as accessType nodrop<br>\| json "policyViolated" as policyViolated nodrop<br>\| json "client.applicationName" as applicationName nodrop |
+| Cyral/Application Activity Details/Top {{topKLimit}} Repos By Sum Records | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","client.applicationName","response.records","repo.name" nodrop |
+| Cyral/Application Activity Details/Total Reads | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","client.applicationName" nodrop<br>\| where !isNull(%"identity.group")<br>\| json "request.datasetsAccessed[*].accessType" as accessType |
+| Cyral/Application Activity Details/User Statement Type Trend by Sum of Records | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","client.applicationName","response.records","request.statementType" nodrop |
+| Cyral/Data Monitoring Activity/Anomalous Read Access | (_sourceCategory={{Logsdatasource}}  )<br>\| json "request.fieldsAccessed[*].label" as fieldLabel nodrop<br>\| json "identity.group" as SSOGroup nodrop<br>\| json "request.statementType" nodrop |
+| Cyral/Data Monitoring Activity/Avg Bytes Read | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","request.statementType","response.message","response.bytes" nodrop |
+| Cyral/Data Monitoring Activity/Avg Execution Time | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","request.statementType","response.message","response.executionTimeNanos" nodrop |
+| Cyral/Data Monitoring Activity/Avg Records Read | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","request.statementType","response.message","response.records" nodrop |
+| Cyral/Data Monitoring Activity/Data Activity by SSO Group | (_sourceCategory={{Logsdatasource}}  )<br>\| json "activityTypes","identity.group","request.statementType" nodrop |
+| Cyral/Data Monitoring Activity/Groups By Statement Category | (_sourceCategory={{Logsdatasource}} )<br>\| json "request.fieldsAccessed[*].label" as fieldLabel nodrop<br>\| json "identity.group","request.statementType" nodrop |
+| Cyral/Data Monitoring Activity/Inactive Users | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","request.statementType","activityTime","identity.endUser","identity.repoUser" nodrop |
+| Cyral/Data Monitoring Activity/Number of Users | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","request.statementType","activityTypes","identity.endUser" nodrop |
+| Cyral/Data Monitoring Activity/Queries By User - Aggregate | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","request.statementType","identity.endUser" nodrop |
+| Cyral/Data Monitoring Activity/Query Trend By User | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","request.statementType","identity.endUser" nodrop |
+| Cyral/Data Monitoring Activity/Recent Activity By User | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","request.statementType","activityTime","identity.endUser","identity.repoUser" nodrop |
+| Cyral/Data Monitoring Activity/Requests by SSO Group | (_sourceCategory={{Logsdatasource}}  )<br>\| json "activityTypes","identity.group","request.statementType" nodrop |
+| Cyral/Data Monitoring Activity/Total Reads | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","request.statementType" nodrop<br>\| where %"identity.group" matches "{{GroupName}}" AND %"request.statementType" matches "{{StatementType}}"<br>\| json "request.datasetsAccessed[*].accessType" as accessType nodrop |
+| Cyral/Policy Summary/Apps With Violations | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolated","sidecar.name","repo.name","client.applicationName" nodrop |
+| Cyral/Policy Summary/Bottom {{topKLimit}} SELECT Queries Without a Policy | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolated","request.statementType","sidecar.name","repo.name","request.datasetsAccessed","request.statement","response.records","client.connectionTime","identity.group","identity.endUser","client.applicationName","client.host" nodrop<br>\| where %"policyViolated" = "false" and %"request.statementType" = "SELECT" and %"sidecar.name" matches "{{sidecar_name}}" and %"repo.name" matches "{{repo_name}}" and isNull(%"request.datasetsAccessed")<br>\| parse regex field=%"request.statement" "^SELECT (?<Fields>.*) FROM (?<TableName>[a-z_\.\-A-Z$]*\b)" |
+| Cyral/Policy Summary/Policies Not In Use | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolated","sidecar.name","repo.name","activityTime","identity.endUser","identity.group","identity.repoUser" nodrop |
+| Cyral/Policy Summary/Repos With Violations | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolated","sidecar.name","repo.name" nodrop |
+| Cyral/Policy Summary/Statement Types Without Policy | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolated","sidecar.name","repo.name","request.datasetsAccessed","request.statementType" nodrop |
+| Cyral/Policy Summary/Top {{topKLimit}} Policies Not Used in Past 30 Days | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolated","sidecar.name","repo.name","activityTime" nodrop<br>\| json "policyViolations[*].policyName" as policyName nodrop |
+| Cyral/Policy Summary/Top {{topKLimit}} Policies Violated | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolated","sidecar.name","repo.name" nodrop<br>\| where %"policyViolated" = "true" and %"sidecar.name" matches "{{sidecar_name}}" and %"repo.name" matches "{{repo_name}}"<br>\| json "policyViolations[*].policyName" as policyName |
+| Cyral/Policy Summary/Top {{topKLimit}} Queries Without a Policy | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolated","request.statementType","sidecar.name","repo.name","request.datasetsAccessed","request.statement" nodrop |
+| Cyral/Policy Summary/Top {{topKLimit}} Users With Violations | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolated","sidecar.name","repo.name","identity.endUser" nodrop |
+| Cyral/Policy Summary/Total Violations | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolated","sidecar.name","repo.name" nodrop |
+| Cyral/Policy Summary/Users With Violations | (_sourceCategory={{Logsdatasource}}  )<br>\| json "policyViolated","sidecar.name","repo.name","identity.endUser" nodrop |
+| Cyral/Security Summary/{{topKLimit}} Most Recent Authentication Failures | (_sourceCategory={{Logsdatasource}}  )<br>\| json "activityTypes","sidecar.name","repo.name","identity.repoUser","identity.endUser","activityTime","client.host","client.applicationName" nodrop |
+| Cyral/Security Summary/Suspicious Activity | (_sourceCategory={{Logsdatasource}}  )<br>\| json "activityTypes","sidecar.name","repo.name" nodrop |
+| Cyral/Security Summary/Suspicious Activity By Geography | (_sourceCategory={{Logsdatasource}}  )<br>\| json "activityTypes","sidecar.name","repo.name","client.host" nodrop |
+| Cyral/Security Summary/Suspicious Activity By Repo | (_sourceCategory={{Logsdatasource}}  )<br>\| json "activityTypes","repo.name","sidecar.name" nodrop |
+| Cyral/Security Summary/Top {{topKLimit}} Suspicious IPs | (_sourceCategory={{Logsdatasource}} )<br>\| json "activityTypes","sidecar.name","repo.name","client.host" nodrop |
+| Cyral/User Activity Details/{{topKLimit}}  Most Recent Sessions by Session End | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","request.statementType","activityTime","response.records","response.bytes","repo.name","identity.repoUser","client.connectionId" nodrop |
+| Cyral/User Activity Details/Avg Bytes Read | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","request.statementType","response.bytes" nodrop |
+| Cyral/User Activity Details/Avg Records Read | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","response.message","identity.endUser","request.statementType","response.records" nodrop |
+| Cyral/User Activity Details/Data Reads Breakdown | (_sourceCategory={{Logsdatasource}}  )<br>\| json "request.datasetsAccessed[*].accessType" as dataSetAccessType nodrop<br>\| json "request.datasetsAccessed[*].dataset" as dataSetAccessedDataSet nodrop<br>\| json "identity.group","repo.name","response.records","identity.endUser","request.statementType" nodrop |
+| Cyral/User Activity Details/Modifications | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","request.statementType","response.records","repo.name" nodrop<br>\| where %"identity.group" matches "{{Group}}" and %"identity.endUser" matches "{{endUser}}" and (%"request.statementType"="DELETE" or %"request.statementType"="INSERT" or %"request.statementType"="UPDATE")<br>\| json "request.datasetsAccessed[*].accessType" as accessType nodrop<br>\| json "request.datasetsAccessed[*].dataset" as dataSet nodrop |
+| Cyral/User Activity Details/Statement Type Breakdown by Sum of Records | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","request.statementType","response.records" nodrop |
+| Cyral/User Activity Details/Top {{topKLimit}}  Repo Users By Sum Records | ((_sourceCategory={{Logsdatasource}}  ))<br>\| json "identity.group","identity.endUser","request.statementType","response.records","identity.repoUser" nodrop |
+| Cyral/User Activity Details/Top {{topKLimit}}  Repos By Sum Records | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","request.statementType","response.records","repo.name" nodrop |
+| Cyral/User Activity Details/Top {{topKLimit}} Applications by Sum Records | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","request.statementType","response.records","client.applicationName" nodrop |
+| Cyral/User Activity Details/Top {{topKLimit}} Policy Violations | (_sourceCategory={{Logsdatasource}} )<br>\| json "policyViolations[*].policyName" as policyName nodrop<br>\| json "policyViolations[*].severity" as policySeverity nodrop<br>\| json "policyViolations[*].accessType" as policyAccessType nodrop<br>\| json "identity.group","identity.endUser","request.statementType","policyViolated" nodrop |
+| Cyral/User Activity Details/Total Reads | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","request.statementType" nodrop<br>\| where !isNull(%"identity.group") and %"identity.group" matches "{{Group}}" and %"identity.endUser" matches "{{endUser}}" and %"request.statementType" matches "{{statementType}}"<br>\| json "request.datasetsAccessed[*].accessType" as accessType |
+| Cyral/User Activity Details/User Statement Type Trend by Sum of Records | (_sourceCategory={{Logsdatasource}}  )<br>\| json "identity.group","identity.endUser","request.statementType","response.records" nodrop |
 

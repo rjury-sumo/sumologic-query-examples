@@ -1,352 +1,46 @@
 # Parsers For Azure Database for MySQL
 
-## Parser:
-```
-| JSON "category"
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Recommendation Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category" as category
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Drop Database Statements, Drop Table Statements, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Excessive  Slow Queries Over Time, Failed Policy Events, Log Reduce, Queries by IP, Recent Delete Operations, Recent Disconnect Logs, Recent Recommendation Events, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Slow Queries Over Time, Stopped Servers, Top 10 Excessive Slow Queries by Frequency, Top 10 Hosts Firing Slow Queries, Top 10 IPs, Top 10 operations that caused the most errors, Top 10 Slow Queries by Average Execution Time, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "operationName", "resultType", "properties.recommendationName", "properties.recommendationCategory", "properties.recommendationImpact", "properties.recommendationResourceLink" as category, operationName, resultType, recommendationName, recommendationCategory, recommendationImpact, recommendationResourceLink 
-| parse field=operationName "*/*/*/*" as provider, category, operation_name, action nodrop
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Failed Policy Events, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Recommendation Events, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.db" as category, db
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Log Type Over Time, Errors by DB Instance, Errors Count, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Warnings, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.db", "properties.event_subclass" as category, db, event_subclass
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Log Type Over Time, Errors by DB Instance, Errors Count, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Warnings, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.error_code", "properties.event_subclass" as category, error_code, event_subclass
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Log Type Over Time, Errors by DB Instance, Errors Count, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Requests by Error Code, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Warnings, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.event_subclass" as category, event_subclass
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Users with Excuted Queries, Top Warnings, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "properties.event_time", "properties.error_code", "properties.ip", "properties.user", "properties.sql_text" as category, event_time, error_code, request_ip, user, sql_text
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Drop Database Statements, Drop Table Statements, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Failed Policy Events, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Recommendation Events, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.host" as category, host
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Drop Database Statements, Drop Table Statements, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Excessive  Slow Queries Over Time, Failed Policy Events, Log Reduce, Queries by IP, Recent Delete Operations, Recent Disconnect Logs, Recent Recommendation Events, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 Excessive Slow Queries by Frequency, Top 10 Hosts Firing Slow Queries, Top 10 IPs, Top 10 operations that caused the most errors, Top 10 Slow Queries by Average Execution Time, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.host" as category, host
-| parse field=host "*[*] @  [*]" as db_user1, db_user2, request_ip
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Drop Database Statements, Drop Table Statements, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Excessive  Slow Queries Over Time, Excessive Slow Queries by Host, Failed Policy Events, Log Reduce, Queries by IP, Recent Delete Operations, Recent Disconnect Logs, Recent Recommendation Events, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Slow Queries Over Time, Stopped Servers, Top 10 Excessive Slow Queries by Frequency, Top 10 Hosts Firing Slow Queries, Top 10 IPs, Top 10 IPs Firing Slow Queries, Top 10 operations that caused the most errors, Top 10 Slow Queries by Average Execution Time, Top 10 Users Firing Slow Queries, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.host", "properties.query_time" as category, host, query_time
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Drop Database Statements, Drop Table Statements, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Excessive  Slow Queries Over Time, Excessive Slow Queries by Host, Failed Policy Events, Log Reduce, Queries by IP, Recent Delete Operations, Recent Disconnect Logs, Recent Recommendation Events, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Slow Queries Over Time, Stopped Servers, Top 10 Excessive Slow Queries by Frequency, Top 10 Hosts Firing Slow Queries, Top 10 IPs, Top 10 operations that caused the most errors, Top 10 Slow Queries by Average Execution Time, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.ip" as category, IP
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Log Type Over Time, Errors Count, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Warnings, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.ip", "properties.event_class" as category, request_ip, event_class
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Log Type Over Time, Errors Count, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 operations that caused the most errors, Top Errors, Top Warnings, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.ip", "properties.sql_text", "properties.event_class" as category, request_ip, sql_text, event_class
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Drop Database Statements, Drop Table Statements, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Failed Policy Events, Log Reduce, Queries by IP, Recent Delete Operations, Recent Disconnect Logs, Recent Recommendation Events, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.ip", "properties.user", "properties.db", "properties.host", "properties.event_subclass" as category, request_ip, request_user, request_db, host, event_subclass
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Log Type Over Time, Errors Count, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 operations that caused the most errors, Top Errors, Top Warnings, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.query_time" as category, query_time
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Drop Database Statements, Drop Table Statements, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Excessive  Slow Queries Over Time, Failed Policy Events, Log Reduce, Queries by IP, Recent Delete Operations, Recent Disconnect Logs, Recent Recommendation Events, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 Excessive Slow Queries by Frequency, Top 10 IPs, Top 10 operations that caused the most errors, Top 10 Slow Queries by Average Execution Time, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.query_time", "properties.sql_text" as category, query_time, sql_text
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Drop Database Statements, Drop Table Statements, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Failed Policy Events, Log Reduce, Queries by IP, Recent Delete Operations, Recent Disconnect Logs, Recent Recommendation Events, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 Excessive Slow Queries by Frequency, Top 10 IPs, Top 10 operations that caused the most errors, Top 10 Slow Queries by Average Execution Time, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.user", "properties.sql_text" as category, request_user, sql_text
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Users with Excuted Queries, Top Warnings, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "resultType" as category, resultType
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Failed Policy Events, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Recommendation Events, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity", "properties.policies" as category, resultType, message, resourceLocation, entity, policies
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Failed Policy Events, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity", "properties.policies" as category, resultType, message, resourceLocation, entity, policies
-| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/*/*" as subscription_id, resource_group, providers, virtualMachineScaleSets, aks nodrop
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Requests by Event Type, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Users with Excuted Queries, Top Warnings, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
- 
-```
-### Use Cases:
-Log Reduce
-
-
-
-## Parser:
-```
-| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
-| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)"
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Errors Count, Log Reduce, Server Start and Shutdown Events Over Time, Stopped Servers
-
-
-
-## Parser:
-```
-| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
-| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)"
-| parse field=ErrorMsg "[*] [*] *" as err_code, subsystem, error_message nodrop
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Error Log Type Over Time, Errors Count, Log Reduce, Server Start and Shutdown Events Over Time, Stopped Servers, Top Errors, Top Warnings
-
-
-
-## Parser:
-```
-| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
-| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)"
-| parse field=ErrorMsg "[*] [*] *" as err_code, subsystem, ErrorMessage nodrop
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Errors Count, Log Reduce, Server Start and Shutdown Events Over Time, Stopped Servers, Top Warnings
-
-
-
-## Parser:
-```
-| json "log" nodrop | if (_raw matches "{*", log, _raw) as mesg
-| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Error Log Type Over Time, Errors Count, Log Reduce, Server Start and Shutdown Events Over Time, Stopped Servers, Top Warnings
-
-
-
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Error Log Type Over Time, Errors Count, Log Reduce, Recent Delete Operations, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 operations that caused the most errors, Top Errors, Top Warnings, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Log Type Over Time, Errors Count, Log Reduce, Recent Delete Operations, Recent Write Operations, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 operations that caused the most errors, Top Errors, Top Warnings, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "properties.entity", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Error Log Type Over Time, Errors Count, Log Reduce, Recent Delete Operations, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 operations that caused the most errors, Top Errors, Top Warnings
-
-
-
-## Parser:
-```
-| json "resultType", "category" as resultType, category
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Log Type Over Time, Errors Count, Log Reduce, Recent Delete Operations, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 operations that caused the most errors, Top Errors, Top Warnings, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Distribution  by Operation Type (Read, Write and Delete), Error Log Type Over Time, Errors Count, Log Reduce, Recent Delete Operations, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 operations that caused the most errors, Top Errors, Top Warnings
-
-
-
-## Parser:
-```
-| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid
-| parse field=operationName "*/*/*" as provider_name, resource_type, operation_name
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Error Log Type Over Time, Errors Count, Log Reduce, Recent Delete Operations, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 operations that caused the most errors, Top Errors, Top Warnings
-
-
-
-## Parser:
-```
-| json "resultType", "operationName", "properties.statusMessage", "category"  as resultType, operationName, failureMessage, category nodrop
-| parse field=operationname "*/*/*" as provider_name, resource_type, operation nodrop
- 
-```
-### Use Cases:
-Crash Recovery Attempts Over Time, Error Log Type Over Time, Errors Count, Log Reduce, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 operations that caused the most errors, Top Errors, Top Warnings
-
-
-
-## Parser:
-```
-| json "time", "category", "properties.event_class", "properties.replication_set_role", "properties.event_subclass", "properties.user", "properties.db", "properties.is_aad_auth", "properties.error_code" as time, category,
- 
-```
-### Use Cases:
-Connections  by Loction, Crash Recovery Attempts Over Time, Disconnection Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Error Details, Error Log Type Over Time, Errors by DB Instance, Errors Count, Log Reduce, Recent Delete Operations, Recent Disconnect Logs, Recent Write Operations, Requests by DB Instance, Requests by Error Code, Server Start and Shutdown Events Over Time, Stopped Servers, Top 10 IPs, Top 10 operations that caused the most errors, Top Errors, Top Warnings, Users / Applications by Operation type
-
+| use_case | parser |
+|--- | --- |
+| Azure Database for MySQL/ Error Logs/Crash Recovery Attempts Over Time | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "Starting crash recovery"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop |
+| Azure Database for MySQL/ Error Logs/Error Log Type Over Time | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} (Error or Warning or Note or Info or Information or DEBUG or CRITICAL)<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop |
+| Azure Database for MySQL/ Error Logs/Errors Count | tenant_name=* subscription_id=* resource_group=* resource_name=* resource_type=FLEXIBLESERVERS provider_name=MICROSOFT.DBFORMYSQL location=* "[ERROR]"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" |
+| Azure Database for MySQL/ Error Logs/Log Reduce | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} ("ERROR" or "CRITICAL") <br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg |
+| Azure Database for MySQL/ Error Logs/Server Start and Shutdown Events Over Time | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} mysqld ("ready for connections." or "Shutdown complete" or "Terminated." or "Normal shutdown" or "Shutting down" or "starting as process")<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop |
+| Azure Database for MySQL/ Error Logs/Stopped Servers | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} mysqld ("ready for connections."  or "Terminated." or "Shutdown complete" or "Normal shutdown")<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)" nodrop |
+| Azure Database for MySQL/ Error Logs/Top Errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "[ERROR]"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)"<br>\| where ErrorLogtype="ERROR"<br>\| parse field=ErrorMsg "[*] [*] *" as err_code, subsystem, error_message nodrop |
+| Azure Database for MySQL/ Error Logs/Top Warnings | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "[Warning]"<br>\| json "log" nodrop \| if (_raw matches "{*", log, _raw) as mesg<br>\| parse regex field=mesg "\[(?<ErrorLogtype>[^\]]*)][\:]*\s(?<ErrorMsg>.*)"<br>\| where ErrorLogtype="Warning" <br>\| parse field=ErrorMsg "[*] [*] *" as err_code, subsystem, ErrorMessage nodrop |
+| Azure Database for MySQL/Administrative Operations/ Applications by Operation type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop |
+| Azure Database for MySQL/Administrative Operations/Distribution  by Operation Type (Read, Write and Delete) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid |
+| Azure Database for MySQL/Administrative Operations/Distribution by Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid<br>\| where (resultType="Accept" or resultType="Success") and category="Administrative" <br>\| parse field=operationName "*/*/*" as provider_name, resource_type, operation_name |
+| Azure Database for MySQL/Administrative Operations/Distribution by Status | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category" as resultType, category |
+| Azure Database for MySQL/Administrative Operations/Recent Delete Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "properties.entity", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop |
+| Azure Database for MySQL/Administrative Operations/Recent Write Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop |
+| Azure Database for MySQL/Administrative Operations/Top 10 operations that caused the most errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative<br>\| json "resultType", "operationName", "properties.statusMessage", "category"  as resultType, operationName, failureMessage, category nodrop<br>\| parse field=operationname "*/*/*" as provider_name, resource_type, operation nodrop |
+| Azure Database for MySQL/Connections/Connections  by Loction | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} MySqlAuditLogs<br>\| json "category", "properties.ip", "properties.event_class" as category, request_ip, event_class |
+| Azure Database for MySQL/Connections/Recent Disconnect Logs | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} MySqlAuditLogs<br>\| json "category", "properties.ip", "properties.user", "properties.db", "properties.host", "properties.event_subclass" as category, request_ip, request_user, request_db, host, event_subclass |
+| Azure Database for MySQL/Overview/Disconnection Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} MySqlAuditLogs<br>\| json "time", "category", "properties.event_class", "properties.replication_set_role", "properties.event_subclass", "properties.user", "properties.db", "properties.is_aad_auth", "properties.error_code" as time, category, |
+| Azure Database for MySQL/Overview/Error Details | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} MySqlAuditLogs<br>\| json "time", "category", "properties.event_class", "properties.replication_set_role", "properties.event_subclass", "properties.user", "properties.db", "properties.is_aad_auth", "properties.error_code" as time, category, |
+| Azure Database for MySQL/Overview/Errors by DB Instance | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} MySqlAuditLogs<br>\| json "category", "properties.db", "properties.event_subclass" as category, db, event_subclass |
+| Azure Database for MySQL/Overview/Requests by DB Instance | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} MySqlAuditLogs<br>\| json "category", "properties.db" as category, db |
+| Azure Database for MySQL/Overview/Requests by Error Code | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} MySqlAuditLogs<br>\| json "category", "properties.error_code", "properties.event_subclass" as category, error_code, event_subclass |
+| Azure Database for MySQL/Overview/Requests by Event Type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} MySqlAuditLogs<br>\| json "category", "properties.event_subclass" as category, event_subclass |
+| Azure Database for MySQL/Overview/Top 10 IPs | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} MySqlAuditLogs<br>\| json "category", "properties.ip" as category, IP |
+| Azure Database for MySQL/Overview/Top Users with Excuted Queries | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}}<br>MySqlAuditLogs<br>\| json "category", "properties.user", "properties.sql_text" as category, request_user, sql_text |
+| Azure Database for MySQL/Policy and Recommendations/Failed Policy Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} location={{location}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy Failure<br>\| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity", "properties.policies" as category, resultType, message, resourceLocation, entity, policies |
+| Azure Database for MySQL/Policy and Recommendations/Recent Recommendation Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} "Recommendation"<br>\| JSON "category", "operationName", "resultType", "properties.recommendationName", "properties.recommendationCategory", "properties.recommendationImpact", "properties.recommendationResourceLink" as category, operationName, resultType, recommendationName, recommendationCategory, recommendationImpact, recommendationResourceLink <br>\| where category="Recommendation"<br>\| parse field=operationName "*/*/*/*" as provider, category, operation_name, action nodrop |
+| Azure Database for MySQL/Policy and Recommendations/Total Failed Policy Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy Failure<br>\| JSON "category", "resultType" as category, resultType |
+| Azure Database for MySQL/Policy and Recommendations/Total Recommendation Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} "Recommendation"<br>\| JSON "category" |
+| Azure Database for MySQL/Policy and Recommendations/Total Success Policy Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy <br>\| JSON "category", "resultType" as category, resultType |
+| Azure Database for MySQL/Queries/Drop Database Statements | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "DROP DATABASE"<br>\| JSON "category", "properties.event_time", "properties.error_code", "properties.ip", "properties.user", "properties.sql_text" as category, event_time, error_code, request_ip, user, sql_text |
+| Azure Database for MySQL/Queries/Drop Table Statements | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "DROP TABLE"<br>\| JSON "category", "properties.event_time", "properties.error_code", "properties.ip", "properties.user", "properties.sql_text" as category, event_time, error_code, request_ip, user, sql_text |
+| Azure Database for MySQL/Queries/Queries by IP | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} MySqlAuditLogs<br>\| json "category", "properties.ip", "properties.sql_text", "properties.event_class" as category, request_ip, sql_text, event_class |
+| Azure Database for MySQL/Slow Queries/Excessive  Slow Queries Over Time | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "MySqlSlowLogs"<br>\| json "category", "properties.query_time" as category, query_time |
+| Azure Database for MySQL/Slow Queries/Excessive Slow Queries by Host | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "MySqlSlowLogs"<br>\| json "category", "properties.host", "properties.query_time" as category, host, query_time |
+| Azure Database for MySQL/Slow Queries/Slow Queries Over Time | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "MySqlSlowLogs"<br>\| json "category" as category |
+| Azure Database for MySQL/Slow Queries/Top 10 Excessive Slow Queries by Frequency | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "MySqlSlowLogs"<br>\| json "category", "properties.query_time", "properties.sql_text" as category, query_time, sql_text |
+| Azure Database for MySQL/Slow Queries/Top 10 Hosts Firing Slow Queries | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "MySqlSlowLogs"<br>\| json "category", "properties.host" as category, host |
+| Azure Database for MySQL/Slow Queries/Top 10 IPs Firing Slow Queries | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "MySqlSlowLogs"<br>\| json "category", "properties.host" as category, host<br>\| where category="MySqlSlowLogs" and !(host matches "*localhost*")<br>\| parse field=host "*[*] @  [*]" as db_user1, db_user2, request_ip |
+| Azure Database for MySQL/Slow Queries/Top 10 Slow Queries by Average Execution Time | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "MySqlSlowLogs"<br>\| json "category", "properties.query_time", "properties.sql_text" as category, query_time, sql_text |
+| Azure Database for MySQL/Slow Queries/Top 10 Users Firing Slow Queries | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} "MySqlSlowLogs"<br>\| json "category", "properties.host" as category, host<br>\| where category="MySqlSlowLogs" and !(host matches "*localhost*")<br>\| parse field=host "*[*] @  [*]" as db_user1, db_user2, request_ip |
 

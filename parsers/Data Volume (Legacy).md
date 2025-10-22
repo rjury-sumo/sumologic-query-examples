@@ -1,111 +1,38 @@
 # Parsers For Data Volume (Legacy)
 
-## Parser:
-```
-| parse regex "\"(?<collector>[^\"]+)\"\:\{\"dataPoints\"\:(?<datapoints>\d+)\}" multi
- 
-```
-### Use Cases:
-Collector Not Sending Data, Daily Plan Limit, Data Volume Outlier, Data Volume Outlook, Indexes with Zero Ingest, Ingest - Data Points, Ingest - DPM, Ingest Spike, Ingest Spike by sourceCategory, Message Size, Average by Source Category, Message Size, Average by Source Name, Message Size, BoxPlot by Source Category, Monthly Plan Limit, Over Daily Capacity For Last 3 Days, sourceCategory Ingest Spike, Top 5 Collectors, Top 5 Collectors Per Day, Top 5 Source Categories, Top 5 Source Categories Per Day, Top 5 Source Hosts Per Day, Top 5 Source Names Per Day, Top 5 Sources Per Day, Top Ingest Spikes for Top 5 Collectors Per Day, Top Ingest Spikes for Top 5 Source Categories Per Day, Top Ingest Spikes for Top 5 Source Hosts Per Day, Top Ingest Spikes for Top 5 Source Names Per Day, Top Ingest Spikes for Top 5 Sources Per Day, Volume by Collector, Volume by Source Category, Volume by Source Host, Volume by Source Name
-
-
-
-## Parser:
-```
-| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi
- 
-```
-### Use Cases:
-Collector Not Sending Data, Daily Plan Limit, Data Volume Outlier, Data Volume Outlook, Indexes with Zero Ingest, Ingest - Data Points, Ingest - DPM, Ingest - GB/Day, Ingest - Log Volume, Ingest Spike, Ingest Spike by sourceCategory, Message Size, Average by Source Category, Message Size, Average by Source Name, Message Size, BoxPlot by Source Category, Monthly Plan Limit, Over Daily Capacity For Last 3 Days, sourceCategory Ingest Spike, Top 5 Collectors, Top 5 Collectors Per Day, Top 5 Source Categories, Top 5 Source Categories Per Day, Top 5 Source Hosts Per Day, Top 5 Source Names Per Day, Top 5 Sources Per Day, Top Ingest Spikes for Top 5 Collectors Per Day, Top Ingest Spikes for Top 5 Source Categories Per Day, Top Ingest Spikes for Top 5 Source Hosts Per Day, Top Ingest Spikes for Top 5 Source Names Per Day, Top Ingest Spikes for Top 5 Sources Per Day, Volume by Collector, Volume by Source Category, Volume by Source Host, Volume by Source Name
-
-
-
-## Parser:
-```
-| parse regex "\"(?<source>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi
- 
-```
-### Use Cases:
-Collector Not Sending Data, Daily Plan Limit, Data Volume Outlier, Data Volume Outlook, Indexes with Zero Ingest, Ingest Spike, Ingest Spike by sourceCategory, Message Size, Average by Source Category, Message Size, Average by Source Name, Message Size, BoxPlot by Source Category, Monthly Plan Limit, Over Daily Capacity For Last 3 Days, sourceCategory Ingest Spike, Top 5 Collectors Per Day, Top 5 Source Categories Per Day, Top 5 Source Names Per Day, Top 5 Sources Per Day, Top Ingest Spikes for Top 5 Collectors Per Day, Top Ingest Spikes for Top 5 Source Hosts Per Day, Top Ingest Spikes for Top 5 Sources Per Day, Volume by Collector, Volume by Source Category, Volume by Source Host, Volume by Source Name
-
-
-
-## Parser:
-```
-| parse regex "\"(?<sourcecategory>[^\"]+)\"\:\{\"dataPoints\"\:(?<datapoints>\d+)\}" multi
- 
-```
-### Use Cases:
-Collector Not Sending Data, Daily Plan Limit, Data Volume Outlier, Data Volume Outlook, Indexes with Zero Ingest, Ingest - Data Points, Ingest Spike, Ingest Spike by sourceCategory, Message Size, Average by Source Category, Message Size, Average by Source Name, Message Size, BoxPlot by Source Category, Monthly Plan Limit, Over Daily Capacity For Last 3 Days, sourceCategory Ingest Spike, Top 5 Collectors Per Day, Top 5 Source Categories, Top 5 Source Categories Per Day, Top 5 Source Hosts Per Day, Top 5 Source Names Per Day, Top 5 Sources Per Day, Top Ingest Spikes for Top 5 Collectors Per Day, Top Ingest Spikes for Top 5 Source Categories Per Day, Top Ingest Spikes for Top 5 Source Hosts Per Day, Top Ingest Spikes for Top 5 Source Names Per Day, Top Ingest Spikes for Top 5 Sources Per Day, Volume by Collector, Volume by Source Category, Volume by Source Host, Volume by Source Name
-
-
-
-## Parser:
-```
-| parse regex "\"(?<sourceCategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi
- 
-```
-### Use Cases:
-Collector Not Sending Data, Daily Plan Limit, Data Volume Outlier, Data Volume Outlook, Indexes with Zero Ingest, Ingest Spike, Ingest Spike by sourceCategory, Message Size, Average by Source Category, Message Size, Average by Source Name, Message Size, BoxPlot by Source Category, Monthly Plan Limit, Over Daily Capacity For Last 3 Days, sourceCategory Ingest Spike, Top 5 Collectors Per Day, Top 5 Source Categories Per Day, Top 5 Source Names Per Day, Top 5 Sources Per Day, Top Ingest Spikes for Top 5 Collectors Per Day, Top Ingest Spikes for Top 5 Source Categories Per Day, Top Ingest Spikes for Top 5 Source Hosts Per Day, Top Ingest Spikes for Top 5 Sources Per Day, Volume by Collector, Volume by Source Category, Volume by Source Host, Volume by Source Name
-
-
-
-## Parser:
-```
-| parse regex "\"(?<sourcecategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi
- 
-```
-### Use Cases:
-Collector Not Sending Data, Daily Plan Limit, Data Volume Outlier, Data Volume Outlook, Indexes with Zero Ingest, Ingest - Data Points, Ingest - DPM, Ingest Spike, Ingest Spike by sourceCategory, Message Size, Average by Source Category, Message Size, Average by Source Name, Message Size, BoxPlot by Source Category, Monthly Plan Limit, Over Daily Capacity For Last 3 Days, sourceCategory Ingest Spike, Top 5 Collectors, Top 5 Collectors Per Day, Top 5 Source Categories, Top 5 Source Categories Per Day, Top 5 Source Hosts Per Day, Top 5 Source Names Per Day, Top 5 Sources Per Day, Top Ingest Spikes for Top 5 Collectors Per Day, Top Ingest Spikes for Top 5 Source Categories Per Day, Top Ingest Spikes for Top 5 Source Hosts Per Day, Top Ingest Spikes for Top 5 Source Names Per Day, Top Ingest Spikes for Top 5 Sources Per Day, Volume by Collector, Volume by Source Category, Volume by Source Host, Volume by Source Name
-
-
-
-## Parser:
-```
-| parse regex "\"(?<sourceHost>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi
- 
-```
-### Use Cases:
-Collector Not Sending Data, Daily Plan Limit, Data Volume Outlier, Data Volume Outlook, Indexes with Zero Ingest, Ingest Spike, Ingest Spike by sourceCategory, Message Size, Average by Source Category, Message Size, Average by Source Name, Message Size, BoxPlot by Source Category, Monthly Plan Limit, Over Daily Capacity For Last 3 Days, sourceCategory Ingest Spike, Top 5 Collectors Per Day, Top 5 Source Categories Per Day, Top 5 Source Hosts Per Day, Top 5 Source Names Per Day, Top 5 Sources Per Day, Top Ingest Spikes for Top 5 Collectors Per Day, Top Ingest Spikes for Top 5 Source Categories Per Day, Top Ingest Spikes for Top 5 Source Hosts Per Day, Top Ingest Spikes for Top 5 Source Names Per Day, Top Ingest Spikes for Top 5 Sources Per Day, Volume by Collector, Volume by Source Category, Volume by Source Host, Volume by Source Name
-
-
-
-## Parser:
-```
-| parse regex "\"(?<sourcehost>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi
- 
-```
-### Use Cases:
-Collector Not Sending Data, Daily Plan Limit, Indexes with Zero Ingest, Ingest Spike, Ingest Spike by sourceCategory, Message Size, Average by Source Category, Message Size, Average by Source Name, Message Size, BoxPlot by Source Category, Monthly Plan Limit, Over Daily Capacity For Last 3 Days, sourceCategory Ingest Spike, Volume by Collector, Volume by Source Category, Volume by Source Host
-
-
-
-## Parser:
-```
-| parse regex "\"(?<sourceName>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi
- 
-```
-### Use Cases:
-Collector Not Sending Data, Daily Plan Limit, Data Volume Outlier, Data Volume Outlook, Indexes with Zero Ingest, Ingest Spike, Ingest Spike by sourceCategory, Message Size, Average by Source Category, Message Size, Average by Source Name, Message Size, BoxPlot by Source Category, Monthly Plan Limit, Over Daily Capacity For Last 3 Days, sourceCategory Ingest Spike, Top 5 Collectors Per Day, Top 5 Source Categories Per Day, Top 5 Source Names Per Day, Top 5 Sources Per Day, Top Ingest Spikes for Top 5 Collectors Per Day, Top Ingest Spikes for Top 5 Source Categories Per Day, Top Ingest Spikes for Top 5 Source Hosts Per Day, Top Ingest Spikes for Top 5 Source Names Per Day, Top Ingest Spikes for Top 5 Sources Per Day, Volume by Collector, Volume by Source Category, Volume by Source Host, Volume by Source Name
-
-
-
-## Parser:
-```
-| parse regex "\"(?<sourcename>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi
- 
-```
-### Use Cases:
-Collector Not Sending Data, Daily Plan Limit, Indexes with Zero Ingest, Ingest Spike, Ingest Spike by sourceCategory, Message Size, Average by Source Category, Message Size, Average by Source Name, Message Size, BoxPlot by Source Category, Monthly Plan Limit, Over Daily Capacity For Last 3 Days, sourceCategory Ingest Spike, Volume by Collector, Volume by Source Category, Volume by Source Host, Volume by Source Name
-
-
-
-## Parser:
-```
-| parse regex "\"(?<view_name>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi
- 
-```
-### Use Cases:
-Collector Not Sending Data, Daily Plan Limit, Indexes with Zero Ingest
-
+| use_case | parser |
+|--- | --- |
+| Data Volume (Legacy)/Collector Not Sending Data/Collector Not Sending Data | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="collector_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Daily Plan Limit/Daily Plan Limit | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="collector_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Data Volume Outlier | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="collector_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Data Volume Outlook | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="collector_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Top 5 Collectors Per Day | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="collector_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Top 5 Source Categories Per Day | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="sourcecategory_volume"<br>\| parse regex "\"(?<sourceCategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Top 5 Source Hosts Per Day | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="sourcehost_volume"<br>\| parse regex "\"(?<sourceHost>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Top 5 Source Names Per Day | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="sourcename_volume"<br>\| parse regex "\"(?<sourceName>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Top 5 Sources Per Day | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="source_volume"<br>\| parse regex "\"(?<source>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Top Ingest Spikes for Top 5 Collectors Per Day | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="collector_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Top Ingest Spikes for Top 5 Source Categories Per Day | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="sourcecategory_volume"<br>\| parse regex "\"(?<sourceCategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Top Ingest Spikes for Top 5 Source Hosts Per Day | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="sourcehost_volume"<br>\| parse regex "\"(?<sourceHost>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Top Ingest Spikes for Top 5 Source Names Per Day | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="sourcename_volume"<br>\| parse regex "\"(?<sourceName>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Log Spikes - New/Top Ingest Spikes for Top 5 Sources Per Day | _index=sumologic_volume sizeInBytes <br>\| where _sourceCategory="source_volume"<br>\| parse regex "\"(?<source>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Overview - New/Day | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="collector_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Overview - New/Ingest - Data Points | _index=sumologic_volume datapoints<br>\| where _sourceCategory="collector_metrics_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"dataPoints\"\:(?<datapoints>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Overview - New/Ingest - DPM | _index=sumologic_volume dataPoints<br>\| where _sourceCategory="collector_metrics_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"dataPoints\"\:(?<datapoints>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Overview - New/Ingest - Log Volume | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="collector_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Overview - New/Top 5 Collectors | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="collector_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Data Volume - Overview - New/Top 5 Source Categories | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="sourcecategory_volume"<br>\| parse regex "\"(?<sourcecategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Indexes with Zero Ingest/Indexes with Zero Ingest | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory = "view_volume"<br>\| parse regex "\"(?<view_name>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Ingest Spike by sourceCategory/Ingest Spike by sourceCategory | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="sourcecategory_volume"<br>\| parse regex "\"(?<sourceCategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Ingest Spike/Ingest Spike | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="sourcecategory_volume"<br>\| parse regex "\"(?<sourceCategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Message Size, Average by Source Category/Message Size, Average by Source Category | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="sourcecategory_volume"<br>\| parse regex "\"(?<sourcecategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Message Size, Average by Source Name/Message Size, Average by Source Name | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="sourcename_volume"<br>\| parse regex "\"(?<sourcename>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Message Size, BoxPlot by Source Category/Message Size, BoxPlot by Source Category | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="sourcecategory_volume"<br>\| parse regex "\"(?<sourcecategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Monthly Plan Limit/Monthly Plan Limit | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="collector_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Over Daily Capacity For Last 3 Days/Over Daily Capacity For Last 3 Days | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="sourcecategory_volume"<br>\| parse regex "\"(?<sourcecategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/sourceCategory Ingest Spike/sourceCategory Ingest Spike | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="sourcecategory_volume" <br>\| parse regex "\"(?<sourcecategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Volume by Collector/Volume by Collector | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="collector_volume"<br>\| parse regex "\"(?<collector>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Volume by Source Category/Volume by Source Category | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="sourcecategory_volume"<br>\| parse regex "\"(?<sourcecategory>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Volume by Source Host/Volume by Source Host | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="sourcehost_volume"<br>\| parse regex "\"(?<sourcehost>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
+| Data Volume (Legacy)/Volume by Source Name/Volume by Source Name | _index=sumologic_volume sizeInBytes<br>\| where _sourceCategory="sourcename_volume"<br>\| parse regex "\"(?<sourcename>[^\"]+)\"\:\{\"sizeInBytes\"\:(?<bytes>\d+),\"count\"\:(?<count>\d+)\}" multi |
 

@@ -1,338 +1,40 @@
 # Parsers For Azure Database for PostgreSQL
 
-## Parser:
-```
-| JSON "category"
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Recommendation Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "operationName", "resultType", "properties.recommendationName", "properties.recommendationCategory", "properties.recommendationImpact", "properties.recommendationResourceLink" as category, operationName, resultType, recommendationName, recommendationCategory, recommendationImpact, recommendationResourceLink 
-| parse field=operationName "*/*/*/*" as provider, category, operation_name, action nodrop
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "operationName", "time","level","resultType", "properties.title", "properties.details", "properties.currentHealthStatus", "properties.type", "properties.cause" as category, operationName, time,level,resultType, title, details, currentHealthStatus, type, cause nodrop
-| parse field=operationName "*/*/*" as category, operation_name, action nodrop
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Resource Health by Event Type, Resource Health Trend, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.Application_name" as category, Application_name
- 
-```
-### Use Cases:
-Application Name with Most Sessions, Database Shut Down Events, Database System Up Events, Dead Rows By Schema, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Indexes Scanned By Schema, Live Rows By Schema, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Rows Deleted By Schema, Rows Inserted By Schema, Rows Updated By Schema, Sequential Scan By Schema, Tables Vacuumed By Schema, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.backend_type" as category, backend_type
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Log by Backend Type, Log by Sql Errcode, Recent Delete Operations, Recent Write Operations, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "properties.currentHealthStatus" as category, currentHealthStatus
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Resource Health Status by Resource Name, Recent Write Operations, Resource Health by Event Type, Resource Health Trend, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.errorLevel" as category, errorLevel
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Write Operations, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.errorLevel", "properties.message", "properties.sqlerrcode", "ReplicaRole" as category, errorLevel, message, sqlerrcode, ReplicaRole nodrop
-| parse field=message "* * *: *" as date, time, thread_id, message
- 
-```
-### Use Cases:
-Database Shut Down Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Log by Sql Errcode, Recent Delete Operations, Recent Write Operations, Top 10 operations that caused the most errors, Top Fatal Errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.errorLevel", "properties.statement", "properties.message", "properties.sqlerrcode", "ReplicaRole" as category, errorLevel, statement, message, sqlerrcode, ReplicaRole
- 
-```
-### Use Cases:
-Database Shut Down Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Log by Sql Errcode, Recent Delete Operations, Recent Write Operations, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "properties.Idx_scan", "properties.Schemaname", "properties.DatabaseName" as category, Idx_scan, schemaname, DatabaseName
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Dead Rows By Schema, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Indexes Scanned By Schema, Live Rows By Schema, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Rows Updated By Schema, Sequential Scan By Schema, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.message" as category, message
-| extract field=message "(?<request_ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.message", "ReplicaRole" as category, message, ReplicaRole
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Log by Sql Errcode, Recent Delete Operations, Recent Write Operations, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "properties.N_dead_tup", "properties.Schemaname", "properties.DatabaseName" as category, N_dead_tup, schemaname, DatabaseName
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Dead Rows By Schema, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Indexes Scanned By Schema, Live Rows By Schema, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Rows Inserted By Schema, Rows Updated By Schema, Sequential Scan By Schema, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "properties.N_live_tup", "properties.Schemaname", "properties.DatabaseName" as category, N_live_tup, schemaname, DatabaseName
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Dead Rows By Schema, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Indexes Scanned By Schema, Live Rows By Schema, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Rows Updated By Schema, Sequential Scan By Schema, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "properties.N_tup_del", "properties.Schemaname", "properties.DatabaseName" as category, N_tup_del, schemaname, DatabaseName
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Dead Rows By Schema, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Indexes Scanned By Schema, Live Rows By Schema, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Rows Deleted By Schema, Rows Inserted By Schema, Rows Updated By Schema, Sequential Scan By Schema, Tables Vacuumed By Schema, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "properties.N_tup_ins", "properties.Schemaname", "properties.DatabaseName" as category, N_tup_ins, schemaname, DatabaseName
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Dead Rows By Schema, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Indexes Scanned By Schema, Live Rows By Schema, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Rows Deleted By Schema, Rows Inserted By Schema, Rows Updated By Schema, Sequential Scan By Schema, Tables Vacuumed By Schema, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "properties.N_tup_upd", "properties.Schemaname", "properties.DatabaseName" as category, N_tup_upd, schemaname, DatabaseName
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Dead Rows By Schema, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Indexes Scanned By Schema, Live Rows By Schema, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Rows Deleted By Schema, Rows Inserted By Schema, Rows Updated By Schema, Sequential Scan By Schema, Tables Vacuumed By Schema, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "properties.Seq_scan", "properties.Schemaname", "properties.DatabaseName" as category, Seq_scan, schemaname, DatabaseName
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Dead Rows By Schema, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Indexes Scanned By Schema, Live Rows By Schema, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Rows Deleted By Schema, Rows Inserted By Schema, Rows Updated By Schema, Sequential Scan By Schema, Tables Vacuumed By Schema, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.Session_duration", "properties.Database_name" as category, Session_duration, Database_name
- 
-```
-### Use Cases:
-Application Name with Most Sessions, Database Shut Down Events, Database System Up Events, Dead Rows By Schema, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Indexes Scanned By Schema, Live Rows By Schema, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Rows Deleted By Schema, Rows Inserted By Schema, Rows Updated By Schema, Sequential Scan By Schema, Session duration distribution, Tables Vacuumed By Schema, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "category", "properties.sqlerrcode" as category, sqlerrcode
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Log by Sql Errcode, Recent Delete Operations, Recent Write Operations, Top 10 operations that caused the most errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "properties.Tables_vacuumed", "properties.Schemaname", "properties.DatabaseName" as category, Tables_vacuumed, schemaname, DatabaseName
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Dead Rows By Schema, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Indexes Scanned By Schema, Live Rows By Schema, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Rows Deleted By Schema, Rows Inserted By Schema, Rows Updated By Schema, Sequential Scan By Schema, Tables Vacuumed By Schema, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "properties.type", "properties.cause" as category, type, cause
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Write Operations, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "resultType" as category, resultType
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity", "properties.policies" as category, resultType, message, resourceLocation, entity, policies
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity", "properties.policies" as category, resultType, message, resourceLocation, entity, policies
-| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/*/*" as subscription_id, resource_group, providers, virtualMachineScaleSets, aks nodrop
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "category","properties.Idx_scan", "properties.Schemaname", "properties.DatabaseName" as category, Idx_scan, schemaname, DatabaseName
- 
-```
-### Use Cases:
-Database Shut Down Events, Database System Up Events, Dead Rows By Schema, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Downtime Causes, Failed Policy Events, Indexes Scanned By Schema, Live Rows By Schema, Log by Backend Type, Log by Severity, Log by Sql Errcode, Recent Delete Operations, Recent Recommendation Events, Recent Resource Health Incidents, Recent Resource Health Status by Resource Name, Recent Write Operations, Requests by Location, Resource Health by Event Type, Resource Health Trend, Rows Deleted By Schema, Rows Inserted By Schema, Rows Updated By Schema, Sequential Scan By Schema, Tables Vacuumed By Schema, Top 10 operations that caused the most errors, Top Error Statements, Top Fatal Errors, Total Failed Policy Events, Total Recommendation Events, Total Success Policy Events, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Recent Delete Operations, Top 10 operations that caused the most errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Recent Delete Operations, Recent Write Operations, Top 10 operations that caused the most errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "properties.entity", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop
- 
-```
-### Use Cases:
-Recent Delete Operations, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json "resultType", "category" as resultType, category
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Distribution by Status, Recent Delete Operations, Top 10 operations that caused the most errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Recent Delete Operations, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid
-| parse field=operationName "*/*/*" as provider_name, resource_type, operation_name
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Recent Delete Operations, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json "resultType", "operationName", "properties.statusMessage", "category"  as resultType, operationName, failureMessage, category nodrop
-| parse field=operationname "*/*/*" as provider_name, resource_type, operation nodrop
- 
-```
-### Use Cases:
-Top 10 operations that caused the most errors
-
+| use_case | parser |
+|--- | --- |
+| Azure Database for PostgreSQL/Administrative Operations/ Applications by Operation type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop |
+| Azure Database for PostgreSQL/Administrative Operations/Distribution  by Operation Type (Read, Write and Delete) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid |
+| Azure Database for PostgreSQL/Administrative Operations/Distribution by Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid<br>\| where (resultType="Accept" or resultType="Success") and category="Administrative" <br>\| parse field=operationName "*/*/*" as provider_name, resource_type, operation_name |
+| Azure Database for PostgreSQL/Administrative Operations/Distribution by Status | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category" as resultType, category |
+| Azure Database for PostgreSQL/Administrative Operations/Recent Delete Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "properties.entity", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop |
+| Azure Database for PostgreSQL/Administrative Operations/Recent Write Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop |
+| Azure Database for PostgreSQL/Administrative Operations/Top 10 operations that caused the most errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}} provider_name={{provider_name}} resource_type={{resource_type}}  Administrative<br>\| json "resultType", "operationName", "properties.statusMessage", "category"  as resultType, operationName, failureMessage, category nodrop<br>\| parse field=operationname "*/*/*" as provider_name, resource_type, operation nodrop |
+| Azure Database for PostgreSQL/Error Logs/Database Shut Down Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLLogs ("database system" AND "shut down")<br>\| json "category", "properties.message", "ReplicaRole" as category, message, ReplicaRole |
+| Azure Database for PostgreSQL/Error Logs/Database System Up Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLLogs "database system is ready to accept connections"<br>\| json "category", "properties.message", "ReplicaRole" as category, message, ReplicaRole |
+| Azure Database for PostgreSQL/Error Logs/Log by Backend Type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLLogs backend_type<br>\| json "category", "properties.backend_type" as category, backend_type |
+| Azure Database for PostgreSQL/Error Logs/Log by Severity | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLLogs errorLevel<br>\| json "category", "properties.errorLevel" as category, errorLevel |
+| Azure Database for PostgreSQL/Error Logs/Log by Sql Errcode | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLLogs sqlerrcode<br>\| json "category", "properties.sqlerrcode" as category, sqlerrcode |
+| Azure Database for PostgreSQL/Error Logs/Top Error Statements | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLLogs errorLevel<br>\| json "category", "properties.errorLevel", "properties.statement", "properties.message", "properties.sqlerrcode", "ReplicaRole" as category, errorLevel, statement, message, sqlerrcode, ReplicaRole |
+| Azure Database for PostgreSQL/Error Logs/Top Fatal Errors | tenant_name=* subscription_id=* resource_group=* resource_name=* resource_type=FLEXIBLESERVERS provider_name=MICROSOFT.DBFORPOSTGRESQL location=* PostgreSQLLogs errorLevel<br>\| json "category", "properties.errorLevel", "properties.message", "properties.sqlerrcode", "ReplicaRole" as category, errorLevel, message, sqlerrcode, ReplicaRole nodrop<br>\| where category="PostgreSQLLogs" and errorLevel="FATAL"<br>\| parse field=message "* * *: *" as date, time, thread_id, message |
+| Azure Database for PostgreSQL/Health/Downtime Causes | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} ResourceHealth Downtime<br>\| JSON "category", "properties.type", "properties.cause" as category, type, cause |
+| Azure Database for PostgreSQL/Health/Recent Resource Health Incidents | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} ResourceHealth<br>\| JSON "category", "operationName", "time","level","resultType", "properties.title", "properties.details", "properties.currentHealthStatus", "properties.type", "properties.cause" as category, operationName, time,level,resultType, title, details, currentHealthStatus, type, cause nodrop<br>\| where category="ResourceHealth"<br>\| parse field=operationName "*/*/*" as category, operation_name, action nodrop |
+| Azure Database for PostgreSQL/Health/Recent Resource Health Status by Resource Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} ResourceHealth<br>\| JSON "category", "properties.currentHealthStatus" as category, currentHealthStatus |
+| Azure Database for PostgreSQL/Health/Resource Health by Event Type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} ResourceHealth<br>\| JSON "category", "properties.currentHealthStatus" as category, currentHealthStatus |
+| Azure Database for PostgreSQL/Health/Resource Health Trend | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} ResourceHealth<br>\| JSON "category", "properties.currentHealthStatus" as category, currentHealthStatus |
+| Azure Database for PostgreSQL/Overview/Requests by Location | tenant_name=* subscription_id=* resource_group=* resource_name=* resource_type=FLEXIBLESERVERS provider_name=MICROSOFT.DBFORPOSTGRESQL location=* PostgreSQLLogs<br>\| json "category", "properties.message" as category, message<br>\| where category="PostgreSQLLogs"<br>\| extract field=message "(?<request_ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" |
+| Azure Database for PostgreSQL/Policy and Recommendations/Failed Policy Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} location={{location}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy Failure<br>\| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity", "properties.policies" as category, resultType, message, resourceLocation, entity, policies |
+| Azure Database for PostgreSQL/Policy and Recommendations/Recent Recommendation Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} "Recommendation"<br>\| JSON "category", "operationName", "resultType", "properties.recommendationName", "properties.recommendationCategory", "properties.recommendationImpact", "properties.recommendationResourceLink" as category, operationName, resultType, recommendationName, recommendationCategory, recommendationImpact, recommendationResourceLink <br>\| where category="Recommendation"<br>\| parse field=operationName "*/*/*/*" as provider, category, operation_name, action nodrop |
+| Azure Database for PostgreSQL/Policy and Recommendations/Total Failed Policy Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy Failure<br>\| JSON "category", "resultType" as category, resultType |
+| Azure Database for PostgreSQL/Policy and Recommendations/Total Recommendation Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} "Recommendation"<br>\| JSON "category" |
+| Azure Database for PostgreSQL/Policy and Recommendations/Total Success Policy Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} resource_type={{resource_type}} provider_name={{provider_name}} resource_name={{resource_name}} Policy <br>\| JSON "category", "resultType" as category, resultType |
+| Azure Database for PostgreSQL/Schema Overview/Dead Rows By Schema | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLFlexTableStats<br>\| JSON "category", "properties.N_dead_tup", "properties.Schemaname", "properties.DatabaseName" as category, N_dead_tup, schemaname, DatabaseName |
+| Azure Database for PostgreSQL/Schema Overview/Indexes Scanned By Schema | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLFlexTableStats<br>\| JSON "category","properties.Idx_scan", "properties.Schemaname", "properties.DatabaseName" as category, Idx_scan, schemaname, DatabaseName |
+| Azure Database for PostgreSQL/Schema Overview/Live Rows By Schema | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLFlexTableStats<br>\| JSON "category", "properties.N_live_tup", "properties.Schemaname", "properties.DatabaseName" as category, N_live_tup, schemaname, DatabaseName |
+| Azure Database for PostgreSQL/Schema Overview/Rows Deleted By Schema | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLFlexTableStats<br>\| JSON "category", "properties.N_tup_del", "properties.Schemaname", "properties.DatabaseName" as category, N_tup_del, schemaname, DatabaseName |
+| Azure Database for PostgreSQL/Schema Overview/Rows Inserted By Schema | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLFlexTableStats<br>\| JSON "category", "properties.N_tup_ins", "properties.Schemaname", "properties.DatabaseName" as category, N_tup_ins, schemaname, DatabaseName |
+| Azure Database for PostgreSQL/Schema Overview/Rows Updated By Schema | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLFlexTableStats<br>\| JSON "category", "properties.N_tup_upd", "properties.Schemaname", "properties.DatabaseName" as category, N_tup_upd, schemaname, DatabaseName |
+| Azure Database for PostgreSQL/Schema Overview/Sequential Scan By Schema | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLFlexTableStats<br>\| JSON "category", "properties.Seq_scan", "properties.Schemaname", "properties.DatabaseName" as category, Seq_scan, schemaname, DatabaseName |
+| Azure Database for PostgreSQL/Schema Overview/Tables Vacuumed By Schema | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLFlexTableStats<br>\| JSON "category", "properties.Tables_vacuumed", "properties.Schemaname", "properties.DatabaseName" as category, Tables_vacuumed, schemaname, DatabaseName |
+| Azure Database for PostgreSQL/Sessions/Application Name with Most Sessions | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLFlexSessions<br>\| json "category", "properties.Application_name" as category, Application_name |
+| Azure Database for PostgreSQL/Sessions/Session duration distribution | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} resource_name={{resource_name}} resource_type={{resource_type}} provider_name={{provider_name}} location={{location}} PostgreSQLFlexSessions<br>\| json "category", "properties.Session_duration", "properties.Database_name" as category, Session_duration, Database_name |
 

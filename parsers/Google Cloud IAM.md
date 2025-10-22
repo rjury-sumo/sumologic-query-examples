@@ -1,178 +1,21 @@
 # Parsers For Google Cloud IAM
 
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels" as labels
-| json field=labels "project_id" as project
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages, Messages by Project, Operations, Recent IAM Role Activity, Recent Project Activity, Recent Service Account Activity
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels" as labels
-| json field=labels "project_id" as project
-| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\""
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages, Operations, Recent Project Activity
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload.methodName" as labels, method
-| json "message.data.resource.labels.project_id" as project
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages, IAM Policy Changes by Project, Messages by Project, Operations, Recent IAM Role Activity, Recent Project Activity, Recent Service Account Activity, Role Assignments Over Time, Role Existence, User Operations
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.resource.labels.project_id", "message.data.protoPayload.serviceData.policyDelta.bindingDeltas[*]" as labels, project, changes
-| parse regex field=changes "\"action\":\"(?<action>[A-Z]+)\"" multi
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages, IAM Policy Changes by Project, Messages by Project, Operations, Recent IAM Role Activity, Recent Project Activity, Recent Service Account Activity, Removed Roles Over Time, Role Assignments, Role Assignments Over Time, Role Existence, Role Existence Over Time, User Operations
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.resource.labels.project_id", "message.data.protoPayload.serviceData.policyDelta.bindingDeltas[*]" as labels, project, changes
-| parse regex field=changes "\"role\":\"roles\\\/(?<role>[a-zA-Z.]+)\",\"member\":\".*\",\"action\":\"(?<action>[A-Z]+)\"" multi
- 
-```
-### Use Cases:
-Added Roles Over Time, Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages, IAM Policy Changes by Project, Messages by Project, Operations, Recent IAM Role Activity, Recent Project Activity, Recent Service Account Activity, Removed Roles Over Time, Role Assignments, Role Assignments Over Time, Role Existence, Role Existence Over Time, User Operations
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.timestamp", "message.data.resource.labels.project_id" as labels, timestamp, project
-| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\""
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages, IAM Policy Changes by Project, Messages by Project, Operations, Recent IAM Role Activity, Recent Project Activity, Recent Service Account Activity, Removed Roles Over Time, Role Assignments Over Time, Role Existence, Role Existence Over Time, User Operations
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.timestamp", "message.data.resource.labels.project_id", "message.data.protoPayload" as labels, timestamp, project, payload
-| json field=payload "authenticationInfo.principalEmail", "response.title" as user, name
-| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\""
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages, Operations, Recent IAM Role Activity, Recent Project Activity, Recent Service Account Activity
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.timestamp", "message.data.resource.labels.project_id" as timestamp, project
-| json "message.data.protoPayload" as payload
-| json field=payload "authenticationInfo.principalEmail", "response.title" as user, name
-| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\""
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data" as data
-| json field=data "timestamp", "resource.labels.project_id", "resource.labels.email_id", "protoPayload.authenticationInfo.principalEmail" as timestamp, project, service_account, user
-| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\""
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data" as data
-| json field=data "timestamp", "resource.labels", "resource.labels.project_id", "resource.labels.email_id", "protoPayload.authenticationInfo.principalEmail" as timestamp, labels, project, service_account, user
-| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\""
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages, Operations, Recent Project Activity, Recent Service Account Activity
-
-
-
-## Parser:
-```
-| json "message.data" as data
-| json field=data "resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=data "resource.labels", "resource.labels.project_id", "protoPayload.methodName", "protoPayload.authenticationInfo.principalEmail" as labels, project, method, user
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages, Messages by Project, Operations, Recent IAM Role Activity, Recent Project Activity, Recent Service Account Activity, Role Assignments Over Time, Role Existence, User Operations
-
-
-
-## Parser:
-```
-| json "message.data" as data
-| json field=data "resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=data "resource.labels", "timestamp", "resource.labels.project_id", "protoPayload.authenticationInfo.principalEmail", "protoPayload.serviceData.policyDelta.bindingDeltas[*]" as labels, timestamp, project, user, changes
-| parse regex field=changes "\"role\":\"roles\\\/(?<role>[a-zA-Z.]+)\",\"member\":\"(?<member>.*?)\",\"action\":\"(?<action>[A-Z]+)\"" multi
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages, Recent Project Activity
-
-
-
-## Parser:
-```
-| json "message.data" as data
-| json field=data "resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=data "timestamp", "resource.labels.project_id", "protoPayload.authenticationInfo.principalEmail", "protoPayload.serviceData.policyDelta.bindingDeltas[*]" as timestamp, project, user, changes
-| parse regex field=changes "\"role\":\"roles\\\/(?<role>[a-zA-Z.]+)\",\"member\":\"(?<member>.*?)\",\"action\":\"(?<action>[A-Z]+)\"" multi
- 
-```
-### Use Cases:
-Google Cloud IAM Project Messages, Google Cloud IAM Role Messages, Google Cloud IAM Service Account Messages
-
+| use_case | parser |
+|--- | --- |
+| Google Cloud IAM/Google Cloud IAM Project Messages/Google Cloud IAM Project Messages | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data" as data<br>\| json field=data "resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "project" \| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json field=data "timestamp", "resource.labels.project_id", "protoPayload.authenticationInfo.principalEmail", "protoPayload.serviceData.policyDelta.bindingDeltas[*]" as timestamp, project, user, changes<br><br>\| parse regex field=changes "\"role\":\"roles\\\/(?<role>[a-zA-Z.]+)\",\"member\":\"(?<member>.*?)\",\"action\":\"(?<action>[A-Z]+)\"" multi |
+| Google Cloud IAM/Google Cloud IAM Role Messages/Google Cloud IAM Role Messages | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "iam_role"<br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json "message.data.timestamp", "message.data.resource.labels.project_id" as timestamp, project<br>\| json "message.data.protoPayload" as payload<br>\| json field=payload "authenticationInfo.principalEmail", "response.title" as user, name<br>\| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\"" |
+| Google Cloud IAM/Google Cloud IAM Service Account Messages/Google Cloud IAM Service Account Messages | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "service_account" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json "message.data" as data<br>\| json field=data "timestamp", "resource.labels.project_id", "resource.labels.email_id", "protoPayload.authenticationInfo.principalEmail" as timestamp, project, service_account, user<br>\| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\"" |
+| Google Cloud IAM/Overview/Messages by Project | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "iam_role" or type = "project" or type = "service_account"<br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json "message.data.resource.labels" as labels<br>\| json field=labels "project_id" as project |
+| Google Cloud IAM/Overview/Operations | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "project" or type = "iam_role" or type = "service_account"<br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json "message.data.resource.labels" as labels<br>\| json field=labels "project_id" as project<br>\| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\"" |
+| Google Cloud IAM/Overview/Recent IAM Role Activity | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "iam_role"<br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json "message.data.resource.labels", "message.data.timestamp", "message.data.resource.labels.project_id", "message.data.protoPayload" as labels, timestamp, project, payload<br>\| json field=payload "authenticationInfo.principalEmail", "response.title" as user, name<br>\| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\"" |
+| Google Cloud IAM/Overview/Recent Project Activity | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data" as data<br>\| json field=data "resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "project" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json field=data "resource.labels", "timestamp", "resource.labels.project_id", "protoPayload.authenticationInfo.principalEmail", "protoPayload.serviceData.policyDelta.bindingDeltas[*]" as labels, timestamp, project, user, changes<br><br>\| parse regex field=changes "\"role\":\"roles\\\/(?<role>[a-zA-Z.]+)\",\"member\":\"(?<member>.*?)\",\"action\":\"(?<action>[A-Z]+)\"" multi |
+| Google Cloud IAM/Overview/Recent Service Account Activity | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "service_account" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json "message.data" as data<br>\| json field=data "timestamp", "resource.labels", "resource.labels.project_id", "resource.labels.email_id", "protoPayload.authenticationInfo.principalEmail" as timestamp, labels, project, service_account, user<br>\| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\"" |
+| Google Cloud IAM/Role Activity/Added Roles Over Time | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "project" and log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br><br>\| timeslice 1h<br>\| json "message.data.resource.labels", "message.data.resource.labels.project_id", "message.data.protoPayload.serviceData.policyDelta.bindingDeltas[*]" as labels, project, changes<br>\| parse regex field=changes "\"role\":\"roles\\\/(?<role>[a-zA-Z.]+)\",\"member\":\".*\",\"action\":\"(?<action>[A-Z]+)\"" multi |
+| Google Cloud IAM/Role Activity/IAM Policy Changes by Project | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "project" \| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json "message.data.resource.labels", "message.data.protoPayload.methodName" as labels, method<br>\| where method = "SetIamPolicy"<br>\| json "message.data.resource.labels.project_id" as project |
+| Google Cloud IAM/Role Activity/Removed Roles Over Time | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "project" and log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br><br>\| timeslice 1h<br>\| json "message.data.resource.labels", "message.data.resource.labels.project_id", "message.data.protoPayload.serviceData.policyDelta.bindingDeltas[*]" as labels, project, changes<br>\| parse regex field=changes "\"role\":\"roles\\\/(?<role>[a-zA-Z.]+)\",\"member\":\".*\",\"action\":\"(?<action>[A-Z]+)\"" multi |
+| Google Cloud IAM/Role Activity/Role Assignments | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "project" and log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br><br>\| json "message.data.resource.labels", "message.data.resource.labels.project_id", "message.data.protoPayload.serviceData.policyDelta.bindingDeltas[*]" as labels, project, changes<br>\| parse regex field=changes "\"action\":\"(?<action>[A-Z]+)\"" multi |
+| Google Cloud IAM/Role Activity/Role Assignments Over Time | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "project" and log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br><br>\| timeslice 1h<br>\| json "message.data.resource.labels", "message.data.resource.labels.project_id", "message.data.protoPayload.serviceData.policyDelta.bindingDeltas[*]" as labels, project, changes<br>\| parse regex field=changes "\"action\":\"(?<action>[A-Z]+)\"" multi |
+| Google Cloud IAM/Role Activity/Role Existence | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "iam_role" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json "message.data.resource.labels", "message.data.timestamp", "message.data.resource.labels.project_id" as labels, timestamp, project<br>\| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\"" |
+| Google Cloud IAM/Role Activity/Role Existence Over Time | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "iam_role" and log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json "message.data.resource.labels", "message.data.timestamp", "message.data.resource.labels.project_id" as labels, timestamp, project<br>\| parse regex "\"methodName\":\"[^\"]+\.(?<method>[^\"]+)\"" |
+| Google Cloud IAM/Role Activity/User Operations | _sourceCategory={{Logsdatasource}}  logName resource timestamp<br>\| json "message.data" as data<br>\| json field=data "resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "project" or type = "iam_role"<br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2Factivity"<br>\| json field=data "resource.labels", "resource.labels.project_id", "protoPayload.methodName", "protoPayload.authenticationInfo.principalEmail" as labels, project, method, user |
 

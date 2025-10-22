@@ -1,343 +1,66 @@
 # Parsers For Zscaler Internet Access
 
-## Parser:
-```
-| json "sourcetype", "event.event_id", "event.protocol", "event.action", "event.urlcategory", "event.serverip", "event.location", "event.ClientIP", "event.user", "event.hostname", "event.clientpublicIP", "event.threatname", "event.threatcategory", "event.appname", "event.threatclass", "event.urlclass" as sourcetype,event_id,protocol,action,urlcategory,serverip,location,ClientIP,user,hostname,clientpublicIP,threatname,threatcategory, appname,threatclass,urlclass nodrop
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json "sourcetype", "event.user" as sourcetype, user
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user" as src_ip, src_user
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user" as src_ip, src_user
-| json field=_raw "event.urlcategory", "event.urlsupercategory" as category, supercategory
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.action" as src_ip, src_user, action
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.appclass" as src_ip, src_user, appclass
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.appname" as src_ip, src_user, application
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.filetype", "event.threatname" as src_ip, src_user, filetype, threatname
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.filetype", "event.threatname", "event.appname" as src_ip, src_user, filetype, threat, application
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.filetype", "event.threatname", "event.fileclass" as src_ip, src_user, filetype, threat, fileclass
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.filetype", "event.threatname", "event.pagerisk" as src_ip, src_user, filetype, threat, pagerisk
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.location" as src_ip, src_user, location
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.location", "event.action" as src_ip, src_user, location, action
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.location", "event.action", "event.reason" as src_ip, src_user, location, action, reason
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.location", "event.action", "event.reason", "event.urlcategory" as src_ip, src_user, location, action, reason, urlcategory
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.threatname", "event.filetype" as src_ip, src_user, threat, filetype
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.url", "event.action" as src_ip, src_user, url, action
-| parse regex field=url "(?<baseurl>.+?)[:/]" nodrop
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.action" as src_ip, src_user, category, action
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, location
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location", "event.action" as src_ip, src_user, category, reason, urlclass, threatname, location,action
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.threatcategory" as src_ip, src_user, category, reason, urlclass, threatname, threatcategory
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.threatcategory", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, threatcategory, location
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.filetype", "event.threatname", "event.user" as filetype, threatname, user
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.protocol", "event.user" as protocol, src_user
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.Recordtype", "event.tunneltype", "event.user", "event.sourceip", "event.destinationip", "event.event", "event.location" as Recordtype, tunneltype, user, sourceip, destinationip, event, location
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.urlcategory", "event.action", "event.user" as category, action, user
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.user" ,"event.requestsize", "event.responsesize", "event.urlcategory", "event.action" as src_user, src_bytes, dest_bytes, category, action
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.user", "event.department", "event.location", "event.reqaction", "event.resaction", "event.reqrulelabel", "event.resrulelabel", "event.dns_req", "event.dns_reqtype" , "event.dns_resp", "event.durationms", "event.srv_dip", "event.clt_sip", "event.category"  as user, department, location, reqaction, resaction, reqrulelabel, resrulelabel, dns_req, dns_reqtype, dns_resp, durationms, srv_dip, clt_sip, category
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.user", "event.location" as src_user, location
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.user", "event.requestsize", "event.serverip", "event.threatname", "event.action" as src_user,src_bytes, dest_ip, threatname, action
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "event.user", "event.responsesize", "event.serverip", "event.threatname", "event.action" as src_user,dest_bytes, dest_ip, threatname, action
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "sourcetype", "event.Recordtype", "event.tunneltype", "event.user", "event.sourceip", "event.destinationip", "event.event", "event.location" as sourcetype,Recordtype, tunneltype, user, sourceip, destinationip, event, location nodrop
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "sourcetype", "event.user", "event.department", "event.location", "event.reqaction", "event.resaction", "event.reqrulelabel", "event.resrulelabel", "event.dns_req", "event.dns_reqtype" , "event.dns_resp", "event.durationms", "event.srv_dip", "event.clt_sip", "event.category"  as sourcetype, user, department, location, reqaction, resaction, reqrulelabel, resrulelabel, dns_req, dns_reqtype, dns_resp, durationms, srv_dip, clt_sip, category nodrop
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
-
-
-## Parser:
-```
-| json field=_raw "sourcetype", "event.user", "event.locationname", "event.action", "event.tuntype", "event.protocol", "event.destcountry", "event.rulelable", "event.threatcat", "event.threatname" as sourcetype, user, location, action, tuntype, protocol, destcountry, rulelable, threat_category, threat_name nodrop
- 
-```
-### Use Cases:
-Advanced Security Risk Categories, Advanced Security Risks by Category and Location, Advanced Security Risks by Category and Users, Allowed Requests, Allowed Response, Authenticated Users Blocked, Authenticated Users Blocked Over Time, Blocked Events Outliers, Blocked Traffic, Denied Events, Denied Requests, Denied Response, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Destination vs Source Volume by Category, DNS Logs, File Based Threats Outlier, File Classification Threats, File Threats by Risk Score, File Threats By User, Firewall Logs, General Activity by Super Category and Sub Category, General Browsing by Location, Location of Allowed Activities, Location of Denied Activites, Locations Blocked, Locations Blocked Over Time, Logs by Category, Logs by Source, MB In by Top 5 Countries, MB Out by Top 5 Countries, Non-General Activity by App Class, Non-General Activity by App Name, Non-General Activity Top Named Users, Outliers by Blocked Users, Protocol Transports Over Time, Server Locations, Threat Categories, Threats by App, Threats by File Class, Threats by File Types, Threats by Location and Category, Threats by User and Category, Threats Submitted to Sandbox, Top 10 Blocked Base URLs, Top 10 Blocked Locations, Top 10 Blocked URL Categories, Top 10 Blocked Users, Top 10 Reasons, Top 10 Requested URLs, Top 10 Slowest URLs, Top General Browsing by Named Users, Transactions, Transactions Allowed, Transactions Blocked, Transactions Over Time, Tunnel Events, Tunnel Logs, Users Over Time, Web Logs
-
+| use_case | parser |
+|--- | --- |
+| Zscaler Internet Access/ZIA - Behavior/Destination vs Source Volume by Category | _sourceCategory={{Logsdatasource}}  "Allowed" <br>\| json field=_raw "event.user" ,"event.requestsize", "event.responsesize", "event.urlcategory", "event.action" as src_user, src_bytes, dest_bytes, category, action |
+| Zscaler Internet Access/ZIA - Behavior/General Activity by Super Category and Sub Category | _sourceCategory={{Logsdatasource}}  "general browsing" "Allowed"<br>\| json field=_raw "event.clientpublicIP", "event.user" as src_ip, src_user<br>\| json field=_raw "event.urlcategory", "event.urlsupercategory" as category, supercategory |
+| Zscaler Internet Access/ZIA - Behavior/General Browsing by Location | _sourceCategory={{Logsdatasource}}  "general browsing" "Allowed"<br>\| json field=_raw "event.clientpublicIP", "event.user", "event.location" as src_ip, src_user, location |
+| Zscaler Internet Access/ZIA - Behavior/MB In by Top 5 Countries | _sourceCategory={{Logsdatasource}}  "Allowed" <br>\| json field=_raw "event.user", "event.requestsize", "event.serverip", "event.threatname", "event.action" as src_user,src_bytes, dest_ip, threatname, action |
+| Zscaler Internet Access/ZIA - Behavior/MB Out by Top 5 Countries | _sourceCategory={{Logsdatasource}}  "Allowed" <br>\| json field=_raw "event.user", "event.responsesize", "event.serverip", "event.threatname", "event.action" as src_user,dest_bytes, dest_ip, threatname, action |
+| Zscaler Internet Access/ZIA - Behavior/Non-General Activity by App Class | _sourceCategory={{Logsdatasource}}  !"general browsing" //ensure no nones and nulls<br>\| json field=_raw "event.clientpublicIP", "event.user", "event.appclass" as src_ip, src_user, appclass |
+| Zscaler Internet Access/ZIA - Behavior/Non-General Activity by App Name | _sourceCategory={{Logsdatasource}}  !"general browsing" //ensure no nones and nulls<br>\| json field=_raw "event.clientpublicIP", "event.user", "event.appname" as src_ip, src_user, application |
+| Zscaler Internet Access/ZIA - Behavior/Non-General Activity Top Named Users | _sourceCategory={{Logsdatasource}}  !"general browsing" //ensure no nones and nulls<br>\| json field=_raw "event.clientpublicIP", "event.user" as src_ip, src_user |
+| Zscaler Internet Access/ZIA - Behavior/Top General Browsing by Named Users | _sourceCategory={{Logsdatasource}}  "general browsing" //ensure no nones and nulls<br>\| json field=_raw "event.clientpublicIP", "event.user" as src_ip, src_user |
+| Zscaler Internet Access/ZIA - Blocked Traffic/Blocked Events Outliers | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.action" as src_ip, src_user, category, action |
+| Zscaler Internet Access/ZIA - Blocked Traffic/Outliers by Blocked Users | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.action" as src_ip, src_user, action |
+| Zscaler Internet Access/ZIA - Blocked Traffic/Top 10 Blocked Base URLs | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.url", "event.action" as src_ip, src_user, url, action<br>\| where action != "Allowed" and src_user matches "{{user}}"<br>\| parse regex field=url "(?<baseurl>.+?)[:/]" nodrop |
+| Zscaler Internet Access/ZIA - Blocked Traffic/Top 10 Blocked Locations | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.location", "event.action" as src_ip, src_user, location, action |
+| Zscaler Internet Access/ZIA - Blocked Traffic/Top 10 Blocked URL Categories | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.location", "event.action", "event.reason", "event.urlcategory" as src_ip, src_user, location, action, reason, urlcategory |
+| Zscaler Internet Access/ZIA - Blocked Traffic/Top 10 Blocked Users | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.action" as src_ip, src_user, category, action |
+| Zscaler Internet Access/ZIA - Blocked Traffic/Top 10 Reasons | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.location", "event.action", "event.reason" as src_ip, src_user, location, action, reason |
+| Zscaler Internet Access/ZIA - DNS/Allowed Requests | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.user", "event.department", "event.location", "event.reqaction", "event.resaction", "event.reqrulelabel", "event.resrulelabel", "event.dns_req", "event.dns_reqtype" , "event.dns_resp", "event.durationms", "event.srv_dip", "event.clt_sip", "event.category"  as user, department, location, reqaction, resaction, reqrulelabel, resrulelabel, dns_req, dns_reqtype, dns_resp, durationms, srv_dip, clt_sip, category |
+| Zscaler Internet Access/ZIA - DNS/Allowed Response | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.user", "event.department", "event.location", "event.reqaction", "event.resaction", "event.reqrulelabel", "event.resrulelabel", "event.dns_req", "event.dns_reqtype" , "event.dns_resp", "event.durationms", "event.srv_dip", "event.clt_sip", "event.category"  as user, department, location, reqaction, resaction, reqrulelabel, resrulelabel, dns_req, dns_reqtype, dns_resp, durationms, srv_dip, clt_sip, category |
+| Zscaler Internet Access/ZIA - DNS/Denied Requests | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.user", "event.department", "event.location", "event.reqaction", "event.resaction", "event.reqrulelabel", "event.resrulelabel", "event.dns_req", "event.dns_reqtype" , "event.dns_resp", "event.durationms", "event.srv_dip", "event.clt_sip", "event.category"  as user, department, location, reqaction, resaction, reqrulelabel, resrulelabel, dns_req, dns_reqtype, dns_resp, durationms, srv_dip, clt_sip, category |
+| Zscaler Internet Access/ZIA - DNS/Denied Response | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.user", "event.department", "event.location", "event.reqaction", "event.resaction", "event.reqrulelabel", "event.resrulelabel", "event.dns_req", "event.dns_reqtype" , "event.dns_resp", "event.durationms", "event.srv_dip", "event.clt_sip", "event.category"  as user, department, location, reqaction, resaction, reqrulelabel, resrulelabel, dns_req, dns_reqtype, dns_resp, durationms, srv_dip, clt_sip, category |
+| Zscaler Internet Access/ZIA - DNS/Logs by Category | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.user", "event.department", "event.location", "event.reqaction", "event.resaction", "event.reqrulelabel", "event.resrulelabel", "event.dns_req", "event.dns_reqtype" , "event.dns_resp", "event.durationms", "event.srv_dip", "event.clt_sip", "event.category"  as user, department, location, reqaction, resaction, reqrulelabel, resrulelabel, dns_req, dns_reqtype, dns_resp, durationms, srv_dip, clt_sip, category |
+| Zscaler Internet Access/ZIA - DNS/Server Locations | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.user", "event.department", "event.location", "event.reqaction", "event.resaction", "event.reqrulelabel", "event.resrulelabel", "event.dns_req", "event.dns_reqtype" , "event.dns_resp", "event.durationms", "event.srv_dip", "event.clt_sip", "event.category"  as user, department, location, reqaction, resaction, reqrulelabel, resrulelabel, dns_req, dns_reqtype, dns_resp, durationms, srv_dip, clt_sip, category |
+| Zscaler Internet Access/ZIA - DNS/Top 10 Requested URLs | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.user", "event.department", "event.location", "event.reqaction", "event.resaction", "event.reqrulelabel", "event.resrulelabel", "event.dns_req", "event.dns_reqtype" , "event.dns_resp", "event.durationms", "event.srv_dip", "event.clt_sip", "event.category"  as user, department, location, reqaction, resaction, reqrulelabel, resrulelabel, dns_req, dns_reqtype, dns_resp, durationms, srv_dip, clt_sip, category |
+| Zscaler Internet Access/ZIA - DNS/Top 10 Slowest URLs | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.user", "event.department", "event.location", "event.reqaction", "event.resaction", "event.reqrulelabel", "event.resrulelabel", "event.dns_req", "event.dns_reqtype" , "event.dns_resp", "event.durationms", "event.srv_dip", "event.clt_sip", "event.category"  as user, department, location, reqaction, resaction, reqrulelabel, resrulelabel, dns_req, dns_reqtype, dns_resp, durationms, srv_dip, clt_sip, category |
+| Zscaler Internet Access/ZIA - File Classification Activity/File Based Threats Outlier | _sourceCategory={{Logsdatasource}}   filetype<br>\| json field=_raw "event.clientpublicIP", "event.user", "event.threatname", "event.filetype" as src_ip, src_user, threat, filetype |
+| Zscaler Internet Access/ZIA - File Classification Activity/File Threats by Risk Score | _sourceCategory={{Logsdatasource}}   filetype<br>\| json field=_raw "event.clientpublicIP", "event.user", "event.filetype", "event.threatname", "event.pagerisk" as src_ip, src_user, filetype, threat, pagerisk |
+| Zscaler Internet Access/ZIA - File Classification Activity/File Threats By User | _sourceCategory={{Logsdatasource}}   filetype<br>\| json field=_raw "event.clientpublicIP", "event.user", "event.filetype", "event.threatname" as src_ip, src_user, filetype, threatname |
+| Zscaler Internet Access/ZIA - File Classification Activity/Threats by App | _sourceCategory={{Logsdatasource}}   filetype<br>\| json field=_raw "event.clientpublicIP", "event.user", "event.filetype", "event.threatname", "event.appname" as src_ip, src_user, filetype, threat, application |
+| Zscaler Internet Access/ZIA - File Classification Activity/Threats by File Class | _sourceCategory={{Logsdatasource}}   filetype<br>\| json field=_raw "event.clientpublicIP", "event.user", "event.filetype", "event.threatname", "event.fileclass" as src_ip, src_user, filetype, threat, fileclass |
+| Zscaler Internet Access/ZIA - File Classification Activity/Threats by File Types | _sourceCategory={{Logsdatasource}}   filetype<br>\| json field=_raw "event.clientpublicIP", "event.user", "event.filetype", "event.threatname", "event.fileclass" as src_ip, src_user, filetype, threat, fileclass |
+| Zscaler Internet Access/ZIA - Logs/DNS Logs | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "sourcetype", "event.user", "event.department", "event.location", "event.reqaction", "event.resaction", "event.reqrulelabel", "event.resrulelabel", "event.dns_req", "event.dns_reqtype" , "event.dns_resp", "event.durationms", "event.srv_dip", "event.clt_sip", "event.category"  as sourcetype, user, department, location, reqaction, resaction, reqrulelabel, resrulelabel, dns_req, dns_reqtype, dns_resp, durationms, srv_dip, clt_sip, category nodrop |
+| Zscaler Internet Access/ZIA - Logs/Firewall Logs | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "sourcetype", "event.user", "event.locationname", "event.action", "event.tuntype", "event.protocol", "event.destcountry", "event.rulelable", "event.threatcat", "event.threatname" as sourcetype, user, location, action, tuntype, protocol, destcountry, rulelable, threat_category, threat_name nodrop |
+| Zscaler Internet Access/ZIA - Logs/Logs by Source | _sourceCategory={{Logsdatasource}} <br>\| json "sourcetype", "event.user" as sourcetype, user |
+| Zscaler Internet Access/ZIA - Logs/Tunnel Logs | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "sourcetype", "event.Recordtype", "event.tunneltype", "event.user", "event.sourceip", "event.destinationip", "event.event", "event.location" as sourcetype,Recordtype, tunneltype, user, sourceip, destinationip, event, location nodrop |
+| Zscaler Internet Access/ZIA - Logs/Web Logs | _sourceCategory={{Logsdatasource}} <br>\| json "sourcetype", "event.event_id", "event.protocol", "event.action", "event.urlcategory", "event.serverip", "event.location", "event.ClientIP", "event.user", "event.hostname", "event.clientpublicIP", "event.threatname", "event.threatcategory", "event.appname", "event.threatclass", "event.urlclass" as sourcetype,event_id,protocol,action,urlcategory,serverip,location,ClientIP,user,hostname,clientpublicIP,threatname,threatcategory, appname,threatclass,urlclass nodrop |
+| Zscaler Internet Access/ZIA - Overview/Blocked Traffic | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.urlcategory", "event.action", "event.user" as category, action, user |
+| Zscaler Internet Access/ZIA - Overview/Denied Events | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.action" as src_ip, src_user, action |
+| Zscaler Internet Access/ZIA - Overview/Denied to Allowed Ratio | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.action" as src_ip, src_user, action |
+| Zscaler Internet Access/ZIA - Overview/Denied to Allowed Ratio - Outlier | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.action" as src_ip, src_user, action |
+| Zscaler Internet Access/ZIA - Overview/File Classification Threats | _sourceCategory={{Logsdatasource}}   filetype<br>\| json field=_raw "event.filetype", "event.threatname", "event.user" as filetype, threatname, user |
+| Zscaler Internet Access/ZIA - Overview/Location of Allowed Activities | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.action" as src_ip, src_user, action |
+| Zscaler Internet Access/ZIA - Overview/Location of Denied Activites | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.action" as src_ip, src_user, action |
+| Zscaler Internet Access/ZIA - Overview/Logs by Source | _sourceCategory={{Logsdatasource}} <br>\| json "sourcetype", "event.user" as sourcetype, user |
+| Zscaler Internet Access/ZIA - Overview/Protocol Transports Over Time | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.protocol", "event.user" as protocol, src_user |
+| Zscaler Internet Access/ZIA - Overview/Threats Submitted to Sandbox | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.threatcategory", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, threatcategory, location |
+| Zscaler Internet Access/ZIA - Overview/Tunnel Events | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.Recordtype", "event.tunneltype", "event.user", "event.sourceip", "event.destinationip", "event.event", "event.location" as Recordtype, tunneltype, user, sourceip, destinationip, event, location |
+| Zscaler Internet Access/ZIA - Overview/Users Over Time | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.user", "event.location" as src_user, location |
+| Zscaler Internet Access/ZIA - Threats/Advanced Security Risk Categories | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.threatcategory" as src_ip, src_user, category, reason, urlclass, threatname, threatcategory |
+| Zscaler Internet Access/ZIA - Threats/Advanced Security Risks by Category and Location | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, location |
+| Zscaler Internet Access/ZIA - Threats/Advanced Security Risks by Category and Users | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, location |
+| Zscaler Internet Access/ZIA - Threats/Authenticated Users Blocked | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, location |
+| Zscaler Internet Access/ZIA - Threats/Authenticated Users Blocked Over Time | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, location |
+| Zscaler Internet Access/ZIA - Threats/Locations Blocked | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, location |
+| Zscaler Internet Access/ZIA - Threats/Locations Blocked Over Time | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, location |
+| Zscaler Internet Access/ZIA - Threats/Threat Categories | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.threatcategory" as src_ip, src_user, category, reason, urlclass, threatname, threatcategory |
+| Zscaler Internet Access/ZIA - Threats/Threats by Location and Category | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.threatcategory", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, threatcategory, location |
+| Zscaler Internet Access/ZIA - Threats/Threats by User and Category | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.threatcategory", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, threatcategory, location |
+| Zscaler Internet Access/ZIA - Threats/Transactions | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location", "event.action" as src_ip, src_user, category, reason, urlclass, threatname, location,action |
+| Zscaler Internet Access/ZIA - Threats/Transactions Allowed | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, location |
+| Zscaler Internet Access/ZIA - Threats/Transactions Blocked | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location" as src_ip, src_user, category, reason, urlclass, threatname, location |
+| Zscaler Internet Access/ZIA - Threats/Transactions Over Time | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "event.clientpublicIP", "event.user", "event.urlcategory", "event.reason", "event.urlclass", "event.threatname", "event.location", "event.action" as src_ip, src_user, category, reason, urlclass, threatname, location,action |
 

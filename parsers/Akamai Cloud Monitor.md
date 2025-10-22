@@ -1,212 +1,44 @@
 # Parsers For Akamai Cloud Monitor
 
-## Parser:
-```
-|  parse "\"cliIP\":\"*\"" as ip | parse "\"downloadTime\":\"*\"" as downloadtime| parse "\"country\":\"*\"" as country_code
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Slowest URLs, Top 404-Causing URLs, Top Error-Causing URLs
-
-
-
-## Parser:
-```
-|  parse "\"reqPath\":\"*\"" as reqpath | count_frequent(reqpath) | sort by _approxcount | 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Denials by Host, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Deny Rules, Top Deny URLs, Top Error-Causing URLs, Top Requests, Top Warn Rules, Top Warn URLs, UA Over Time, WAF-Warn Requests per Host
-
-
-
-## Parser:
-```
-| parse "\"bytes\":\"*\"" as bytes, "\"edgeIP\":\"*\"" as edgeip, "\"country\":\"*\"" as country, "\"cookie\":\"*\"" as cookie
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Denials by Host, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Deny Rules, Top Deny URLs, Top Error-Causing URLs, Top Requests, Top Warn Rules, Top Warn URLs, UA Over Time, User Agents, WAF-Warn Requests per Host
-
-
-
-## Parser:
-```
-| parse "\"cacheStatus\":\"*\"" as cachestatus, "\"downloadTime\":\"*\"" as result
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cacheable Content Download Times, Countries, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Slowest URLs, Top 404-Causing URLs, Top Error-Causing URLs
-
-
-
-## Parser:
-```
-| parse "\"cacheStatus\":\"*\"" as status
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Slowest URLs, Top 404-Causing URLs, Top Error-Causing URLs
-
-
-
-## Parser:
-```
-| parse "\"cliIP\":\"*\"" as cliip
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Denials by Host, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Deny Rules, Top Deny URLs, Top Error-Causing URLs, Top Requests, Top Warn Rules, Top Warn URLs, UA Over Time, WAF-Warn Requests per Host
-
-
-
-## Parser:
-```
-| parse "\"cliIP\":\"*\"" as ip 
-| parse "\"downloadTime\":\"*\"" as downloadtime| parse "\"country\":\"*\"" as country_code
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Error-Causing URLs
-
-
-
-## Parser:
-```
-| parse "\"denyRules\":\"*\"" as deny |urldecode(deny)
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Denials by Host, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Deny Rules, Top Deny URLs, Top Error-Causing URLs, Top Warn Rules, Top Warn URLs, WAF-Warn Requests per Host
-
-
-
-## Parser:
-```
-| parse "\"denyRules\":\"*\"" as deny, "\"reqHost\":\"*\"" as host
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Denials by Host, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Deny URLs, Top Error-Causing URLs, Top Warn URLs, WAF-Warn Requests per Host
-
-
-
-## Parser:
-```
-| parse "\"denyRules\":\"*\"" as deny, "\"reqPath\":\"*\"" as path
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Deny URLs, Top Error-Causing URLs, Top Warn URLs, WAF-Warn Requests per Host
-
-
-
-## Parser:
-```
-| parse "\"netOriginLatency\":\"*\"" as originLatency, "\"fwdHost\":\"*\"" as fwdHost
- 
-```
-### Use Cases:
-90%-ile Latency, Error Rate 4xx by Code, Error Rate 5xx by Code, Median, Median Latency, Slowest URLs, Top 404-Causing URLs, Top Error-Causing URLs
-
-
-
-## Parser:
-```
-| parse "\"netOriginLatency\":\"*\"" as originLatency, "\"originIP\":\"*\"" as originIP
- 
-```
-### Use Cases:
-90%-ile Latency, Error Rate 4xx by Code, Error Rate 5xx by Code, Median, Median Latency, Slowest URLs, Top 404-Causing URLs, Top Error-Causing URLs
-
-
-
-## Parser:
-```
-| parse "\"reqMethod\":\"*\"" as method, "\"status\":\"*\"" as status, "\"fwdHost\":\"*\"" as origin
- 
-```
-### Use Cases:
-90%-ile Latency, Error Rate 4xx by Code, Error Rate 5xx by Code, Median, Median Latency, Slowest URLs, Top 404-Causing URLs, Top Error-Causing URLs
-
-
-
-## Parser:
-```
-| parse "\"reqPath\":\"*\"" as path, "\"netOriginLatency\":\"*\"" as latency
- 
-```
-### Use Cases:
-90%-ile Latency, Error Rate 4xx by Code, Error Rate 5xx by Code, Median, Median Latency, Slowest URLs, Top 404-Causing URLs, Top Error-Causing URLs
-
-
-
-## Parser:
-```
-| parse "\"reqPath\":\"*\"" as path, "\"status\":\"*\"" as status
- 
-```
-### Use Cases:
-90%-ile Latency, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Slowest URLs, Top 404-Causing URLs, Top Error-Causing URLs
-
-
-
-## Parser:
-```
-| parse "\"UA\":\"*\"" as ua
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Denials by Host, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Deny Rules, Top Deny URLs, Top Error-Causing URLs, Top Requests, Top Warn Rules, Top Warn URLs, UA Over Time, User Agents, WAF-Warn Requests per Host
-
-
-
-## Parser:
-```
-| parse "\"UA\":\"*\"" as ua | timeslice 1m
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Denials by Host, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Deny Rules, Top Deny URLs, Top Error-Causing URLs, Top Warn Rules, Top Warn URLs, UA Over Time, WAF-Warn Requests per Host
-
-
-
-## Parser:
-```
-| parse "\"warnRules\":\"*\"" as warn |urldecode(warn)
-| parse regex field=warn "(?<warn_rule>[\w-]+)" multi
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Denials by Host, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Deny URLs, Top Error-Causing URLs, Top Warn Rules, Top Warn URLs, WAF-Warn Requests per Host
-
-
-
-## Parser:
-```
-| parse "\"warnRules\":\"*\"" as warn, "\"denyRules\":\"*\"" as deny, "\"cliIP\":\"*\"" as cliip
- 
-```
-### Use Cases:
-90%-ile Latency, Attacks (Individual Warn/Deny Events), Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Denials by Host, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Deny Rules, Top Deny URLs, Top Error-Causing URLs, Top Requests, Top Warn Rules, Top Warn URLs, UA Over Time, User Agents, WAF-Warn Requests per Host
-
-
-
-## Parser:
-```
-| parse "\"warnRules\":\"*\"" as warn, "\"reqHost\":\"*\"" as host
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Error-Causing URLs, Top Warn URLs, WAF-Warn Requests per Host
-
-
-
-## Parser:
-```
-| parse "\"warnRules\":\"*\"" as warning_id, "\"reqPath\":\"*\"" as path | urldecode(path)
- 
-```
-### Use Cases:
-90%-ile Latency, Cache Offload Percentage Over Time, Cache Performance, Cacheable Content Download Times, Countries, Download Performance Hotspots - Avg Download Above 300 by Country, Error Rate 4xx by Code, Error Rate 5xx by Code, Map (Unique Visitors), Median, Median Latency, Origin Download Times Histogram, Performance Stats by Country, Slowest URLs, Top 404-Causing URLs, Top Error-Causing URLs, Top Warn URLs
-
+| use_case | parser |
+|--- | --- |
+| Akamai Cloud Monitor/Origin Performance - New/90%-ile Latency | _sourceCategory = Labs/Akamai*\| parse "\"netOriginLatency\":\"*\"" as originLatency, "\"fwdHost\":\"*\"" as fwdHost |
+| Akamai Cloud Monitor/Origin Performance - New/Error Rate 4xx by Code | _sourceCategory = Labs/Akamai* 4??<br>\| parse "\"reqMethod\":\"*\"" as method, "\"status\":\"*\"" as status, "\"fwdHost\":\"*\"" as origin |
+| Akamai Cloud Monitor/Origin Performance - New/Error Rate 5xx by Code | _sourceCategory = Labs/Akamai* (500 or 501 or 502 or 503 or 504 or 505)<br>\| parse "\"reqMethod\":\"*\"" as method, "\"status\":\"*\"" as status, "\"fwdHost\":\"*\"" as origin |
+| Akamai Cloud Monitor/Origin Performance - New/Median | _sourceCategory = Labs/Akamai*\| parse "\"netOriginLatency\":\"*\"" as originLatency, "\"originIP\":\"*\"" as originIP |
+| Akamai Cloud Monitor/Origin Performance - New/Median Latency | _sourceCategory = Labs/Akamai*\| parse "\"netOriginLatency\":\"*\"" as originLatency, "\"fwdHost\":\"*\"" as fwdHost |
+| Akamai Cloud Monitor/Origin Performance - New/Slowest URLs | _sourceCategory = Labs/Akamai*\| parse "\"reqPath\":\"*\"" as path, "\"netOriginLatency\":\"*\"" as latency |
+| Akamai Cloud Monitor/Origin Performance - New/Top 404-Causing URLs | _sourceCategory = Labs/Akamai*\| parse "\"reqPath\":\"*\"" as path, "\"status\":\"*\"" as status |
+| Akamai Cloud Monitor/Origin Performance - New/Top Error-Causing URLs | _sourceCategory = Labs/Akamai* 50?<br>\| parse "\"reqPath\":\"*\"" as path, "\"status\":\"*\"" as status |
+| Akamai Cloud Monitor/Origin Performance/90%-ile Latency | _sourceCategory={{_sourceCategory}}\| parse "\"netOriginLatency\":\"*\"" as originLatency, "\"fwdHost\":\"*\"" as fwdHost |
+| Akamai Cloud Monitor/Origin Performance/Error Rate 4xx by Code | _sourceCategory={{_sourceCategory}} 4??<br>\| parse "\"reqMethod\":\"*\"" as method, "\"status\":\"*\"" as status, "\"fwdHost\":\"*\"" as origin |
+| Akamai Cloud Monitor/Origin Performance/Error Rate 5xx by Code | _sourceCategory={{_sourceCategory}} (500 or 501 or 502 or 503 or 504 or 505)<br>\| parse "\"reqMethod\":\"*\"" as method, "\"status\":\"*\"" as status, "\"fwdHost\":\"*\"" as origin |
+| Akamai Cloud Monitor/Origin Performance/Median | _sourceCategory={{_sourceCategory}}\| parse "\"netOriginLatency\":\"*\"" as originLatency, "\"originIP\":\"*\"" as originIP |
+| Akamai Cloud Monitor/Origin Performance/Median Latency | _sourceCategory={{_sourceCategory}}\| parse "\"netOriginLatency\":\"*\"" as originLatency, "\"fwdHost\":\"*\"" as fwdHost |
+| Akamai Cloud Monitor/Origin Performance/Slowest URLs | _sourceCategory={{_sourceCategory}}\| parse "\"reqPath\":\"*\"" as path, "\"netOriginLatency\":\"*\"" as latency |
+| Akamai Cloud Monitor/Origin Performance/Top 404-Causing URLs | _sourceCategory={{_sourceCategory}}\| parse "\"reqPath\":\"*\"" as path, "\"status\":\"*\"" as status |
+| Akamai Cloud Monitor/Origin Performance/Top Error-Causing URLs | _sourceCategory={{_sourceCategory}} 50?<br>\| parse "\"reqPath\":\"*\"" as path, "\"status\":\"*\"" as status |
+| Akamai Cloud Monitor/Overview/Countries | _sourceCategory={{_sourceCategory}} <br>\| parse "\"bytes\":\"*\"" as bytes, "\"edgeIP\":\"*\"" as edgeip, "\"country\":\"*\"" as country, "\"cookie\":\"*\"" as cookie |
+| Akamai Cloud Monitor/Overview/Download Performance Hotspots - Avg Download Above 300 by Country | _sourceCategory={{_sourceCategory}} cliIP downloadTime country\|  parse "\"cliIP\":\"*\"" as ip \| parse "\"downloadTime\":\"*\"" as downloadtime\| parse "\"country\":\"*\"" as country_code |
+| Akamai Cloud Monitor/Overview/Map (Unique Visitors) | _sourceCategory={{_sourceCategory}} \| parse "\"cliIP\":\"*\"" as cliip |
+| Akamai Cloud Monitor/Overview/Top 404-Causing URLs | _sourceCategory={{_sourceCategory}}\| parse "\"reqPath\":\"*\"" as path, "\"status\":\"*\"" as status |
+| Akamai Cloud Monitor/Overview/Top Error-Causing URLs | _sourceCategory={{_sourceCategory}} 50?<br>\| parse "\"reqPath\":\"*\"" as path, "\"status\":\"*\"" as status |
+| Akamai Cloud Monitor/Quality of Service/Cache Offload Percentage Over Time | _sourceCategory={{_sourceCategory}} cacheStatus<br>\| parse "\"cacheStatus\":\"*\"" as status |
+| Akamai Cloud Monitor/Quality of Service/Cache Performance | _sourceCategory={{_sourceCategory}} cacheStatus<br>\| parse "\"cacheStatus\":\"*\"" as status |
+| Akamai Cloud Monitor/Quality of Service/Cacheable Content Download Times | _sourceCategory={{_sourceCategory}} netPerf downloadTime cacheStatus<br>\| parse "\"cacheStatus\":\"*\"" as cachestatus, "\"downloadTime\":\"*\"" as result |
+| Akamai Cloud Monitor/Quality of Service/Download Performance Hotspots - Avg Download Above 300 by Country | _sourceCategory={{_sourceCategory}} cliIP downloadTime country\|  parse "\"cliIP\":\"*\"" as ip \| parse "\"downloadTime\":\"*\"" as downloadtime\| parse "\"country\":\"*\"" as country_code |
+| Akamai Cloud Monitor/Quality of Service/Origin Download Times Histogram | _sourceCategory={{_sourceCategory}} netPerf downloadTime cacheStatus<br>\| parse "\"cacheStatus\":\"*\"" as cachestatus, "\"downloadTime\":\"*\"" as result |
+| Akamai Cloud Monitor/Quality of Service/Performance Stats by Country | _sourceCategory={{_sourceCategory}} cliIP downloadTime country<br>\| parse "\"cliIP\":\"*\"" as ip <br>\| parse "\"downloadTime\":\"*\"" as downloadtime\| parse "\"country\":\"*\"" as country_code |
+| Akamai Cloud Monitor/Security/Denials by Host | _sourceCategory={{_sourceCategory}} waf denyRules reqHost<br>\| parse "\"denyRules\":\"*\"" as deny, "\"reqHost\":\"*\"" as host |
+| Akamai Cloud Monitor/Security/Top Deny Rules | _sourceCategory={{_sourceCategory}} !"\"denyRules\":\"\""<br>\| parse "\"denyRules\":\"*\"" as deny \|urldecode(deny) |
+| Akamai Cloud Monitor/Security/Top Deny URLs | _sourceCategory={{_sourceCategory}}\| parse "\"denyRules\":\"*\"" as deny, "\"reqPath\":\"*\"" as path |
+| Akamai Cloud Monitor/Security/Top Warn Rules | _sourceCategory={{_sourceCategory}} !"\"warnRules\":\"\""<br>\| parse "\"warnRules\":\"*\"" as warn \|urldecode(warn)<br>\| parse regex field=warn "(?<warn_rule>[\w-]+)" multi |
+| Akamai Cloud Monitor/Security/Top Warn URLs | _sourceCategory={{_sourceCategory}} waf warnRules reqPath<br>\| parse "\"warnRules\":\"*\"" as warning_id, "\"reqPath\":\"*\"" as path \| urldecode(path) |
+| Akamai Cloud Monitor/Security/WAF-Warn Requests per Host | _sourceCategory={{_sourceCategory}} waf warnRules reqHost<br>\| parse "\"warnRules\":\"*\"" as warn, "\"reqHost\":\"*\"" as host |
+| Akamai Cloud Monitor/Visitors/Countries | _sourceCategory={{_sourceCategory}} <br>\| parse "\"bytes\":\"*\"" as bytes, "\"edgeIP\":\"*\"" as edgeip, "\"country\":\"*\"" as country, "\"cookie\":\"*\"" as cookie |
+| Akamai Cloud Monitor/Visitors/Map (Unique Visitors) | _sourceCategory={{_sourceCategory}}\| parse "\"cliIP\":\"*\"" as cliip |
+| Akamai Cloud Monitor/Visitors/Top Requests | _sourceCategory={{_sourceCategory}} reqPath !"\"reqPath\":\"%2f\"" !".js" !".css" !".png" !".jpg" !".cgi" !".xml" !".ico"  !".gif"  !".csv" !".swf"  !".tiff" !".tif"\| urldecode(_raw) <br>\|  parse "\"reqPath\":\"*\"" as reqpath \| count_frequent(reqpath) \| sort by _approxcount \| limit 20 |
+| Akamai Cloud Monitor/Visitors/UA Over Time | _sourceCategory={{_sourceCategory}} <br>\| parse "\"UA\":\"*\"" as ua \| timeslice 1m |
+| Akamai Cloud Monitor/Visitors/User Agents | _sourceCategory={{_sourceCategory}} <br>\| parse "\"UA\":\"*\"" as ua |
+| Akamai Cloud Monitor/Web Application Firewall - Attacks/Deny Events) | _sourceCategory={{_sourceCategory}}\| parse "\"warnRules\":\"*\"" as warn, "\"denyRules\":\"*\"" as deny, "\"cliIP\":\"*\"" as cliip |
 

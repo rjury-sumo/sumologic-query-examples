@@ -1,61 +1,17 @@
 # Parsers For Sauce Labs
 
-## Parser:
-```
-| json field=_raw "browser_name", "browser_version", "data_type", "os_name", "os_version", "status", "id" as browser, browserVersion, data_type, os, osVersion, status, job_id
- 
-```
-### Use Cases:
-Average runtime of VDC tests by date, Most recent failed VDC tests, VDC Tests Browser/Os count, VDC Tests by framework, VDC Tests by status, VDC Tests errored, VDC Tests failed, VDC Tests failed and errored by browser/os count, VDC Tests failed and errored by team, VDC Tests passed, VDC Tests run total
-
-
-
-## Parser:
-```
-| json field=_raw "duration_sec", "status", "data_type" as duration, status, data_type
- 
-```
-### Use Cases:
-Average runtime of VDC tests by date, VDC Tests by framework, VDC Tests by status, VDC Tests errored, VDC Tests failed, VDC Tests failed and errored by browser/os count, VDC Tests failed and errored by team, VDC Tests passed, VDC Tests run total
-
-
-
-## Parser:
-```
-| json field=_raw "id", "status", "data_type" as job_id, status, data_type
- 
-```
-### Use Cases:
-Average runtime of VDC tests by date, Most recent failed VDC tests, Number of VDC tests by date, VDC Tests Browser/Os count, VDC Tests by framework, VDC Tests by status, VDC Tests errored, VDC Tests failed, VDC Tests failed and errored by browser/os count, VDC Tests failed and errored by team, VDC Tests passed, VDC Tests per status count, VDC Tests run total
-
-
-
-## Parser:
-```
-| json field=_raw "id", "status", "data_type", "automation_backend" as job_id, status, data_type, framework
- 
-```
-### Use Cases:
-VDC Tests by framework, VDC Tests by status, VDC Tests errored, VDC Tests failed, VDC Tests failed and errored by browser/os count, VDC Tests run total
-
-
-
-## Parser:
-```
-| json field=_raw "id", "status", "data_type", "team_name" as job_id, status, data_type, team_name
- 
-```
-### Use Cases:
-VDC Tests by framework, VDC Tests by status, VDC Tests errored, VDC Tests failed, VDC Tests failed and errored by browser/os count, VDC Tests failed and errored by team, VDC Tests run total
-
-
-
-## Parser:
-```
-| json field=_raw "id", "team_name", "status", "data_type", "modification_time", "sl_url" as job_id, team_name, status, data_type, modification_time, sl_url
- 
-```
-### Use Cases:
-Average runtime of VDC tests by date, Most recent failed VDC tests, VDC Tests by framework, VDC Tests by status, VDC Tests errored, VDC Tests failed, VDC Tests failed and errored by browser/os count, VDC Tests failed and errored by team, VDC Tests passed, VDC Tests run total
-
+| use_case | parser |
+|--- | --- |
+| Sauce Labs/VDC/Average runtime of VDC tests by date | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "duration_sec", "status", "data_type" as duration, status, data_type |
+| Sauce Labs/VDC/Most recent failed VDC tests | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "id", "team_name", "status", "data_type", "modification_time", "sl_url" as job_id, team_name, status, data_type, modification_time, sl_url |
+| Sauce Labs/VDC/Number of VDC tests by date | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "id", "status", "data_type" as job_id, status, data_type |
+| Sauce Labs/VDC/Os count | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "browser_name", "browser_version", "data_type", "os_name", "os_version", "status", "id" as browser, browserVersion, data_type, os, osVersion, status, job_id |
+| Sauce Labs/VDC/VDC Tests by framework | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "id", "status", "data_type", "automation_backend" as job_id, status, data_type, framework |
+| Sauce Labs/VDC/VDC Tests by status | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "id", "status", "data_type" as job_id, status, data_type |
+| Sauce Labs/VDC/VDC Tests errored | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "id", "status", "data_type" as job_id, status, data_type |
+| Sauce Labs/VDC/VDC Tests failed | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "id", "status", "data_type" as job_id, status, data_type |
+| Sauce Labs/VDC/VDC Tests failed and errored by team | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "id", "status", "data_type", "team_name" as job_id, status, data_type, team_name |
+| Sauce Labs/VDC/VDC Tests passed | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "id", "status", "data_type" as job_id, status, data_type |
+| Sauce Labs/VDC/VDC Tests per status count | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "id", "status", "data_type" as job_id, status, data_type |
+| Sauce Labs/VDC/VDC Tests run total | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "id", "status", "data_type" as job_id, status, data_type |
 

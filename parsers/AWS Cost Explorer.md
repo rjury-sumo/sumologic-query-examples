@@ -1,42 +1,36 @@
 # Parsers For AWS Cost Explorer
 
-## Parser:
-```
-| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated"
- 
-```
-### Use Cases:
-Cost by Account - Trend, Cost by Metric Type, Cost by Operation, Cost by Operation - Distribution, Cost by Operation - Trend, Cost by Region, Cost by Service, Cost of Region by Account - Distribution, Cost of Region by Account - Trend, Monthly Cost by Operation, Monthly Cost by Region, Monthly Cost by Service, Top 10 Accounts by Costs, Top 10 Operations by Cost Change in Weekly Costs, Total Cost
-
-
-
-## Parser:
-```
-| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"
-| json "LinkedAccount" as linkedAccountNumber
- 
-```
-### Use Cases:
-Cost by Account - Trend, Cost by Metric Type, Cost by Operation, Cost by Operation - Distribution, Cost by Operation - Trend, Cost by Region, Cost by Service, Cost of Region by Account - Distribution, Cost of Region by Account - Trend, Cost of Service by Account - Distribution, Cost of Service by Account - Trend, Monthly Cost by Operation, Monthly Cost by Region, Monthly Cost by Service, Top 10 Accounts by Cost Change in Weekly Costs, Top 10 Accounts by Costs, Top 10 Operations by Cost Change in Weekly Costs, Top 10 Services by Cost Change in Weekly Costs, Total Cost
-
-
-
-## Parser:
-```
-| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "LinkedAccount"
- 
-```
-### Use Cases:
-Cost by Account - Trend, Cost by Metric Type, Cost by Operation, Total Cost
-
-
-
-## Parser:
-```
-| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation"
- 
-```
-### Use Cases:
-Cost by Account - Trend, Cost by Metric Type, Cost by Operation, Cost by Operation - Distribution, Cost by Operation - Trend, Cost by Region, Cost by Service, Cost of Region by Account - Distribution, Cost of Region by Account - Trend, Cost of Service by Account - Distribution, Cost of Service by Account - Trend, Monthly Cost by Operation, Monthly Cost by Region, Monthly Cost by Service, Top 10 Accounts by Cost Change in Weekly Costs, Top 10 Accounts by Costs, Top 10 Operations by Cost Change in Weekly Costs, Top 10 Services by Cost Change in Weekly Costs, Total Cost
-
+| use_case | parser |
+|--- | --- |
+| AWS Cost Explorer/Account/Cost by Account - Trend | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Account/Cost by Metric Type | <br>account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "LinkedAccount" |
+| AWS Cost Explorer/Account/Cost by Operation | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Account/Cost by Region | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Account/Cost by Service | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Account/Monthly Cost by Operation | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Monthly<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Account/Monthly Cost by Region | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Monthly<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Account/Monthly Cost by Service | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Monthly<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Account/Top 10 Accounts by Costs | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Account/Total Cost | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated" |
+| AWS Cost Explorer/Operations/Cost by Operation - Distribution | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Operations/Cost by Operation - Trend | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Operations/Monthly Cost by Operation | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Monthly<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Operations/Monthly Cost by Service | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Monthly<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Operations/Top 10 Operations by Cost Change in Weekly Costs | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Operations/Total Cost | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Region/Cost by Metric Type | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated" |
+| AWS Cost Explorer/Region/Cost by Operation | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Region/Cost by Service | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Region/Cost of Region by Account - Distribution | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Region/Cost of Region by Account - Trend | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Region/Monthly Cost by Operation | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Monthly<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Region/Monthly Cost by Service | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Monthly<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Region/Top 10 Accounts by Cost Change in Weekly Costs | <br>account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Region/Total Cost | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated" |
+| AWS Cost Explorer/Services/Cost of Service by Account - Distribution | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Services/Cost of Service by Account - Trend | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Services/Monthly Cost by Operation | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Monthly<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Services/Monthly Cost by Service | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service LinkedAccount Monthly<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service"<br>\| json "LinkedAccount" as linkedAccountNumber |
+| AWS Cost Explorer/Services/Top 10 Services by Cost Change in Weekly Costs | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
+| AWS Cost Explorer/Services/Total Cost | account={{account}} region CostUsd CostType StartDate EndDate MetricType Granularity Service Operation Daily<br>\| json "region", "CostUsd", "CostType", "StartDate", "EndDate", "MetricType", "Granularity", "Estimated", "Service", "Operation" |
 

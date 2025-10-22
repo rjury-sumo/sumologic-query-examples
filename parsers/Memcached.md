@@ -1,104 +1,18 @@
 # Parsers For Memcached
 
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=memcached_log_message "(?<pid>\d+): Client using the (?<protocol>\w+) protocol"
- 
-```
-### Use Cases:
-Client Protocols, Commands Executed, Commands Executed by Type, Errors, Last 10 Errors, Log Reduce, Objects Stored
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=memcached_log_message "<(?<pid>\d+) (?<cmd>\w+)*"
- 
-```
-### Use Cases:
-Client Protocols, Commands Executed, Commands Executed by Command Type, Commands Executed by Type, Errors, Last 10 Errors, Log Reduce, Objects Stored
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=memcached_log_message ">(?<pid>\d+) (?<cmd>\w+)"
- 
-```
-### Use Cases:
-Client Protocols, Commands Executed, Commands Executed by Type, Errors, Last 10 Errors, Log Reduce, Objects Stored
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=memcached_log_message ">(?<pid>\d+) (?<msg>.+)"
- 
-```
-### Use Cases:
-Client Protocols, Commands Executed, Commands Executed by Command Type, Commands Executed by Type, Errors, Last 10 Errors, Log Reduce, Objects Stored
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=memcached_log_message ">(?<pid>\d+) (?<msg>\w+)"
- 
-```
-### Use Cases:
-Client Protocols, Commands Executed, Commands Executed by Type, Errors, Last 10 Errors
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=memcached_log_message ">(?<pid>\d+) (?<msg>\w+)" nodrop
-| parse regex field=memcached_log_message "<(?<pid>\d+) (?<msg>\w+)"
- 
-```
-### Use Cases:
-Client Protocols, Commands Executed, Commands Executed by Type, Errors, Last 10 Errors, Log Reduce
-
-
-
-## Parser:
-```
-| parse field=metric memcached_cas_* as name| sum by db_cluster,host,name | 
-```
-### Use Cases:
-CAS Miss, Hit and Badval Rate, Client Protocols, Commands Executed, Commands Executed by Command Type, Commands Executed by Type, Delete Miss and Hit Rate, Errors, Last 10 Errors, Log Reduce, Objects Stored
-
-
-
-## Parser:
-```
-| parse field=metric memcached_decr_* as name| sum by db_cluster,host,name | 
-```
-### Use Cases:
-CAS Miss, Hit and Badval Rate, Client Protocols, Commands Executed, Commands Executed by Command Type, Commands Executed by Type, Decrement Miss and Hit Rate, Delete Miss and Hit Rate, Errors, Increment Miss and Hit Rate, Last 10 Errors, Log Reduce, Objects Stored
-
-
-
-## Parser:
-```
-| parse field=metric memcached_delete_* as name| sum by db_cluster,host,name | 
-```
-### Use Cases:
-Client Protocols, Commands Executed, Commands Executed by Command Type, Commands Executed by Type, Delete Miss and Hit Rate, Errors, Last 10 Errors, Log Reduce, Objects Stored
-
-
-
-## Parser:
-```
-| parse field=metric memcached_incr_* as name| sum by db_cluster,host,name | 
-```
-### Use Cases:
-CAS Miss, Hit and Badval Rate, Client Protocols, Commands Executed, Commands Executed by Command Type, Commands Executed by Type, Delete Miss and Hit Rate, Errors, Increment Miss and Hit Rate, Last 10 Errors, Log Reduce, Objects Stored
-
+| use_case | parser |
+|--- | --- |
+| Memcached/Logs/Client Protocols | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached "Client using the" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message "(?<pid>\d+): Client using the (?<protocol>\w+) protocol" |
+| Memcached/Logs/Commands Executed | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached "<" ( TOUCH or GET or STATS or ADD or SET or REPLACE) \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message "<(?<pid>\d+) (?<cmd>\w+)*" |
+| Memcached/Logs/Commands Executed by Type | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached "<" ( TOUCH or GET or STATS or ADD or SET or REPLACE) \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message "<(?<pid>\d+) (?<cmd>\w+)*" |
+| Memcached/Logs/Errors | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached ">" ERROR \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message ">(?<pid>\d+) (?<msg>\w+)" |
+| Memcached/Logs/Last 10 Errors | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached ">" ERROR \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message ">(?<pid>\d+) (?<msg>.+)" |
+| Memcached/Logs/Log Reduce | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message ">(?<pid>\d+) (?<msg>\w+)" nodrop<br>\| parse regex field=memcached_log_message "<(?<pid>\d+) (?<msg>\w+)" |
+| Memcached/Logs/Objects Stored | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached ">" STORED \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message ">(?<pid>\d+) (?<cmd>\w+)" |
+| Memcached/Overview/Client Protocols | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached "Client using the" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message "(?<pid>\d+): Client using the (?<protocol>\w+) protocol" |
+| Memcached/Overview/Commands Executed | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached "<" ( TOUCH or GET or STATS or ADD or SET or REPLACE) \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message "<(?<pid>\d+) (?<cmd>\w+)*" |
+| Memcached/Overview/Commands Executed by Command Type | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached "<" ( TOUCH or GET or STATS or ADD or SET or REPLACE) \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message "<(?<pid>\d+) (?<cmd>\w+)*" |
+| Memcached/Overview/Errors | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached ">" ERROR \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message ">(?<pid>\d+) (?<cmd>\w+)" |
+| Memcached/Overview/Last 10 Errors | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached ">" ERROR \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message ">(?<pid>\d+) (?<msg>.+)" |
+| Memcached/Overview/Objects Stored | db_cluster=* db_cluster={{db_cluster}} db_system=memcached memcached ">" STORED \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as memcached_log_message<br>\| parse regex field=memcached_log_message ">(?<pid>\d+) (?<cmd>\w+)" |
 

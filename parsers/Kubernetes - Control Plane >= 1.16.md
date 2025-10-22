@@ -1,200 +1,55 @@
 # Parsers For Kubernetes - Control Plane >= 1.16
 
-## Parser:
-```
-| json  "log"
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "$['log']['output_fields']['ka.user.name']" as user_name
-| json field=_raw "log.priority" as priority
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "log.priority" as priority
-| json field=_raw "log.rule" as rule
-| json field=_raw "$['log']['output_fields']['ka.user.name']" as ka_user_name
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "log.priority" as priority
-| json field=_raw "log.rule" as rule
-| json field=_raw "$['log']['output_fields']['ka.user.name']" as user_name
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "log.priority" as priority
-| json field=_raw "log.rule" as rule
-| json field=_raw "log.time" as time
-| json field=_raw "log.output" as output
-| json field=_raw "$['log']['output_fields']['ka.user.name']" as user_name
-| json field=_raw "$['log']['output_fields']['ka.target.name']" as target_name
-| json field=_raw "$['log']['output_fields']['ka.target.namespace']" as target_namespace
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "log.priority" as priority 
-| json field=_raw "log.rule" as rule
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "log"
-| parse regex field=log "^(?<severity>.)(?:[0-9])"
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "log" as log
-| parse field=log "Created job *" as job
-| parse field=log "* *       " as code,time
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "log" as log
-| parse field=log "Created pod: *" as pod
-| parse field=log "* *       " as code,time
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "log" as log
-| parse field=log "Deleted job *" as job_name
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "log" as log
-| parse field=log "Deleted pod: *" as pod
-| parse field=log "* *       " as code,time
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "log" as log
-| parse regex field=log "^(?<severity>.)(?:[0-9])"
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "log" as log
-| parse regex field=log "^(?<severity>.)(?:[0-9])"
-| parse field=log "Scaled * replica set * to *" as direction,replica_set,scaled_to
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| json field=_raw "timestamp"
-| json field=_raw "log"
-| parse regex field=log "^(?<severity>.)(?:[0-9])"
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| parse "\"log\":\"*       *\"" as log_code,log_message
-| parse field=log_message "* *.*:*]*" as step, resource, action, step_code, log_message_spec
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| parse "\"log\":\"*       *\"" as log_code,log_message
-| parse field=log_message "* *.*:*]*" as step, resource, action, step_code, msg
-| parse field=log_code "* *" as severity, timestmp
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
-
-
-## Parser:
-```
-| parse "\"log\":\"*       *\"" as log_code,log_message
-| parse field=log_message "* *.*:*]*" as step, resource, action, step_code, specific_message
- 
-```
-### Use Cases:
-Alerts by Priority, Anonymous Request Allowed, Attach to cluster-admin Role, Attach/Exec Pod, ClusterRole With Pod Exec Created, ClusterRole With Wildcard Created, ClusterRole With Write Privileges Created, Create Disallowed Pod, Create HostNetwork Pod, Create NodePort Service, Create Privileged Pod, Create Sensitive Mount Pod, Create/Modify Configmap With Private Credentials, Error Logs, Error Messages, Error Messages Count, Error Stream, Events by User, Job Creations, Job Deletions, K8s ConfigMap Created, K8s Deployment Created, K8s Deployment Deleted, K8s Namespace Created, K8s Namespace Deleted, K8s Role/Clusterrole Created, K8s Role/Clusterrole Deleted, K8s Role/Clusterrolebinding Created, K8s Role/Clusterrolebinding Deleted, K8s Service Created, K8s Service Deleted, K8s Serviceaccount Created, K8s Serviceaccount Deleted, Kubernetes Rules Triggerred, Logs, Message Breakdown by Container, Operation by a disallowed K8s User, Pod Created in Kube Namespace, Pods Created, Pods Deleted, Scale Operations, Service Account Created in Kube Namespace, Severity Breakdown, Severity Over Time, System ClusterRole Modified/Deleted, System Message Breakdown, Top 10 Kubernetes Rules Triggered
-
+| use_case | parser |
+|--- | --- |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - API Server/Error Logs | _sourceCategory={{ApiServerLogSource}}  cluster={{cluster}} (error OR warning)<br>\| json field=_raw "log"<br>\| parse regex field=log "^(?<severity>.)(?:[0-9])" |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - API Server/Severity Breakdown | _sourceCategory={{ApiServerLogSource}} <br>\| json field=_raw "timestamp"<br>\| json field=_raw "log"<br>\| parse regex field=log "^(?<severity>.)(?:[0-9])" |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - API Server/Severity Over Time | _sourceCategory={{ApiServerLogSource}}  <br>\| json field=_raw "timestamp"<br>\| json field=_raw "log"<br>\| parse regex field=log "^(?<severity>.)(?:[0-9])" |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Controller Manager/Error Logs | _sourceCategory={{ControlManagerLogSource}}  error<br>\| json field=_raw "log"<br>\| parse regex field=log "^(?<severity>.)(?:[0-9])" |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Controller Manager/Error Messages Count | _sourceCategory={{ControlManagerLogSource}} <br>\| json field=_raw "log" as log<br>\| parse regex field=log "^(?<severity>.)(?:[0-9])" |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Controller Manager/Job Creations | 	_sourceCategory={{ControlManagerLogSource}}  "Created job"<br>	\| json field=_raw "log" as log<br>	\| parse field=log "Created job *" as job<br>  \| parse field=log "* *       " as code,time |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Controller Manager/Job Deletions | _sourceCategory={{ControlManagerLogSource}}  "Deleted job"<br>\| json field=_raw "log" as log<br>\| parse field=log "Deleted job *" as job_name |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Controller Manager/Pods Created | 	_sourceCategory={{ControlManagerLogSource}}  "Created pod:"<br>	\| json field=_raw "log" as log<br>	\| parse field=log "Created pod: *" as pod<br>  \| parse field=log "* *       " as code,time |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Controller Manager/Pods Deleted | 	_sourceCategory={{ControlManagerLogSource}}  "Deleted pod:"<br>	\| json field=_raw "log" as log<br>	\| parse field=log "Deleted pod: *" as pod<br>  \| parse field=log "* *       " as code,time |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Controller Manager/Scale Operations | _sourceCategory={{ControlManagerLogSource}}  Scaled<br>\| json field=_raw "log" as log<br>\| parse regex field=log "^(?<severity>.)(?:[0-9])"<br>\| where severity == "I"<br>\| parse field=log "Scaled * replica set * to *" as direction,replica_set,scaled_to |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Controller Manager/Severity Breakdown | 	_sourceCategory={{ControlManagerLogSource}}  <br>	\| json field=_raw "log" as log<br>	\| parse regex field=log "^(?<severity>.)(?:[0-9])" |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Controller Manager/Severity Over Time | _sourceCategory={{ControlManagerLogSource}}  <br>	\| json field=_raw "log" as log<br>	\| parse regex field=log "^(?<severity>.)(?:[0-9])" |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - etcd3/Logs | cluster={{cluster}} pod=*etcd*<br>\| limit 100<br>\| json  "log" |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Kube System/Error Messages |  _sourceCategory={{KubeSystemLogSource}}  <br>\| parse "\"log\":\"*       *\"" as log_code,log_message<br>\| parse field=log_message "* *.*:*]*" as step, resource, action, step_code, msg<br>\| parse field=log_code "* *" as severity, timestmp |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Kube System/Error Stream | _sourceCategory={{KubeSystemLogSource}}  error<br>\| json field=_raw "log"<br>\| parse regex field=log "^(?<severity>.)(?:[0-9])" |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Kube System/Message Breakdown by Container |  _sourceCategory={{KubeSystemLogSource}}  <br>\| parse "\"log\":\"*       *\"" as log_code,log_message<br>\| parse field=log_message "* *.*:*]*" as step, resource, action, step_code, specific_message |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Kube System/System Message Breakdown |  _sourceCategory={{KubeSystemLogSource}} <br>\| parse "\"log\":\"*       *\"" as log_code,log_message<br>\| parse field=log_message "* *.*:*]*" as step, resource, action, step_code, log_message_spec |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Alerts by Priority | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output<br>\| json field=_raw "$['log']['output_fields']['ka.user.name']" as user_name<br>\| json field=_raw "log.priority" as priority |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Anonymous Request Allowed | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Attach to cluster-admin Role | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Clusterrole Created | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Clusterrole Deleted | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/ClusterRole With Pod Exec Created | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/ClusterRole With Wildcard Created | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/ClusterRole With Write Privileges Created | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Clusterrolebinding Created | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Clusterrolebinding Deleted | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Create Disallowed Pod | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Create HostNetwork Pod | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Create NodePort Service | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Create Privileged Pod | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Create Sensitive Mount Pod | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Deleted | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Events by User | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output<br>\| json field=_raw "log.priority" as priority<br>\| json field=_raw "log.rule" as rule<br>//\| where rule="All K8s Audit Events"<br>\| json field=_raw "$['log']['output_fields']['ka.user.name']" as user_name |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Exec Pod | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/K8s ConfigMap Created | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/K8s Deployment Created | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/K8s Deployment Deleted | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/K8s Namespace Created | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/K8s Namespace Deleted | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/K8s Service Created | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/K8s Service Deleted | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/K8s Serviceaccount Created | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/K8s Serviceaccount Deleted | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Kubernetes Rules Triggerred | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output<br>\| json field=_raw "log.priority" as priority<br>\| json field=_raw "log.rule" as rule<br>\| json field=_raw "log.time" as time<br>\| json field=_raw "log.output" as output<br>\| json field=_raw "$['log']['output_fields']['ka.user.name']" as user_name<br>\| json field=_raw "$['log']['output_fields']['ka.target.name']" as target_name<br>\| json field=_raw "$['log']['output_fields']['ka.target.namespace']" as target_namespace |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Modify Configmap With Private Credentials | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Operation by a disallowed K8s User | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Pod Created in Kube Namespace | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Service Account Created in Kube Namespace | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output <br>\| json field=_raw "log.priority" as priority <br>\| json field=_raw "log.rule" as rule |
+| Kubernetes - Control Plane >= 1.16/Kubernetes - Security Audit Events/Top 10 Kubernetes Rules Triggered | _sourceCategory={{FalcoLogSource}}  ka output_fields priority output<br>\| json field=_raw "log.priority" as priority<br>\| json field=_raw "log.rule" as rule<br>\| json field=_raw "$['log']['output_fields']['ka.user.name']" as ka_user_name |
 

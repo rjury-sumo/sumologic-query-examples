@@ -1,461 +1,75 @@
 # Parsers For Enterprise Audit - Content Management
 
-## Parser:
-```
-| json "adminMode", "eventName" as AdminMode, EventName nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "adminMode", "eventName",  "operator.sourceIp" as AdminMode, EventName, UserIp  nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "adminMode", "eventName", "operator.email" as AdminMode, EventName, User nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "adminMode", "eventName", "operator.email", "contentIdentity.type",  "operator.sourceIp" as AdminMode, EventName, UserEmail, ContentType, UserIp nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "adminMode", "eventName", "operator.email", "contentIdentity.type", "operator.sourceIp" as AdminMode, EventName, UserEmail, ContentType, UserIp nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "adminMode", "eventName", "operator.email", "contentIdentity.type","operator.sourceIp"  as AdminMode, EventName, UserEmail, ContentType, UserIp nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "adminMode", "eventName", "operator.email", "contentIdentity.type","operator.sourceIp" as AdminMode, EventName, UserEmail, ContentType, UserIp nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName" as EventName nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "adminMode", "contentIdentity.name" as EventName, AdminMode, ContentName nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "adminMode", "contentIdentity.type", "operator.sourceIp" as EventName, AdminMode, ContentType, UserIp nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "adminMode", "contentIdentity.type","operator.sourceIp" as EventName, AdminMode, ContentType, UserIp nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "adminMode", "operator.email", "contentIdentity.type", "to",  "contentIdentity.name" as EventName, AdminMode, UserEmail, ContentType, VisibleTo, ContentName nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "adminMode", "operator.sourceIp" as EventName, AdminMode, UserIp nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "adminMode", "operator.sourceIp" as EventName, AdminMode, UserIp nodrop
-| json "operator.email", "contentIdentity.type" as UserEmail, ContentType nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "adminMode", "operator.sourceIp"as EventName, AdminMode, UserIp nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "adminMode", "operator.sourceIp"as EventName, AdminMode, UserIp nodrop
-| json "operator.email", "contentIdentity.type" as UserEmail, ContentType nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "application.name" as EventName, ApplicationName nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "contentIdentity.name" as EventName, ContentName nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "contentIdentity.name", "operator.email" as EventName, ContentName, UserEmail  nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "contentIdentity.name", "to" as EventName, ContentName, VisibleTo nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "contentIdentity.name","permissionsAdded" as EventName, ContentName, permissionsAdded nodrop
-| parse regex field=permissionsAdded "(?<json_added_blob>\{.+?(?:\}\}|\]\}))" multi nodrop
-| json field=json_added_blob "permissionSourceType" as TargetPermissionSourceType
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "contentIdentity.name","permissionsAdded" as EventName, ContentName, permissionsAdded nodrop
-| parse regex field=permissionsAdded "(?<json_added_blob>\{[^\}]+(?:\}\}|\}))" multi nodrop
-| json field=json_added_blob "permissionSourceType" as TargetPermissionSourceType
- 
-```
-### Use Cases:
-Activities Over Time, Content by Permission Added, Content made Visible to Public, Content Publicly Accessed, Top Content Publicly Accessed, Top Users
-
-
-
-## Parser:
-```
-| json "eventName", "contentIdentity.name","permissionsDeleted" as EventName, ContentName, permissionsDeleted nodrop
-| parse regex field=permissionsDeleted "(?<json_deleted_blob>\{.+(?:\}\}|\}))" multi nodrop
-| json field=json_deleted_blob "permissionSourceType" as TargetPermissionSourceType
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "contentIdentity.name","permissionsDeleted" as EventName, ContentName, permissionsDeleted nodrop
-| parse regex field=permissionsDeleted "(?<json_deleted_blob>\{[^\}]+(?:\}\}|\}))" multi nodrop
-| json field=json_deleted_blob "permissionSourceType" as TargetPermissionSourceType
- 
-```
-### Use Cases:
-Activities Over Time, Content by Permission Added, Content by Permission Deleted, Content made Visible to Public, Content Publicly Accessed, Top Content Publicly Accessed, Top Users, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "eventTime", "adminMode", "contentIdentity.name", "contentIdentity.type", "operator.email", "operator.id", "operator.sourceIp" as EventName, EventTime, AdminMode, ContentName, ContentType, UserEmail, UserId, UserIp nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "eventTime", "adminMode", "contentIdentity.name", "contentIdentity.type", "operator.email", "operator.id", "operator.sourceIp" as EventName, EventTime, AdminMode, ContentName, ContentType, UserEmail, UserId, UserIp nodrop
-| json "copiedTo.contentIdentity.name" as TargetContentName nodrop
-| json "origin.name", "destination.name" as SourceFolder, TargetFolder nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "eventTime", "application.name", "dataSources","operator.email", "contentIdentity.type" as EventName, EventTime, ApplicationName, DataSources, UserEmail, ContentName nodrop
-| parse regex field=DataSources "\"(?<LogSourceType>.*?)\":\"(?<LogSource>.*?)\"" multi nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "eventTime", "contentIdentity.name", "contentIdentity.type", "operator.email", "permissionsAdded" as EventName, EventTime, ContentName, ContentType, UserEmail, permissionsAdded nodrop
-| parse regex field=permissionsAdded "(?<json_added_blob>\{.+?(?:\}\}|\]\}))" multi nodrop
-| json field=json_added_blob "permissions", "roleIdentity.roleName", "userIdentity.userEmail" as PermissionsAdded, RoleName, TargetUserEmail nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "eventTime", "contentIdentity.name", "contentIdentity.type", "operator.email", "permissionsDeleted" as EventName, EventTime, ContentName, ContentType, UserEmail, permissionsDeleted nodrop
-| parse regex field=permissionsDeleted "(?<json_deleted_blob>\{.+?(?:\}\}|\]\}))" multi nodrop
-| json field=json_deleted_blob "permissions", "roleIdentity.roleName", "userIdentity.userEmail" as PermissionsDeleted, RoleName, TargetUserEmail nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "eventTime", "contentIdentity.name", "contentIdentity.type", "visibility", "viewerIp", "url", "adminMode", "operator.email" as EventName, EventTime, ContentName, ContentType, Visibility, ViewerIp, URL, AdminMode, UserEmail nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "eventTime", "operator.email", "operator.id", "operator.sourceIp", "fieldExtractionRuleIdentity.fieldExtractionRuleId", "fieldExtractionRuleIdentity.fieldExtractionRuleName", "fieldExtractionRule.enabled", "fieldExtractionRule.fieldNames", "to", "from" as EventName, EventTime, User, UserId, UserIp, FieldExtractionRuleId, FieldExtractionRuleName, IsActive, createdfieldnames, CurrentValue, PreviousValue nodrop
-| json field=CurrentValue "enabled", "fieldNames" as ActiveUpdated, fieldNamesUpdated nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "eventTime", "status", "syncRequest.requestBy.userEmail", "syncRequest.contentNameToSynchronize", "syncRequest.parentFolder.name", "contentIdentity.name" as EventName, EventTime, Status, RequestedBy, ContentToSynchronize, FolderName, ContentName  nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "fieldExtractionRuleIdentity.fieldExtractionRuleId", "fieldExtractionRule.enabled", "to.enabled","operator.email" as EventName, FieldExtractionRuleId, CreatedEnabled, UpdatedEnabled, User nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "operator.email" as EventName, User nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "operator.email", "contentIdentity.type"  as EventName, UserEmail, ContentName  nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "operator.email", "contentIdentity.type","viewerIp" as EventName, UserEmail, ContentName, UserIp  nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "operator.email", "sessionIdentity.userEmail" as EventName, UserEmail, TimedOutUser nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "operator.sourceIp","operator.email" as EventName, UserIp, User nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "permissionsAdded", "contentIdentity.name", "operator.email" as EventName, permissionsAdded,  ContentName, UserEmail nodrop
-| parse regex field=permissionsAdded  "(?<json_added_blob>\{.+?(?:\}\}|\]\}))" multi nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "permissionsDeleted", "contentIdentity.name", "operator.email"  as EventName, permissionsDeleted,  ContentName, UserEmail nodrop
-| parse regex field=permissionsDeleted "(?<json_added_blob>\{.+?(?:\}\}|\]\}))" multi nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "status","syncRequest.requestBy.userEmail", "contentIdentity.name" as EventName, Status,  UserEmail, ContentName  nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "syncRequest.contentNameToSynchronize","contentIdentity.name", "syncRequest.requestBy.userEmail" as EventName, ContentToSynchronize, ContentName, UserEmail
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName", "syncRequest.requestBy.userEmail", "contentIdentity.name" as EventName, UserEmail, ContentName  nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
-
-
-## Parser:
-```
-| json "eventName","eventTime", "contentIdentity.name", "contentIdentity.type", "adminMode", "operator.email", "operator.sourceIp", "url", "to" as EventName,EventTime, ContentName, ContentType, AdminMode, UserEmail, UserIp, URL, VisibleTo nodrop
- 
-```
-### Use Cases:
-Active Users, Active vs InActive FER, Activities Over Time, Application Installed, Content by Permission Added, Content by Permission Deleted, Content Exported, Content made Visible to Public, Content Publicly Accessed, Content Synchronization Success/Failure Over Time, Geo Location - Admin Mode, Geo Location - Content Publicly Accessed, Geo Location - User Mode, Geo Location of Events, Geo Locations - Application Installed, One Day Time Shift Comparison, Permission Added Over Time by Source Type, Permission Deleted Over Time by Source Type, Recent - Application Installed, Recent - Content Created/Deleted/Exported/Imported, Recent - Content Publicly Accessed, Recent - Content Synchronization, Recent - Content Updated/Moved/Copied, Recent - Content Visibility Changes, Recent - Permissions Added to Content, Recent - Permissions Deleted from Content, Recent Events - Field Extraction Rule Events, Top Application Installed, Top Content Copied, Top Content Exported, Top Content Made Visible to public, Top Content Publicly Accessed, Top Content Requested to Synchronize, Top Content Type - Admin Mode, Top Content Type - User Mode, Top Content with Permission Updated, Top Users, Top Users - Admin Mode, Top Users - User Mode, Top Users to Request for Synchronization, Top Users Updating Content Visibility, Top Users Updating Permissions on Content, Trend - Admin Mode, Trend - Events, Trend - Field Extraction Rules, Trend - User Mode, Users in Admin Mode
-
+| use_case | parser |
+|--- | --- |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Activities Over Time | _index=sumologic_audit_events _sourceCategory=content (ContentCreated OR ContentDeleted OR ContentImported OR ContentExported OR ContentUpdated OR ContentMoved OR ContentCopied)<br>\| json "adminMode", "eventName" as AdminMode, EventName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Application Installed | _index=sumologic_audit_events _sourceCategory=content ApplicationInstalled<br>\| json "eventName" as EventName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Content by Permission Added | _index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated<br>\| json "eventName", "contentIdentity.name","permissionsAdded" as EventName, ContentName, permissionsAdded nodrop<br>\| where EventName="ContentPermissionsUpdated"<br>\| parse regex field=permissionsAdded "(?<json_added_blob>\{[^\}]+(?:\}\}\|\}))" multi nodrop<br>\| json field=json_added_blob "permissionSourceType" as TargetPermissionSourceType |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Content by Permission Deleted | _index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated<br>\| json "eventName", "contentIdentity.name","permissionsDeleted" as EventName, ContentName, permissionsDeleted nodrop<br>\| where EventName="ContentPermissionsUpdated"<br>\| parse regex field=permissionsDeleted "(?<json_deleted_blob>\{[^\}]+(?:\}\}\|\}))" multi nodrop<br>\| json field=json_deleted_blob "permissionSourceType" as TargetPermissionSourceType |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Content Exported | _index=sumologic_audit_events _sourceCategory=content ContentExported<br>\| json "eventName" as EventName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Content made Visible to Public | _index=sumologic_audit_events _sourceCategory=content ContentPublicVisibilityUpdated<br>\| json "eventName" as EventName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Content Publicly Accessed | _index=sumologic_audit_events _sourceCategory=content ContentPubliclyAccessed<br>\| json "eventName" as EventName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Top Application Installed | _index=sumologic_audit_events _sourceCategory=content ApplicationInstalled<br>\| json "eventName", "application.name" as EventName, ApplicationName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Top Content Copied | _index=sumologic_audit_events _sourceCategory=content ContentCopied<br>\| json "eventName", "adminMode", "contentIdentity.name" as EventName, AdminMode, ContentName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Top Content Exported | _index=sumologic_audit_events _sourceCategory=content ContentExported<br>\| json "eventName", "adminMode", "contentIdentity.name" as EventName, AdminMode, ContentName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Top Content Made Visible to public | _index=sumologic_audit_events _sourceCategory=content ContentPublicVisibilityUpdated<br>\| json "eventName", "contentIdentity.name", "to" as EventName, ContentName, VisibleTo nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Top Content Publicly Accessed | _index=sumologic_audit_events _sourceCategory=content ContentPubliclyAccessed<br>\| json "eventName", "contentIdentity.name" as EventName, ContentName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Top Users | _index=sumologic_audit_events _sourceCategory=content (ContentCreated OR ContentDeleted OR ContentImported OR ContentExported OR ContentUpdated OR ContentMoved OR ContentCopied)<br>\| json "adminMode", "eventName", "operator.email" as AdminMode, EventName, User nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview - New/Users in Admin Mode | _index=sumologic_audit_events (_sourceCategory=content OR _sourceCategory=userSessions) (AdminModeEnabled OR AdminModeDisabled OR UserLoginTimedOut)<br>\| json "eventName", "operator.email", "sessionIdentity.userEmail" as EventName, UserEmail, TimedOutUser nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Activities Over Time | _index=sumologic_audit_events _sourceCategory=content (ContentCreated OR ContentDeleted OR ContentImported OR ContentExported OR ContentUpdated OR ContentMoved OR ContentCopied OR ContentImportCompleted OR ContentAsynchronousExportCompleted)<br>\| json "adminMode", "eventName" as AdminMode, EventName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Application Installed | _index=sumologic_audit_events _sourceCategory=content ApplicationInstalled<br>\| json "eventName" as EventName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Content by Permission Added | _index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated<br>\| json "eventName", "contentIdentity.name","permissionsAdded" as EventName, ContentName, permissionsAdded nodrop<br>\| where EventName="ContentPermissionsUpdated"<br>\| parse regex field=permissionsAdded "(?<json_added_blob>\{.+?(?:\}\}\|\]\}))" multi nodrop<br>\| where !isBlank(json_added_blob)<br>\| json field=json_added_blob "permissionSourceType" as TargetPermissionSourceType |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Content by Permission Deleted | _index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated<br>\| json "eventName", "contentIdentity.name","permissionsDeleted" as EventName, ContentName, permissionsDeleted nodrop<br>\| where EventName="ContentPermissionsUpdated"<br>\| parse regex field=permissionsDeleted "(?<json_deleted_blob>\{.+(?:\}\}\|\}))" multi nodrop<br>\| json field=json_deleted_blob "permissionSourceType" as TargetPermissionSourceType |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Content Exported | _index=sumologic_audit_events _sourceCategory=content (ContentExported OR ContentAsynchronousExportCompleted)<br>\| json "eventName" as EventName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Content made Visible to Public | _index=sumologic_audit_events _sourceCategory=content ContentPublicVisibilityUpdated<br>\| json "eventName" as EventName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Content Publicly Accessed | _index=sumologic_audit_events _sourceCategory=content ContentPubliclyAccessed<br>\| json "eventName" as EventName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Top Application Installed | _index=sumologic_audit_events _sourceCategory=content ApplicationInstalled<br>\| json "eventName", "application.name" as EventName, ApplicationName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Top Content Copied | _index=sumologic_audit_events _sourceCategory=content ContentCopied<br>\| json "eventName", "adminMode", "contentIdentity.name" as EventName, AdminMode, ContentName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Top Content Exported | _index=sumologic_audit_events _sourceCategory=content (ContentExported OR ContentAsynchronousExportCompleted)<br>\| json "eventName", "adminMode", "contentIdentity.name" as EventName, AdminMode, ContentName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Top Content Made Visible to public | _index=sumologic_audit_events _sourceCategory=content  ContentPublicVisibilityUpdated<br>\| json "eventName", "contentIdentity.name", "to" as EventName, ContentName, VisibleTo nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Top Content Publicly Accessed | _index=sumologic_audit_events _sourceCategory=content ContentPubliclyAccessed<br>\| json "eventName", "contentIdentity.name" as EventName, ContentName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Top Users | _index=sumologic_audit_events _sourceCategory=content (ContentCreated OR ContentDeleted OR ContentImported OR ContentExported OR ContentUpdated OR ContentMoved OR ContentCopied OR ContentImportCompleted OR ContentAsynchronousExportCompleted)<br>\| json "adminMode", "eventName", "operator.email" as AdminMode, EventName, User nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Content Management Overview/Users in Admin Mode | _index=sumologic_audit_events (_sourceCategory=content OR _sourceCategory=userSessions) (AdminModeEnabled OR AdminModeDisabled OR UserLoginTimedOut)<br>\| json "eventName", "operator.email", "sessionIdentity.userEmail" as EventName, UserEmail, TimedOutUser nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Created, Deleted, Exported, Imported Content/Geo Location - Admin Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentCreated OR ContentDeleted OR ContentExported OR ContentImported OR ContentAsynchronousDeletionCompleted OR ContentImportCompleted OR ContentAsynchronousExportCompleted)<br>\| json "eventName", "adminMode", "operator.sourceIp"as EventName, AdminMode, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Created, Deleted, Exported, Imported Content/Geo Location - User Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentCreated OR ContentDeleted OR ContentExported OR ContentImported OR ContentAsynchronousDeletionCompleted OR ContentImportCompleted OR ContentAsynchronousExportCompleted)<br>\| json "eventName", "adminMode", "operator.sourceIp"as EventName, AdminMode, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Created, Deleted, Exported, Imported Content/Imported | _index=sumologic_audit_events _sourceCategory=content and (ContentCreated OR ContentDeleted OR ContentExported OR ContentImported OR ContentImportCompleted OR ContentAsynchronousExportCompleted)<br>\| json "eventName", "eventTime", "adminMode", "contentIdentity.name", "contentIdentity.type", "operator.email", "operator.id", "operator.sourceIp" as EventName, EventTime, AdminMode, ContentName, ContentType, UserEmail, UserId, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Created, Deleted, Exported, Imported Content/Top Content Type - Admin Mode | _index=sumologic_audit_events _sourceCategory=content (ContentCreated OR ContentDeleted OR ContentExported OR ContentImported OR ContentAsynchronousDeletionCompleted OR ContentAsynchronousExportCompleted OR ContentImportCompleted)<br>\| json "eventName", "adminMode", "contentIdentity.type","operator.sourceIp" as EventName, AdminMode, ContentType, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Created, Deleted, Exported, Imported Content/Top Content Type - User Mode | _index=sumologic_audit_events _sourceCategory=content (ContentCreated OR ContentDeleted OR ContentExported OR ContentImported OR ContentAsynchronousDeletionCompleted OR ContentImportCompleted OR ContentAsynchronousExportCompleted)<br>\| json "eventName", "adminMode", "contentIdentity.type", "operator.sourceIp" as EventName, AdminMode, ContentType, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Created, Deleted, Exported, Imported Content/Top Users - Admin Mode | _index=sumologic_audit_events _sourceCategory=content (ContentCreated OR ContentDeleted OR ContentExported OR ContentImported OR ContentAsynchronousDeletionCompleted OR ContentImportCompleted OR ContentAsynchronousExportCompleted)<br>\| json "eventName", "adminMode", "operator.sourceIp" as EventName, AdminMode, UserIp nodrop<br>\| where EventName in ("ContentCreated", "ContentDeleted", "ContentExported", "ContentImported", "ContentImportCompleted", "ContentAsynchronousExportCompleted", "ContentAsynchronousDeletionCompleted") AND AdminMode="true"<br>\| json "operator.email", "contentIdentity.type" as UserEmail, ContentType nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Created, Deleted, Exported, Imported Content/Top Users - User Mode | _index=sumologic_audit_events _sourceCategory=content (ContentCreated OR ContentDeleted OR ContentExported OR ContentImported OR ContentImportCompleted OR ContentAsynchronousDeletionCompleted OR ContentImportCompleted OR ContentAsynchronousExportCompleted)<br>\| json "eventName", "adminMode", "operator.sourceIp"as EventName, AdminMode, UserIp nodrop<br>\| where EventName in ("ContentCreated", "ContentDeleted", "ContentExported", "ContentImported", "ContentImportCompleted", "ContentAsynchronousExportCompleted", "ContentAsynchronousDeletionCompleted") AND AdminMode="false"<br>\| json "operator.email", "contentIdentity.type" as UserEmail, ContentType nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Created, Deleted, Exported, Imported Content/Trend - Admin Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentCreated OR ContentDeleted OR ContentExported OR ContentImported OR ContentAsynchronousDeletionCompleted OR ContentImportCompleted OR ContentAsynchronousExportCompleted)<br>\| json "eventName", "adminMode", "operator.sourceIp"as EventName, AdminMode, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Created, Deleted, Exported, Imported Content/Trend - User Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentCreated OR ContentDeleted OR ContentExported OR ContentImported OR ContentAsynchronousExportCompleted OR ContentImportCompleted OR ContentAsynchronousExportCompleted)<br>\| json "eventName", "adminMode", "operator.sourceIp"as EventName, AdminMode, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Field Extraction Rule Activities/Active Users | _index=sumologic_audit_events _sourceCategory=fieldExtractionRules (FieldExtractionRuleCreated OR FieldExtractionRuleUpdated OR FieldExtractionRuleDeleted)<br>\| json "eventName", "operator.email" as EventName, User nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Field Extraction Rule Activities/Active vs InActive FER | _index=sumologic_audit_events _sourceCategory=fieldExtractionRules (FieldExtractionRuleCreated OR FieldExtractionRuleUpdated OR FieldExtractionRuleDeleted)<br>\| json "eventName", "fieldExtractionRuleIdentity.fieldExtractionRuleId", "fieldExtractionRule.enabled", "to.enabled","operator.email" as EventName, FieldExtractionRuleId, CreatedEnabled, UpdatedEnabled, User nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Field Extraction Rule Activities/Geo Location of Events | _index=sumologic_audit_events _sourceCategory=fieldExtractionRules (FieldExtractionRuleCreated OR FieldExtractionRuleUpdated OR FieldExtractionRuleDeleted)<br>\| json "eventName", "operator.sourceIp","operator.email" as EventName, UserIp, User nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Field Extraction Rule Activities/One Day Time Shift Comparison | _index=sumologic_audit_events _sourceCategory=fieldExtractionRules (FieldExtractionRuleCreated OR FieldExtractionRuleUpdated OR FieldExtractionRuleDeleted)<br>\| json "eventName", "operator.email" as EventName, User nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Field Extraction Rule Activities/Recent Events - Field Extraction Rule Events | _index=sumologic_audit_events _sourceCategory=fieldExtractionRules (FieldExtractionRuleCreated OR FieldExtractionRuleUpdated OR FieldExtractionRuleDeleted)<br>\| json "eventName", "eventTime", "operator.email", "operator.id", "operator.sourceIp", "fieldExtractionRuleIdentity.fieldExtractionRuleId", "fieldExtractionRuleIdentity.fieldExtractionRuleName", "fieldExtractionRule.enabled", "fieldExtractionRule.fieldNames", "to", "from" as EventName, EventTime, User, UserId, UserIp, FieldExtractionRuleId, FieldExtractionRuleName, IsActive, createdfieldnames, CurrentValue, PreviousValue nodrop<br>\| json field=CurrentValue "enabled", "fieldNames" as ActiveUpdated, fieldNamesUpdated nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Field Extraction Rule Activities/Trend - Field Extraction Rules | _index=sumologic_audit_events _sourceCategory=fieldExtractionRules (FieldExtractionRuleCreated OR FieldExtractionRuleUpdated OR FieldExtractionRuleDeleted)<br>\| json "eventName", "operator.email" as EventName, User nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Permission Updated, Synchronized/Failure Over Time | _index=sumologic_audit_events _sourceCategory=content ContentSynchronizationCompleted<br>\| json "eventName", "status","syncRequest.requestBy.userEmail", "contentIdentity.name" as EventName, Status,  UserEmail, ContentName  nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Permission Updated, Synchronized/Permission Added Over Time by Source Type | _index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated<br>\| json "eventName", "permissionsAdded", "contentIdentity.name", "operator.email" as EventName, permissionsAdded,  ContentName, UserEmail nodrop<br>\| where EventName="ContentPermissionsUpdated"<br>\| parse regex field=permissionsAdded  "(?<json_added_blob>\{.+?(?:\}\}\|\]\}))" multi nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Permission Updated, Synchronized/Permission Deleted Over Time by Source Type | _index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated<br>\| json "eventName", "permissionsDeleted", "contentIdentity.name", "operator.email"  as EventName, permissionsDeleted,  ContentName, UserEmail nodrop<br>\| where EventName="ContentPermissionsUpdated"<br>\| parse regex field=permissionsDeleted "(?<json_added_blob>\{.+?(?:\}\}\|\]\}))" multi nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Permission Updated, Synchronized/Recent - Content Synchronization | _index=sumologic_audit_events _sourceCategory=content ContentSynchronizationCompleted<br>\| json "eventName", "eventTime", "status", "syncRequest.requestBy.userEmail", "syncRequest.contentNameToSynchronize", "syncRequest.parentFolder.name", "contentIdentity.name" as EventName, EventTime, Status, RequestedBy, ContentToSynchronize, FolderName, ContentName  nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Permission Updated, Synchronized/Recent - Permissions Added to Content | _index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated<br>\| json "eventName", "eventTime", "contentIdentity.name", "contentIdentity.type", "operator.email", "permissionsAdded" as EventName, EventTime, ContentName, ContentType, UserEmail, permissionsAdded nodrop<br>\| where EventName="ContentPermissionsUpdated"<br>\| parse regex field=permissionsAdded "(?<json_added_blob>\{.+?(?:\}\}\|\]\}))" multi nodrop<br>\|where !isBlank(json_added_blob) <br>\|json field=json_added_blob "permissionSourceType" as TargetPermissionSourceType nodrop //<br>\| json field=json_added_blob "permissions", "roleIdentity.roleName", "userIdentity.userEmail" as PermissionsAdded, RoleName, TargetUserEmail nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Permission Updated, Synchronized/Recent - Permissions Deleted from Content | _index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated<br>\| json "eventName", "eventTime", "contentIdentity.name", "contentIdentity.type", "operator.email", "permissionsDeleted" as EventName, EventTime, ContentName, ContentType, UserEmail, permissionsDeleted nodrop<br>\| where EventName="ContentPermissionsUpdated"<br>\| parse regex field=permissionsDeleted "(?<json_deleted_blob>\{.+?(?:\}\}\|\]\}))" multi nodrop<br>\| where !isBlank(json_deleted_blob) <br>\|json field=json_deleted_blob "permissionSourceType" as TargetPermissionSourceType nodrop //<br>\| json field=json_deleted_blob "permissions", "roleIdentity.roleName", "userIdentity.userEmail" as PermissionsDeleted, RoleName, TargetUserEmail nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Permission Updated, Synchronized/Top Content Requested to Synchronize | _index=sumologic_audit_events _sourceCategory=content ContentSynchronizationRequested<br>\| json "eventName", "syncRequest.contentNameToSynchronize","contentIdentity.name", "syncRequest.requestBy.userEmail" as EventName, ContentToSynchronize, ContentName, UserEmail |
+| Enterprise Audit - Content Management/Enterprise Audit - Permission Updated, Synchronized/Top Content with Permission Updated | _index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated<br>\| json "eventName", "contentIdentity.name", "operator.email" as EventName, ContentName, UserEmail  nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Permission Updated, Synchronized/Top Users to Request for Synchronization | _index=sumologic_audit_events _sourceCategory=content ContentSynchronizationRequested<br>\| json "eventName", "syncRequest.requestBy.userEmail", "contentIdentity.name" as EventName, UserEmail, ContentName  nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Permission Updated, Synchronized/Top Users Updating Permissions on Content | _index=sumologic_audit_events _sourceCategory=content ContentPermissionsUpdated<br>\| json "eventName", "contentIdentity.name", "operator.email" as EventName, ContentName, UserEmail  nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Publicly Accessed, Application Installed/Geo Location - Content Publicly Accessed | _index=sumologic_audit_events _sourceCategory=content ContentPubliclyAccessed<br>\| json "eventName", "operator.email", "contentIdentity.type","viewerIp" as EventName, UserEmail, ContentName, UserIp  nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Publicly Accessed, Application Installed/Geo Locations - Application Installed | _index=sumologic_audit_events _sourceCategory=content and ApplicationInstalled<br>\| json "eventName", "operator.email", "contentIdentity.type"  as EventName, UserEmail, ContentName  nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Publicly Accessed, Application Installed/One Day Time Shift Comparison | _index=sumologic_audit_events _sourceCategory=content and (ContentPublicVisibilityUpdated OR ContentPubliclyAccessed OR ApplicationInstalled)<br>\| json "eventName", "operator.email", "contentIdentity.type"  as EventName, UserEmail, ContentName  nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Publicly Accessed, Application Installed/Recent - Application Installed | _index=sumologic_audit_events _sourceCategory=content ApplicationInstalled<br>\| json "eventName", "eventTime", "application.name", "dataSources","operator.email", "contentIdentity.type" as EventName, EventTime, ApplicationName, DataSources, UserEmail, ContentName nodrop<br>\| where EventName="ApplicationInstalled"<br>\| where EventName matches "{{EventName}}" and UserEmail matches "{{UserEmail}}" and ContentName matches "{{ContentName}}"<br>\| parse regex field=DataSources "\"(?<LogSourceType>.*?)\":\"(?<LogSource>.*?)\"" multi nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Publicly Accessed, Application Installed/Recent - Content Publicly Accessed | _index=sumologic_audit_events _sourceCategory=content ContentPubliclyAccessed<br>\| json "eventName", "eventTime", "contentIdentity.name", "contentIdentity.type", "visibility", "viewerIp", "url", "adminMode", "operator.email" as EventName, EventTime, ContentName, ContentType, Visibility, ViewerIp, URL, AdminMode, UserEmail nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Publicly Accessed, Application Installed/Recent - Content Visibility Changes | _index=sumologic_audit_events _sourceCategory=content ContentPublicVisibilityUpdated<br>\| json "eventName","eventTime", "contentIdentity.name", "contentIdentity.type", "adminMode", "operator.email", "operator.sourceIp", "url", "to" as EventName,EventTime, ContentName, ContentType, AdminMode, UserEmail, UserIp, URL, VisibleTo nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Publicly Accessed, Application Installed/Top Users Updating Content Visibility | _index=sumologic_audit_events _sourceCategory=content ContentPublicVisibilityUpdated<br>\| json "eventName", "adminMode", "operator.email", "contentIdentity.type", "to",  "contentIdentity.name" as EventName, AdminMode, UserEmail, ContentType, VisibleTo, ContentName nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Publicly Accessed, Application Installed/Trend - Events | _index=sumologic_audit_events _sourceCategory=content and (ContentPublicVisibilityUpdated OR ContentPubliclyAccessed OR ApplicationInstalled)<br>\| json "eventName", "operator.email", "contentIdentity.type"  as EventName, UserEmail, ContentName  nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Updated, Moved, Copied Content/Copied | _index=sumologic_audit_events _sourceCategory=content and (ContentUpdated OR ContentMoved OR ContentCopied)<br>\| json "eventName", "eventTime", "adminMode", "contentIdentity.name", "contentIdentity.type", "operator.email", "operator.id", "operator.sourceIp" as EventName, EventTime, AdminMode, ContentName, ContentType, UserEmail, UserId, UserIp nodrop<br>\| where EventName in ("ContentUpdated", "ContentMoved", "ContentCopied")<br>\| json "copiedTo.contentIdentity.name" as TargetContentName nodrop<br>\| json "origin.name", "destination.name" as SourceFolder, TargetFolder nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Updated, Moved, Copied Content/Geo Location - Admin Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentUpdated OR ContentMoved OR ContentCopied)<br>\| json "eventName", "adminMode", "operator.sourceIp" as EventName, AdminMode, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Updated, Moved, Copied Content/Geo Location - User Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentUpdated OR ContentMoved OR ContentCopied)<br>\| json "eventName", "adminMode", "operator.sourceIp" as EventName, AdminMode, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Updated, Moved, Copied Content/Top Content Type - Admin Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentUpdated OR ContentMoved OR ContentCopied)<br>\| json "adminMode", "eventName", "operator.email", "contentIdentity.type",  "operator.sourceIp" as AdminMode, EventName, UserEmail, ContentType, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Updated, Moved, Copied Content/Top Content Type - User Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentUpdated OR ContentMoved OR ContentCopied)<br>\| json "adminMode", "eventName", "operator.email", "contentIdentity.type", "operator.sourceIp" as AdminMode, EventName, UserEmail, ContentType, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Updated, Moved, Copied Content/Top Users - Admin Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentUpdated OR ContentMoved OR ContentCopied)<br>\| json "adminMode", "eventName", "operator.email", "contentIdentity.type","operator.sourceIp" as AdminMode, EventName, UserEmail, ContentType, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Updated, Moved, Copied Content/Top Users - User Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentUpdated OR ContentMoved OR ContentCopied)<br>\| json "adminMode", "eventName", "operator.email", "contentIdentity.type","operator.sourceIp"  as AdminMode, EventName, UserEmail, ContentType, UserIp nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Updated, Moved, Copied Content/Trend - Admin Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentUpdated OR ContentMoved OR ContentCopied)<br>\| json "adminMode", "eventName",  "operator.sourceIp" as AdminMode, EventName, UserIp  nodrop |
+| Enterprise Audit - Content Management/Enterprise Audit - Updated, Moved, Copied Content/Trend - User Mode | _index=sumologic_audit_events _sourceCategory=content and (ContentUpdated OR ContentMoved OR ContentCopied)<br>\| json "eventName", "adminMode", "operator.sourceIp" as EventName, AdminMode, UserIp nodrop |
 

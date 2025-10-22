@@ -1,223 +1,64 @@
 # Parsers For Kubernetes
 
-## Parser:
-```
-| json  "log.priority" 
- 
-```
-### Use Cases:
-Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Error Logs (Latest 100 Errors), Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Events Over Time, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs), Total Events
-
-
-
-## Parser:
-```
-| json  "log.priority" as priority
- 
-```
-### Use Cases:
-Alerts, Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Critical Alerts, Emergency Alerts, Emergency, Alert, Critical and Error Events Timeline, Error Logs (Latest 100 Errors), Errors, Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Events Over Time, Events Timeline, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs), Rules Triggered  by Priority, Rules Triggered  by Process, Rules Triggered by Namespace, Rules Triggered by Parent Process, Rules Triggered by Pod, Rules Triggered by User, Top 10 Rules Triggered, Total Events
-
-
-
-## Parser:
-```
-| json  "log.priority" as priority
-| json  "$['log']['output_fields']['user.name']" as User nodrop
- 
-```
-### Use Cases:
-Alerts, Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Critical Alerts, Emergency Alerts, Error Logs (Latest 100 Errors), Errors, Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Events Over Time, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs), Rules Triggered  by Priority, Rules Triggered by Namespace, Rules Triggered by Pod, Rules Triggered by User, Top 10 Rules Triggered, Total Events
-
-
-
-## Parser:
-```
-| json  "log.priority" as priority
-| json  "log.rule" as rule
- 
-```
-### Use Cases:
-Alerts, Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Critical Alerts, Emergency Alerts, Error Logs (Latest 100 Errors), Errors, Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs), Rules Triggered  by Priority, Top 10 Rules Triggered, Total Events
-
-
-
-## Parser:
-```
-| json  "log.priority" as priority
-| json  "log.rule" as rule
-| json  "log.time" as time
-| json  "$['log']['output_fields']['proc.cmdline']" as proc_cmdline nodrop
-| json  "$['log']['output_fields']['proc.name']" as proc_name nodrop
-| json  "$['log']['output_fields']['user.name']" as user_name nodrop
-| json  "log.output" as output
-| json "$['log']['output_fields']['k8s.ns.name']" as namespace
- 
-```
-### Use Cases:
-Alerts, Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Critical Alerts, Emergency Alerts, Emergency, Alert, Critical and Error Events Timeline, Error Logs (Latest 100 Errors), Errors, Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events over Time, Events Over Time, Events Timeline, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs), Rules Triggered, Rules Triggered  by Priority, Rules Triggered  by Process, Rules Triggered by Namespace, Rules Triggered by Parent Process, Rules Triggered by Pod, Rules Triggered by User, Shell Configuration Modifications, Top 10 Rules Triggered, Total Events
-
-
-
-## Parser:
-```
-| json  "log.priority" as priority
-| json "log.rule" as rule
-| json  "$['log']['output_fields']['proc.cmdline']" as proc_cmdline nodrop
-| json  "$['log']['output_fields']['proc.name']" as proc_name nodrop
-| json  "$['log']['output_fields']['proc.pcmdline']" as proc_parent_cmdline nodrop
-| json  "$['log']['output_fields']['proc.pname']" as proc_parent_name nodrop
- 
-```
-### Use Cases:
-Alerts, Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Critical Alerts, Emergency Alerts, Error Logs (Latest 100 Errors), Errors, Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events over Time, Events Over Time, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs), Rules Triggered  by Priority, Rules Triggered  by Process, Rules Triggered by Namespace, Rules Triggered by Parent Process, Rules Triggered by Pod, Rules Triggered by User, Top 10 Rules Triggered, Total Events
-
-
-
-## Parser:
-```
-| json  "log.priority" as priority
-| json field=_raw "$['log']['output_fields']['k8s.ns.name']" as namespace
- 
-```
-### Use Cases:
-Alerts, Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Critical Alerts, Emergency Alerts, Error Logs (Latest 100 Errors), Errors, Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Events Over Time, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs), Rules Triggered  by Priority, Rules Triggered by Namespace, Top 10 Rules Triggered, Total Events
-
-
-
-## Parser:
-```
-| json  "log.priority" as priority 
-| json  "log.rule" as rule
- 
-```
-### Use Cases:
-Alerts, Change thread namespace, Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Create files below dev, Critical Alerts, DB program spawned process, Emergency Alerts, Emergency, Alert, Critical and Error Events Timeline, Error Logs (Latest 100 Errors), Errors, Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Events Over Time, Events Timeline, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Mkdir binary dirs, Modify binary dirs, Non sudo setuid, Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs), Read sensitive file untrusted, Rules Triggered, Rules Triggered  by Priority, Rules Triggered  by Process, Rules Triggered by Namespace, Rules Triggered by Parent Process, Rules Triggered by Pod, Rules Triggered by User, Run shell untrusted, Shell Configuration Modifications, System Procs Network Activity Alerts, System user interactive, Top 10 Rules Triggered, Total Events, Write below binary dir, Write below etc, Write below rpm database
-
-
-
-## Parser:
-```
-| json  "log" as msg
- 
-```
-### Use Cases:
-Alerts, Change thread namespace, Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Create files below dev, Critical Alerts, DB program spawned process, Emergency Alerts, Emergency, Alert, Critical and Error Events Timeline, Error Logs (Latest 100 Errors), Errors, Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Events Timeline, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Mkdir binary dirs, Modify binary dirs, Non sudo setuid, Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs), Read sensitive file untrusted, Rules Triggered, Rules Triggered  by Priority, Rules Triggered  by Process, Rules Triggered by Namespace, Rules Triggered by Parent Process, Rules Triggered by Pod, Rules Triggered by User, Run shell untrusted, Shell Configuration Modifications, System Procs Network Activity Alerts, System user interactive, Top 10 Rules Triggered, Total Events, Write below binary dir, Write below etc, Write below rpm database
-
-
-
-## Parser:
-```
-| json  "object.involvedObject.name" as name
- 
-```
-### Use Cases:
-Alerts, Change thread namespace, Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Create files below dev, Critical Alerts, DB program spawned process, Emergency Alerts, Emergency, Alert, Critical and Error Events Timeline, Error Logs (Latest 100 Errors), Errors, Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events over Time, Events Over Time, Events Timeline, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Mkdir binary dirs, Modify binary dirs, Non sudo setuid, Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs), Read sensitive file untrusted, Rules Triggered, Rules Triggered  by Priority, Rules Triggered  by Process, Rules Triggered by Namespace, Rules Triggered by Parent Process, Rules Triggered by Pod, Rules Triggered by User, Run shell untrusted, Shell Configuration Modifications, System Procs Network Activity Alerts, System user interactive, Top 10 Rules Triggered, Total Events, Write below binary dir, Write below etc, Write below rpm database
-
-
-
-## Parser:
-```
-| json  "object.involvedObject.name" as name
-| json field=_raw "object.involvedObject.kind" as kind
- 
-```
-### Use Cases:
-Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Error Logs (Latest 100 Errors), Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Logs  (Latest 100 Logs), Logs (Latest 100 Logs)
-
-
-
-## Parser:
-```
-| json  "object.involvedObject.namespace","object.involvedObject.name","type", "object.message", "object.count" as object_namespace,objectName, type, message, object_count
- 
-```
-### Use Cases:
-Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Error Logs (Latest 100 Errors), Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Logs  (Latest 100 Logs), Logs (Latest 100 Logs)
-
-
-
-## Parser:
-```
-| json  "object.metadata.namespace" as namespace
-| json  "object.involvedObject.name" as name
-| json  "object.lastTimestamp" as lastTimestamp
-| json  "object.message" as message
- 
-```
-### Use Cases:
-Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Error Logs (Latest 100 Errors), Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100), Pod Logs (Latest 100 Logs)
-
-
-
-## Parser:
-```
-| json  "object.metadata.namespace" as namespace
-| json  "object.involvedObject.name" as name
-| json field=_raw "object.involvedObject.kind" as kind
- 
-```
-### Use Cases:
-Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Error Logs (Latest 100 Errors), Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Events Over Time, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs)
-
-
-
-## Parser:
-```
-| json  "object.metadata.namespace" as namespace
-| json  "object.involvedObject.name" as name
-| json field=_raw "object.involvedObject.kind" as kind
-| json  "object.lastTimestamp" as lastTimestamp
-| json  "object.message" as message
- 
-```
-### Use Cases:
-Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Error Logs (Latest 100 Errors), Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Pod Error Logs (Latest 100 Errors), Pod Events (Latest 100 Events), Pod Events (Latest 100), Pod Logs (Latest 100 Logs)
-
-
-
-## Parser:
-```
-| json "MESSAGE", "_HOSTNAME" as log, node
- 
-```
-### Use Cases:
-Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Error Logs (Latest 100 Errors), Errors  (Latest 100 Errors), Events (Latest 100), Events in Namespace ( Latest 100 Events), Events Over Time, Events over Time, Kubelet Logs (Latest 100 Logs), Logs  (Latest 100 Logs), Logs (Latest 100 Logs), Pod Error Logs (Latest 100 Errors), Pod Logs (Latest 100 Logs)
-
-
-
-## Parser:
-```
-| json field=_raw "object.reason" as reason
-| json field=_raw "object.type"
-| json field=_raw "object.involvedObject.kind" as kind
-| json field=_raw "object.message" as message
- 
-```
-### Use Cases:
-Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Container Logs (Latest 100 Logs), Container Pod Events (Latest 100), Container Pod Events Over Time, Error Logs (Latest 100 Errors), Errors  (Latest 100 Errors), Events (Latest 100), Logs  (Latest 100 Logs), Logs (Latest 100 Logs)
-
-
-
-## Parser:
-```
-| json field=_raw "object.reason" as reason
-| json field=_raw "object.type"
-| json field=_raw "object.involvedObject.kind" as kind nodrop
- 
-```
-### Use Cases:
-Cluster Events (Latest 100)
-
-
-
-## Parser:
-```
-| json field=_raw "stream" as stream
-| json  "log" as msg
- 
-```
-### Use Cases:
-Cluster Events (Latest 100), Cluster Logs (Latest 100 Logs), Container Error Logs (Latest 100 Errors), Error Logs (Latest 100 Errors)
-
+| use_case | parser |
+|--- | --- |
+| Kubernetes/Cluster/Cluster Events (Latest 100) | *events* cluster={{cluster}}<br>\| json field=_raw "object.reason" as reason<br>\| json field=_raw "object.type"<br>\| limit 100<br>\| json field=_raw "object.involvedObject.kind" as kind nodrop |
+| Kubernetes/Cluster/Cluster Logs (Latest 100 Logs) | cluster={{cluster}}<br>\| json  "log" as msg |
+| Kubernetes/Cluster/Error Logs (Latest 100 Errors) | cluster={{cluster}} (error or critical)<br>\| json  "log" as msg |
+| Kubernetes/Container/Container Error Logs (Latest 100 Errors) | cluster={{cluster}} namespace={{namespace}} pod={{pod}} container={{container}} (error or critical)<br>\| json field=_raw "stream" as stream<br>\| json  "log" as msg |
+| Kubernetes/Container/Container Logs (Latest 100 Logs) | cluster={{cluster}} namespace={{namespace}} pod={{pod}} container={{container}} <br>\| json  "log" as msg |
+| Kubernetes/Container/Container Pod Events (Latest 100) | *events* cluster={{cluster}}<br>\| json  "object.metadata.namespace" as namespace<br>\| where namespace matches "{{namespace}}"<br>\| json  "object.involvedObject.name" as name<br>\| json field=_raw "object.involvedObject.kind" as kind<br>\| where name matches "{{pod}}" and kind matches "Pod"<br>\| json  "object.lastTimestamp" as lastTimestamp<br>\| json  "object.message" as message |
+| Kubernetes/Container/Container Pod Events Over Time | *events* cluster={{cluster}}<br>\| json  "object.metadata.namespace" as namespace<br>\| where namespace matches "{{namespace}}"<br>\| json  "object.involvedObject.name" as name<br>\| json field=_raw "object.involvedObject.kind" as kind |
+| Kubernetes/Daemonsets - Overview/Errors  (Latest 100 Errors) | cluster={{cluster}} daemonset={{daemonset}} error<br>\| json  "log" as msg |
+| Kubernetes/Daemonsets - Overview/Logs  (Latest 100 Logs) | cluster={{cluster}} daemonset={{daemonset}}<br>\| json  "log" as msg |
+| Kubernetes/Deployment/Errors  (Latest 100 Errors) | cluster={{cluster}} namespace={{namespace}} deployment={{deployment}} pod=* error<br>\| json  "log" as msg |
+| Kubernetes/Deployment/Logs (Latest 100 Logs) | cluster={{cluster}} namespace={{namespace}} deployment={{deployment}} pod=*<br>\| json  "log" as msg |
+| Kubernetes/HPA/Events (Latest 100) | *events*<br>\| json field=_raw "object.reason" as reason<br>\| json field=_raw "object.type"<br>\| where %"object.type" != "Normal"<br>\| json field=_raw "object.involvedObject.kind" as kind<br>\| where kind = "HorizontalPodAutoscaler"<br>\| json field=_raw "object.message" as message |
+| Kubernetes/Namespace/Errors  (Latest 100 Errors) | cluster={{cluster}} namespace={{namespace}} pod=* error<br>\| json  "log" as msg |
+| Kubernetes/Namespace/Events in Namespace ( Latest 100 Events) | *events* cluster={{cluster}}<br>\| limit 100<br>\| json  "object.involvedObject.namespace","object.involvedObject.name","type", "object.message", "object.count" as object_namespace,objectName, type, message, object_count |
+| Kubernetes/Namespace/Events Over Time | *events* cluster={{cluster}}<br>\| json  "object.metadata.namespace" as namespace<br>\| where namespace matches "{{namespace}}"<br>\| json  "object.involvedObject.name" as name<br>\| json field=_raw "object.involvedObject.kind" as kind |
+| Kubernetes/Namespace/Logs (Latest 100 Logs) | cluster={{cluster}} namespace={{namespace}} pod=*<br>\| json  "log" as msg |
+| Kubernetes/Node/Events over Time | *events* cluster={{cluster}}<br>\| json  "object.involvedObject.name" as name<br>\| json field=_raw "object.involvedObject.kind" as kind |
+| Kubernetes/Node/Kubelet Logs (Latest 100 Logs) | *kubelet*  {{node}}<br>\| json "MESSAGE", "_HOSTNAME" as log, node |
+| Kubernetes/Node/Pod Error Logs (Latest 100 Errors) | cluster={{cluster}} node={{node}} (error or critical)<br>\| json  "log" as msg |
+| Kubernetes/Node/Pod Events (Latest 100) | *events* cluster={{cluster}}<br>\| json  "object.metadata.namespace" as namespace<br>\| json  "object.involvedObject.name" as name<br>\| json  "object.lastTimestamp" as lastTimestamp<br>\| json  "object.message" as message |
+| Kubernetes/Node/Pod Logs (Latest 100 Logs) | cluster={{cluster}} node={{node}} pod=*<br>\| json  "log" as msg |
+| Kubernetes/Pod/Error Logs (Latest 100 Errors) | cluster={{cluster}} namespace={{namespace}} pod={{pod}} (error or critical)<br>\| json  "log" as msg |
+| Kubernetes/Pod/Events Over Time | *events* cluster={{cluster}}<br>\| json  "object.metadata.namespace" as namespace<br>\| where namespace matches "{{namespace}}"<br>\| json  "object.involvedObject.name" as name<br>\| json field=_raw "object.involvedObject.kind" as kind |
+| Kubernetes/Pod/Logs (Latest 100 Logs) | cluster={{cluster}} namespace={{namespace}} pod={{pod}}<br>\| json  "log" as msg |
+| Kubernetes/Pod/Pod Events (Latest 100 Events) | *events* cluster={{cluster}}<br>\| json  "object.metadata.namespace" as namespace<br>\| where namespace matches "{{namespace}}"<br>\| json  "object.involvedObject.name" as name<br>\| json field=_raw "object.involvedObject.kind" as kind<br>\| where name matches "{{pod}}" and kind matches "Pod*"<br>\| json  "object.lastTimestamp" as lastTimestamp<br>\| json  "object.message" as message |
+| Kubernetes/Security Overview/Alerts | *falco* output_fields rule priority output<br>\| json  "log.priority" as priority |
+| Kubernetes/Security Overview/Critical Alerts | *falco* output_fields rule priority output<br>\| json  "log.priority" as priority |
+| Kubernetes/Security Overview/Emergency Alerts | *falco* output_fields rule priority output <br>\| json  "log.priority" as priority |
+| Kubernetes/Security Overview/Emergency, Alert, Critical and Error Events Timeline | *falco* output_fields rule priority output <br>\| json  "log.priority" as priority |
+| Kubernetes/Security Overview/Errors | *falco* output_fields rule priority output <br>\| json  "log.priority" as priority |
+| Kubernetes/Security Overview/Events Timeline | *falco* output_fields rule priority output <br>\| json  "log.priority" as priority |
+| Kubernetes/Security Overview/Rules Triggered  by Priority | *falco* output_fields rule priority output <br>\| json  "log.priority" as priority |
+| Kubernetes/Security Overview/Rules Triggered  by Process | *falco* output_fields rule priority output <br>\| json  "log.priority" as priority<br>\| json "log.rule" as rule<br>\| json  "$['log']['output_fields']['proc.cmdline']" as proc_cmdline nodrop<br>\| json  "$['log']['output_fields']['proc.name']" as proc_name nodrop<br>\| json  "$['log']['output_fields']['proc.pcmdline']" as proc_parent_cmdline nodrop<br>\| json  "$['log']['output_fields']['proc.pname']" as proc_parent_name nodrop |
+| Kubernetes/Security Overview/Rules Triggered by Namespace | *falco* output_fields rule priority output <br>\| json  "log.priority" as priority<br>\| json field=_raw "$['log']['output_fields']['k8s.ns.name']" as namespace |
+| Kubernetes/Security Overview/Rules Triggered by Parent Process | *falco* output_fields rule priority output <br>\| json  "log.priority" as priority<br>\| json "log.rule" as rule<br>\| json  "$['log']['output_fields']['proc.cmdline']" as proc_cmdline nodrop<br>\| json  "$['log']['output_fields']['proc.name']" as proc_name nodrop<br>\| json  "$['log']['output_fields']['proc.pcmdline']" as proc_parent_cmdline nodrop<br>\| json  "$['log']['output_fields']['proc.pname']" as proc_parent_name nodrop |
+| Kubernetes/Security Overview/Rules Triggered by Pod | *falco* output_fields rule priority output <br>\| json  "log.priority" as priority |
+| Kubernetes/Security Overview/Rules Triggered by User | *falco* output_fields rule priority output <br>\| json  "log.priority" as priority<br>\| json  "$['log']['output_fields']['user.name']" as User nodrop |
+| Kubernetes/Security Overview/Top 10 Rules Triggered | *falco* output_fields rule priority output <br>\| json  "log.priority" as priority<br>\| json  "log.rule" as rule |
+| Kubernetes/Security Overview/Total Events | *falco* output_fields rule priority output<br>\| json  "log.priority"  |
+| Kubernetes/Security Rules Triggered/Change thread namespace | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/Create files below dev | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/DB program spawned process | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/Mkdir binary dirs | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/Modify binary dirs | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/Non sudo setuid | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/Read sensitive file untrusted | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/Rules Triggered | *falco* cluster={{cluster}} output_fields rule priority output <br>\| json  "log.priority" as priority<br>\| json  "log.rule" as rule<br>\| json  "log.time" as time<br>\| json  "$['log']['output_fields']['proc.cmdline']" as proc_cmdline nodrop<br>\| json  "$['log']['output_fields']['proc.name']" as proc_name nodrop<br>\| json  "$['log']['output_fields']['user.name']" as user_name nodrop<br>\| json  "log.output" as output<br>\| json "$['log']['output_fields']['k8s.ns.name']" as namespace |
+| Kubernetes/Security Rules Triggered/Run shell untrusted | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/Shell Configuration Modifications | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/System Procs Network Activity Alerts | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/System user interactive | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/Write below binary dir | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/Write below etc | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Security Rules Triggered/Write below rpm database | *falco* cluster={{cluster}} output_fields rule priority output <br> \| json  "log.priority" as priority <br>\| json  "log.rule" as rule |
+| Kubernetes/Service/Errors  (Latest 100 Errors) | cluster={{cluster}} namespace={{namespace}} service={{service}} pod=* error<br>\| json  "log" as msg |
+| Kubernetes/Service/Logs (Latest 100 Logs) | cluster={{cluster}} namespace={{namespace}} service={{service}} pod=*<br>\| json  "log" as msg |
+| Kubernetes/StatefulSets - Overview/Errors  (Latest 100 Errors) | cluster={{cluster}} statefulset={{statefulset}} (error or critical)<br>\| json  "log" as msg |
+| Kubernetes/StatefulSets - Overview/Events Over Time | *events* cluster={{cluster}}<br>\| json  "object.involvedObject.name" as name |
+| Kubernetes/StatefulSets - Overview/Logs  (Latest 100 Logs) | cluster={{cluster}} statefulset={{statefulset}}<br>\| json  "log" as msg |
 

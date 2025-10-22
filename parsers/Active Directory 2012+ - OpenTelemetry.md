@@ -1,123 +1,15 @@
 # Parsers For Active Directory 2012+ - OpenTelemetry
 
-## Parser:
-```
-| json  "computer", "keywords" as host.name, keywords nodrop
- 
-```
-### Use Cases:
-Admin Activity by Category, Audit Failures Over Time, Category Over Time, Logon/off Activity, Object Creation, Object Deletion, Rights Management, Successes vs Failures, Top 10 Messages
-
-
-
-## Parser:
-```
-| json "computer", "message", "keywords", "event_data", "channel", "task" as  host, msg_summary, Keywords, event_data, channel, task nodrop
-| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
-| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user
-| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user
- 
-```
-### Use Cases:
-Admin Activity by Category, Audit Failures Over Time, Category Over Time, Logon/off Activity, Object Creation, Object Deletion, Rights Management, Successes vs Failures, Top 10 Messages
-
-
-
-## Parser:
-```
-| json "event_id", "computer" as event_id, host nodrop
-| json field=event_id "id" as event_id
- 
-```
-### Use Cases:
-Audit Failures Over Time, Category Over Time, Logon/off Activity, Object Creation, Rights Management, Successes vs Failures, Top 10 Messages
-
-
-
-## Parser:
-```
-| json "event_id", "computer", "event_data", "channel", "message"  as event_id, host, event_data,  channel, msg_summary nodrop
-| json field=event_id "id" as event_id
-| parse field=event_data "\"LogonType\":\"*\"" as logon_type
- 
-```
-### Use Cases:
-Audit Failures Over Time, Category Over Time, Logon/off Activity, Object Creation, Successes vs Failures, Top 10 Messages
-
-
-
-## Parser:
-```
-| json "event_id", "computer", "keywords" as event_id, host.name, keywords nodrop
- 
-```
-### Use Cases:
-Category Over Time, Object Creation, Successes vs Failures, Top 10 Messages
-
-
-
-## Parser:
-```
-| json "event_id", "computer", "keywords" as event_id, host.name, keywords nodrop
-| json field=event_id "id" as event_id
- 
-```
-### Use Cases:
-Admin Activity by Category, Audit Failures Over Time, Category Over Time, Logon/off Activity, Object Creation, Object Deletion, Rights Management, Successes vs Failures, Top 10 Messages
-
-
-
-## Parser:
-```
-| json "event_id", "computer", "keywords", "event_data" as event_id, host, Keywords, event_data nodrop
-| parse field=event_data "\"IpAddress\":\"*\"" as src_ip
- 
-```
-### Use Cases:
-Admin Activity by Category, All Failures by IP, Audit Failures Over Time, Category Over Time, Logon/off Activity, Object Creation, Object Deletion, Rights Management, Successes vs Failures, Top 10 Messages
-
-
-
-## Parser:
-```
-| json "event_id", "computer", "message" as event_id, host.name, msg_summary nodrop
-| json field=event_id "id" as event_id
- 
-```
-### Use Cases:
-Audit Failures Over Time, Category Over Time, Object Creation, Successes vs Failures, Top 10 Messages
-
-
-
-## Parser:
-```
-| json "event_id", "computer", "message" as event_id, host.name, msg_summary nodrop
-| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
- 
-```
-### Use Cases:
-Audit Failures Over Time, Category Over Time, Object Creation, Successes vs Failures, Top 10 Messages
-
-
-
-## Parser:
-```
-| json "event_id", "computer", "message", "channel" as event_id, host, msg_summary, channel nodrop
-| json field=event_id "id" as event_id
- 
-```
-### Use Cases:
-Audit Failures Over Time, Category Over Time, Logon/off Activity, Object Creation, Object Deletion, Rights Management, Successes vs Failures, Top 10 Messages
-
-
-
-## Parser:
-```
-| json "event_id", "computer", "message", "task" as event_id, host.name, msg_summary, task nodrop
-| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop
- 
-```
-### Use Cases:
-Audit Failures Over Time, Category Over Time, Object Creation, Successes vs Failures, Top 10 Messages
-
+| use_case | parser |
+|--- | --- |
+| Active Directory 2012+ - OpenTelemetry/Active Directory Service Activity/Category Over Time | sumo.datasource=windows <br>\| json "event_id", "computer", "message", "task" as event_id, host.name, msg_summary, task nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
+| Active Directory 2012+ - OpenTelemetry/Active Directory Service Activity/Object Creation | sumo.datasource=windows  "\"Channel\":\"Security\"" (4720 or 4741 or 4727 or 4731 or 4744 or 4749 or 4754 or 4759 or 4783 or 5137 or 4902 or 4790) <br>\| json "event_id", "computer", "message" as event_id, host.name, msg_summary nodrop<br>\| json field=event_id "id" as event_id |
+| Active Directory 2012+ - OpenTelemetry/Active Directory Service Activity/Object Deletion | sumo.datasource=windows (4726 or 4743 or 4730 or 4734 or 4748 or 4753 or 4758 or 4763 or 4789 or 4659 or 4660 or 5141)  <br>\| json "event_id", "computer", "message", "channel" as event_id, host, msg_summary, channel nodrop<br>\| json field=event_id "id" as event_id |
+| Active Directory 2012+ - OpenTelemetry/Active Directory Service Activity/off Activity | sumo.datasource=windows<br>\| json "event_id", "computer", "event_data", "channel", "message"  as event_id, host, event_data,  channel, msg_summary nodrop<br>\| json field=event_id "id" as event_id<br>\| parse field=event_data "\"LogonType\":\"*\"" as logon_type |
+| Active Directory 2012+ - OpenTelemetry/Active Directory Service Activity/Rights Management | sumo.datasource=windows <br>\| json "event_id", "computer" as event_id, host nodrop<br>\| json field=event_id "id" as event_id |
+| Active Directory 2012+ - OpenTelemetry/Active Directory Service Activity/Top 10 Messages | sumo.datasource=windows <br>\| json "event_id", "computer", "message" as event_id, host.name, msg_summary nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop |
+| Active Directory 2012+ - OpenTelemetry/Active Directory Service Failures/Admin Activity by Category | sumo.datasource=windows  Task <br>\| json "computer", "message", "keywords", "event_data", "channel", "task" as  host, msg_summary, Keywords, event_data, channel, task nodrop<br>\| parse regex field=msg_summary "(?<msg_summary>.*\.*)" nodrop<br>\| parse field=event_data "\"SubjectUserName\":\"*\"" as src_user<br>\| parse field=event_data "\"TargetUserName\":\"*\"" as dest_user |
+| Active Directory 2012+ - OpenTelemetry/Active Directory Service Failures/All Failures by IP | sumo.datasource=windows  ("fatal" or "failure" or "error" or "Audit Failure") <br>\| json "event_id", "computer", "keywords", "event_data" as event_id, host, Keywords, event_data nodrop<br>\| parse field=event_data "\"IpAddress\":\"*\"" as src_ip |
+| Active Directory 2012+ - OpenTelemetry/Active Directory Service Failures/Audit Failures Over Time | sumo.datasource=windows  "Audit Failure"<br>\| json "event_id", "computer", "keywords" as event_id, host.name, keywords nodrop<br>\| json field=event_id "id" as event_id |
+| Active Directory 2012+ - OpenTelemetry/Active Directory Service Failures/Successes vs Failures | sumo.datasource=windows  keywords<br>\| json  "computer", "keywords" as host.name, keywords nodrop |
 

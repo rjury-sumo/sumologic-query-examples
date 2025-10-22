@@ -1,167 +1,30 @@
 # Parsers For Google Cloud Storage
 
-## Parser:
-```
-| json "message.data.resource.type" as type
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data" as data
-| json field=data "timestamp", "severity", "resource.labels", "resource.labels.project_id", "resource.labels.bucket_name", "protoPayload.methodName", "protoPayload.authenticationInfo.principalEmail" as timestamp, severity, labels, project, bucket, method, user
- 
-```
-### Use Cases:
-Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels" as labels
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations by Project, Operations Over Time, Request Location, Top 10 Buckets by Operations, Top 10 Locations by Operations, Top 10 Projects by Operations, Top 10 Users by Operations
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload.authenticationInfo.principalEmail" as labels, user
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Creations and Deletions by User, Errors by User Over Time, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Location of Users, Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations by Project, Operations by User - Outlier, Operations Over Time, Recent Errors by User, Recent Object Policy Updates by User, Request Location, Top 10 Buckets by Operations, Top 10 Locations by Operations, Top 10 Projects by Operations, Top 10 Users by Errors, Top 10 Users by Operations, User Operations Over Time, User Statistics
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload.authenticationInfo.principalEmail" as labels, user
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
-| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\""
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Creations and Deletions by User, Errors by User Over Time, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations by Project, Operations by User - Outlier, Operations Over Time, Recent Object Policy Updates by User, Request Location, Top 10 Buckets by Operations, Top 10 Locations by Operations, Top 10 Projects by Operations, Top 10 Users by Operations
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload.authenticationInfo.principalEmail" as labels, user
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
-| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\""
-| json "message.data.protoPayload.serviceData.policyDelta" as policy_deltas
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations by Project, Operations Over Time, Recent Object Policy Updates by User, Request Location, Top 10 Buckets by Operations, Top 10 Locations by Operations, Top 10 Projects by Operations, Top 10 Users by Operations
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload.authenticationInfo.principalEmail", "message.data.severity" as labels, user, severity
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Errors by User Over Time, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations by Project, Operations by User - Outlier, Operations Over Time, Recent Object Policy Updates by User, Request Location, Top 10 Buckets by Operations, Top 10 Locations by Operations, Top 10 Projects by Operations, Top 10 Users by Operations
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload.methodName" as labels, method
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations Over Time, Request Location, Top 10 Locations by Operations, Top 10 Users by Operations
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload.requestMetadata.callerIp" as labels, caller_ip
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations Over Time, Request Location
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload.resourceName", "nullField" as labels, name, null nodrop
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
-| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\""
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations Over Time, Request Location, Top 10 Buckets by Operations, Top 10 Locations by Operations, Top 10 Projects by Operations, Top 10 Users by Operations
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload" as labels, payload
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
-| json field=payload "authenticationInfo.principalEmail", "requestMetadata.callerIp" as user, caller_ip
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Creations and Deletions by User, Errors by User Over Time, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Location of Users, Location of Users with Errors, Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations by Project, Operations by User - Outlier, Operations Over Time, Recent Errors by User, Recent Object Policy Updates by User, Request Location, Top 10 Buckets by Operations, Top 10 Locations by Operations, Top 10 Projects by Operations, Top 10 Users by Errors, Top 10 Users by Operations, User Operations Over Time, User Statistics
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload" as labels, payload
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
-| json field=payload "authenticationInfo.principalEmail", "resourceName", "nothingIsHere" as user, name, null nodrop
-| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\""
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Creations and Deletions by User, Errors by User Over Time, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations by Project, Operations by User - Outlier, Operations Over Time, Recent Object Policy Updates by User, Request Location, Top 10 Buckets by Operations, Top 10 Locations by Operations, Top 10 Projects by Operations, Top 10 Users by Operations, User Statistics
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload", "message.data.severity" as labels, payload, severity
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
-| json field=payload "methodName", "authenticationInfo.principalEmail" as method, user
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Creations and Deletions by User, Errors by User Over Time, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Location of Users, Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations by Project, Operations by User - Outlier, Operations Over Time, Recent Object Policy Updates by User, Request Location, Top 10 Buckets by Operations, Top 10 Locations by Operations, Top 10 Projects by Operations, Top 10 Users by Errors, Top 10 Users by Operations, User Statistics
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.protoPayload", "message.data.timestamp", "message.data.severity" as labels, payload, timestamp, severity
-| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location
-| json field=payload "methodName", "authenticationInfo.principalEmail", "resourceName", "status.message" as method, user, resource, message nodrop
- 
-```
-### Use Cases:
-Bucket Statistics, Creations and Deletions, Creations and Deletions by User, Errors by User Over Time, Google Cloud Storage - Bucket Operations, Google Cloud Storage - User Operations, Location of Users, Operations, Operations by Bucket - Outlier, Operations by Bucket Over Time, Operations by Project, Operations by User - Outlier, Operations Over Time, Recent Errors by User, Recent Object Policy Updates by User, Request Location, Top 10 Buckets by Operations, Top 10 Locations by Operations, Top 10 Projects by Operations, Top 10 Users by Errors, Top 10 Users by Operations, User Statistics
-
+| use_case | parser |
+|--- | --- |
+| Google Cloud Storage/Bucket Operations/Google Cloud Storage - Bucket Operations | _sourceCategory={{Logsdatasource}}  logName principalEmail resource timestamp <br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type="gcs_bucket" and log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data" as data<br>\| json field=data "timestamp", "severity", "resource.labels", "resource.labels.project_id", "resource.labels.bucket_name", "protoPayload.methodName", "protoPayload.authenticationInfo.principalEmail" as timestamp, severity, labels, project, bucket, method, user |
+| Google Cloud Storage/Buckets/Bucket Statistics | _sourceCategory={{Logsdatasource}}  logName "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.resourceName", "nullField" as labels, name, null nodrop<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\"" |
+| Google Cloud Storage/Buckets/Creations and Deletions | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.methodName" as labels, method<br>\| where method matches "*create" or method matches "*delete"<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location |
+| Google Cloud Storage/Buckets/Operations by Bucket - Outlier | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels" as labels<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location |
+| Google Cloud Storage/Buckets/Operations by Bucket Over Time | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels" as labels<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location |
+| Google Cloud Storage/Buckets/Operations Over Time | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.methodName" as labels, method<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location |
+| Google Cloud Storage/Buckets/Request Location | _sourceCategory={{Logsdatasource}}  data logName resource callerIp "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.requestMetadata.callerIp" as labels, caller_ip<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location |
+| Google Cloud Storage/Overview/Operations | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.methodName" as labels, method<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location |
+| Google Cloud Storage/Overview/Operations by Project | _sourceCategory={{Logsdatasource}}  data logName resource "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels" as labels<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location |
+| Google Cloud Storage/Overview/Request Location | _sourceCategory={{Logsdatasource}}  data logName resource callerIp "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.requestMetadata.callerIp" as labels, caller_ip<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location |
+| Google Cloud Storage/Overview/Top 10 Buckets by Operations | _sourceCategory={{Logsdatasource}}  logName "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.resourceName", "nullField" as labels, name, null nodrop<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\"" |
+| Google Cloud Storage/Overview/Top 10 Locations by Operations | _sourceCategory={{Logsdatasource}}  logName "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.resourceName", "nullField" as labels, name, null nodrop<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\"" |
+| Google Cloud Storage/Overview/Top 10 Projects by Operations | _sourceCategory={{Logsdatasource}}  logName "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.resourceName", "nullField" as labels, name, null nodrop<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\"" |
+| Google Cloud Storage/Overview/Top 10 Users by Operations | _sourceCategory={{Logsdatasource}}  logName principalEmail "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload" as labels, payload<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| json field=payload "authenticationInfo.principalEmail", "resourceName", "nothingIsHere" as user, name, null nodrop<br>\| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\"" |
+| Google Cloud Storage/User Operations/Google Cloud Storage - User Operations | _sourceCategory={{Logsdatasource}}  logName principalEmail resource timestamp <br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type="gcs_bucket" and log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data" as data<br>\| json field=data "timestamp", "severity", "resource.labels", "resource.labels.project_id", "resource.labels.bucket_name", "protoPayload.methodName", "protoPayload.authenticationInfo.principalEmail" as timestamp, severity, labels, project, bucket, method, user |
+| Google Cloud Storage/Users/Creations and Deletions by User | _sourceCategory={{Logsdatasource}}  logName principalEmail "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.authenticationInfo.principalEmail" as labels, user<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\"" |
+| Google Cloud Storage/Users/Errors by User Over Time | _sourceCategory={{Logsdatasource}}  logName resource severity principalEmail "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.authenticationInfo.principalEmail", "message.data.severity" as labels, user, severity<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location |
+| Google Cloud Storage/Users/Location of Users | _sourceCategory={{Logsdatasource}}  callerIp logName principalEmail "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload" as labels, payload<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| json field=payload "authenticationInfo.principalEmail", "requestMetadata.callerIp" as user, caller_ip |
+| Google Cloud Storage/Users/Location of Users with Errors | _sourceCategory={{Logsdatasource}}  callerIp logName principalEmail "\"type\":\"gcs_bucket\"" ("\"severity\":\"WARNING\"" or "\"severity\":\"ERROR\"" or "\"severity\":\"CRITICAL\"" or "\"severity\":\"ALERT\"" or "\"severity\":\"EMERGENCY\"")<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload" as labels, payload<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| json field=payload "authenticationInfo.principalEmail", "requestMetadata.callerIp" as user, caller_ip |
+| Google Cloud Storage/Users/Operations by User - Outlier | _sourceCategory={{Logsdatasource}}  data logName principalEmail "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.authenticationInfo.principalEmail" as labels, user<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location |
+| Google Cloud Storage/Users/Recent Errors by User | _sourceCategory={{Logsdatasource}}  logName principalEmail "\"type\":\"gcs_bucket\"" ("\"severity\":\"WARNING\"" or "\"severity\":\"ERROR\"" or "\"severity\":\"CRITICAL\"" or "\"severity\":\"ALERT\"" or "\"severity\":\"EMERGENCY\"")<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload", "message.data.timestamp", "message.data.severity" as labels, payload, timestamp, severity<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| json field=payload "methodName", "authenticationInfo.principalEmail", "resourceName", "status.message" as method, user, resource, message nodrop |
+| Google Cloud Storage/Users/Recent Object Policy Updates by User | _sourceCategory={{Logsdatasource}}  logName principalEmail "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.authenticationInfo.principalEmail" as labels, user<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\""<br>\| where method = "update"<br>\| json "message.data.protoPayload.serviceData.policyDelta" as policy_deltas |
+| Google Cloud Storage/Users/Top 10 Users by Errors | _sourceCategory={{Logsdatasource}}  logName resource severity principalEmail "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload", "message.data.severity" as labels, payload, severity<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| json field=payload "methodName", "authenticationInfo.principalEmail" as method, user |
+| Google Cloud Storage/Users/User Operations Over Time | _sourceCategory={{Logsdatasource}}  logName resource  "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload.authenticationInfo.principalEmail" as labels, user<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location |
+| Google Cloud Storage/Users/User Statistics | _sourceCategory={{Logsdatasource}}  logName principalEmail "\"type\":\"gcs_bucket\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/cloudaudit.googleapis.com%2*"<br>\| json "message.data.resource.labels", "message.data.protoPayload" as labels, payload<br>\| json field=labels "project_id", "bucket_name", "location" as project, bucket_name, location<br>\| json field=payload "authenticationInfo.principalEmail", "resourceName", "nothingIsHere" as user, name, null nodrop<br>\| parse regex "\"methodName\":\"(?<resource_type>[^\"]+)\.(?<method>[^\"]+?)\"" |
 

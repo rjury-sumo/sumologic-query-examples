@@ -1,647 +1,81 @@
 # Parsers For Azure Storage
 
-## Parser:
-```
-| json "callerIpAddress" as callerIpAddress
-| split callerIpAddress delim=':' extract 1 as src_ip, 2 as port
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Transactions by location, Transactions by TLS version
-
-
-
-## Parser:
-```
-| json "category"
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent failed request, Recent Resource health incidents, Resource health by event type, service health by event type-Time chart, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "category"
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name
-
-
-
-## Parser:
-```
-| JSON "category", "operationName", "resultType", "properties.recommendationImpact", "properties.recommendationName" as category, operationName, resultType, recommendationImpact, recommendationName
-| parse field=operationName "*/*/*/*" as provider, category, operation_name, action nodrop
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed policy events, Recent failed request, Recent recommendation events, Recent Resource health incidents, Recent security events, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total denied policy events, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name
-
-
-
-## Parser:
-```
-| JSON "category", "operationName", "statusText", "properties.objectKey" as category, operationName, statusText, objectKey
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
-| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed policy events, Recent failed request, Recent recommendation events, Recent Resource health incidents, Recent security events, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Table Name by Failed Operations, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources  by Failures, Top 10 Resources  by Server Latency, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total denied policy events, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name, Writes by Table Name
-
-
-
-## Parser:
-```
-| JSON "category", "operationName", "time","level","resultType", "properties.incidentType", "properties.service", "properties.region", "properties.impactStartTime", "properties.impactMitigationTime", "properties.defaultLanguageTitle", "properties.stage" as category, operationName, time,level,resultType, incidentType, service, service_region, impactStartTime, impactMitigationTime, defaultLanguageTitle, stage nodrop
-| parse field=operationName "*/*/*" as category, operation_name, action nodrop
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "category", "operationName", "time","level","resultType", "properties.title", "properties.details", "properties.currentHealthStatus", "properties.type", "properties.cause" as category, operationName, time,level,resultType, title, details, currentHealthStatus, type, cause nodrop
-| parse field=operationName "*/*/*" as category, operation_name, action nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent failed request, Recent Resource health incidents, Resource health by event type, service health by event type-Time chart, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "category", "properties.currentHealthStatus" as category, currentHealthStatus
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent failed request, Resource health by event type, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "category", "properties.incidentType", "properties.service", "properties.region" as category, incidentType, service, service_region
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| json "category", "properties.requestBodySize" as category, request_body_size
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "category", "properties.requestBodySize" as category, request_body_size
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
-| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Reads by Table Name, Recent alerts, Recent failed policy events, Recent failed request, Recent recommendation events, Recent Resource health incidents, Recent security events, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Table Name by Failed Operations, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources  by Failures, Top 10 Resources  by Server Latency, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total denied policy events, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name, Writes by Table Name
-
-
-
-## Parser:
-```
-| JSON "category", "properties.requestBodySize", "properties.objectKey", "uri" as category, request_body_size, objectKey, uri 
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop
-| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed policy events, Recent failed request, Recent recommendation events, Recent Resource health incidents, Recent security events, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total denied policy events, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name
-
-
-
-## Parser:
-```
-| json "category", "properties.requestBodySize", "properties.serverLatencyMs","properties.serviceType" as category, request_body_size, server_latency, service_type  
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "category", "properties.responseBodySize" as category, response_body_size
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed policy events, Recent failed request, Recent recommendation events, Recent Resource health incidents, Recent security events, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources  by Failures, Top 10 Resources  by Server Latency, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total denied policy events, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name, Writes by Table Name
-
-
-
-## Parser:
-```
-| JSON "category", "properties.responseBodySize" as category, response_body_size
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
-| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Reads by Table Name, Recent alerts, Recent failed policy events, Recent failed request, Recent recommendation events, Recent Resource health incidents, Recent security events, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Table Name by Failed Operations, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources  by Failures, Top 10 Resources  by Server Latency, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total denied policy events, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name, Writes by Table Name
-
-
-
-## Parser:
-```
-| json "category", "properties.responseBodySize", "properties.objectKey", "uri" as category, response_body_size, objectKey, uri
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop
-| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed policy events, Recent failed request, Recent recommendation events, Recent Resource health incidents, Recent security events, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources  by Failures, Top 10 Resources  by Server Latency, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total denied policy events, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name, Writes by Table Name
-
-
-
-## Parser:
-```
-| json "category", "properties.responseBodySize", "properties.serverLatencyMs", "properties.serviceType" as category, response_body_size, server_latency, service_type
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total read, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| Json "category", "properties.status", "properties.timeGeneratedUtc", "properties.processingEndTimeUtc", "properties.version", "properties.vendorName", "properties.productName", "properties.alertType", "properties.startTimeUtc", "properties.endTimeUtc", "properties.severity", "properties.isIncident", "properties.intent", "properties.compromisedEntity", "properties.alertDisplayName", "properties.description", "properties.productComponentName" as category, status, timeGeneratedUtc, processingEndTimeUtc, version, vendorName, productName, alertType, startTimeUtc, endTimeUtc, severity, isIncident, intent, compromisedEntity, alertDisplayName, description, productComponentName nodrop
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed policy events, Recent failed request, Recent Resource health incidents, Recent security events, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total denied policy events, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name
-
-
-
-## Parser:
-```
-| JSON "category", "resultType", "level", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, level, message, resource_location, entity
-| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop
-| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed policy events, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name
-
-
-
-## Parser:
-```
-| JSON "category", "resultType", "level", "providers", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, level, providers, message, resource_location, entity nodrop
-| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop
-| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total read, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name
-
-
-
-## Parser:
-```
-| JSON "category", "resultType", "properties.eventTimestamp", "properties.operationName", "properties.status" as category, resultType, eventTimestamp, operationName, status
-| parse field=operationName "*/*/*" as category, operation_name, action nodrop
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Resource health by event type, service health by event type-Time chart, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, message, resourceLocation, entity
-| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop
-| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed policy events, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total denied policy events, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name
-
-
-
-## Parser:
-```
-| JSON "category", "statusText", "properties.objectKey" as category,  statusText, objectKey
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
-| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed policy events, Recent failed request, Recent recommendation events, Recent Resource health incidents, Recent security events, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources  by Failures, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total denied policy events, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name
-
-
-
-## Parser:
-```
-| JSON "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as category,  statusText, objectKey, server_latency
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop 
-| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed policy events, Recent failed request, Recent recommendation events, Recent Resource health incidents, Recent security events, Recent Service Health incidents, Recent success policy events, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources  by Failures, Top 10 Resources  by Server Latency, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total denied policy events, Total read, Total recommendation events, Total security events, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name
-
-
-
-## Parser:
-```
-| json "identity.type" as type
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Distribution by identity type, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Transactions by TLS version
-
-
-
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Operations that caused server-side throttling errors, Operations used, Top 10 most common errors, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json "properties.tlsVersion" as tlsVersion
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Transactions by TLS version
-
-
-
-## Parser:
-```
-| json "properties.userAgentHeader" as userAgentHeader
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Transactions by TLS version
-
-
-
-## Parser:
-```
-| json "resultType", "category", "operationName" as resultType, category, operationName
- 
-```
-### Use Cases:
-Changes - Read, Write and Delete, Operations that caused server-side throttling errors, Operations used, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json "statusCode" as statusCode
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Recent failed request, Top 10 most common errors, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json "statusCode", "properties.serviceType" as statusCode, service_type
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| json "statusText"
- 
-```
-### Use Cases:
-Changes - Read, Write and Delete, Operations that caused server-side throttling errors, Operations used, Top 10 most common errors, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json "statusText", "operationName" as statusText, operationName
- 
-```
-### Use Cases:
-Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "operationName", "statusText" as uri, category, operationName, statusText
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "properties.objectKey" as uri, category, objectKey
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
-| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total read, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "properties.objectKey", "operationName" as uri, category, objectKey, operationName
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
-| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total read, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "properties.objectKey", "properties.requestBodySize" as uri, category, objectKey, request_body_size
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "properties.objectKey", "properties.requestBodySize" as uri, category, objectKey, request_body_size
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
-| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total read, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share, Writes by Queue Name
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "properties.objectKey", "properties.responseBodySize" as uri, category, objectKey, response_body_size
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "properties.objectKey", "properties.responseBodySize" as uri, category, objectKey, response_body_size
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
-| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Reads by Queue Name, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total read, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "properties.objectKey", "properties.serverLatencyMs" as uri, category, objectKey, server_latency
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
-| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Queue Name by Failed Operations, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total read, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "properties.requestBodySize" as uri, category, request_body_size
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "properties.requestBodySize", "properties.objectKey" as uri, category, request_body_size, objectKey
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
-| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total read, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "properties.responseBodySize" as uri, category, response_body_size
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "properties.responseBodySize", "properties.objectKey" as uri, category, response_body_size, objectKey nodrop
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop
-| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop 
- 
-```
-### Use Cases:
-Alerts over time, Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non 200 status code by Service Type, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent alerts, Recent failed request, Recent Resource health incidents, Recent Service Health incidents, Resource health by event type, Service Health by event type, service health by event type-Time chart, Storage Account Read Statistics, Storage Account Write Statistics, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Total alerts, Total read, Total write, Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "statusText", "operationName" as uri, category, statusText, operationName
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "statusText", "properties.objectKey" as uri, category, statusText, objectKey
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "statusText", "properties.objectKey" as uri, category, statusText, objectKey
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as uri, category, statusText, objectKey, server_latency
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read vs Write, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Latency, Transactions by location, Transactions by TLS version, Writes by Container Name
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as uri, category, statusText, objectKey, server_latency
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "statusText", "properties.requestBodySize", "properties.objectKey" as uri, category, statusText, request_body_size, objectKey
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read vs Write, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Latency, Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Writes by Container Name
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "statusText", "properties.requestBodySize", "properties.objectKey" as uri, category, statusText, request_body_size, objectKey
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "statusText", "properties.responseBodySize", "properties.objectKey" as uri, category, statusText, response_body_size, objectKey
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read vs Write, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Writes by Container Name
-
-
-
-## Parser:
-```
-| JSON "uri", "category", "statusText", "properties.responseBodySize", "properties.objectKey" as uri, category, statusText, response_body_size, objectKey
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, File Share by Failed Operations, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Reads by File Share, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Server Latency, Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| JSON "uri","category", "properties.requestBodySize" as uri, category, request_body_size nodrop
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read vs Write, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name
-
-
-
-## Parser:
-```
-| JSON "uri","category", "properties.responseBodySize" as uri, category, response_body_size
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name
-
-
-
-## Parser:
-```
-| JSON "uri","category", "properties.responseBodySize" as uri, category, response_body_size
-| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*|$)?" nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Container Name by Failed Operations, Distribution by identity type, Distribution by user agent, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Read, Read vs Write, Reads by Container Name, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors, Top 10 Resources by Failures, Top 10 Resources by Latency, Top 10 Resources by Reads(MB), Top 10 Resources by Writes(MB), Transactions by location, Transactions by TLS version, Write, Writes by Container Name, Writes by File Share
-
-
-
-## Parser:
-```
-| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType 
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Operations that caused server-side throttling errors, Operations used, Recent failed request, Top 10 most common errors, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json field=_raw "properties.responseBodySize", "properties.requestBodySize", "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "durationMs", "category", "operationName" as responseBodySize, requestBodySize, filePath, serviceType, clientRequestId, statusCode, durationMs, category, operationName nodrop
- 
-```
-### Use Cases:
-Changes, Changes - Read, Write and Delete, Failed request count by status text, Failed Transaction by Category, Failed Transactions, Non-zero status code by storage account, Operations that caused server-side throttling errors, Operations used, Recent failed request, Top 10 high latency transactions, Top 10 most common errors, Top 10 operations that caused the most errors
-
+| use_case | parser |
+|--- | --- |
+| Azure Storage/ Audit control plane operations/Changes | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop |
+| Azure Storage/ Audit control plane operations/Changes - Read, Write and Delete | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| json "resultType", "category", "operationName" as resultType, category, operationName |
+| Azure Storage/ Audit control plane operations/Operations that caused server-side throttling errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| json "statusText" |
+| Azure Storage/ Audit control plane operations/Operations used | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| json "resultType", "category", "operationName" as resultType, category, operationName |
+| Azure Storage/ Audit control plane operations/Top 10 most common errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| json "statusText" |
+| Azure Storage/ Audit control plane operations/Top 10 operations that caused the most errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} *STORAGE*<br>\| json "statusText", "operationName" as statusText, operationName |
+| Azure Storage/ Failures/Failed request count by status text | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType  |
+| Azure Storage/ Failures/Failed Transaction by Category | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType  |
+| Azure Storage/ Failures/Failed Transactions | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType  |
+| Azure Storage/ Failures/Non-zero status code by storage account | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json "statusCode" as statusCode |
+| Azure Storage/ Failures/Recent failed request | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json field=_raw  "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "category", "operationName", "statusText", "properties.metricResponseType" as filePath, serviceType, clientRequestId, statusCode, category, operationName, statusText, ResponseType  |
+| Azure Storage/ Performance/Top 10 high latency transactions | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json field=_raw "properties.responseBodySize", "properties.requestBodySize", "properties.objectKey", "properties.serviceType", "properties.clientRequestId", "statusCode", "durationMs", "category", "operationName" as responseBodySize, requestBodySize, filePath, serviceType, clientRequestId, statusCode, durationMs, category, operationName nodrop |
+| Azure Storage/Access/Distribution by identity type | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| json "identity.type" as type |
+| Azure Storage/Access/Distribution by user agent | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| json "properties.userAgentHeader" as userAgentHeader |
+| Azure Storage/Access/Transactions by location | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| json "callerIpAddress" as callerIpAddress<br>\| where !isblank(callerIpAddress)<br>\| split callerIpAddress delim=':' extract 1 as src_ip, 2 as port |
+| Azure Storage/Access/Transactions by TLS version | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| json "properties.tlsVersion" as tlsVersion |
+| Azure Storage/Blob Service/Container Name by Failed Operations | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "operationName", "statusText" as uri, category, operationName, statusText<br>\| where service_type="BLOBSERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
+| Azure Storage/Blob Service/Read | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.responseBodySize" as uri, category, response_body_size<br>\| where category="StorageRead" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
+| Azure Storage/Blob Service/Read vs Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size |
+| Azure Storage/Blob Service/Reads by Container Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri","category", "properties.responseBodySize" as uri, category, response_body_size<br>\| where category="StorageRead" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
+| Azure Storage/Blob Service/Top 10 Resources by Failures | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.objectKey" as uri, category, statusText, objectKey<br>\| where service_type="BLOBSERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
+| Azure Storage/Blob Service/Top 10 Resources by Latency | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as uri, category, statusText, objectKey, server_latency<br>\| where service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
+| Azure Storage/Blob Service/Top 10 Resources by Reads(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.responseBodySize", "properties.objectKey" as uri, category, statusText, response_body_size, objectKey<br>\| where category="StorageRead" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
+| Azure Storage/Blob Service/Top 10 Resources by Writes(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.requestBodySize", "properties.objectKey" as uri, category, statusText, request_body_size, objectKey<br>\| where category="StorageWrite" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
+| Azure Storage/Blob Service/Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri","category", "properties.requestBodySize" as uri, category, request_body_size nodrop<br>\| where category="StorageWrite" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
+| Azure Storage/Blob Service/Writes by Container Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri","category", "properties.responseBodySize" as uri, category, response_body_size<br>\| where category="StorageWrite" and service_type="BLOBSERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<container_name>[$a-zA-Z0-9-]+)(?<blob_file_path>[^?]+\|$)?" nodrop |
+| Azure Storage/File Service/File Share by Failed Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "operationName" as uri, category, statusText, operationName<br>\| where service_type="FILESERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
+| Azure Storage/File Service/Read | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri","category", "properties.responseBodySize" as uri, category, response_body_size<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
+| Azure Storage/File Service/Read vs Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size |
+| Azure Storage/File Service/Reads by File Share | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.responseBodySize", "properties.objectKey" as uri, category, statusText, response_body_size, objectKey<br>\| where category="StorageRead" and service_type="FILESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
+| Azure Storage/File Service/Top 10 Resources by Failures | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.objectKey" as uri, category, statusText, objectKey<br>\| where service_type="FILESERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
+| Azure Storage/File Service/Top 10 Resources by Reads(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.responseBodySize" as uri, category, objectKey, response_body_size<br>\| where category="StorageRead" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
+| Azure Storage/File Service/Top 10 Resources by Server Latency | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as uri, category, statusText, objectKey, server_latency<br>\| where service_type="FILESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
+| Azure Storage/File Service/Top 10 Resources by Writes(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.requestBodySize" as uri, category, objectKey, request_body_size<br>\| where category="StorageWrite" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
+| Azure Storage/File Service/Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.requestBodySize" as uri, category, request_body_size<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
+| Azure Storage/File Service/Writes by File Share | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "statusText", "properties.requestBodySize", "properties.objectKey" as uri, category, statusText, request_body_size, objectKey<br>\| where category="StorageWrite" and service_type="FILESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<file_share>[a-zA-Z0-9-]*)(?<file_path>[^?]*\|$)?" nodrop |
+| Azure Storage/Health/Alerts over time | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| json "category" |
+| Azure Storage/Health/Recent alerts | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| JSON "category", "resultType", "properties.eventTimestamp", "properties.operationName", "properties.status" as category, resultType, eventTimestamp, operationName, status<br>\| where category="Alert"<br>\| parse field=operationName "*/*/*" as category, operation_name, action nodrop |
+| Azure Storage/Health/Recent Resource health incidents | tenant_name={{tenant_name}}<br>provider_name={{provider_name}}<br>resource_type={{resource_type}}<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>\| JSON "category", "operationName", "time","level","resultType", "properties.title", "properties.details", "properties.currentHealthStatus", "properties.type", "properties.cause" as category, operationName, time,level,resultType, title, details, currentHealthStatus, type, cause nodrop<br>\| where category="ResourceHealth" and resourceId matches /STORAGEACCOUNTS/<br>\| parse field=operationName "*/*/*" as category, operation_name, action nodrop |
+| Azure Storage/Health/Recent Service Health incidents | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| JSON "category", "operationName", "time","level","resultType", "properties.incidentType", "properties.service", "properties.region", "properties.impactStartTime", "properties.impactMitigationTime", "properties.defaultLanguageTitle", "properties.stage" as category, operationName, time,level,resultType, incidentType, service, service_region, impactStartTime, impactMitigationTime, defaultLanguageTitle, stage nodrop<br>\| replace(toLowerCase(service_region), " ", "") as service_region<br>\| where category="ServiceHealth" and toUpperCase(service) matches /STORAGE/ and service_region matches "{{location}}"<br>\| parse field=operationName "*/*/*" as category, operation_name, action nodrop |
+| Azure Storage/Health/Resource health by event type | tenant_name={{tenant_name}}<br>provider_name={{provider_name}}<br>resource_type={{resource_type}}<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>\| JSON "category", "properties.currentHealthStatus" as category, currentHealthStatus |
+| Azure Storage/Health/Service Health by event type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| JSON "category", "properties.incidentType", "properties.service", "properties.region" as category, incidentType, service, service_region |
+| Azure Storage/Health/service health by event type-Time chart | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| JSON "category", "properties.incidentType", "properties.service", "properties.region" as category, incidentType, service, service_region |
+| Azure Storage/Health/Total alerts | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}}<br>\| json "category" |
+| Azure Storage/Operations/Non 200 status code by Service Type | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json "statusCode", "properties.serviceType" as statusCode, service_type |
+| Azure Storage/Operations/Storage Account Read Statistics | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts"<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json "category", "properties.responseBodySize", "properties.serverLatencyMs", "properties.serviceType" as category, response_body_size, server_latency, service_type |
+| Azure Storage/Operations/Storage Account Write Statistics | tenant_name=* subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts"<br>resource_name=*<br>location={{location}}<br>*STORAGE*<br>\| json "category", "properties.requestBodySize", "properties.serverLatencyMs","properties.serviceType" as category, request_body_size, server_latency, service_type   |
+| Azure Storage/Operations/Total read | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size |
+| Azure Storage/Operations/Total write | tenant_name={{tenant_name}}<br>provider_name="Microsoft.Storage"<br>resource_type="storageAccounts"<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>location={{location}}<br>*STORAGE*<br>\| json "category", "properties.requestBodySize" as category, request_body_size |
+| Azure Storage/Queue Service/Queue Name by Failed Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "operationName" as uri, category, objectKey, operationName<br>\| where service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Queue Service/Read | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}}<br>*STORAGE*<br>\| JSON "uri", "category", "properties.responseBodySize", "properties.objectKey" as uri, category, response_body_size, objectKey nodrop<br>\| where category="StorageRead" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Queue Service/Read vs Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size |
+| Azure Storage/Queue Service/Reads by Queue Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.responseBodySize" as uri, category, objectKey, response_body_size<br>\| where category="StorageRead" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Queue Service/Top 10 Resources by Failures | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey" as uri, category, objectKey<br>\| where service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Queue Service/Top 10 Resources by Reads(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.responseBodySize" as uri, category, objectKey, response_body_size<br>\| where category="StorageRead" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Queue Service/Top 10 Resources by Server Latency | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.serverLatencyMs" as uri, category, objectKey, server_latency<br>\| where service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Queue Service/Top 10 Resources by Writes(MB) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.requestBodySize" as uri, category, objectKey, request_body_size<br>\| where category="StorageWrite" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Queue Service/Write | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.requestBodySize", "properties.objectKey" as uri, category, request_body_size, objectKey<br>\| where category="StorageWrite" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Queue Service/Writes by Queue Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "uri", "category", "properties.objectKey", "properties.requestBodySize" as uri, category, objectKey, request_body_size<br>\| where category="StorageWrite" and service_type="QUEUESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?<queue_name>[a-zA-Z0-9-]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<queue_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Security and policy/Recent failed policy events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category", "resultType", "level", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, level, message, resource_location, entity<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop |
+| Azure Storage/Security and policy/Recent recommendation events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>location={{location}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category", "operationName", "resultType", "properties.recommendationImpact", "properties.recommendationName" as category, operationName, resultType, recommendationImpact, recommendationName<br>\| where category="Recommendation"<br>\| parse field=operationName "*/*/*/*" as provider, category, operation_name, action nodrop |
+| Azure Storage/Security and policy/Recent security events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>location={{location}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| Json "category", "properties.status", "properties.timeGeneratedUtc", "properties.processingEndTimeUtc", "properties.version", "properties.vendorName", "properties.productName", "properties.alertType", "properties.startTimeUtc", "properties.endTimeUtc", "properties.severity", "properties.isIncident", "properties.intent", "properties.compromisedEntity", "properties.alertDisplayName", "properties.description", "properties.productComponentName" as category, status, timeGeneratedUtc, processingEndTimeUtc, version, vendorName, productName, alertType, startTimeUtc, endTimeUtc, severity, isIncident, intent, compromisedEntity, alertDisplayName, description, productComponentName nodrop |
+| Azure Storage/Security and policy/Recent success policy events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category", "resultType", "level", "providers", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, level, providers, message, resource_location, entity nodrop<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop |
+| Azure Storage/Security and policy/Total denied policy events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category", "resultType", "properties.message", "properties.resourceLocation", "properties.entity" as category, resultType, message, resourceLocation, entity<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/virtualMachines/*" as subscription_id, resource_group, providers, virtualMachines nodrop<br>\| parse field=entity "/subscriptions/*/resourceGroups/*/providers/*/storageAccounts/*" as subscription_id, resource_group, providers, resource_name nodrop |
+| Azure Storage/Security and policy/Total recommendation events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>location={{location}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category" |
+| Azure Storage/Security and policy/Total security events | tenant_name={{tenant_name}}<br>subscription_id={{subscription_id}}<br>location={{location}}<br>resource_group={{resource_group}}<br>resource_name={{resource_name}}<br>provider_name={{provider_name}}<br>\| JSON "category" |
+| Azure Storage/Table Service/Read | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size<br>\| where category="StorageRead" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Table Service/Read vs Write | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size |
+| Azure Storage/Table Service/Reads by Table Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.responseBodySize" as category, response_body_size<br>\| where category="StorageRead" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Table Service/Table Name by Failed Operations | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "operationName", "statusText", "properties.objectKey" as category, operationName, statusText, objectKey<br>\| where service_type="TABLESERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Table Service/Top 10 Resources  by Failures | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "statusText", "properties.objectKey" as category,  statusText, objectKey<br>\| where service_type="TABLESERVICES" and statusText != "Success"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Table Service/Top 10 Resources  by Server Latency | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| where service_type="TABLESERVICES"<br>\| JSON "category", "statusText", "properties.objectKey", "properties.serverLatencyMs" as category,  statusText, objectKey, server_latency<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Table Service/Top 10 Resources by Reads(MB) | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| json "category", "properties.responseBodySize", "properties.objectKey", "uri" as category, response_body_size, objectKey, uri<br>\| where category="StorageRead" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Table Service/Top 10 Resources by Writes(MB) | tenant_name={{tenant_name}} location={{location}} subscription_id={{subscription_id}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.requestBodySize", "properties.objectKey", "uri" as category, request_body_size, objectKey, uri <br>\| where category="StorageWrite" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop<br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Table Service/Write | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}}<br>*STORAGE*<br>\| JSON "category", "properties.requestBodySize" as category, request_body_size<br>\| where category="StorageWrite" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
+| Azure Storage/Table Service/Writes by Table Name | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name="Microsoft.Storage" resource_type="storageAccounts" resource_name={{resource_name}} *STORAGE*<br>\| JSON "category", "properties.requestBodySize" as category, request_body_size<br>\| where category="StorageWrite" and service_type="TABLESERVICES"<br>\| parse regex field=uri "https?://(?<storagedomain>[^/]+)/(?:Tables\(')?(?<table_name>[a-zA-Z0-9]*)" nodrop <br>\| parse regex field=objectKey "/(?:[^/]+)/(?<table_name_in_object>[^/]+)" nodrop  |
 

@@ -1,13 +1,14 @@
 # Parsers For Qualys VMDR
 
-## Parser:
-```
-| json "IP", "Hostname", "Detection.Qid" as ip, hostname, Qid nodrop
-| json "Detection" as vulnerability nodrop
-| json auto field=vulnerability nodrop
- 
-```
-### Use Cases:
-Critical, Details, High, Hosts Summary, Informational, Low, Medium, Total, Vulnerability Summary
-
+| use_case | parser |
+|--- | --- |
+| Qualys VMDR/Overview/Critical | _sourceCategory={{Logsdatasource}}  AND {{PAYLOAD}} AND {{IP}} AND {{HOSTNAME}}<br>\| where (_raw matches /^\{.*\}$/) <br><br>\| json "IP", "Hostname", "Detection.Qid" as ip, hostname, Qid nodrop<br>\| first(_raw) as _raw by ip, hostname, Qid<br><br>\| json "Detection" as vulnerability nodrop<br>\| where ip matches "{{IP}}"<br>\| where hostname matches "{{HOSTNAME}}"<br><br>\| json auto field=vulnerability nodrop |
+| Qualys VMDR/Overview/Details | _sourceCategory={{Logsdatasource}}  AND {{PAYLOAD}} AND {{IP}} AND {{HOSTNAME}}<br>\| where (_raw matches /^\{.*\}$/) <br><br>\| json "IP", "Hostname", "Detection.Qid" as ip, hostname, Qid nodrop<br>\| first(_raw) as _raw by ip, hostname, Qid<br><br>\| json "Detection" as vulnerability nodrop<br>\| where ip matches "{{IP}}"<br>\| where hostname matches "{{HOSTNAME}}"<br><br>\| json auto field=vulnerability nodrop |
+| Qualys VMDR/Overview/High | _sourceCategory={{Logsdatasource}}  AND {{PAYLOAD}} AND {{IP}} AND {{HOSTNAME}}<br>\| where (_raw matches /^\{.*\}$/) <br><br>\| json "IP", "Hostname", "Detection.Qid" as ip, hostname, Qid nodrop<br>\| first(_raw) as _raw by ip, hostname, Qid<br><br>\| json "Detection" as vulnerability nodrop<br>\| where ip matches "{{IP}}"<br>\| where hostname matches "{{HOSTNAME}}"<br><br>\| json auto field=vulnerability nodrop |
+| Qualys VMDR/Overview/Hosts Summary | <br>_sourceCategory={{Logsdatasource}}  AND {{PAYLOAD}} AND {{IP}} AND {{HOSTNAME}}<br>\| where (_raw matches /^\{.*\}$/) <br><br>\| json "IP", "Hostname", "Detection.Qid" as ip, hostname, Qid nodrop<br>\| first(_raw) as _raw by ip, hostname, Qid<br><br>\| json "Detection" as vulnerability nodrop<br>\| where ip matches "{{IP}}"<br>\| where hostname matches "{{HOSTNAME}}"<br><br>\| json auto field=vulnerability nodrop |
+| Qualys VMDR/Overview/Informational | _sourceCategory={{Logsdatasource}}  AND {{PAYLOAD}} AND {{IP}} AND {{HOSTNAME}}<br>\| where (_raw matches /^\{.*\}$/) <br><br>\| json "IP", "Hostname", "Detection.Qid" as ip, hostname, Qid nodrop<br>\| first(_raw) as _raw by ip, hostname, Qid<br><br>\| json "Detection" as vulnerability nodrop<br>\| where ip matches "{{IP}}"<br>\| where hostname matches "{{HOSTNAME}}"<br><br>\| json auto field=vulnerability nodrop |
+| Qualys VMDR/Overview/Low | _sourceCategory={{Logsdatasource}}  AND {{PAYLOAD}} AND {{IP}} AND {{HOSTNAME}}<br>\| where (_raw matches /^\{.*\}$/) <br><br>\| json "IP", "Hostname", "Detection.Qid" as ip, hostname, Qid nodrop<br>\| first(_raw) as _raw by ip, hostname, Qid<br><br>\| json "Detection" as vulnerability nodrop<br>\| where ip matches "{{IP}}"<br>\| where hostname matches "{{HOSTNAME}}"<br><br>\| json auto field=vulnerability nodrop |
+| Qualys VMDR/Overview/Medium | _sourceCategory={{Logsdatasource}}  AND {{PAYLOAD}} AND {{IP}} AND {{HOSTNAME}}<br>\| where (_raw matches /^\{.*\}$/) <br><br>\| json "IP", "Hostname", "Detection.Qid" as ip, hostname, Qid nodrop<br>\| first(_raw) as _raw by ip, hostname, Qid<br><br>\| json "Detection" as vulnerability nodrop<br>\| where ip matches "{{IP}}"<br>\| where hostname matches "{{HOSTNAME}}"<br><br>\| json auto field=vulnerability nodrop |
+| Qualys VMDR/Overview/Total | _sourceCategory={{Logsdatasource}}  AND {{PAYLOAD}} AND {{IP}} AND {{HOSTNAME}}<br>\| where (_raw matches /^\{.*\}$/) <br><br>\| json "IP", "Hostname", "Detection.Qid" as ip, hostname, Qid nodrop<br>\| first(_raw) as _raw by ip, hostname, Qid<br><br>\| json "Detection" as vulnerability nodrop<br>\| where ip matches "{{IP}}"<br>\| where hostname matches "{{HOSTNAME}}"<br><br>\| json auto field=vulnerability nodrop |
+| Qualys VMDR/Overview/Vulnerability Summary | _sourceCategory={{Logsdatasource}}  AND {{PAYLOAD}} AND {{IP}} AND {{HOSTNAME}}<br>\| where (_raw matches /^\{.*\}$/) <br><br>\| json "IP", "Hostname", "Detection.Qid" as ip, hostname, Qid nodrop<br>\| first(_raw) as _raw by ip, hostname, Qid<br><br>\| json "Detection" as vulnerability nodrop<br>\| where ip matches "{{IP}}"<br>\| where hostname matches "{{HOSTNAME}}"<br><br>\| json auto field=vulnerability nodrop |
 

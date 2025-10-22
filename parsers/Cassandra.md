@@ -1,306 +1,53 @@
 # Parsers For Cassandra
 
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=_raw "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Error Summary - Daily, Errors, Handshake Failures by Endpoint, Log Reduce, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg " - (?<keyspace>[^.]*)\.(?<table>[^ ]*) +(?<ops>[0-9]*),(?<data>[0-9]*)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Enqueue Flush, Error Logs by Thread, Error Summary - Daily, Errors, Flush Activity, Handshake Failures by Endpoint, Largest CFS being Flushed, Log Reduce, Memtable Status, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg " - (?<pool_name>[A-Za-z_]+) +(?<active>[0-9]+) +(?<pending>[0-9]+) +(?<completed>[0-9]+) +(?<blocked>[0-9]+) +(?<all_time_blocked>[0-9]+)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Enqueue Flush, Error Logs by Thread, Error Summary - Daily, Errors, Flush Activity, Handshake Failures by Endpoint, Heap Size, Largest CFS being Flushed, Log Reduce, Memory Size, Memtable Status, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Table Init, Threadpool Activity, Threadpool Status, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Error Summary - Daily, Errors, Log Reduce, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Error Summary - Daily, Errors, Flush Activity, Handshake Failures by Endpoint, Log Reduce, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse field=message "Initializing * cache with capacity of * MBs*" as cache_type,cache_capacity_mb,cache_provider
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Loading Details, Cache Read, Cache Saving Schedule, Cache Status, Error Logs by Thread, Warnings Logs by Thread
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "(?<cache_type>[A-Za-z]*Cache(?! Type)) *(?<size>[0-9]*) *(?<capacity>[0-9]*) *(?<keys_to_save>[^ ]*) *(?<provider>[A-Za-z_.$]*)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Read, Cache Saving Schedule, Cache Status, Error Logs by Thread, Total Cache Capacity, Total Cache Size, Warnings Logs by Thread
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "(?<memory_type>.*) memory: init = (?<memory_init>[0-9]*)\([0-9]*K\) used = (?<memory_used>[0-9]*)\([0-9]*K\) committed = (?<memory_committed>[0-9]*)\([0-9]*K\) max = (?<memory_max>[0-9-]*)\([0-9-]*K\)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Enqueue Flush, Error Logs by Thread, Error Summary - Daily, Errors, Flush Activity, Handshake Failures by Endpoint, Heap Size, Largest CFS being Flushed, Log Reduce, Memory Committed (GB), Memory Init (GB), Memory Max (GB), Memory Size, Memory Used (GB), Memtable Status, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Table Init, Threadpool Activity, Threadpool Status, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Cannot handshake version with /(?<endpoint>.*)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Error Summary - Daily, Errors, Handshake Failures by Endpoint, Log Reduce, Node Down Events, Node Up Events, Nodes Up, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Completed loading \((?<load_duration_ms>[0-9]*) ms; (?<cache_items>[0-9]*) keys\) KeyCache cache"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Total Cache Capacity, Total Cache Size, Warnings Logs by Thread
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Endpoint /(?<target_endpoint>[^ ]*) is down and will not receive data for re-replication of /(?<source_endpoint>.*)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Error Summary - Daily, Errors, Handshake Failures by Endpoint, Log Reduce, Node Down Events, Node Join Events, Node Up Events, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Enqueuing flush of Memtable-(?<table>[^@]*)@(?<hash_code>[0-9]*)\((?<serialized_bytes>[0-9]*)/(?<live_bytes>[0-9]*) serialized/live bytes, (?<ops>[0-9]*) ops\)" nodrop
-| parse regex field=message "Enqueuing flush of (?<table>[^:]*): (?<on_heap_bytes>[^:]*) \((?<on_heap_limit>[0-9]*)%\) on-heap, (?<off_heap_bytes>[^:]*) \((?<off_heap_limit>[0-9]*)%\) off-heap"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Enqueue Flush, Error Logs by Thread, Error Summary - Daily, Errors, Flush Activity, Handshake Failures by Endpoint, Log Reduce, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "FatClient /(?<endpoint>[^ ]*) has been silent for 30000ms, removing from gossip"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Error Summary - Daily, Errors, Handshake Failures by Endpoint, Log Reduce, Node Down Events, Node Join Events, Node Up Events, Nodes Up, Silent Client Removed, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Flushing largest CFS\(Keyspace='(?<keyspace>[^']*)', ColumnFamily='(?<table>[^']*)'\) to free up room. Used total: (?<used_on_heap>\d+\.\d+)/(?<used_off_heap>\d+\.\d+), live: (?<live_on_heap>\d+\.\d+)/(?<live_off_heap>\d+\.\d+), flushing: (?<flushing_on_heap>\d+\.\d+)/(?<flushing_off_heap>\d+\.\d+), this: (?<this_on_heap>\d+\.\d+)/(?<this_off_heap>\d+\.\d+)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Enqueue Flush, Error Logs by Thread, Error Summary - Daily, Errors, Flush Activity, Handshake Failures by Endpoint, Largest CFS being Flushed, Log Reduce, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Gossip stage has (?<pending_tasks>[0-9]+) pending tasks; skipping status check \(no nodes will be marked down\)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Error Summary - Daily, Errors, Handshake Failures by Endpoint, Log Reduce, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Heap size: (?<heap_used>[0-9].*)/(?<total_heap>[0-9].*)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Enqueue Flush, Error Logs by Thread, Error Summary - Daily, Errors, Flush Activity, Handshake Failures by Endpoint, Heap Size, Largest CFS being Flushed, Log Reduce, Memtable Status, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Heap size: (?<heap_used>[0-9].*)MiB/(?<total_heap>[0-9].*)MiB"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Enqueue Flush, Error Logs by Thread, Error Summary - Daily, Errors, Flush Activity, Handshake Failures by Endpoint, Heap Size, Heap Used, Largest CFS being Flushed, Log Reduce, Memory Committed (GB), Memory Init (GB), Memory Max (GB), Memory Size, Memory Used (GB), Memtable Status, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Table Init, Threadpool Activity, Threadpool Status, Total Cache Capacity, Total Cache Read, Total Cache Size, Total Heap, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "InetAddress /(?<endpoint>[^ ]*) is now DOWN"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Error Summary - Daily, Errors, Log Reduce, Node Down Events, Node Up Events, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "InetAddress /(?<endpoint>[^ ]*) is now UP"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Error Summary - Daily, Errors, Log Reduce, Node Up Events, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Initializing (?<keyspace>[^.]*).(?<table>.*)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Enqueue Flush, Error Logs by Thread, Error Summary - Daily, Errors, Flush Activity, Handshake Failures by Endpoint, Heap Size, Largest CFS being Flushed, Log Reduce, Memory Size, Memtable Status, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Table Init, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Node /(?<endpoint>[^ ]*) is now part of the cluster"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Error Summary - Daily, Errors, Handshake Failures by Endpoint, Log Reduce, Node Down Events, Node Join Events, Node Up Events, Nodes Up, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "reading saved cache (?<cache_file>.*)"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings Logs by Thread
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Saved (?<cache_type>[^ ]*) \((?<cache_items>[0-9]*) items\) in (?<save_duration_ms>[0-9]*) ms"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Total Cache Capacity, Total Cache Size, Warnings Logs by Thread
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Scheduling (?<cache_type>[^ ]*) cache save to every (?<save_interval>[0-9]*) seconds \(going to save (?<keys_to_save>[^ ]*) keys\)."
- 
-```
-### Use Cases:
-Cache Init, Cache Saving Schedule, Cache Status, Error Logs by Thread, Warnings Logs by Thread
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop 
-| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"
-| parse regex field=message "Sleeping for 30000ms to ensure /(?<endpoint>[^ ]*) does not change"
- 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Error Logs by Thread, Error Summary - Daily, Errors, Handshake Failures by Endpoint, Log Reduce, Node Down Events, Node Join Events, Node Up Events, Nodes Up, Silent Client Removed, Sleep Events, Total Cache Capacity, Total Cache Read, Total Cache Size, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
-
-
-## Parser:
-```
-| parse field=metric cassandra_java_GarbageCollector_*_LastGcInfo_memoryUsageAfterGc_*_used as unused, MemoryPoolName| 
-```
-### Use Cases:
-Cache Init, Cache Init Capacity (MB), Cache Items Save, Cache Loading Details, Cache Loading Items, Cache Read, Cache Saving Details, Cache Saving Schedule, Cache Status, Enqueue Flush, Error Logs by Thread, Error Summary - Daily, Errors, Flush Activity, Handshake Failures by Endpoint, Heap Size, Heap Used, Largest CFS being Flushed, Log Reduce, Memory Cleared across Memory Pool (MB), Memory Cleared across Memory Pools, Memory Committed (GB), Memory Init (GB), Memory Max (GB), Memory Size, Memory Used (GB), Memtable Status, Node Activity, Node Down Events, Node Join Events, Node Up Events, Nodes Down, Nodes Joined, Nodes Up, Pending Tasks, Replication Endpoints Down Events, Silent Client Removed, Sleep Events, Table Init, Threadpool Activity, Threadpool Status, Total Cache Capacity, Total Cache Read, Total Cache Size, Total Heap, Warnings, Warnings Logs by Thread, Warnings Summary - Daily
-
+| use_case | parser |
+|--- | --- |
+| Cassandra/Cache Stats/Cache Init | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" Initializing \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where thread_name matches "main" and source_file matches "CacheService*" and message matches "Initializing*"<br>\| parse field=message "Initializing * cache with capacity of * MBs*" as cache_type,cache_capacity_mb,cache_provider |
+| Cassandra/Cache Stats/Cache Init Capacity (MB) | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" Initializing \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where thread_name matches "main" and source_file matches "CacheService*" and message matches "Initializing*"<br>\| parse field=message "Initializing * cache with capacity of * MBs*" as cache_type,cache_capacity_mb,cache_provider |
+| Cassandra/Cache Stats/Cache Items Save | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" "CompactionExecutor" "Saved" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where thread_name matches "CompactionExecutor" and source_file matches "AutoSavingCache*" and message matches "*Saved KeyCache*"<br>\| parse regex field=message "Saved (?<cache_type>[^ ]*) \((?<cache_items>[0-9]*) items\) in (?<save_duration_ms>[0-9]*) ms" |
+| Cassandra/Cache Stats/Cache Loading Details | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where source_file matches "AutoSavingCache*" and message matches "*Completed loading*"<br>\| parse regex field=message "Completed loading \((?<load_duration_ms>[0-9]*) ms; (?<cache_items>[0-9]*) keys\) KeyCache cache" |
+| Cassandra/Cache Stats/Cache Loading Items | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where source_file matches "AutoSavingCache*" and message matches "*Completed loading*"<br>\| parse regex field=message "Completed loading \((?<load_duration_ms>[0-9]*) ms; (?<cache_items>[0-9]*) keys\) KeyCache cache" |
+| Cassandra/Cache Stats/Cache Read | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where source_file matches "AutoSavingCache*" and message matches "*reading saved cache*"<br>\| parse regex field=message "reading saved cache (?<cache_file>.*)" |
+| Cassandra/Cache Stats/Cache Saving Details | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" "CompactionExecutor" "Saved" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where thread_name matches "CompactionExecutor" and source_file matches "AutoSavingCache*" and message matches "*Saved KeyCache*"<br>\| parse regex field=message "Saved (?<cache_type>[^ ]*) \((?<cache_items>[0-9]*) items\) in (?<save_duration_ms>[0-9]*) ms" |
+| Cassandra/Cache Stats/Cache Saving Schedule | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where thread_name matches "main" and source_file matches "CacheService*" and message matches "Scheduling*"<br>\| parse regex field=message "Scheduling (?<cache_type>[^ ]*) cache save to every (?<save_interval>[0-9]*) seconds \(going to save (?<keys_to_save>[^ ]*) keys\)." |
+| Cassandra/Cache Stats/Cache Status | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where thread_name matches "Service Thread" and message matches "KeyCache*"<br>\| parse regex field=message "(?<cache_type>[A-Za-z]*Cache(?! Type)) *(?<size>[0-9]*) *(?<capacity>[0-9]*) *(?<keys_to_save>[^ ]*) *(?<provider>[A-Za-z_.$]*)" |
+| Cassandra/Cache Stats/Total Cache Capacity | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where thread_name matches "Service Thread" and message matches "KeyCache*"<br>\| parse regex field=message "(?<cache_type>[A-Za-z]*Cache(?! Type)) *(?<size>[0-9]*) *(?<capacity>[0-9]*) *(?<keys_to_save>[^ ]*) *(?<provider>[A-Za-z_.$]*)" |
+| Cassandra/Cache Stats/Total Cache Read | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where source_file matches "AutoSavingCache*" and message matches "*reading saved cache*"<br>\| parse regex field=message "reading saved cache (?<cache_file>.*)" |
+| Cassandra/Cache Stats/Total Cache Size | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where thread_name matches "Service Thread" and message matches "KeyCache*"<br>\| parse regex field=message "(?<cache_type>[A-Za-z]*Cache(?! Type)) *(?<size>[0-9]*) *(?<capacity>[0-9]*) *(?<keys_to_save>[^ ]*) *(?<provider>[A-Za-z_.$]*)" |
+| Cassandra/Errors and Warnings/Error Logs by Thread | db_system=cassandra ("ERROR") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Errors and Warnings/Error Summary - Daily | db_system=cassandra ("ERROR") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Errors and Warnings/Errors | db_system=cassandra ("ERROR") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Errors and Warnings/Log Reduce | db_system=cassandra ("WARN") or ("ERROR") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Errors and Warnings/Warnings | db_system=cassandra ("WARN") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Errors and Warnings/Warnings Logs by Thread | db_system=cassandra ("WARN") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Errors and Warnings/Warnings Summary - Daily | db_system=cassandra ("WARN") db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Gossip/Handshake Failures by Endpoint | db_system=cassandra handshake db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "Cannot handshake version with /(?<endpoint>.*)" |
+| Cassandra/Gossip/Node Activity | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as _raw<br>\| parse regex field=_raw "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Gossip/Node Down Events | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "InetAddress" "is now DOWN"\| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "InetAddress /(?<endpoint>[^ ]*) is now DOWN" |
+| Cassandra/Gossip/Node Join Events | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "is now part of the cluster" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "Node /(?<endpoint>[^ ]*) is now part of the cluster" |
+| Cassandra/Gossip/Node Up Events | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "InetAddress" "is now UP"\| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "InetAddress /(?<endpoint>[^ ]*) is now UP" |
+| Cassandra/Gossip/Nodes Down | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as _raw<br>\| parse regex field=_raw "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Gossip/Nodes Joined | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as _raw<br>\| parse regex field=_raw "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Gossip/Nodes Up | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "INFO" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as _raw<br>\| parse regex field=_raw "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Gossip/Pending Tasks | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "Gossip stage has" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "Gossip stage has (?<pending_tasks>[0-9]+) pending tasks; skipping status check \(no nodes will be marked down\)" |
+| Cassandra/Gossip/Replication Endpoints Down Events | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "is down and will not receive data for re-replication of"\| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "Endpoint /(?<target_endpoint>[^ ]*) is down and will not receive data for re-replication of /(?<source_endpoint>.*)" |
+| Cassandra/Gossip/Silent Client Removed | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  FatClient \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "FatClient /(?<endpoint>[^ ]*) has been silent for 30000ms, removing from gossip" |
+| Cassandra/Gossip/Sleep Events | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  Sleeping \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "Sleeping for 30000ms to ensure /(?<endpoint>[^ ]*) does not change" |
+| Cassandra/Memtable/Enqueue Flush | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "Enqueuing flush of" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where source_file matches "ColumnFamilyStore*"<br>\| parse regex field=message "Enqueuing flush of Memtable-(?<table>[^@]*)@(?<hash_code>[0-9]*)\((?<serialized_bytes>[0-9]*)/(?<live_bytes>[0-9]*) serialized/live bytes, (?<ops>[0-9]*) ops\)" nodrop<br>\| parse regex field=message "Enqueuing flush of (?<table>[^:]*): (?<on_heap_bytes>[^:]*) \((?<on_heap_limit>[0-9]*)%\) on-heap, (?<off_heap_bytes>[^:]*) \((?<off_heap_limit>[0-9]*)%\) off-heap" |
+| Cassandra/Memtable/Flush Activity | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  ("Writing Memtable-" or "Completed flushing")\| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Memtable/Largest CFS being Flushed | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "Flushing largest CFS" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where source_file matches "ColumnFamilyStore*"<br>\| parse regex field=message "Flushing largest CFS\(Keyspace='(?<keyspace>[^']*)', ColumnFamily='(?<table>[^']*)'\) to free up room. Used total: (?<used_on_heap>\d+\.\d+)/(?<used_off_heap>\d+\.\d+), live: (?<live_on_heap>\d+\.\d+)/(?<live_off_heap>\d+\.\d+), flushing: (?<flushing_on_heap>\d+\.\d+)/(?<flushing_off_heap>\d+\.\d+), this: (?<this_on_heap>\d+\.\d+)/(?<this_off_heap>\d+\.\d+)" |
+| Cassandra/Memtable/Memtable Status | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "StatusLogger" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg " - (?<keyspace>[^.]*)\.(?<table>[^ ]*) +(?<ops>[0-9]*),(?<data>[0-9]*)" |
+| Cassandra/Overview/Error Logs by Thread | db_system=cassandra ("ERROR") db_system=cassandra db_cluster={{db_cluster}}  _sourceCategory = Labs/cassandra*  \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Overview/Warnings Logs by Thread | db_system=cassandra ("WARN") db_system=cassandra db_cluster={{db_cluster}}  _sourceCategory = Labs/cassandra*  \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)" |
+| Cassandra/Resource Usage Logs/Heap Size | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "Heap size" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "Heap size: (?<heap_used>[0-9].*)/(?<total_heap>[0-9].*)" |
+| Cassandra/Resource Usage Logs/Heap Used | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "Heap size" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "Heap size: (?<heap_used>[0-9].*)MiB/(?<total_heap>[0-9].*)MiB" |
+| Cassandra/Resource Usage Logs/Memory Committed (GB) | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "(?<memory_type>.*) memory: init = (?<memory_init>[0-9]*)\([0-9]*K\) used = (?<memory_used>[0-9]*)\([0-9]*K\) committed = (?<memory_committed>[0-9]*)\([0-9]*K\) max = (?<memory_max>[0-9-]*)\([0-9-]*K\)" |
+| Cassandra/Resource Usage Logs/Memory Init (GB) | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "(?<memory_type>.*) memory: init = (?<memory_init>[0-9]*)\([0-9]*K\) used = (?<memory_used>[0-9]*)\([0-9]*K\) committed = (?<memory_committed>[0-9]*)\([0-9]*K\) max = (?<memory_max>[0-9-]*)\([0-9-]*K\)" |
+| Cassandra/Resource Usage Logs/Memory Max (GB) | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "(?<memory_type>.*) memory: init = (?<memory_init>[0-9]*)\([0-9]*K\) used = (?<memory_used>[0-9]*)\([0-9]*K\) committed = (?<memory_committed>[0-9]*)\([0-9]*K\) max = (?<memory_max>[0-9-]*)\([0-9-]*K\)" |
+| Cassandra/Resource Usage Logs/Memory Size | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "(?<memory_type>.*) memory: init = (?<memory_init>[0-9]*)\([0-9]*K\) used = (?<memory_used>[0-9]*)\([0-9]*K\) committed = (?<memory_committed>[0-9]*)\([0-9]*K\) max = (?<memory_max>[0-9-]*)\([0-9-]*K\)" |
+| Cassandra/Resource Usage Logs/Memory Used (GB) | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra* \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "(?<memory_type>.*) memory: init = (?<memory_init>[0-9]*)\([0-9]*K\) used = (?<memory_used>[0-9]*)\([0-9]*K\) committed = (?<memory_committed>[0-9]*)\([0-9]*K\) max = (?<memory_max>[0-9-]*)\([0-9-]*K\)" |
+| Cassandra/Resource Usage Logs/Table Init | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "Initializing" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| where source_file matches "ColumnFamilyStore.java"<br>\| parse regex field=message "Initializing (?<keyspace>[^.]*).(?<table>.*)" |
+| Cassandra/Resource Usage Logs/Threadpool Activity | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "StatusLogger" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg " - (?<pool_name>[A-Za-z_]+) +(?<active>[0-9]+) +(?<pending>[0-9]+) +(?<completed>[0-9]+) +(?<blocked>[0-9]+) +(?<all_time_blocked>[0-9]+)" |
+| Cassandra/Resource Usage Logs/Threadpool Status | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "StatusLogger" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg " - (?<pool_name>[A-Za-z_]+) +(?<active>[0-9]+) +(?<pending>[0-9]+) +(?<completed>[0-9]+) +(?<blocked>[0-9]+) +(?<all_time_blocked>[0-9]+)" |
+| Cassandra/Resource Usage Logs/Total Heap | db_system=cassandra db_cluster={{db_cluster}} _sourceCategory = Labs/cassandra*  "Heap size" \| json "log" as _rawlog nodrop <br>\| if (isEmpty(_rawlog), _raw, _rawlog) as mesg<br>\| parse regex field=mesg "(?<level>[A-Z]*) *\[(?<thread_name>[^\]]*?)[:_-]?(?<thread_id>[0-9]*)\] (?<Date>.{10} .{12}) *(?<source_file>[^:]*):(?<source_line>[0-9]*) - (?<message>.*)"<br>\| parse regex field=message "Heap size: (?<heap_used>[0-9].*)MiB/(?<total_heap>[0-9].*)MiB" |
 

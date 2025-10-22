@@ -1,104 +1,14 @@
 # Parsers For RabbitMQ
 
-## Parser:
-```
-| json "log" as _rawlog nodrop
-| parse "* * [*] <*> *" as date,time,severity,id,msg
- 
-```
-### Use Cases:
-Brokers Start/Add Events, Error Over Time, Events by Severity, Stopped/Reset Events, Top 10 Errors
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop
-| parse "* * [*] <*> *" as date,time,severity,id,msg | limit 10 |concat(date,"-",time) as date_time|count as count by date_time,msg | sort by date_time | 
-```
-### Use Cases:
-Error Over Time, Events by Severity, Stopped/Reset Events, Top 10 Errors
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop
-| parse "* * [*] <*> *" as date,time,severity,id,msg | limit 15 |concat(date,"-",time) as date_time
- 
-```
-### Use Cases:
-Brokers Start/Add Events, Error Over Time, Events by Severity, Last 25 Log Messages, Stopped/Reset Events, Top 10 Errors
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop
-| parse "* * [*] <*> *" as date,time,severity,id,msg | where severity ="error"   |concat(date,"-",time) as date_time|count as count by severity,msg | sort by count | 
-```
-### Use Cases:
-Error Over Time, Events by Severity, Top 10 Errors
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop
-| parse "* * [*] <*> *" as date,time,severity,id,msg | where severity ="error"  | limit 10 |concat(date,"-",time) as date_time|count as count by date_time,severity,msg | sort by date_time | 
-```
-### Use Cases:
-Brokers Start/Add Events, Error Over Time, Events by Severity, File Descriptors, Garbage Collection Operation Rate, Last 10 Errors, Last 25 Log Messages, Log Reduce, Memory Usage, Node Uptime, Ram Transactions (Not Written to Disk), Stopped/Reset Events, Top 10 Errors, Transactions Written to Disk
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop
-| parse "* * [*] <*> *" as date,time,severity,id,msg |limit 10000| logreduce by msg | _count as count 
- 
-```
-### Use Cases:
-Brokers Start/Add Events, Error Over Time, Events by Severity, Last 10 Errors, Last 25 Log Messages, Log Reduce, Stopped/Reset Events, Top 10 Errors
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop
-| parse "* * [*] <*> *" as date,time,severity,id,msg| where severity="error" |concat(date,"-",time) as date_time|count as count by date_time,severity,msg |sort by count,date_time| limit 10 | 
-```
-### Use Cases:
-Brokers Start/Add Events, Error Over Time, Events by Severity, Last 10 Errors, Last 25 Log Messages, Stopped/Reset Events, Top 10 Errors
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop
-| parse "* * [*]" as date,time,severity  | where severity="error"
- 
-```
-### Use Cases:
-Error Over Time, Events by Severity
-
-
-
-## Parser:
-```
-| json "log" as _rawlog nodrop
-| parse "* * [*]" as date,time,severity | 
-```
-### Use Cases:
-Events by Severity
-
-
-
-## Parser:
-```
-| parse field=node *@* as user,host | 
-```
-### Use Cases:
-Brokers Start/Add Events, Error Over Time, Events by Severity, File Descriptors, Garbage Collection Operation Rate, Last 10 Errors, Last 25 Log Messages, Log Reduce, Memory Usage, Node Uptime, Ram Transactions (Not Written to Disk), Stopped/Reset Events, Top 10 Errors, Transactions Written to Disk
-
+| use_case | parser |
+|--- | --- |
+| RabbitMQ/Logs/Add Events | messaging_cluster=rabbit* messaging_system="rabbitmq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) ("startup complete" or "up")<br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| where (_raw contains "rabbit on node") or _raw contains "startup complete"<br>\| parse "* * [*] <*> *" as date,time,severity,id,msg |
+| RabbitMQ/Logs/Error Over Time | messaging_cluster=rabbit* messaging_system="rabbitmq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) <br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "* * [*]" as date,time,severity  \| where severity="error" |
+| RabbitMQ/Logs/Events by Severity | messaging_cluster=rabbit* messaging_system="rabbitmq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) <br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "* * [*]" as date,time,severity \| count by severity  |
+| RabbitMQ/Logs/Last 10 Errors | messaging_cluster=rabbit* messaging_system="rabbitmq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) "error"<br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "* * [*] <*> *" as date,time,severity,id,msg\| where severity="error" \|concat(date,"-",time) as date_time\|count as count by date_time,severity,msg \|sort by count,date_time\| limit 10 \|  fields date_time,severity,msg  |
+| RabbitMQ/Logs/Last 25 Log Messages | messaging_cluster=rabbit* messaging_system="rabbitmq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) <br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "* * [*] <*> *" as date,time,severity,id,msg \| limit 15 \|concat(date,"-",time) as date_time |
+| RabbitMQ/Logs/Log Reduce | messaging_cluster=rabbit* messaging_system="rabbitmq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}})<br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "* * [*] <*> *" as date,time,severity,id,msg \|limit 10000\| logreduce by msg \| _count as count  |
+| RabbitMQ/Logs/Reset Events | messaging_cluster=rabbit* messaging_system="rabbitmq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) ("stopped" or "Resetting" or "down")<br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "* * [*] <*> *" as date,time,severity,id,msg \| limit 10 \|concat(date,"-",time) as date_time\|count as count by date_time,msg \| sort by date_time \| fields date_time,msg |
+| RabbitMQ/Logs/Top 10 Errors | messaging_cluster=rabbit* messaging_system="rabbitmq" messaging_cluster={{messaging_cluster}} (_sourceHost={{host}} or pod={{host}}) "error"<br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "* * [*] <*> *" as date,time,severity,id,msg \| where severity ="error"   \|concat(date,"-",time) as date_time\|count as count by severity,msg \| sort by count \| limit 10 |
+| RabbitMQ/Overview/Last 10 Errors | messaging_cluster=rabbit* messaging_system="rabbitmq" messaging_cluster={{messaging_cluster}}  "error"<br>\| json "log" as _rawlog nodrop<br>\| if(isEmpty(_rawlog),_raw,_rawlog) as _raw<br>\| parse "* * [*] <*> *" as date,time,severity,id,msg \| where severity ="error"  \| limit 10 \|concat(date,"-",time) as date_time\|count as count by date_time,severity,msg \| sort by date_time \| fields date_time,severity,msg |
 

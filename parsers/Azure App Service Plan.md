@@ -1,51 +1,11 @@
 # Parsers For Azure App Service Plan
 
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Recent Delete Operations, Top 10 operations that caused the most errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Recent Delete Operations, Recent Write Operations, Top 10 operations that caused the most errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "properties.entity", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop
- 
-```
-### Use Cases:
-Recent Delete Operations, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Recent Delete Operations, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json "resultType", "operationName", "properties.statusMessage", "category"  as resultType, operationName, failureMessage, category
- 
-```
-### Use Cases:
-Top 10 operations that caused the most errors
-
+| use_case | parser |
+|--- | --- |
+| Azure App Service Plan/Administrative Operations/ Applications by Operation type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop |
+| Azure App Service Plan/Administrative Operations/Distribution  by Operation Type (Read, Write and Delete) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} <br> provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid |
+| Azure App Service Plan/Administrative Operations/Distribution by Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid |
+| Azure App Service Plan/Administrative Operations/Recent Delete Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "properties.entity", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop |
+| Azure App Service Plan/Administrative Operations/Recent Write Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop |
+| Azure App Service Plan/Administrative Operations/Top 10 operations that caused the most errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}}   provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| json "resultType", "operationName", "properties.statusMessage", "category"  as resultType, operationName, failureMessage, category |
 

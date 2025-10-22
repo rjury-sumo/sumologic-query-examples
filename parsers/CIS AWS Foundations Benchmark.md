@@ -1,146 +1,26 @@
 # Parsers For CIS AWS Foundations Benchmark
 
-## Parser:
-```
-| json field=_raw "awsRegion" as region
-| json field=_raw "userIdentity.accountId" as acc_id
-| json "eventName", "additionalEventData.MFAUsed" as eventName, MFAUsed nodrop
-| json "userIdentity.userName", "responseElements.ConsoleLogin" as user_name, loginResult nodrop
-| json "sourceIPAddress" as src_ip
- 
-```
-### Use Cases:
-Alert - CloudTrail Changes, Alert - Config Changes, Alert - Console Logins without MFA, Alert - Disabled or Scheduled Deletion of CMK, Alert - Failed Console Logins, Alert - Gateway Changes, Alert - IAM Policy Changes, Alert - Network ACL Changes, Alert - Root Account Logins, Alert - Route Table Changes, Alert - S3 Bucket Policy Changes, Alert - Security Group Changes, Alert - Unauthorized AWS API Requests, Alert - VPC Changes, Console Logins without MFA, Disabled or Scheduled Deletion of CMK, Failed Console Logins by Location, Unauthorized AWS API Requests
-
-
-
-## Parser:
-```
-| json field=_raw "awsRegion" as region
-| json field=_raw "userIdentity.accountId" as acc_id
-| json field=_raw "sourceIPAddress" as ip_add
-| json field=_raw "userIdentity.userName" as user_name
-| json "eventName"
- 
-```
-### Use Cases:
-Alert - CloudTrail Changes, Alert - Config Changes, Alert - Console Logins without MFA, Alert - Disabled or Scheduled Deletion of CMK, Alert - Failed Console Logins, Alert - Gateway Changes, Alert - IAM Policy Changes
-
-
-
-## Parser:
-```
-| json field=_raw "awsRegion" as region
-| json field=_raw "userIdentity.accountId" as acc_id
-| json field=_raw "sourceIPAddress" as src_ip
-| json "errorCode" as error
-| json field=_raw "eventName"
-| json "userIdentity.sessionContext.sessionIssuer.userName" as user_name
- 
-```
-### Use Cases:
-Alert - CloudTrail Changes, Alert - Config Changes, Alert - Console Logins without MFA, Alert - Disabled or Scheduled Deletion of CMK, Alert - Failed Console Logins, Alert - Gateway Changes, Alert - IAM Policy Changes, Alert - Network ACL Changes, Alert - Root Account Logins, Alert - Route Table Changes, Alert - S3 Bucket Policy Changes, Alert - Security Group Changes, Alert - Unauthorized AWS API Requests, Alert - VPC Changes, Failed Console Logins by Location, Unauthorized AWS API Requests
-
-
-
-## Parser:
-```
-| json field=_raw "awsRegion" as region
-| json field=_raw "userIdentity.accountId" as acc_id
-| json field=_raw "sourceIPAddress" as src_ip
-| json "eventName"
-| json "errorMessage"
-| json "responseElements.ConsoleLogin", "userIdentity.userName" as loginResult, user_name
- 
-```
-### Use Cases:
-Alert - CloudTrail Changes, Alert - Config Changes, Alert - Console Logins without MFA, Alert - Disabled or Scheduled Deletion of CMK, Alert - Failed Console Logins, Alert - Gateway Changes, Alert - IAM Policy Changes, Alert - Network ACL Changes, Alert - Root Account Logins, Alert - Route Table Changes, Alert - S3 Bucket Policy Changes, Alert - Security Group Changes, Alert - Unauthorized AWS API Requests, Alert - VPC Changes, Console Logins without MFA, Disabled or Scheduled Deletion of CMK, Failed Console Logins, Failed Console Logins by Location, Outlier - Failed Console Logins, Unauthorized AWS API Requests
-
-
-
-## Parser:
-```
-| json field=_raw "awsRegion" as region
-| json field=_raw "userIdentity.accountId" as acc_id
-| json field=_raw "sourceIPAddress" as src_ip
-| json field=_raw "eventName"
-| json "userIdentity.type" as loginType
-| json "userIdentity.userName" as user_name
- 
-```
-### Use Cases:
-Alert - CloudTrail Changes, Alert - Config Changes, Alert - Console Logins without MFA, Alert - Disabled or Scheduled Deletion of CMK, Alert - Failed Console Logins, Alert - Gateway Changes, Alert - IAM Policy Changes, Alert - Network ACL Changes, Alert - Root Account Logins, Alert - Route Table Changes, Alert - S3 Bucket Policy Changes, Alert - Security Group Changes, Alert - Unauthorized AWS API Requests, Alert - VPC Changes, Console Logins without MFA, Disabled or Scheduled Deletion of CMK, Failed Console Logins, Failed Console Logins by Location, Outlier - Failed Console Logins, Root Account Logins, Unauthorized AWS API Requests
-
-
-
-## Parser:
-```
-| json field=_raw "awsRegion" as region
-| json field=_raw "userIdentity.accountId" as acc_id
-| json field=_raw "sourceIPAddress" as src_ip
-| json field=_raw "userIdentity.userName" as user_name
-| json "eventName"
-| json "errorMessage"
-| json "responseElements.ConsoleLogin", "userIdentity.userName" as loginResult, user_name
- 
-```
-### Use Cases:
-Alert - CloudTrail Changes, Alert - Config Changes, Alert - Console Logins without MFA, Alert - Disabled or Scheduled Deletion of CMK, Alert - Failed Console Logins, Alert - Gateway Changes, Alert - IAM Policy Changes, Alert - Network ACL Changes, Alert - Root Account Logins, Alert - Route Table Changes, Alert - S3 Bucket Policy Changes, Alert - Security Group Changes, Alert - Unauthorized AWS API Requests, Alert - VPC Changes, Failed Console Logins by Location
-
-
-
-## Parser:
-```
-| json field=_raw "awsRegion" as region
-| json field=_raw "userIdentity.accountId" as acc_id
-| json field=_raw "userIdentity.userName" as user_name
-| json field=_raw "sourceIPAddress" as src_ip
-| json "eventName"
- 
-```
-### Use Cases:
-Alert - CloudTrail Changes, Alert - Config Changes, Alert - Console Logins without MFA, Alert - Disabled or Scheduled Deletion of CMK, Alert - Failed Console Logins, Alert - Gateway Changes, Alert - IAM Policy Changes, Alert - Network ACL Changes, Alert - Root Account Logins, Alert - Route Table Changes, Alert - S3 Bucket Policy Changes, Alert - Security Group Changes, Alert - Unauthorized AWS API Requests, Alert - VPC Changes, Disabled or Scheduled Deletion of CMK, Failed Console Logins by Location, Unauthorized AWS API Requests
-
-
-
-## Parser:
-```
-| json field=_raw "sourceIPAddress" as src_ip
-| json field=_raw "userIdentity.userName" as user_name
-| json field=_raw "awsRegion" as region 
-| json field=_raw "userIdentity.accountId" as acc_id
-| json "eventName"
- 
-```
-### Use Cases:
-Alert - CloudTrail Changes, Alert - Config Changes, Alert - Console Logins without MFA, Alert - Disabled or Scheduled Deletion of CMK, Alert - Failed Console Logins, Alert - Gateway Changes, Alert - IAM Policy Changes, Alert - Network ACL Changes, Alert - Root Account Logins, Alert - Route Table Changes, Alert - S3 Bucket Policy Changes
-
-
-
-## Parser:
-```
-| json field=_raw "userIdentity.sessionContext.sessionIssuer.userName" as user_name
-| json field=_raw "userIdentity.accountId" as acc_id
-| json field=_raw "sourceIPAddress" as src_ip
-| json field=_raw "awsRegion" as region
-| json "eventName"
- 
-```
-### Use Cases:
-Alert - CloudTrail Changes, Alert - Config Changes, Alert - Console Logins without MFA, Alert - Disabled or Scheduled Deletion of CMK, Alert - Failed Console Logins, Alert - Gateway Changes, Alert - IAM Policy Changes, Alert - Network ACL Changes, Alert - Root Account Logins, Alert - Route Table Changes
-
-
-
-## Parser:
-```
-| json field=_raw "userIdentity.sessionContext.sessionIssuer.userName" as user_name
-| json field=_raw "userIdentity.accountId" as acc_id
-| json field=_raw "sourceIPAddress" as src_ip
-| json field=_raw "awsRegion" as region
-| json "eventName" 
- 
-```
-### Use Cases:
-Alert - CloudTrail Changes, Alert - Config Changes, Alert - Console Logins without MFA, Alert - Disabled or Scheduled Deletion of CMK, Alert - Failed Console Logins, Alert - Gateway Changes, Alert - IAM Policy Changes, Alert - Network ACL Changes, Alert - Root Account Logins, Alert - Route Table Changes, Alert - S3 Bucket Policy Changes, Alert - Security Group Changes, Alert - Unauthorized AWS API Requests, Alert - VPC Changes
-
+| use_case | parser |
+|--- | --- |
+| CIS AWS Foundations Benchmark/Alert - CloudTrail Changes/Alert - CloudTrail Changes | _sourceCategory = Labs/AWS/CloudTrail* (*Trail or StartLogging or StopLogging)<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as ip_add<br>\| json field=_raw "userIdentity.userName" as user_name<br>\| json "eventName" |
+| CIS AWS Foundations Benchmark/Alert - Config Changes/Alert - Config Changes | _sourceCategory = Labs/AWS/CloudTrail* ("StopConfigurationRecorder" or "DeleteDeliveryChannel" or "PutDeliveryChannel" or "PutConfigurationRecorder")<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as ip_add<br>\| json field=_raw "userIdentity.userName" as user_name<br>\| json "eventName" |
+| CIS AWS Foundations Benchmark/Alert - Console Logins without MFA/Alert - Console Logins without MFA | _sourceCategory = Labs/AWS/CloudTrail* (!Failure and "ConsoleLogin")<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json "eventName", "additionalEventData.MFAUsed" as eventName, MFAUsed nodrop<br>\| json "userIdentity.userName", "responseElements.ConsoleLogin" as user_name, loginResult nodrop<br>\| json "sourceIPAddress" as src_ip |
+| CIS AWS Foundations Benchmark/Alert - Disabled or Scheduled Deletion of CMK/Alert - Disabled or Scheduled Deletion of CMK | _sourceCategory = Labs/AWS/CloudTrail* ("DisableKey" or "ScheduleKeyDeletion")<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "userIdentity.userName" as user_name<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json "eventName" |
+| CIS AWS Foundations Benchmark/Alert - Failed Console Logins/Alert - Failed Console Logins | _sourceCategory = Labs/AWS/CloudTrail* ("ConsoleLogin" and "Failed authentication")<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json "eventName"<br>\| json "errorMessage"<br>\| json "responseElements.ConsoleLogin", "userIdentity.userName" as loginResult, user_name |
+| CIS AWS Foundations Benchmark/Alert - Gateway Changes/Alert - Gateway Changes | _sourceCategory = Labs/AWS/CloudTrail* ("CreateCustomerGateway" or "DeleteCustomerGateway" or "AttachInternetGateway" or "CreateInternetGateway" or "DeleteInternetGateway" or "DetachInternetGateway")<br>\| json field=_raw "userIdentity.sessionContext.sessionIssuer.userName" as user_name<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json field=_raw "awsRegion" as region<br>\| json "eventName" |
+| CIS AWS Foundations Benchmark/Alert - IAM Policy Changes/Alert - IAM Policy Changes | _sourceCategory = Labs/AWS/CloudTrail* (Put*Policy or Delete*Policy* or Attach*Policy or Detach*Policy or CreatePolicy*)<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as ip_add<br>\| json field=_raw "userIdentity.userName" as user_name<br>\| json "eventName" |
+| CIS AWS Foundations Benchmark/Alert - Network ACL Changes/Alert - Network ACL Changes | _sourceCategory = Labs/AWS/CloudTrail* ("CreateNetworkAcl" or "CreateNetworkAclEntry" or "DeleteNetworkAcl" or "DeleteNetworkAclEntry" or "ReplaceNetworkAclEntry" or "ReplaceNetworkAclAssociation")<br>\| json field=_raw "userIdentity.sessionContext.sessionIssuer.userName" as user_name<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json field=_raw "awsRegion" as region<br>\| json "eventName" |
+| CIS AWS Foundations Benchmark/Alert - Root Account Logins/Alert - Root Account Logins | _sourceCategory = Labs/AWS/CloudTrail* "Root"<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json field=_raw "eventName"<br>\| json "userIdentity.type" as loginType<br>\| json "userIdentity.userName" as user_name |
+| CIS AWS Foundations Benchmark/Alert - Route Table Changes/Alert - Route Table Changes | _sourceCategory = Labs/AWS/CloudTrail* ("CreateRoute" or "CreateRouteTable" or "ReplaceRoute" or "ReplaceRouteTableAssociation" or "DeleteRouteTable" or  "DeleteRoute" or "DisassociateRouteTable")<br>\| json field=_raw "userIdentity.sessionContext.sessionIssuer.userName" as user_name<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json field=_raw "awsRegion" as region<br>\| json "eventName" |
+| CIS AWS Foundations Benchmark/Alert - S3 Bucket Policy Changes/Alert - S3 Bucket Policy Changes | _sourceCategory = Labs/AWS/CloudTrail* (*BucketAcl or *BucketPolicy or *BucketCors or *BucketLifecycle)<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json field=_raw "userIdentity.userName" as user_name<br>\| json field=_raw "awsRegion" as region <br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json "eventName" |
+| CIS AWS Foundations Benchmark/Alert - Security Group Changes/Alert - Security Group Changes | _sourceCategory = Labs/AWS/CloudTrail* ("CreateSecurityGroup" or "DeleteSecurityGroup" or "RevokeSecurityGroupEgress" or "RevokeSecurityGroupIngress")<br>\| json field=_raw "userIdentity.sessionContext.sessionIssuer.userName" as user_name<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json field=_raw "awsRegion" as region<br>\| json "eventName"  |
+| CIS AWS Foundations Benchmark/Alert - Unauthorized AWS API Requests/Alert - Unauthorized AWS API Requests | _sourceCategory = Labs/AWS/CloudTrail* ("AccessDenied" or "UnauthorizedOperation")<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json "errorCode" as error<br>\| json field=_raw "eventName"<br>\| json "userIdentity.sessionContext.sessionIssuer.userName" as user_name |
+| CIS AWS Foundations Benchmark/Alert - VPC Changes/Alert - VPC Changes | _sourceCategory = Labs/AWS/CloudTrail* ("CreateVpc" or "DeleteVpc" or "ModifyVpcAttribute" or *VpcPeeringConnection or *tachClassicLink or *ableVpcClassic)<br>\| json field=_raw "userIdentity.sessionContext.sessionIssuer.userName" as user_name<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json field=_raw "awsRegion" as region<br>\| json "eventName"  |
+| CIS AWS Foundations Benchmark/CIS AWS Benchmark (Monitoring) - Access and Authentication - New/Console Logins without MFA | _sourceCategory = Labs/AWS/CloudTrail* (!Failure and "ConsoleLogin")<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json "eventName", "additionalEventData.MFAUsed" as eventName, MFAUsed nodrop<br>\| json "userIdentity.userName", "responseElements.ConsoleLogin" as user_name, loginResult nodrop<br>\| json "sourceIPAddress" as src_ip |
+| CIS AWS Foundations Benchmark/CIS AWS Benchmark (Monitoring) - Access and Authentication - New/Disabled or Scheduled Deletion of CMK | _sourceCategory = Labs/AWS/CloudTrail* ("DisableKey" or "ScheduleKeyDeletion")<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "userIdentity.userName" as user_name<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json "eventName" |
+| CIS AWS Foundations Benchmark/CIS AWS Benchmark (Monitoring) - Access and Authentication - New/Failed Console Logins | _sourceCategory = Labs/AWS/CloudTrail* ("ConsoleLogin" and "Failed authentication")<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json "eventName"<br>\| json "errorMessage"<br>\| json "responseElements.ConsoleLogin", "userIdentity.userName" as loginResult, user_name |
+| CIS AWS Foundations Benchmark/CIS AWS Benchmark (Monitoring) - Access and Authentication - New/Failed Console Logins by Location | _sourceCategory = Labs/AWS/CloudTrail* ("ConsoleLogin" and "Failed authentication")<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json field=_raw "userIdentity.userName" as user_name<br>\| json "eventName"<br>\| json "errorMessage"<br>\| json "responseElements.ConsoleLogin", "userIdentity.userName" as loginResult, user_name |
+| CIS AWS Foundations Benchmark/CIS AWS Benchmark (Monitoring) - Access and Authentication - New/Outlier - Failed Console Logins | _sourceCategory = Labs/AWS/CloudTrail* ("ConsoleLogin" and "Failed authentication")<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json "eventName"<br>\| json "errorMessage"<br>\| json "responseElements.ConsoleLogin", "userIdentity.userName" as loginResult, user_name |
+| CIS AWS Foundations Benchmark/CIS AWS Benchmark (Monitoring) - Access and Authentication - New/Root Account Logins | _sourceCategory = Labs/AWS/CloudTrail* "Root"<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json field=_raw "eventName"<br>\| json "userIdentity.type" as loginType<br>\| json "userIdentity.userName" as user_name |
+| CIS AWS Foundations Benchmark/CIS AWS Benchmark (Monitoring) - Access and Authentication - New/Unauthorized AWS API Requests | _sourceCategory = Labs/AWS/CloudTrail* ("AccessDenied" or "UnauthorizedOperation")<br>\| json field=_raw "awsRegion" as region<br>\| json field=_raw "userIdentity.accountId" as acc_id<br>\| json field=_raw "sourceIPAddress" as src_ip<br>\| json "errorCode" as error<br>\| json field=_raw "eventName"<br>\| json "userIdentity.sessionContext.sessionIssuer.userName" as user_name |
 

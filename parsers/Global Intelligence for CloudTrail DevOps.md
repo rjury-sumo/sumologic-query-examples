@@ -1,235 +1,35 @@
 # Parsers For Global Intelligence for CloudTrail DevOps
 
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"cacheNodeType\":\"*\"" as cacheNodeType
-| parse "\"userName\":\"*\"" as userName
- 
-```
-### Use Cases:
-ElastiCache Users Experiencing Insufficient Capacity  Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"instanceType\":\"*\"" as instanceType
-| parse "\"userName\":\"*\"" as userName
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, Autoscaling Users Experiencing Throttling Errors, DynamoDB Users Experiencing Account Quota Errors, EC2 Users Experiencing Insufficient Capacity  Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, ElastiCache Users Experiencing Throttling Errors, Lambda Users Experiencing Throttling  Errors, Redshift Users Experiencing Account Quota Errors, Redshift Users Experiencing Insufficient Capacity  Errors, S3 Users Experiencing Throttling Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"nodeType\":\"*\"" as nodeType
-| parse "\"userName\":\"*\"" as userName
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, DynamoDB Users Experiencing Account Quota Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, Lambda Users Experiencing Throttling  Errors, Redshift Users Experiencing Insufficient Capacity  Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"userName\":\"*\"" as userName
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, Autoscaling Users Experiencing Service Availability Errors, Autoscaling Users Experiencing Throttling Errors, DynamoDB Users Experiencing Account Quota Errors, DynamoDB Users Experiencing Service Availability Errors, EC2 Users Experiencing Account Quota Errors, EC2 Users Experiencing Insufficient Capacity  Errors, EC2 Users Experiencing Service Availability Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Account Quota Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, ElastiCache Users Experiencing Service Availability Errors, ElastiCache Users Experiencing Throttling Errors, ELB Users Experiencing Service Availability Errors, ELB Users Experiencing Throttling Errors, Lambda Users Experiencing Account Quota Errors, Lambda Users Experiencing Service Availability Errors, Lambda Users Experiencing Throttling  Errors, RDS Users Experiencing Service Availability Errors, RDS Users Experiencing Throttling Errors, Redshift Users Experiencing Account Quota Errors, Redshift Users Experiencing Insufficient Capacity  Errors, Redshift Users Experiencing Service Availability Errors, Redshift Users Experiencing Throttling Errors, S3 Users Experiencing Account Quota Errors, S3 Users Experiencing Service Availability Errors, S3 Users Experiencing Throttling Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"userName\":\"*\"" as userName
-| parse "\"autoScalingGroupName\":\"*\"" as autoScalingGroupName nodrop
-| parse "\"serviceNamespace\":\"*\"" as serviceNamespace nodrop
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, Autoscaling Users Experiencing Throttling Errors, DynamoDB Users Experiencing Account Quota Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, ElastiCache Users Experiencing Throttling Errors, Lambda Users Experiencing Throttling  Errors, Redshift Users Experiencing Account Quota Errors, Redshift Users Experiencing Insufficient Capacity  Errors, S3 Users Experiencing Throttling Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"userName\":\"*\"" as userName
-| parse "\"bucketName\":\"*\"" as bucketName nodrop
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, Autoscaling Users Experiencing Throttling Errors, DynamoDB Users Experiencing Account Quota Errors, DynamoDB Users Experiencing Service Availability Errors, EC2 Users Experiencing Insufficient Capacity  Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, ElastiCache Users Experiencing Throttling Errors, Lambda Users Experiencing Throttling  Errors, RDS Users Experiencing Service Availability Errors, RDS Users Experiencing Throttling Errors, Redshift Users Experiencing Account Quota Errors, Redshift Users Experiencing Insufficient Capacity  Errors, S3 Users Experiencing Account Quota Errors, S3 Users Experiencing Throttling Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"userName\":\"*\"" as userName
-| parse "\"cacheNodeType\":\"*\"" as cacheNodeType nodrop
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, Autoscaling Users Experiencing Throttling Errors, DynamoDB Users Experiencing Account Quota Errors, DynamoDB Users Experiencing Service Availability Errors, EC2 Users Experiencing Insufficient Capacity  Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Account Quota Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, ElastiCache Users Experiencing Service Availability Errors, ElastiCache Users Experiencing Throttling Errors, ELB Users Experiencing Service Availability Errors, Lambda Users Experiencing Throttling  Errors, RDS Users Experiencing Service Availability Errors, RDS Users Experiencing Throttling Errors, Redshift Users Experiencing Account Quota Errors, Redshift Users Experiencing Insufficient Capacity  Errors, S3 Users Experiencing Account Quota Errors, S3 Users Experiencing Throttling Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"userName\":\"*\"" as userName
-| parse "\"functionName\":\"*\"" as functionName nodrop
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, Autoscaling Users Experiencing Throttling Errors, DynamoDB Users Experiencing Account Quota Errors, DynamoDB Users Experiencing Service Availability Errors, EC2 Users Experiencing Insufficient Capacity  Errors, EC2 Users Experiencing Service Availability Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Account Quota Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, ElastiCache Users Experiencing Service Availability Errors, ElastiCache Users Experiencing Throttling Errors, ELB Users Experiencing Service Availability Errors, Lambda Users Experiencing Account Quota Errors, Lambda Users Experiencing Throttling  Errors, RDS Users Experiencing Service Availability Errors, RDS Users Experiencing Throttling Errors, Redshift Users Experiencing Account Quota Errors, Redshift Users Experiencing Insufficient Capacity  Errors, S3 Users Experiencing Account Quota Errors, S3 Users Experiencing Service Availability Errors, S3 Users Experiencing Throttling Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"userName\":\"*\"" as userName
-| parse "\"instanceType\":\"*\"" as instanceType nodrop
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, Autoscaling Users Experiencing Service Availability Errors, Autoscaling Users Experiencing Throttling Errors, DynamoDB Users Experiencing Account Quota Errors, DynamoDB Users Experiencing Service Availability Errors, EC2 Users Experiencing Account Quota Errors, EC2 Users Experiencing Insufficient Capacity  Errors, EC2 Users Experiencing Service Availability Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Account Quota Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, ElastiCache Users Experiencing Service Availability Errors, ElastiCache Users Experiencing Throttling Errors, ELB Users Experiencing Service Availability Errors, ELB Users Experiencing Throttling Errors, Lambda Users Experiencing Account Quota Errors, Lambda Users Experiencing Throttling  Errors, RDS Users Experiencing Service Availability Errors, RDS Users Experiencing Throttling Errors, Redshift Users Experiencing Account Quota Errors, Redshift Users Experiencing Insufficient Capacity  Errors, Redshift Users Experiencing Service Availability Errors, Redshift Users Experiencing Throttling Errors, S3 Users Experiencing Account Quota Errors, S3 Users Experiencing Service Availability Errors, S3 Users Experiencing Throttling Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"userName\":\"*\"" as userName
-| parse "\"loadBalancerArn\":\"*\"" as loadBalancerArn nodrop
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, Autoscaling Users Experiencing Service Availability Errors, Autoscaling Users Experiencing Throttling Errors, DynamoDB Users Experiencing Account Quota Errors, DynamoDB Users Experiencing Service Availability Errors, EC2 Users Experiencing Account Quota Errors, EC2 Users Experiencing Insufficient Capacity  Errors, EC2 Users Experiencing Service Availability Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Account Quota Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, ElastiCache Users Experiencing Service Availability Errors, ElastiCache Users Experiencing Throttling Errors, ELB Users Experiencing Account Quota Errors, ELB Users Experiencing Service Availability Errors, ELB Users Experiencing Throttling Errors, Lambda Users Experiencing Account Quota Errors, Lambda Users Experiencing Service Availability Errors, Lambda Users Experiencing Throttling  Errors, RDS Users Experiencing Account Quota Errors, RDS Users Experiencing Service Availability Errors, RDS Users Experiencing Throttling Errors, Redshift Users Experiencing Account Quota Errors, Redshift Users Experiencing Insufficient Capacity  Errors, Redshift Users Experiencing Service Availability Errors, Redshift Users Experiencing Throttling Errors, S3 Users Experiencing Account Quota Errors, S3 Users Experiencing Service Availability Errors, S3 Users Experiencing Throttling Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"userName\":\"*\"" as userName
-| parse "\"nodeType\":\"*\"" as nodeType nodrop
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, Autoscaling Users Experiencing Service Availability Errors, Autoscaling Users Experiencing Throttling Errors, DynamoDB Users Experiencing Account Quota Errors, DynamoDB Users Experiencing Service Availability Errors, EC2 Users Experiencing Insufficient Capacity  Errors, EC2 Users Experiencing Service Availability Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Account Quota Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, ElastiCache Users Experiencing Service Availability Errors, ElastiCache Users Experiencing Throttling Errors, ELB Users Experiencing Service Availability Errors, Lambda Users Experiencing Account Quota Errors, Lambda Users Experiencing Throttling  Errors, RDS Users Experiencing Service Availability Errors, RDS Users Experiencing Throttling Errors, Redshift Users Experiencing Account Quota Errors, Redshift Users Experiencing Insufficient Capacity  Errors, Redshift Users Experiencing Service Availability Errors, Redshift Users Experiencing Throttling Errors, S3 Users Experiencing Account Quota Errors, S3 Users Experiencing Service Availability Errors, S3 Users Experiencing Throttling Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"userName\":\"*\"" as userName
-| parse "\"resourceName\":\"*\"" as resourceName nodrop
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, Autoscaling Users Experiencing Service Availability Errors, Autoscaling Users Experiencing Throttling Errors, DynamoDB Users Experiencing Account Quota Errors, DynamoDB Users Experiencing Service Availability Errors, EC2 Users Experiencing Account Quota Errors, EC2 Users Experiencing Insufficient Capacity  Errors, EC2 Users Experiencing Service Availability Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Account Quota Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, ElastiCache Users Experiencing Service Availability Errors, ElastiCache Users Experiencing Throttling Errors, ELB Users Experiencing Service Availability Errors, ELB Users Experiencing Throttling Errors, Lambda Users Experiencing Account Quota Errors, Lambda Users Experiencing Service Availability Errors, Lambda Users Experiencing Throttling  Errors, RDS Users Experiencing Account Quota Errors, RDS Users Experiencing Service Availability Errors, RDS Users Experiencing Throttling Errors, Redshift Users Experiencing Account Quota Errors, Redshift Users Experiencing Insufficient Capacity  Errors, Redshift Users Experiencing Service Availability Errors, Redshift Users Experiencing Throttling Errors, S3 Users Experiencing Account Quota Errors, S3 Users Experiencing Service Availability Errors, S3 Users Experiencing Throttling Errors
-
-
-
-## Parser:
-```
-| parse "\"awsRegion\":\"*\"" as awsRegion
-| parse "\"eventSource\":\"*\"" as eventSource
-| parse "\"eventName\":\"*\"" as eventName
-| parse "\"eventType\":\"*\"" as eventType
-| parse "\"recipientAccountId\":\"*\"" as accountId
-| parse field=eventSource "*.amazonaws.com" as resourceType
-| parse "\"errorCode\":\"*\"" as errorCode
-| parse "\"userName\":\"*\"" as userName
-| parse "\"tableName\":\"*\"" as tableName nodrop
- 
-```
-### Use Cases:
-Autoscaling Users Experiencing Account Quota Errors, Autoscaling Users Experiencing Service Availability Errors, Autoscaling Users Experiencing Throttling Errors, DynamoDB Users Experiencing Account Quota Errors, DynamoDB Users Experiencing Service Availability Errors, DynamoDB Users Experiencing Throttling Errors, EC2 Users Experiencing Account Quota Errors, EC2 Users Experiencing Insufficient Capacity  Errors, EC2 Users Experiencing Service Availability Errors, EC2 Users Experiencing Throttling Errors, ElastiCache Users Experiencing Account Quota Errors, ElastiCache Users Experiencing Insufficient Capacity  Errors, ElastiCache Users Experiencing Service Availability Errors, ElastiCache Users Experiencing Throttling Errors, ELB Users Experiencing Account Quota Errors, ELB Users Experiencing Service Availability Errors, ELB Users Experiencing Throttling Errors, Lambda Users Experiencing Account Quota Errors, Lambda Users Experiencing Service Availability Errors, Lambda Users Experiencing Throttling  Errors, RDS Users Experiencing Account Quota Errors, RDS Users Experiencing Service Availability Errors, RDS Users Experiencing Throttling Errors, Redshift Users Experiencing Account Quota Errors, Redshift Users Experiencing Insufficient Capacity  Errors, Redshift Users Experiencing Service Availability Errors, Redshift Users Experiencing Throttling Errors, S3 Users Experiencing Account Quota Errors, S3 Users Experiencing Service Availability Errors, S3 Users Experiencing Throttling Errors
-
+| use_case | parser |
+|--- | --- |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/Autoscaling Users Experiencing Account Quota Errors | // id=@action_plan_accountQuotaErrors_autoscaling<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall autoscaling errorCode userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| where eventType = "AwsApiCall" and resourceType = "autoscaling" and errorCode matches "*LimitExceeded*"<br>\| parse "\"autoScalingGroupName\":\"*\"" as autoScalingGroupName nodrop<br>\| parse "\"serviceNamespace\":\"*\"" as serviceNamespace nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/Autoscaling Users Experiencing Service Availability Errors | // id=@action_plan_serviceAvailability_autoscaling<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall autoscaling errorCode (InternalServiceException OR InternalFailure OR ServiceUnavailable) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/Autoscaling Users Experiencing Throttling Errors | // id=@action_plan_throttling_autoscaling<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall autoscaling errorCode userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| where eventType = "AwsApiCall" and resourceType = "autoscaling" and errorCode = "ThrottlingException"<br>\| parse "\"autoScalingGroupName\":\"*\"" as autoScalingGroupName nodrop<br>\| parse "\"serviceNamespace\":\"*\"" as serviceNamespace nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/DynamoDB Users Experiencing Account Quota Errors | // id=@action_plan_accountQuotaErrors_dynamodb<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall dynamodb errorCode (*LimitExceeded*) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"tableName\":\"*\"" as tableName nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/DynamoDB Users Experiencing Service Availability Errors | // id=@action_plan_serviceAvailability_dynamodb<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall dynamodb errorCode (InternalServerError OR InternalFailure OR ServiceUnavailable) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/DynamoDB Users Experiencing Throttling Errors | // id=@action_plan_throttling_dynamodb<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall dynamodb errorCode userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"tableName\":\"*\"" as tableName nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/EC2 Users Experiencing Account Quota Errors | // id=@action_plan_accountQuotaErrors_ec2<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall ec2 errorCode (*LimitExceeded* AND !*RequestLimitExceeded) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"instanceType\":\"*\"" as instanceType nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/EC2 Users Experiencing Insufficient Capacity  Errors | // id=@action_plan_insufficientCapacity_ec2_resource<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall ec2 errorCode (RunInstances OR CreateFleet OR RequestSpotInstances) (*Insufficient*) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"instanceType\":\"*\"" as instanceType<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/EC2 Users Experiencing Service Availability Errors | // id=@action_plan_serviceAvailability_ec2<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall ec2 errorCode (Server.Unavailable OR Server.InternalFailure OR Server.ServiceUnavailable OR Server.InternalError) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/EC2 Users Experiencing Throttling Errors | // id=@action_plan_throttling_ec2<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall ec2 errorCode userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"instanceType\":\"*\"" as instanceType nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/ElastiCache Users Experiencing Account Quota Errors | // id=@action_plan_accountQuotaErrors_elasticache<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall elasticache errorCode (*Exceeded*) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"cacheNodeType\":\"*\"" as cacheNodeType nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/ElastiCache Users Experiencing Insufficient Capacity  Errors | // id=@action_plan_insufficientCapacity_elasticache_resource<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall elasticache errorCode (CreateCacheCluster OR ModifyCacheCluster) (*Insufficient*) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"cacheNodeType\":\"*\"" as cacheNodeType<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/ElastiCache Users Experiencing Service Availability Errors | // id=@action_plan_serviceAvailability_elasticache<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall elasticache errorCode (InternalFailure OR ServiceUnavailable) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/ElastiCache Users Experiencing Throttling Errors | // id=@action_plan_throttling_elasticache<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall elasticache errorCode userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"cacheNodeType\":\"*\"" as cacheNodeType nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/ELB Users Experiencing Account Quota Errors | // id=@action_plan_accountQuotaErrors_elb<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall elasticloadbalancing errorCode (TooManyTargetGroups OR TooManyLoadBalancers OR TooManyActions OR TooManyRegistrationsForTargetId OR TargetGroupAssociationLimit OR TooManyTargets OR TooManyListeners OR TooManyUniqueTargetGroupsPerLoadBalancer OR TooManyTags) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"loadBalancerArn\":\"*\"" as loadBalancerArn nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/ELB Users Experiencing Service Availability Errors | // id=@action_plan_serviceAvailability_elb<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall elasticloadbalancing errorCode (InternalFailure OR ServiceUnavailable) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/ELB Users Experiencing Throttling Errors | // id=@action_plan_throttling_elb<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall elasticloadbalancing errorCode userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"loadBalancerArn\":\"*\"" as loadBalancerArn nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/Lambda Users Experiencing Account Quota Errors | // id=@action_plan_accountQuotaErrors_lambda<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall lambda errorCode (ENILimitReachedException OR CodeStorageExceededException) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"functionName\":\"*\"" as functionName nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/Lambda Users Experiencing Service Availability Errors | // id=@action_plan_serviceAvailability_lambda<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall lambda errorCode (ServiceException OR EC2UnexpectedException) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/Lambda Users Experiencing Throttling  Errors | // id=@action_plan_throttling_lambda<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall lambda errorCode userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"functionName\":\"*\"" as functionName nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/RDS Users Experiencing Account Quota Errors | // id=@action_plan_accountQuotaErrors_RDS<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall rds errorCode (*QuotaExceeded*) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"resourceName\":\"*\"" as resourceName nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/RDS Users Experiencing Service Availability Errors | // id=@action_plan_serviceAvailability_rds<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall rds errorCode (InternalServerError OR InternalFailure OR ServiceUnavailable) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/RDS Users Experiencing Throttling Errors | // id=@action_plan_throttling_rds<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall rds errorCode userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"resourceName\":\"*\"" as resourceName nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/Redshift Users Experiencing Account Quota Errors | // id=@action_plan_accountQuotaErrors_redshift<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall redshift errorCode (*Exceeded*) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"nodeType\":\"*\"" as nodeType nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/Redshift Users Experiencing Insufficient Capacity  Errors | // id=@action_plan_insufficientCapacity_redshift_resource<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall redshift errorCode (CreateCluster OR ResizeCluster OR ModifyCluster) (*Insufficient*) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"nodeType\":\"*\"" as nodeType<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/Redshift Users Experiencing Service Availability Errors | // id=@action_plan_serviceAvailability_redshift<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall redshift errorCode (InternalFailure OR ServiceUnavailable) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/Redshift Users Experiencing Throttling Errors | // id=@action_plan_throttling_redshift<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall redshift errorCode userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"nodeType\":\"*\"" as nodeType nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/S3 Users Experiencing Account Quota Errors | // id=@action_plan_accountQuotaErrors_s3<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall s3 errorCode (TooManyBuckets) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"bucketName\":\"*\"" as bucketName nodrop |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/S3 Users Experiencing Service Availability Errors | // id=@action_plan_serviceAvailability_s3<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall s3 errorCode (InternalError) userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName |
+| Global Intelligence for CloudTrail DevOps/GI CloudTrail DevOps - 06. Action Plan - New/S3 Users Experiencing Throttling Errors | // id=@action_plan_throttling_s3<br>_sourceCategory = Labs/AWS/CloudTrail<br>AwsApiCall s3 errorCode userName<br>\| parse "\"awsRegion\":\"*\"" as awsRegion<br>\| parse "\"eventSource\":\"*\"" as eventSource<br>\| parse "\"eventName\":\"*\"" as eventName<br>\| parse "\"eventType\":\"*\"" as eventType<br>\| parse "\"recipientAccountId\":\"*\"" as accountId<br>\| parse field=eventSource "*.amazonaws.com" as resourceType<br>\| parse "\"errorCode\":\"*\"" as errorCode<br>\| parse "\"userName\":\"*\"" as userName<br>\| parse "\"bucketName\":\"*\"" as bucketName nodrop |
 

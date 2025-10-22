@@ -1,112 +1,58 @@
 # Parsers For Artifactory 7
 
-## Parser:
-```
-| parse " [*] " as event_type 
-| parse " for */*" as user, ip
-| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\."
- 
-```
-### Use Cases:
-5xx Status Codes, Accepted Deploys by Geolocation, Accepted Deploys by IP, Accepted Deploys by Repo, Accepted Downloads by Geolocation, Accepted Downloads by IP, Accepted Downloads by Repo, Accepted Login Attempts, Cache Hit Ratio, Cached Accepted Deploys by Repo, Data Transfer (GBs) Over Time, Data Upload-Download (GBs), Denied Deploys, Denied Deploys by Geolocation, Denied Deploys by IP, Denied Deploys by Repo, Denied Deploys Detail, Denied Downloads by Geolocation, Denied Downloads by IP, Denied Downloads by Repo, Download Traffic by Geolocation, Non-Anonymous Access, Remote Download Size (GB), Remote Incomplete Downloads, Requests by Repo, Requests by Status Code (Every 10 Minutes), Unique Paths Accepted Deploys, Unique Paths Accepted Downloads, Unique Paths Denied Deploys, Unique Paths Denied Downloads, Upload Traffic by Geolocation, Uploads by Repo
-
-
-
-## Parser:
-```
-| parse "[*]  for */*" as event_type, user, ip
-| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\."
- 
-```
-### Use Cases:
-5xx Status Codes, Accepted Deploys by Geolocation, Accepted Deploys by IP, Accepted Deploys by Repo, Accepted Downloads by Geolocation, Accepted Downloads by IP, Accepted Downloads by Repo, Accepted Login Attempts, Cache Hit Ratio, Cached Accepted Deploys by Repo, Data Transfer (GBs) Over Time, Data Upload-Download (GBs), Denied Deploys, Denied Deploys by Geolocation, Denied Deploys by IP, Denied Deploys by Repo, Denied Deploys Detail, Denied Downloads by Geolocation, Denied Downloads by IP, Denied Downloads by Repo, Denied Login Attempts, Download Traffic by Geolocation, Non-Anonymous Access, Remote Download Size (GB), Remote Incomplete Downloads, Requests by Repo, Requests by Status Code (Every 10 Minutes), Unique Paths Accepted Deploys, Unique Paths Accepted Downloads, Unique Paths Denied Deploys, Unique Paths Denied Downloads, Upload Traffic by Geolocation, Uploads by Repo
-
-
-
-## Parser:
-```
-| parse "[*] *:* for */*" as what, repo, path, user, ip
-| parse regex field=ip "(?<ip>.*)\."
- 
-```
-### Use Cases:
-Accepted Deploys by Geolocation, Accepted Deploys by IP, Accepted Deploys by Repo, Accepted Downloads by Geolocation, Accepted Downloads by IP, Accepted Downloads by Repo, Cache Hit Ratio, Cached Accepted Deploys by Repo, Data Transfer (GBs) Over Time, Denied Deploys, Denied Deploys by Geolocation, Denied Deploys by IP, Denied Deploys by Repo, Denied Deploys Detail, Denied Downloads by Geolocation, Denied Downloads by IP, Denied Downloads by Repo, Download Traffic by Geolocation, Remote Download Size (GB), Remote Incomplete Downloads, Requests by Repo, Requests by Status Code (Every 10 Minutes), Unique Paths Accepted Deploys, Unique Paths Accepted Downloads, Unique Paths Denied Deploys, Unique Paths Denied Downloads
-
-
-
-## Parser:
-```
-| parse "[*] *:* for */*" as what, repo, path, user, ip
-| parse regex field=ip "(?<ip>.*)\." 
- 
-```
-### Use Cases:
-Accepted Deploys by Geolocation, Accepted Deploys by Repo, Denied Deploys by Geolocation, Denied Deploys by IP, Denied Deploys by Repo, Unique Paths Accepted Deploys, Unique Paths Denied Deploys
-
-
-
-## Parser:
-```
-| parse "[*] *:* for */*" as what, repo, path, user, ip
-| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\."
- 
-```
-### Use Cases:
-Accepted Deploys by Geolocation, Accepted Deploys by IP, Accepted Deploys by Repo, Accepted Downloads by Geolocation, Accepted Downloads by IP, Accepted Downloads by Repo, Denied Deploys, Denied Deploys by Geolocation, Denied Deploys by IP, Denied Deploys by Repo, Denied Deploys Detail, Denied Downloads by Geolocation, Denied Downloads by IP, Denied Downloads by Repo, Unique Paths Accepted Deploys, Unique Paths Accepted Downloads, Unique Paths Denied Deploys, Unique Paths Denied Downloads
-
-
-
-## Parser:
-```
-| parse "*|*|*|*|*|*|*|*|*|*" as datetime, response_time, type, ip, user, method, path, protocol, status_code, size
- 
-```
-### Use Cases:
-5xx Status Codes, Accepted Deploys by Geolocation, Accepted Deploys by IP, Accepted Deploys by Repo, Accepted Downloads by Geolocation, Accepted Downloads by IP, Accepted Downloads by Repo, Accepted Login Attempts, Cache Hit Ratio, Cached Accepted Deploys by Repo, Data Transfer (GBs) Over Time, Data Upload-Download (GBs), Denied Deploys, Denied Deploys by Geolocation, Denied Deploys by IP, Denied Deploys by Repo, Denied Deploys Detail, Denied Downloads by Geolocation, Denied Downloads by IP, Denied Downloads by Repo, Denied Login Attempts, Download Traffic by Geolocation, Non-Anonymous Access, Remote Download Size (GB), Remote Incomplete Downloads, Requests by Repo, Requests by Status Code (Every 10 Minutes), Unique Paths Accepted Deploys, Unique Paths Accepted Downloads, Unique Paths Denied Deploys, Unique Paths Denied Downloads, Upload Traffic by Geolocation, Uploads by Repo
-
-
-
-## Parser:
-```
-| parse "*|*|*|*|*|*|*|*|*|*" as datetime, response_time, type, ip, user, method, path, protocol, status_code, size
-| parse regex field=path "/(?<repo>[^\/]+).*" nodrop
-| parse regex field=path "(?<with_api>/api/(?:(?:npm|ruby|deb|docker|vcs|bower|pypi)/|))(?<repo>[^\/]+)"
- 
-```
-### Use Cases:
-5xx Status Codes, Accepted Deploys by Geolocation, Accepted Deploys by IP, Accepted Deploys by Repo, Accepted Downloads by Geolocation, Accepted Downloads by IP, Accepted Downloads by Repo, Accepted Login Attempts, Cache Hit Ratio, Cached Accepted Deploys by Repo, Data Transfer (GBs) Over Time, Data Upload-Download (GBs), Denied Deploys, Denied Deploys by Geolocation, Denied Deploys by IP, Denied Deploys by Repo, Denied Deploys Detail, Denied Downloads by Geolocation, Denied Downloads by IP, Denied Downloads by Repo, Download Traffic by Geolocation, Remote Download Size (GB), Remote Incomplete Downloads, Requests by Repo, Requests by Status Code (Every 10 Minutes), Unique Paths Accepted Deploys, Unique Paths Accepted Downloads, Unique Paths Denied Deploys, Unique Paths Denied Downloads, Upload Traffic by Geolocation, Uploads by Repo
-
-
-
-## Parser:
-```
-| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\|\d*\|(?<direction>[^|]*)\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|[^|]*)\|(?<repo>[^:]*):(?<fullfilepath>[^|]*)\|(?<size>\d*)" nodrop
- 
-```
-### Use Cases:
-5xx Status Codes, Accepted Deploys by Geolocation, Accepted Deploys by IP, Accepted Deploys by Repo, Accepted Downloads by Geolocation, Accepted Downloads by IP, Accepted Downloads by Repo, Accepted Login Attempts, Active Downloading IPs, Active Uploading IPs, Cache Hit Ratio, Cached Accepted Deploys by Repo, Data Transfer (GBs) Over Time, Data Transfer Over Time, Data Upload-Download, Data Upload-Download (GBs), Denied Deploys, Denied Deploys by Geolocation, Denied Deploys by IP, Denied Deploys by Repo, Denied Deploys Detail, Denied Downloads by Geolocation, Denied Downloads by IP, Denied Downloads by Repo, Denied Login Attempts, Download Traffic by Geolocation, Most Active IPs by Action, Most Active Locations, Most Active Repos by Action, Most Active Repos by Data Transfer, Non-Anonymous Access, Overall Traffic by Geolocation, Remote Download Size (GB), Remote Incomplete Downloads, Requests by Repo, Requests by Status Code (Every 10 Minutes), Top Referred Files, Unique Paths Accepted Deploys, Unique Paths Accepted Downloads, Unique Paths Denied Deploys, Unique Paths Denied Downloads, Upload Traffic by Geolocation, Uploads by Repo
-
-
-
-## Parser:
-```
-| parse regex "^.*\)(?: - | )(?<repo>[\w-]*)\s+(?<action>\w*)"
-| parse "downloaded  * * * at * *" as artifact, size, unit, rate, rateunit nodrop
-| parse "downloading * * *" as artifact, size, unit
- 
-```
-### Use Cases:
-Accepted Deploys by Geolocation, Accepted Deploys by IP, Accepted Deploys by Repo, Accepted Downloads by Geolocation, Accepted Downloads by IP, Accepted Downloads by Repo, Denied Deploys, Denied Deploys by Geolocation, Denied Deploys by IP, Denied Deploys by Repo, Denied Deploys Detail, Denied Downloads by Geolocation, Denied Downloads by IP, Denied Downloads by Repo, Remote Incomplete Downloads, Unique Paths Accepted Deploys, Unique Paths Accepted Downloads, Unique Paths Denied Deploys, Unique Paths Denied Downloads
-
-
-
-## Parser:
-```
-| parse regex "^.*\)(?: - | )(?<repo>[\w-]*)\s+(?<action>\w*)"
-| parse "downloaded  * * * at * KB/sec" as artifact, size, unit, rate
- 
-```
-### Use Cases:
-Accepted Deploys by Geolocation, Accepted Deploys by IP, Accepted Deploys by Repo, Accepted Downloads by Geolocation, Accepted Downloads by IP, Accepted Downloads by Repo, Cached Accepted Deploys by Repo, Data Transfer (GBs) Over Time, Denied Deploys, Denied Deploys by Geolocation, Denied Deploys by IP, Denied Deploys by Repo, Denied Deploys Detail, Denied Downloads by Geolocation, Denied Downloads by IP, Denied Downloads by Repo, Download Traffic by Geolocation, Remote Download Size (GB), Remote Incomplete Downloads, Requests by Repo, Requests by Status Code (Every 10 Minutes), Unique Paths Accepted Deploys, Unique Paths Accepted Downloads, Unique Paths Denied Deploys, Unique Paths Denied Downloads
-
+| use_case | parser |
+|--- | --- |
+| Artifactory 7/Artifactory - Cached Deployment Activity/Accepted Deploys by Geolocation | _sourceCategory={{Logsdatasource}}  "ACCEPTED DEPLOY" "-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Cached Deployment Activity/Accepted Deploys by IP | _sourceCategory={{Logsdatasource}}  "ACCEPTED DEPLOY" "-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Cached Deployment Activity/Accepted Deploys by Repo | _sourceCategory={{Logsdatasource}}  "ACCEPTED DEPLOY" "-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Cached Deployment Activity/Denied Deploys by Geolocation | _sourceCategory={{Logsdatasource}}  "DENIED DEPLOY" "-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Cached Deployment Activity/Denied Deploys by IP | _sourceCategory={{Logsdatasource}}  "DENIED DEPLOY" "-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Cached Deployment Activity/Denied Deploys by Repo | _sourceCategory={{Logsdatasource}}  "DENIED DEPLOY" "-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\."  |
+| Artifactory 7/Artifactory - Cached Deployment Activity/Unique Paths Accepted Deploys | _sourceCategory={{Logsdatasource}}  "ACCEPTED DEPLOY" "-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Cached Deployment Activity/Unique Paths Denied Deploys | _sourceCategory={{Logsdatasource}}  "DENIED DEPLOY" "-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Download Activity/Accepted Downloads by Geolocation | _sourceCategory={{Logsdatasource}}  "ACCEPTED DOWNLOAD"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Download Activity/Accepted Downloads by IP | _sourceCategory={{Logsdatasource}}  "ACCEPTED DOWNLOAD"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Download Activity/Accepted Downloads by Repo | _sourceCategory={{Logsdatasource}}  "ACCEPTED DOWNLOAD"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Download Activity/Denied Downloads by Geolocation | _sourceCategory={{Logsdatasource}}  "DENIED DOWNLOAD"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Download Activity/Denied Downloads by IP | _sourceCategory={{Logsdatasource}}  "DENIED DOWNLOAD"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Download Activity/Denied Downloads by Repo | _sourceCategory={{Logsdatasource}}  "DENIED DOWNLOAD"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Download Activity/Unique Paths Accepted Downloads | _sourceCategory={{Logsdatasource}}  "ACCEPTED DOWNLOAD"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Download Activity/Unique Paths Denied Downloads | _sourceCategory={{Logsdatasource}}  "DENIED DOWNLOAD"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Non-Cached Deployment Activity/Accepted Deploys by Geolocation | _sourceCategory={{Logsdatasource}}  "ACCEPTED DEPLOY" !"-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Non-Cached Deployment Activity/Accepted Deploys by IP | _sourceCategory={{Logsdatasource}}  "ACCEPTED DEPLOY" !"-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Non-Cached Deployment Activity/Accepted Deploys by Repo | _sourceCategory={{Logsdatasource}}  "ACCEPTED DEPLOY" !"-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Non-Cached Deployment Activity/Denied Deploys | _sourceCategory={{Logsdatasource}}  "DENIED DEPLOY" !"-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Non-Cached Deployment Activity/Denied Deploys Detail | _sourceCategory={{Logsdatasource}}  "DENIED DEPLOY" !"-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Non-Cached Deployment Activity/Unique Paths Accepted Deploys | _sourceCategory={{Logsdatasource}}  "ACCEPTED DEPLOY" !"-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Overview/5xx Status Codes | _sourceCategory={{Logsdatasource}}  5*<br>\| where _sourceCategory matches "*artifactory/request"<br>\| parse "*\|*\|*\|*\|*\|*\|*\|*\|*\|*" as datetime, response_time, type, ip, user, method, path, protocol, status_code, size |
+| Artifactory 7/Artifactory - Overview/Accepted Downloads by Repo | _sourceCategory={{Logsdatasource}}  "ACCEPTED DOWNLOAD"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Overview/Cache Hit Ratio | _sourceCategory={{Logsdatasource}}  (("ACCEPTED DEPLOY" and "-cache") or "ACCEPTED DOWNLOAD")<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Overview/Cached Accepted Deploys by Repo | _sourceCategory={{Logsdatasource}}  "ACCEPTED DEPLOY" "-cache"<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*] *:* for */*" as what, repo, path, user, ip<br>\| parse regex field=ip "(?<ip>.*)\." |
+| Artifactory 7/Artifactory - Overview/Data Transfer (GBs) Over Time | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Overview/Data Upload-Download (GBs) | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Overview/Download Traffic by Geolocation | _sourceCategory={{Logsdatasource}}  DOWNLOAD<br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Overview/Remote Download Size (GB) | _sourceCategory={{Logsdatasource}}  downloaded <br>\| where _sourceCategory matches "*artifactory*/console"<br>\| parse regex "^.*\)(?: - \| )(?<repo>[\w-]*)\s+(?<action>\w*)"<br>\| parse "downloaded  * * * at * KB/sec" as artifact, size, unit, rate |
+| Artifactory 7/Artifactory - Overview/Remote Incomplete Downloads | _sourceCategory={{Logsdatasource}}  (downloaded or downloading)<br>\| where _sourceCategory matches "*artifactory*/console"<br>\| parse regex "^.*\)(?: - \| )(?<repo>[\w-]*)\s+(?<action>\w*)"<br>\| parse "downloaded  * * * at * *" as artifact, size, unit, rate, rateunit nodrop<br>\| parse "downloading * * *" as artifact, size, unit |
+| Artifactory 7/Artifactory - Overview/Requests by Repo | _sourceCategory={{Logsdatasource}}  <br>\| where _sourceCategory matches "*artifactory/request"<br>\| parse "*\|*\|*\|*\|*\|*\|*\|*\|*\|*" as datetime, response_time, type, ip, user, method, path, protocol, status_code, size<br>\| where !(path matches "/ui*" ) and !(path matches "/webapp*")<br>\| parse regex field=path "/(?<repo>[^\/]+).*" nodrop<br>\| parse regex field=path "(?<with_api>/api/(?:(?:npm\|ruby\|deb\|docker\|vcs\|bower\|pypi)/\|))(?<repo>[^\/]+)" |
+| Artifactory 7/Artifactory - Overview/Requests by Status Code (Every 10 Minutes) | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/request"<br>\| parse "*\|*\|*\|*\|*\|*\|*\|*\|*\|*" as datetime, response_time, type, ip, user, method, path, protocol, status_code, size |
+| Artifactory 7/Artifactory - Overview/Upload Traffic by Geolocation | _sourceCategory={{Logsdatasource}}  UPLOAD<br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Request and Access/5xx Status Codes | _sourceCategory={{Logsdatasource}}  5*<br>\| where _sourceCategory matches "*artifactory/request"<br>\| parse "*\|*\|*\|*\|*\|*\|*\|*\|*\|*" as datetime, response_time, type, ip, user, method, path, protocol, status_code, size |
+| Artifactory 7/Artifactory - Request and Access/Accepted Login Attempts | _sourceCategory={{Logsdatasource}}  "login" ACCEPTED<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*]  for */*" as event_type, user, ip<br>\| where event_type = "ACCEPTED LOGIN"<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Request and Access/Denied Login Attempts | _sourceCategory={{Logsdatasource}}  "login" DENIED<br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse "[*]  for */*" as event_type, user, ip<br>\| where event_type = "DENIED LOGIN"<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Request and Access/Non-Anonymous Access | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/access"<br>\| parse " [*] " as event_type <br>\| parse " for */*" as user, ip<br>\| parse regex field=ip "^(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\." |
+| Artifactory 7/Artifactory - Request and Access/Requests by Repo | _sourceCategory={{Logsdatasource}}  <br>\| where _sourceCategory matches "*artifactory/request"<br>\| parse "*\|*\|*\|*\|*\|*\|*\|*\|*\|*" as datetime, response_time, type, ip, user, method, path, protocol, status_code, size<br>\| where !(path matches "/ui*" ) and !(path matches "/webapp*")<br>\| parse regex field=path "/(?<repo>[^\/]+).*" nodrop<br>\| parse regex field=path "(?<with_api>/api/(?:(?:npm\|ruby\|deb\|docker\|vcs\|bower\|pypi)/\|))(?<repo>[^\/]+)" |
+| Artifactory 7/Artifactory - Request and Access/Requests by Status Code (Every 10 Minutes) | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/request"<br>\| parse "*\|*\|*\|*\|*\|*\|*\|*\|*\|*" as datetime, response_time, type, ip, user, method, path, protocol, status_code, size |
+| Artifactory 7/Artifactory - Request and Access/Uploads by Repo | _sourceCategory={{Logsdatasource}}  PUT<br>\| where _sourceCategory matches "*artifactory/request"<br>\| parse "*\|*\|*\|*\|*\|*\|*\|*\|*\|*" as datetime, response_time, type, ip, user, method, path, protocol, status_code, size<br>\| where  (method="PUT") and !(path matches "/ui*" ) and !(path matches "/webapp*")<br>\| parse regex field=path "/(?<repo>[^\/]+).*" nodrop<br>\| parse regex field=path "(?<with_api>/api/(?:(?:npm\|ruby\|deb\|docker\|vcs\|bower\|pypi)/\|))(?<repo>[^\/]+)" |
+| Artifactory 7/Artifactory - Traffic/Active Downloading IPs | _sourceCategory={{Logsdatasource}}  DOWNLOAD<br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Traffic/Active Uploading IPs | _sourceCategory={{Logsdatasource}}  UPLOAD<br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Traffic/Data Transfer Over Time | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Traffic/Data Upload-Download | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Traffic/Download Traffic by Geolocation | _sourceCategory={{Logsdatasource}}  DOWNLOAD<br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Traffic/Most Active IPs by Action | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Traffic/Most Active Locations | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Traffic/Most Active Repos by Action | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Traffic/Most Active Repos by Data Transfer | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Traffic/Overall Traffic by Geolocation | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Traffic/Top Referred Files | _sourceCategory={{Logsdatasource}} <br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
+| Artifactory 7/Artifactory - Traffic/Upload Traffic by Geolocation | _sourceCategory={{Logsdatasource}}  UPLOAD<br>\| where _sourceCategory matches "*artifactory/traffic"<br>\| parse regex "(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})\\|\d*\\|(?<direction>[^\|]*)\\|\s*(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\|[^\|]*)\\|(?<repo>[^:]*):(?<fullfilepath>[^\|]*)\\|(?<size>\d*)" nodrop |
 

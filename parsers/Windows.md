@@ -1,427 +1,58 @@
 # Parsers For Windows
 
-## Parser:
-```
-| parse "EventCode = *;" as event_id
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Breakdown by Keyword Tag, Changes to Administrative Groups, Error Keyword - LogReduce, Error Keyword - One Day Time Comparison, Error Keyword - Outlier, Error Keyword by Computer and Message, Error Keyword Trend, Errors and Warnings Over Time, Event Distribution Over Time, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Operations, System Restarted, System Restarts, Top 10 Service Operations, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Top Windows Update Error Codes, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out, User Password Changes, User Password Reset Attempts
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Errors and Warnings Over Time, Event Distribution Over Time, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Operations, System Restarted, Top 10 Service Operations, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out, User Password Changes, User Password Reset Attempts
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r]+?)(?:\r|\.;)" nodrop
- 
-```
-### Use Cases:
-Account Policy Changes, Audit Log Cleared, Audit Policy Changes, Firewall Changes
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id | parse "Computer = \"*\";" as comp_name nodrop | parse "ComputerName = \"*\";" as comp_name nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop 
-| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Update Results by KB number
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop | parse "User = \"*\"" as src_user nodrop 
- 
-```
-### Use Cases:
-Account Policy Changes, Audit Log Cleared
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out, User Password Changes
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)(?:\r|\";)" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out, User Password Changes, User Password Reset Attempts
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop   
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop
-| parse regex "CategoryString = \"(?<category>[^\"]+?)\";[\s\S]+?Logfile = \"Security\"" nodrop
- 
-```
-### Use Cases:
-Account Policy Changes, Audit Log Cleared, Audit Policy Changes, Firewall Changes, Recent Policy Changes
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop
- 
-```
-### Use Cases:
-Account Policy Changes, Audit Log Cleared, Audit Policy Changes
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Domain:[\s\S]+?Domain Name:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
- 
-```
-### Use Cases:
-Account Policy Changes
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, Audit Log Cleared, Audit Policy Changes, Firewall Changes, Recent Policy Changes, Service Events by Type, Service Installed, Service Starts, Service Stops, System Restarted, Top Security Events
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop
-| parse "Type = \"*\";" as msg_type nodrop
-| parse regex "Authentication Package:\s+(?<Authentication_Package>[^\r]+)\r[\s\S]+?Logon Account:\s+(?<logon_account>[^\r]+)\r[\s\S]+?Source Workstation:\s+(?<workstation>[^\r]+)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, Audit Log Cleared, Audit Policy Changes, Firewall Changes, Recent Policy Changes, Top Security Events
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop
-| parse regex "Service Name:\s+(?<service_name>[^\r]+?)\r[\s\S]+?Service File Name:\s+(?:\"|\s*)(?<service_filename>[^\"\r]+?)(?:\"|\r)[\s\S]+?Service Type:\s+(?<service_type>[^\r]+?)\r[\s\S]+?Service Start Type:\s+(?<service_start_type>[^\r]+)\r[\s\S]+?Service Account:\s+(?<service_account>[^\"]+)\";" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, Audit Log Cleared, Audit Policy Changes, Firewall Changes, Recent Policy Changes, Service Events by Type, Service Installed, Top Security Events
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop
-| parse regex field=msg_summary "The (?<service_name>\w.+?) service entered the (?<service_state>\w+) state" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, Audit Log Cleared, Audit Policy Changes, Firewall Changes, Recent Policy Changes, Service Events by Type, Service Installed, Service Starts, Service Stops, Top Security Events
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"The (?<service>\w.+?) service entered the (?<state>\w+) state"
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top 10 Service Operations, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out, User Password Changes, User Password Reset Attempts
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop
-| parse regex "CategoryString = \"(?<category>[^\"]+?)\";[\s\S]+?Logfile = \"Security\"" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Breakdown by Keyword Tag, Changes to Administrative Groups, Error Keyword - LogReduce, Error Keyword - One Day Time Comparison, Error Keyword - Outlier, Error Keyword by Computer and Message, Error Keyword Trend, Errors and Warnings Over Time, Event Distribution Over Time, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Operations, System Restarted, Top 10 Service Operations, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out, User Password Changes, User Password Reset Attempts
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop | parse "Category = *;" as category nodrop | parse "CategoryString = \"*\";" as CategoryString nodrop | parse "Type = \"*\";" as type nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Directory Service:[\s\S]+?Name:\s+(?<directory_service_name>[^\r]+?)\r[\s\S]+?Type:\s+(?<directory_service_type>[^\r\"]+?)\r" nodrop | parse regex "DN:\t(?<object_dn>.*)\r" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, Audit Log Cleared, Audit Policy Changes, Firewall Changes, Recent Policy Changes, Top Security Events
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop
-| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r|\.|\";)" nodrop | parse "Type = \"*\";" as msg_type nodrop
-| parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop | parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop
-| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop | parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s*\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, Account Policy Changes, Audit Log Cleared, Audit Policy Changes, Firewall Changes, Recent Policy Changes, Top Security Events
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop | parse regex "Changed Attributes:\s+(?<changedAttributes>[\s\S]*?)Additional Information:"
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New|Deleted) Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop 
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r\"]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?(?:New|Deleted|\s*)\s*Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Update Results by KB number
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop
-| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop | parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Update Results by KB number
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse "CategoryString = \"*\";" as category nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)(?:\r|\";)" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r" nodrop
-| parse regex "Changed Attributes:\s+(?<changedAttributes>[\s\S]*?)Additional Information:" nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Update Results by KB number
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop | parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop | parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop | parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop | parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop | parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop | parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop | parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s*\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r|\";)" nodrop | parse "Type = \"*\";" as type
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Update Results by KB number
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse regex "Subcategory:\s+(?<Subcategory>[^\r]+?)\r" nodrop
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New|Deleted) Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop 
-| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop 
-| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r|\")" nodrop | parse "Category = *;" as category nodrop | parse "CategoryString = \"*\";" as categoryString nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Breakdown by Keyword Tag, Changes to Administrative Groups, Error Keyword - LogReduce, Error Keyword - One Day Time Comparison, Error Keyword - Outlier, Error Keyword by Computer and Message, Error Keyword Trend, Errors and Warnings Over Time, Event Distribution Over Time, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Operations, System Restarted, Top 10 Service Operations, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out, User Password Changes, User Password Reset Attempts
-
-
-
-## Parser:
-```
-| parse "EventCode = *;" as EventCode
-| parse "Computer = \"*\";" as Computer
-| parse "Message = \"*\";" as Message
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Breakdown by Keyword Tag, Changes to Administrative Groups, Error Keyword - LogReduce, Error Keyword - One Day Time Comparison, Error Keyword - Outlier, Error Keyword by Computer and Message, Error Keyword Trend, Errors and Warnings Over Time, Event Distribution Over Time, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Operations, System Restarted, Top 10 Service Operations, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out, User Password Changes, User Password Reset Attempts
-
-
-
-## Parser:
-```
-| parse "Logfile = \"*\";" as _sourceName
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Errors and Warnings Over Time, Event Distribution Over Time, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top 10 Service Operations, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out, User Password Changes, User Password Reset Attempts
-
-
-
-## Parser:
-```
-| parse "Type = \"*\";" as evtType
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Changes to Administrative Groups, Errors and Warnings Over Time, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top 10 Service Operations, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out, User Password Changes, User Password Reset Attempts
-
-
-
-## Parser:
-```
-| parse "Type = \"*\";" as msg_type nodrop | parse "SourceName = \"*\";" as event_source nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, Audit Log Cleared, Audit Policy Changes, Firewall Changes, Recent Policy Changes, Service Events by Type, Top Security Events
-
-
-
-## Parser:
-```
-| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop | parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop | parse field=update "(*)." as kbnum nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, Audit Log Cleared, Audit Policy Changes, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, System Restarted, Top Reasons for Failed Logins, Top Security Events
-
-
-
-## Parser:
-```
-| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop | parse field=update "(*)." as kbnum nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, Audit Log Cleared, Audit Policy Changes, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Recent Policy Changes, Service Events by Type, Service Installed, Service Starts, Service Stops, System Restarted, Top Reasons for Failed Logins, Top Security Events
-
-
-
-## Parser:
-```
-| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop | parse field=update "(*)" as kbnum nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, Audit Log Cleared, Audit Policy Changes, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Reasons for Failed Logins, Top Security Events
-
-
-
-## Parser:
-```
-| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop | parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*(?:\s+0x|hr\s=\s)(?<errorcode>[0-9a-fA-F]+)" nodrop
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop | parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop | parse field=update "(*)." as kbnum nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, All User Account Changes, Audit Log Cleared, Audit Policy Changes, Breakdown by Keyword Tag, Changes to Administrative Groups, Error Keyword - LogReduce, Error Keyword - One Day Time Comparison, Error Keyword - Outlier, Error Keyword by Computer and Message, Error Keyword Trend, Errors and Warnings Over Time, Event Distribution Over Time, Failed Logins Over time, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Multiple Failed Logins by Same User, Multiple Failed Logins on Local Machine, New Accounts Created, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Group Creations, Successful Logons Over time, Successful Updates by Host, Successful Updates by KB number, System Operations, System Restarted, Top 10 Service Operations, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Top Windows Update Error Codes, Unauthorized Account Creations, Update Results by KB number, User Account Changed, User Account Deleted, User Added to Administrative Groups, User Added to Group, User Locked-out, User Password Changes, User Password Reset Attempts
-
-
-
-## Parser:
-```
-| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<update_result>(?:Success|Failure)).*[^a-zA-Z0-9](?<kbnum>(?:kb|KB)\d+)\D" nodrop
-| parse "EventCode = *;" as event_id nodrop | parse "Computer = \"*\";" as host nodrop | parse "ComputerName = \"*\";" as host nodrop | parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r|\";)" nodrop | parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop | parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop | parse field=update "(*)" as kbnum nodrop | parse field=msg_summary "Installation *: " as update_result nodrop
- 
-```
-### Use Cases:
-(Kerberos) Failed Logins on the Domain Controller or Member Servers, (NTLM) Failed Logins, Account Policy Changes, All Directory Service Changes, All Directory Service Object Creations, Audit Log Cleared, Audit Policy Changes, Failed Updates by Host, Failed Updates by KB Number, Firewall Changes, Recent Policy Changes, Report Messages, Service Events by Type, Service Installed, Service Starts, Service Stops, Successful Updates by Host, Successful Updates by KB number, System Restarted, Top Error Codes, Top Reasons for Failed Logins, Top Security Events, Update Results by KB number
-
+| use_case | parser |
+|--- | --- |
+| Windows/(Kerberos) Failed Logins on the Domain Controller or Member Servers/(Kerberos) Failed Logins on the Domain Controller or Member Servers | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4771 or 4776 or 4768) ("EventCode = 4771;" or "EventCode = 4776;" or "EventCode = 4768;") "Audit Failure"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop \| parse "Type = \"*\";" as msg_type nodrop<br>\| parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop \| parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop<br>\| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s*\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop |
+| Windows/(NTLM) Failed Logins/(NTLM) Failed Logins | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4776 "EventCode = 4776;" "Audit Failure"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop<br>\| parse "Type = \"*\";" as msg_type nodrop<br>\| parse regex "Authentication Package:\s+(?<Authentication_Package>[^\r]+)\r[\s\S]+?Logon Account:\s+(?<logon_account>[^\r]+)\r[\s\S]+?Source Workstation:\s+(?<workstation>[^\r]+)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop |
+| Windows/Account Policy Changes/Account Policy Changes | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4739 "EventCode = 4739;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Domain:[\s\S]+?Domain Name:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop |
+| Windows/All Directory Service Changes/All Directory Service Changes | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (5136 or 5137 or 5138 or 5139 or 5141) ("EventCode = 5136;" or "EventCode = 5137;" or "EventCode = 5138;" or "EventCode = 5139;" or "EventCode = 5141;")<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop \| parse "Category = *;" as category nodrop \| parse "CategoryString = \"*\";" as CategoryString nodrop \| parse "Type = \"*\";" as type nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Directory Service:[\s\S]+?Name:\s+(?<directory_service_name>[^\r]+?)\r[\s\S]+?Type:\s+(?<directory_service_type>[^\r\"]+?)\r" nodrop \| parse regex "DN:\t(?<object_dn>.*)\r" nodrop |
+| Windows/All Directory Service Object Creations/All Directory Service Object Creations | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 5137 "EventCode = 5137;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop \| parse "Category = *;" as category nodrop \| parse "CategoryString = \"*\";" as CategoryString nodrop \| parse "Type = \"*\";" as type nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Directory Service:[\s\S]+?Name:\s+(?<directory_service_name>[^\r]+?)\r[\s\S]+?Type:\s+(?<directory_service_type>[^\r\"]+?)\r" nodrop \| parse regex "DN:\t(?<object_dn>.*)\r" nodrop |
+| Windows/All User Account Changes/All User Account Changes | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security "User Account Management"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse "CategoryString = \"*\";" as category nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)(?:\r\|\";)" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r" nodrop<br>\| parse regex "Changed Attributes:\s+(?<changedAttributes>[\s\S]*?)Additional Information:" nodrop |
+| Windows/Audit Log Cleared/Audit Log Cleared | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (1102 or 517) ("EventCode = 1102;" or "EventCode = 517;")<br>\| parse "EventCode = *;" as event_id \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop \| parse "User = \"*\"" as src_user nodrop  |
+| Windows/Audit Policy Changes/Audit Policy Changes | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4719 "EventCode = 4719;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop |
+| Windows/Changes to Administrative Groups/Changes to Administrative Groups | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security ("Security Group Management" or "Category = 13826;") (created or modified or changed or removed or added)<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Subcategory:\s+(?<Subcategory>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted) Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop \| parse "Category = *;" as category nodrop \| parse "CategoryString = \"*\";" as categoryString nodrop |
+| Windows/Default - New/Errors and Warnings Over Time | _sourceCategory = Labs/Windows/OS/Windows (error or warning)<br>\| parse "Type = \"*\";" as evtType |
+| Windows/Default - New/Event Distribution Over Time | _sourceCategory = Labs/Windows/OS/Windows (System or Security or Application) Win32_NTLogEvent<br>\| parse "Logfile = \"*\";" as _sourceName |
+| Windows/Default - New/System Operations | _sourceCategory = Labs/Windows/OS/Windows  Security (4608 or 4946 or 4947 or 4948 or 4727 or 4731 or 4754 or 4720)<br>\| parse "EventCode = *;" as event_id<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop |
+| Windows/Default - New/Top 10 Service Operations | _sourceCategory = Labs/Windows/OS/Windows Service Control Manager 7036 "service entered"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"The (?<service>\w.+?) service entered the (?<state>\w+) state" |
+| Windows/Event Errors - New/Breakdown by Keyword Tag | _sourceCategory = Labs/Windows/OS/Windows (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message |
+| Windows/Event Errors - New/Error Keyword - LogReduce | _sourceCategory = Labs/Windows/OS/Windows (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message |
+| Windows/Event Errors - New/Error Keyword - One Day Time Comparison | _sourceCategory = Labs/Windows/OS/Windows (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message |
+| Windows/Event Errors - New/Error Keyword - Outlier | _sourceCategory = Labs/Windows/OS/Windows (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message |
+| Windows/Event Errors - New/Error Keyword by Computer and Message | _sourceCategory = Labs/Windows/OS/Windows (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message |
+| Windows/Event Errors - New/Error Keyword Trend | _sourceCategory = Labs/Windows/OS/Windows (error or exception or timeout or fail)<br>\| parse "EventCode = *;" as EventCode<br>\| parse "Computer = \"*\";" as Computer<br>\| parse "Message = \"*\";" as Message |
+| Windows/Failed Logins Over time/Failed Logins Over time | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4625 or 4771) ("EventCode = 4625;" or "EventCode = 4771;")<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop |
+| Windows/Failed Updates by Host/Failed Updates by Host | _sourceCategory = Labs/Windows/OS/Windows "Installation Failure" and ("Content Install" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=update "(*)." as kbnum nodrop |
+| Windows/Failed Updates by KB Number/Failed Updates by KB Number | _sourceCategory = Labs/Windows/OS/Windows "Installation Failure" and ("Content Install" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=update "(*)." as kbnum nodrop |
+| Windows/Firewall Changes/Firewall Changes | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4946 or 4947 or 4948) ("EventCode = 4946;" or "EventCode = 4947;" or "EventCode = 4948;")<br>\| parse "EventCode = *;" as event_id<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+?)(?:\r\|\.;)" nodrop |
+| Windows/Multiple Failed Logins by Same User/Multiple Failed Logins by Same User | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4771 or 4776 or 4768 or 4625) ("EventCode = 4771;" or "EventCode = 4776;" or "EventCode = 4768;" or "EventCode = 4625;")<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop \| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop \| parse regex "Result Code:\s+(?<result_code>[^\r]+)\r" nodrop \| parse regex "Failure Code:\s+(?<failure_code>[^\r]+)\r" nodrop \| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s+(?<src_host>[^\r]+?)\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Logon Account:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Source Workstation:\s*\r[\s\S]+?Error Code:\s+(?<error_code>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse "Type = \"*\";" as type |
+| Windows/Multiple Failed Logins on Local Machine/Multiple Failed Logins on Local Machine | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4625 "EventCode = 4625;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop |
+| Windows/New Accounts Created/New Accounts Created | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4720 "EventCode = 4720;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop |
+| Windows/Overview - New/Changes to Administrative Groups | _sourceCategory = Labs/Windows/OS/Windows ("Security Group Management" or "Category = 13826;") (created or modified or changed or removed or added) // _sourceName=Security<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse regex "Subcategory:\s+(?<Subcategory>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted) Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop \| parse "Category = *;" as category nodrop \| parse "CategoryString = \"*\";" as categoryString nodrop |
+| Windows/Overview - New/Recent Policy Changes | _sourceCategory = Labs/Windows/OS/Windows (4902 or 4904 or 4905 or 4906 or 4907 or 4912 or 4715 or 4719 or "Audit Policy Change" or "System audit policy was changed" or *policy*change* or "Policy Change")<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop<br>\| parse regex "CategoryString = \"(?<category>[^\"]+?)\";[\s\S]+?Logfile = \"Security\"" nodrop |
+| Windows/Overview - New/System Restarts | _sourceCategory = Labs/Windows/OS/Windows 4608 "EventCode = 4608;"<br>\| parse "EventCode = *;" as event_id |
+| Windows/Overview - New/Top Windows Update Error Codes | _sourceCategory = Labs/Windows/OS/Windows (AutomaticUpdates or Report or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop \| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*(?:\s+0x\|hr\s=\s)(?<errorcode>[0-9a-fA-F]+)" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)." as kbnum nodrop |
+| Windows/Recent Policy Changes/Recent Policy Changes | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4902 or 4904 or 4905 or 4906 or 4907 or 4912 or 4715 or 4719 or "Audit Policy Change" or "System audit policy was changed" or *policy*change* or "Policy Change")<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+)\r" nodrop<br>\| parse regex "CategoryString = \"(?<category>[^\"]+?)\";[\s\S]+?Logfile = \"Security\"" nodrop |
+| Windows/Report Messages/Report Messages | _sourceCategory = Labs/Windows/OS/Windows ("Report" or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)." as kbnum nodrop |
+| Windows/Service Events by Type/Service Events by Type | _sourceCategory = Labs/Windows/OS/Windows _sourceName=System "Service Control Manager"<br>\| parse "Type = \"*\";" as msg_type nodrop \| parse "SourceName = \"*\";" as event_source nodrop |
+| Windows/Service Installed/Service Installed | _sourceCategory = Labs/Windows/OS/Windows ((_sourceName=System and "EventCode = 7045") or (_sourceName=Security and "EventCode = 4697"))<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop<br>\| parse regex "Service Name:\s+(?<service_name>[^\r]+?)\r[\s\S]+?Service File Name:\s+(?:\"\|\s*)(?<service_filename>[^\"\r]+?)(?:\"\|\r)[\s\S]+?Service Type:\s+(?<service_type>[^\r]+?)\r[\s\S]+?Service Start Type:\s+(?<service_start_type>[^\r]+)\r[\s\S]+?Service Account:\s+(?<service_account>[^\"]+)\";" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop |
+| Windows/Service Starts/Service Starts | _sourceCategory = Labs/Windows/OS/Windows _sourceName=System 7036 "running state" "EventCode = 7036;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop<br>\| parse regex field=msg_summary "The (?<service_name>\w.+?) service entered the (?<service_state>\w+) state" nodrop |
+| Windows/Service Stops/Service Stops | _sourceCategory = Labs/Windows/OS/Windows _sourceName=System 7036 "stopped state" "EventCode = 7036;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop<br>\| parse regex field=msg_summary "The (?<service_name>\w.+?) service entered the (?<service_state>\w+) state" nodrop |
+| Windows/Successful Group Creations/Successful Group Creations | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4727 or 4731 or 4754) ("EventCode = 4727;" or "EventCode = 4731;" or "EventCode = 4754;")<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r\"]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted\|\s*)\s*Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop |
+| Windows/Successful Logons Over time/Successful Logons Over time | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4624 "EventCode = 4624;"<br>\| parse "EventCode = *;" as event_id \| parse "Computer = \"*\";" as comp_name nodrop \| parse "ComputerName = \"*\";" as comp_name nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop |
+| Windows/Successful Updates by Host/Successful Updates by Host | _sourceCategory = Labs/Windows/OS/Windows "Installation Successful" and ("Content Install" or "EventCode = 19" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)" as kbnum nodrop |
+| Windows/Successful Updates by KB number/Successful Updates by KB number | _sourceCategory = Labs/Windows/OS/Windows "Installation Successful" and ("Content Install" or "EventCode = 19" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)" as kbnum nodrop |
+| Windows/System Restarted/System Restarted | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4608 "EventCode = 4608;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r\.]+?)(?:\r\|\.\|\";)" nodrop |
+| Windows/Top Error Codes/Top Error Codes | _sourceCategory = Labs/Windows/OS/Windows (AutomaticUpdates or Report or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop \| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*(?:\s+0x\|hr\s=\s)(?<errorcode>[0-9a-fA-F]+)" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)." as kbnum nodrop |
+| Windows/Top Reasons for Failed Logins/Top Reasons for Failed Logins | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4625 "EventCode = 4625;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logon Type:\s+(?<logon_type>\d+)*" nodrop \| parse regex "Failure Information:\s+Failure Reason:\s+(?<fail_reason>[^.\r]+?)[.\r]" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Client Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Client Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Source Network Address:\s+(?<src_ip>[^\r]+?)\r[\s\S]+?Source Port:\s+?(?<src_port>[\d-]+)" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r" nodrop \| parse regex "Logfile = \"Security\";[\s\S]+?Subject[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)\r" nodrop |
+| Windows/Top Security Events/Top Security Events | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security<br>\| parse "EventCode = *;" as event_id |
+| Windows/Unauthorized Account Creations/Unauthorized Account Creations | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4720 "EventCode = 4720;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop |
+| Windows/Update Results by KB number/Update Results by KB number | _sourceCategory = Labs/Windows/OS/Windows AutomaticUpdates (AutomaticUpdates or Report or "EventCode = 19" or "EventCode = 20" or _sourceName=*WindowsUpdate.log)<br>\| parse regex "\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}:\d+\s+(?<process_id>\S*)\s+(?<thread_id>\S*)\s+(?<component>\S*).*[^a-zA-Z0-9](?<update_result>(?:Success\|Failure)).*[^a-zA-Z0-9](?<kbnum>(?:kb\|KB)\d+)\D" nodrop<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r\"]+?)(?:\r\|\";)" nodrop \| parse field=msg_summary "Installation Failure: Windows failed to install the following update with error *: *" as errorCode, Update nodrop \| parse field=msg_summary "Installation Successful: Windows successfully installed the following update: *" as Update nodrop \| parse field=update "(*)" as kbnum nodrop \| parse field=msg_summary "Installation *: " as update_result nodrop |
+| Windows/User Account Changed/User Account Changed | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4738 "EventCode = 4738;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop \| parse regex "Changed Attributes:\s+(?<changedAttributes>[\s\S]*?)Additional Information:" |
+| Windows/User Account Deleted/User Account Deleted | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4726 "EventCode = 4726;"<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop |
+| Windows/User Added to Administrative Groups/User Added to Administrative Groups | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4728 or 4732 or 4746 or 4751 or 4756 or 4761) ("EventCode = 4728;" or "EventCode = 4732;" or "EventCode = 4746;" or "EventCode = 4751;" or "EventCode = 4756;" or "EventCode = 4761;" )<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted) Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop  |
+| Windows/User Added to Group/User Added to Group | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4728 or 4732 or 4746 or 4751 or 4756 or 4761) ("EventCode = 4728;" or "EventCode = 4732;" or "EventCode = 4746;" or "EventCode = 4751;" or "EventCode = 4756;" or "EventCode = 4761;" )<br>\| parse "EventCode = *;" as event_id nodrop \| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop \| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?(?:New\|Deleted) Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r\"]+?)\r" nodrop <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Subject:[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Member:[\s\S]+?Account Name:\s+(?<dest_user>[^\r\"]+?)\r[\s\S]+?Group:[\s\S]+?(?:Account\|Group) Name:\s+(?<group_name>[^\r\"]+?)\r\s+?(?:Account\|Group) Domain:\s+(?<group_domain>[^\r\"]+?)(?:\r\|\")" nodrop  |
+| Windows/User Locked-out/User Locked-out | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security (4740 or 644)<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop   <br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r" nodrop |
+| Windows/User Password Changes/User Password Changes | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4723 "EventCode = 4723;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+?)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+?)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r]+?)\r" nodrop |
+| Windows/User Password Reset Attempts/User Password Reset Attempts | _sourceCategory = Labs/Windows/OS/Windows _sourceName=Security 4724 "EventCode = 4724;"<br>\| parse "EventCode = *;" as event_id nodrop<br>\| parse "Computer = \"*\";" as host nodrop \| parse "ComputerName = \"*\";" as host nodrop<br>\| parse regex "Message = \"(?<msg_summary>[^\r]+?)\r" nodrop<br>\| parse regex "Logfile = \"Security\";[\s\S]+?Account Name:\s+(?<src_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<src_domain>[^\r]+)\r[\s\S]+?Account Name:\s+(?<dest_user>[^\r]+)\r[\s\S]+?Account Domain:\s+(?<dest_domain>[^\r\"]+?)(?:\r\|\";)" nodrop |
 

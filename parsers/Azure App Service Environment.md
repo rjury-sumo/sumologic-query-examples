@@ -1,73 +1,23 @@
 # Parsers For Azure App Service Environment
 
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Recent Delete Operations, Top 10 operations that caused the most errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Recent Delete Operations, Recent Write Operations, Top 10 operations that caused the most errors, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "properties.entity", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop
- 
-```
-### Use Cases:
-Recent Delete Operations, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Recent Delete Operations, Top 10 operations that caused the most errors
-
-
-
-## Parser:
-```
-| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription" as resultType, category, resource_id, operationName, resultDescription
-| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name
- 
-```
-### Use Cases:
-Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Failed Scaling Operations, Failed Upgrade Operations, Operations Trend, Recent Delete Operations, Recent Scaling Status By ServerFarm, Recent Upgrade Status By Server Farm, Recent Write Operations, Scaling Operations, Top 10 Hosting Environments By Scaling Events, Top 10 Hosting Environments By Upgrade Events, Top 10 operations that caused the most errors, Total Hosting Environments, Upgrade Operations, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription", "time" as resultType, category, resource_id, operationName, resultDescription, time
-| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name
- 
-```
-### Use Cases:
-Count By Operation Type, Distribution  by Operation Type (Read, Write and Delete), Distribution by Operations, Failed Scaling Operations, Failed Upgrade Operations, Operations Trend, Recent Delete Operations, Recent Failed Operations By Server Farm, Recent Scaling Status By ServerFarm, Recent Upgrade Status By Server Farm, Recent Write Operations, Scaling Operations, Top 10 Hosting Environments By Scaling Events, Top 10 Hosting Environments By Upgrade Events, Top 10 operations that caused the most errors, Total Hosting Environments, Upgrade Operations, Users / Applications by Operation type
-
-
-
-## Parser:
-```
-| json "resultType", "operationName", "properties.statusMessage", "category"  as resultType, operationName, failureMessage, category
- 
-```
-### Use Cases:
-Top 10 operations that caused the most errors
-
+| use_case | parser |
+|--- | --- |
+| Azure App Service Environment/Administrative Operations/ Applications by Operation type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid nodrop |
+| Azure App Service Environment/Administrative Operations/Distribution  by Operation Type (Read, Write and Delete) | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}} <br> provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid |
+| Azure App Service Environment/Administrative Operations/Distribution by Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name={{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}} Administrative <br>\| json "resultType", "category", "operationName", "resourceId" as resultType, category, operationName, resourceid |
+| Azure App Service Environment/Administrative Operations/Recent Delete Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "properties.entity", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']" as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, entity, identity_claims_name, authmethods nodrop |
+| Azure App Service Environment/Administrative Operations/Recent Write Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}}<br>provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| JSON "properties.statusCode", "properties.message", "resultType", "category", "operationName", "callerIpAddress", "resultSignature", "level", "identity.claims.idtyp", "identity.claims.name", "identity.claims.appid", "$['identity']['claims']['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']","$['identity']['claims']['http://schemas.microsoft.com/claims/authnmethodsreferences']"  as statusCode, message, resultType, category, operationName, callerIpAddress, resultSignature, level, idtyp, name, appid, identity_claims_name, authmethods nodrop |
+| Azure App Service Environment/Administrative Operations/Top 10 operations that caused the most errors | tenant_name={{tenant_name}} subscription_id={{subscription_id}} resource_group = {{resource_group}} resource_name = {{resource_name}}   provider_name={{provider_name}} resource_type={{resource_type}}  Administrative <br>\| json "resultType", "operationName", "properties.statusMessage", "category"  as resultType, operationName, failureMessage, category |
+| Azure App Service Environment/Operations/Recent Scaling Status By ServerFarm | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription", "time" as resultType, category, resource_id, operationName, resultDescription, time<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
+| Azure App Service Environment/Operations/Recent Upgrade Status By Server Farm | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription", "time" as resultType, category, resource_id, operationName, resultDescription, time<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
+| Azure App Service Environment/Operations/Scaling Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription" as resultType, category, resource_id, operationName, resultDescription<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
+| Azure App Service Environment/Operations/Top 10 Hosting Environments By Scaling Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription" as resultType, category, resource_id, operationName, resultDescription<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
+| Azure App Service Environment/Operations/Top 10 Hosting Environments By Upgrade Events | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription" as resultType, category, resource_id, operationName, resultDescription<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
+| Azure App Service Environment/Operations/Upgrade Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription" as resultType, category, resource_id, operationName, resultDescription<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
+| Azure App Service Environment/Overview/Count By Operation Type | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription", "time" as resultType, category, resource_id, operationName, resultDescription, time<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
+| Azure App Service Environment/Overview/Failed Scaling Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription" as resultType, category, resource_id, operationName, resultDescription<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
+| Azure App Service Environment/Overview/Failed Upgrade Operations | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription" as resultType, category, resource_id, operationName, resultDescription<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
+| Azure App Service Environment/Overview/Operations Trend | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription", "time" as resultType, category, resource_id, operationName, resultDescription, time<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
+| Azure App Service Environment/Overview/Recent Failed Operations By Server Farm | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription", "time" as resultType, category, resource_id, operationName, resultDescription, time<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
+| Azure App Service Environment/Overview/Total Hosting Environments | tenant_name={{tenant_name}} subscription_id={{subscription_id}} location={{location}} resource_group={{resource_group}} provider_name=microsoft.web resource_type=HOSTINGENVIRONMENTS  resource_name={{resource_name}} "AppServiceEnvironmentPlatformLogs"<br>\| json "ResultType", "Category", "ResourceId", "OperationName", "ResultDescription" as resultType, category, resource_id, operationName, resultDescription<br>\| parse field=resultDescription "(*/serverfarms/*)" as _, serverfarm_name |
 

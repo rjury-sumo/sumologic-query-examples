@@ -1,41 +1,24 @@
 # Parsers For Miro
 
-## Parser:
-```
-| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop
- 
-```
-### Use Cases:
-Account(s) Created, Account(s) Deleted, Boards Created and Opened Over Time, Distribution of App Events, Distribution of Sign-in Events, Events by Team, Events Over Time, File Events by User, Geo - Location of Events, Recent Events Summary, Recent File Events Summary, Sign-in  Events by Authentication Methods, Sign-in Events, Sign-in Events  - One Day Time Comparison, Sign-in Events from Risky Geo - Locations, Total Board Events, Total Events, User(s) Deactivated, User(s) Reactivated
-
-
-
-## Parser:
-```
-| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ips, created_at, event, user_name, user_email nodrop
- 
-```
-### Use Cases:
-Recent Events Summary
-
-
-
-## Parser:
-```
-| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email", "details.authType"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email, authType  nodrop
- 
-```
-### Use Cases:
-Boards Created and Opened Over Time, Distribution of App Events, Events by Team, Events Over Time, File Events by User, Geo - Location of Events, Recent Events Summary, Recent File Events Summary, Sign-in  Events by Authentication Methods, Total Board Events, Total Events
-
-
-
-## Parser:
-```
-| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email", "object.name", "details.type", "details.object"  as id, type, team_name, organization_name, ip, created_at, event, user_name, user_email, board, types, object nodrop
- 
-```
-### Use Cases:
-File Events by User, Recent Events Summary, Recent File Events Summary
-
+| use_case | parser |
+|--- | --- |
+| Miro/Overview/Boards Created and Opened Over Time | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Overview/Distribution of App Events | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Overview/Events by Team | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Overview/Events Over Time | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Overview/File Events by User | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email", "object.name", "details.type", "details.object"  as id, type, team_name, organization_name, ip, created_at, event, user_name, user_email, board, types, object nodrop |
+| Miro/Overview/Geo - Location of Events | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Overview/Recent Events Summary | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ips, created_at, event, user_name, user_email nodrop |
+| Miro/Overview/Recent File Events Summary | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email", "object.name", "details.type", "details.object"  as id, type, team_name, organization_name, ip, created_at, event, user_name, user_email, board, types, object nodrop |
+| Miro/Overview/Total Board Events | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Overview/Total Events | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Security Events/Account(s) Created | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Security Events/Account(s) Deleted | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Security Events/Distribution of Sign-in Events | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Security Events/Sign-in  Events by Authentication Methods | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email", "details.authType"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email, authType  nodrop |
+| Miro/Security Events/Sign-in Events | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Security Events/Sign-in Events  - One Day Time Comparison | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Security Events/Sign-in Events from Risky Geo - Locations | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop<br>\| where organization_name matches "{{organization}}"<br>\| where team_name matches "{{team}}"<br>\| where event matches "sign_in_*"<br>\| count_distinct(id) as frequency by ip<br>\| where isValidIPv4(ip) or isValidIPv6(ip)<br>\| where !isNull(ip)<br>\| if(isValidIPv4(ip), if(!isPrivateIP(ip),true,false),true) as all_public<br>\| where all_public<br>\| lookup latitude, longitude, country_code from geo://location on ip = ip <br>\| lookup country_code from https://sumologic-app-data.s3.amazonaws.com/riskycountries.csv on country_code=country_code  |
+| Miro/Security Events/User(s) Deactivated | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
+| Miro/Security Events/User(s) Reactivated | _sourceCategory={{Logsdatasource}}  <br>\| json "id", "type", "context.team.name", "context.organization.name", "context.ip", "createdAt", "event", "createdBy.name", "createdBy.email"  as id, type, team_name, organization_name, ip, createdAt, event, user_name, user_email nodrop |
 

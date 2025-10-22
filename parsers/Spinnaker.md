@@ -1,209 +1,28 @@
 # Parsers For Spinnaker
 
-## Parser:
-```
-| json "content.uri" as content_uri
-| parse regex field=content_uri "\/applications\/(?<application>.+?)/.+"
- 
-```
-### Use Cases:
-Active Apps
-
-
-
-## Parser:
-```
-| json field=_raw  "content.execution.name", "details.type"as pipeline, logtype nodrop 
-| json field=_raw "$['content']['context']['deploy.account.name']" as cluster
- 
-```
-### Use Cases:
-Active Apps, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.authentication.user" as User | if (isNull(%User), "spinnaker",user) as user
- 
-```
-### Use Cases:
-Active Apps, Active Users, Activity by App, API Calls by Pipeline, API Calls by User
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.name" as pipeline
- 
-```
-### Use Cases:
-Active Apps, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User, Canaries, Distinct User by Day, Errors, Failed Tasks, Manual Judgments, Pipeline Execution History, Pipeline Execution History Comparison, Pipelines Complete, Pipelines Executed by Name, Pipelines Failed (not Cancelled), Pipelines Trigger Type, RollBacks, Stage History, User Activity
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop
-| parse regex "deploy.account.name\"\:\"(?<cluster>.+?)\".+"
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop 
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User, Errors, Failed Tasks, Pipeline Execution History, Pipeline Execution History Comparison, Pipelines Complete, Pipelines Executed by Name, Pipelines Failed (not Cancelled), Stage History
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop 
-| json field=_raw "content.context.exception.details.errors" as error | where error != "[]"
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User, Errors, Pipelines Complete
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop | where status != "RUNNING" and logType contains "orca:pipeline"
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User, Errors, Failed Tasks, Pipeline Execution History, Pipeline Execution History Comparison, Pipelines Complete, Pipelines Executed by Name, Pipelines Failed (not Cancelled)
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name","content.context.exception.operation" as status,application,logType,pipeline, task nodrop 
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User, Errors, Failed Tasks, Pipeline Execution History Comparison, Pipelines Complete, Pipelines Executed by Name, Pipelines Failed (not Cancelled)
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name","content.execution.authentication.user" as status,application,logType,pipeline,user2 nodrop
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User, Canaries, Distinct User by Day, Errors, Failed Tasks, Manual Judgments, Pipeline Execution History, Pipeline Execution History Comparison, Pipeline Runs by User, Pipelines Complete, Pipelines Executed by Name, Pipelines Failed (not Cancelled), Pipelines Trigger Type, RollBacks, Stage History, User Activity
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name","content.execution.authentication.user","content.execution.trigger.type" as status,application,logType,pipeline,user,triggerType nodrop
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User, Errors, Failed Tasks, Pipeline Execution History, Pipeline Execution History Comparison, Pipelines Complete, Pipelines Executed by Name, Pipelines Failed (not Cancelled), Pipelines Trigger Type, Stage History
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name","content.execution.trigger.type","content.execution.authentication.user" as status,application,logType,pipeline, triggerType, user nodrop 
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User, Errors, Pipelines Complete, Pipelines Executed by Name, Pipelines Failed (not Cancelled)
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name","content.user" as status,application,logType,pipeline,user nodrop
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User, Distinct User by Day, Errors, Failed Tasks, Manual Judgments, Pipeline Execution History, Pipeline Execution History Comparison, Pipelines Complete, Pipelines Executed by Name, Pipelines Failed (not Cancelled), Pipelines Trigger Type, Stage History, User Activity
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name"as status,application,logType,pipeline nodrop 
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User, Errors, Pipelines Complete, Pipelines Failed (not Cancelled)
-
-
-
-## Parser:
-```
-| json field=_raw "content.execution.type" as type | where type="PIPELINE"
-| json field=_raw "content.execution.name" as Pipeline
- 
-```
-### Use Cases:
-Active Apps, Active Users, API Calls by Pipeline
-
-
-
-## Parser:
-```
-| json field=_raw "content.uri"  as content_uri
-| parse regex field=content_uri "\/applications\/(?<application>.+?)/.+"
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User
-
-
-
-## Parser:
-```
-| json field=_raw "content.user" as user
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User
-
-
-
-## Parser:
-```
-| json field=_raw "details.type" as type
-| json field=_raw "content.uri"  as content_uri
-| parse regex field=content_uri "\/applications\/(?<application>.+?)/.+"
- 
-```
-### Use Cases:
-Active Apps, Active Users, Activity by App, API Calls by Pipeline
-
-
-
-## Parser:
-```
-| parse regex "deploy.account.name\"\:\"(?<cluster>.+?)\".+"
- 
-```
-### Use Cases:
-Active Apps, Active Clusters, Active Pipelines, Active Users, Activity by App, API Calls by Cluster, API Calls by Pipeline, API Calls by User
-
+| use_case | parser |
+|--- | --- |
+| Spinnaker/Overview/Active Apps | _sourceCategory={{Logsdatasource}}  application<br>\| json field=_raw "content.uri"  as content_uri<br>\| where content_uri contains "/applications/"<br>\| parse regex field=content_uri "\/applications\/(?<application>.+?)/.+" |
+| Spinnaker/Overview/Active Clusters | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop<br>\| parse regex "deploy.account.name\"\:\"(?<cluster>.+?)\".+" |
+| Spinnaker/Overview/Active Pipelines | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "content.execution.name" as pipeline |
+| Spinnaker/Overview/Active Users | _sourceCategory={{Logsdatasource}}  content user <br>\| json field=_raw "content.user" as user |
+| Spinnaker/Overview/Activity by App | _sourceCategory={{Logsdatasource}}  application<br>\| json field=_raw "details.type" as type<br>\| json field=_raw "content.uri"  as content_uri<br>\| where content_uri contains "/applications/"<br>\| parse regex field=content_uri "\/applications\/(?<application>.+?)/.+" |
+| Spinnaker/Overview/API Calls by Cluster | (_sourceCategory={{Logsdatasource}} ) orca task <br>\| json field=_raw  "content.execution.name", "details.type"as pipeline, logtype nodrop <br>\| json field=_raw "$['content']['context']['deploy.account.name']" as cluster |
+| Spinnaker/Overview/API Calls by Pipeline | _sourceCategory={{Logsdatasource}}  pipeline content execution type <br>\| json field=_raw "content.execution.type" as type \| where type="PIPELINE"<br>\| json field=_raw "content.execution.name" as Pipeline |
+| Spinnaker/Overview/API Calls by User | _sourceCategory={{Logsdatasource}}  authentication user <br>\| json field=_raw "content.execution.authentication.user" as User \| if (isNull(%User), "spinnaker",user) as user |
+| Spinnaker/Pipelines/Errors | _sourceCategory={{Logsdatasource}}  content  context exception details errors<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop <br>\| json field=_raw "content.context.exception.details.errors" as error \| where error != "[]" |
+| Spinnaker/Pipelines/Failed Tasks | _sourceCategory={{Logsdatasource}}  orca task failed content context exception operation<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name","content.context.exception.operation" as status,application,logType,pipeline, task nodrop  |
+| Spinnaker/Pipelines/Pipeline Execution History | _sourceCategory={{Logsdatasource}}  orca pipeline<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop \| where status != "RUNNING" and logType contains "orca:pipeline" |
+| Spinnaker/Pipelines/Pipeline Execution History Comparison | _sourceCategory={{Logsdatasource}}  orca pipeline<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop |
+| Spinnaker/Pipelines/Pipelines Complete | _sourceCategory={{Logsdatasource}}  orca pipeline complete<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name"as status,application,logType,pipeline nodrop  |
+| Spinnaker/Pipelines/Pipelines Executed by Name | _sourceCategory={{Logsdatasource}}   orca pipeline starting<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name","content.execution.trigger.type","content.execution.authentication.user" as status,application,logType,pipeline, triggerType, user nodrop  |
+| Spinnaker/Pipelines/Pipelines Failed (not Cancelled) | _sourceCategory={{Logsdatasource}}   orca pipeline failed <br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name"as status,application,logType,pipeline nodrop  |
+| Spinnaker/Pipelines/Stage History | _sourceCategory={{Logsdatasource}}  orca stage details type<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop  |
+| Spinnaker/User Activity/Canaries | _sourceCategory={{Logsdatasource}}  type runCanary<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop |
+| Spinnaker/User Activity/Distinct User by Day | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name","content.user" as status,application,logType,pipeline,user nodrop |
+| Spinnaker/User Activity/Manual Judgments | _sourceCategory={{Logsdatasource}}  "manualJudgment" details type<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop |
+| Spinnaker/User Activity/Pipeline Runs by User | _sourceCategory={{Logsdatasource}}  orca pipeline complete<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name","content.execution.authentication.user" as status,application,logType,pipeline,user2 nodrop |
+| Spinnaker/User Activity/Pipelines Trigger Type | _sourceCategory={{Logsdatasource}}  and  "jenkins" "orca:pipeline:starting" <br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name","content.execution.authentication.user","content.execution.trigger.type" as status,application,logType,pipeline,user,triggerType nodrop |
+| Spinnaker/User Activity/RollBacks | _sourceCategory={{Logsdatasource}}  and "undoRolloutManifest"<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name" as status,application,logType,pipeline nodrop |
+| Spinnaker/User Activity/User Activity | _sourceCategory={{Logsdatasource}}  content user<br>\| json field=_raw "content.execution.status","content.execution.application","details.type","content.execution.name","content.user" as status,application,logType,pipeline,user nodrop |
 

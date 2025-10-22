@@ -1,558 +1,67 @@
 # Parsers For Google Kubernetes Engine (GKE) - Control Plane
 
-## Parser:
-```
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "message", "involvedObject.kind" as message, kind
-| json field=_raw "message.data.jsonPayload.message" as log
-| parse field=log "Created pod: *" as pod
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod
-| json field=_raw "message.data.jsonPayload.involvedObject.name"
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.labels", "message.data.severity" as labels, severity
-| json field=labels "project_id", "cluster_name" as project, cluster
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "message", "reason", "involvedObject.kind", "involvedObject.name" as message, reason, kind, pod
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "message", "reason", "involvedObject.name" as message, reason, pod
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "reason"
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "reason", "involvedObject.kind", "involvedObject.name" as reason, kind, pod
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| parse regex "\"methodName\":\"(?<methodName>[^\"]+)\"" 
-| parse regex "\"principalEmail\":\"(?<principalEmail>[^\"]+)\"" 
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| parse regex "\"methodName\":\"(?<methodName>[^\"]+)\"" 
-| parse regex "\"principalEmail\":\"(?<user>[^\"]+)\"" 
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| parse regex "\"principalEmail\":\"(?<principalEmail>[^\"]+)\"" 
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type" as type 
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| parse regex "\"resourceName\":\"(?<resourceName>[^\"]+)\"" 
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type", "message.data.severity" as type, severity
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "involvedObject.kind", "involvedObject.name", "message" as kind, pod, message
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type", "message.data.severity" as type, severity
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "reason", "involvedObject.kind", "involvedObject.name" as reason, kind, pod
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod
-| parse regex field=message "assigned \S+ to (?<node>\S+)"
-| json field=payload "reason" as reason
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "message", "involvedObject.kind", "involvedObject.name", "source.host" as message, kind, pod, node
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=_raw "message.data.jsonPayload.metadata.namespace" as namespace
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.resource.type", "message.data.timestamp" as type, timestamp
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, name
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data.severity" as severity
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data" as data
-| json field= data "resource.type" as type  
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=data "severity", "resource.labels.cluster_name", "resource.labels" as severity, cluster, labels
-| json field=labels "project_id" as project
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json "message.data" as data
-| json field=data "resource.type" as type  
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=data "resource.labels.project_id", "resource.labels.cluster_name", "resource.labels.", "severity", "jsonPayload.source.host" as project, cluster, labels, severity,node
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json field=_raw "message.data.jsonPayload.message" as log
-| json field=_raw "message.data.severity" as severity
-| parse field=log "Scaled * replica set * to *" as direction,replica_set,scaled_to
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json field=_raw "message.data.jsonPayload.message", "message.data.severity"  as log, severity
-| parse field=log "Scaled * replica set * to *" as direction,replica_set,size
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json field=_raw "message.data.protoPayload.request.kind" as kind | count by kind | 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json field=_raw "message.data.resource.labels.cluster_name" as cluster
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json field=_raw "message.data.resource.type", "message.data.protoPayload.authenticationInfo.principalEmail","message.data.protoPayload.request.metadata.name", "message.data.protoPayload.request.metadata.namespace", "message.data.resource.labels.cluster_name", "message.data.logName","message.data.protoPayload.methodName", "message.data.protoPayload.request.kind" as type, created_by, name, namespace, cluster, log_name, methodName,  component
-| json field=_raw "message.data.protoPayload.request.spec.replicas" as replicas nodrop
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| json field=_raw "message.data.resource.type", "message.data.protoPayload.response.metadata.name", "message.data.logName", "message.data.protoPayload.methodName" as type,name, log_name, methodName 
-| json field=_raw "message.data.protoPayload.authenticationInfo.principalEmail", "message.data.protoPayload.response.metadata.namespace", "message.data.protoPayload.response.kind", "message.data.resource.labels.cluster_name"  as modified_by, namespace, component, cluster nodrop
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""
-| json "message.data.resource.labels" as labels
-| json field=labels "project_id", "cluster_name" as project, cluster
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""
-| json "message.data.resource.labels" as labels
-| json field=labels "project_id", "cluster_name" as project, cluster
-| parse regex "\"message\":\"[^\"]* assigned (?<pod>[^\" ]+) to (?<node>[^\" ]+)"
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""
-| json "message.data.resource.labels", "message.data.jsonPayload.reason", "message.data.jsonPayload.source.host" as labels, reason,node
-| json field=labels "project_id", "cluster_name" as project, cluster
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""
-| json "message.data.resource.labels", "message.data.jsonPayload.source.host" as labels, node
-| json field=labels "project_id", "cluster_name" as project, cluster
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""
-| json "message.data.resource.labels", "message.data.jsonPayload.source.host", "message.data.severity" as labels, node, severity
-| json field=labels "project_id", "cluster_name" as project, cluster
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""
-| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "reason", "source.host" as reason, node
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""
-| json "message.data.resource.labels", "message.data.jsonPayload", "message.data.severity" as labels, payload, severity
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=payload "reason", "source.host" as reason, node
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""
-| json "message.data.resource.labels", "message.data.severity" as labels, severity
-| json field=labels "project_id", "cluster_name" as project, cluster
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""
-| json "message.data.resource.labels", "message.data.timestamp", "message.data.jsonPayload.message" as labels, timestamp, message
-| json field=labels "project_id", "cluster_name" as project, cluster
-| parse regex "\"message\":\"[^\"]* assigned (?<pod>[^\" ]+) to (?<node>[^\" ]+)"
-| parse regex field=message "[^\"]* assigned (?<pod>[^\" ]+) to (?<node>[^\" ]+)"
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.severity", "message.data.jsonPayload.message", "message.data.timestamp" as labels, severity, message, timestamp
-| json field=labels "project_id", "cluster_name", "node_name" as project, cluster, node
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json "message.data.resource.labels", "message.data.severity", "message.data.jsonPayload.message", "message.data.timestamp" as labels, severity, message, timestamp 
-| json field=labels "project_id", "cluster_name", "node_name" as project, cluster, node
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=_raw "message.data.jsonPayload.message" as message
-| json "message.data.resource.labels" as labels
-| json field=labels "project_id", "cluster_name" as project, cluster
-| json field=_raw "message.data.timestamp" as timestamp
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=_raw "message.data.jsonPayload.message" as message
-| parse field=message "Created pod: *" as pod_name
-| json field=_raw "message.data.timestamp" as time
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=_raw "message.data.jsonPayload.message" as message
-| parse field=message "Deleted pod: *" as pod_name
-| json field=_raw "message.data.timestamp" as time
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=_raw "message.data.jsonPayload.MESSAGE", "message.data.jsonPayload.PRIORITY","message.data.resource.labels.cluster_name", "message.data.resource.labels.project_id"  , "message.data.timestamp","message.data.resource.labels.node_name" as message, priority, cluster, project, timestamp, node
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=_raw "message.data.jsonPayload.message", "message.data.resource.labels","message.data.timestamp"  as message, labels, timestamp
-| json field=labels "project_id", "cluster_name" as project, cluster
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
-
-
-## Parser:
-```
-| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" 
-| json field=_raw "message.data.resource.type", "message.data.jsonPayload.MESSAGE", "message.data.resource.labels.cluster_name", "message.data.resource.labels.node_name", "message.data.resource.labels.project_id", "message.data.timestamp" as type,message,cluster,node, project, timestamp 
- 
-```
-### Use Cases:
-Certificate Signing Requests, Clusters, Component Creations, Component Updates and Deletions, Container Events by Pods, Container Image Events, Created Resources by Node Over Time, Error Stream, Errors by Node Over Time, Errors by Nodes, Event Severity Trend, Events, Events and Errors Over Time, Events by Cluster Over Time, Events by Node, Events by Node Over Time, Events by Type Over Time, Killing Resources by Node Over Time, Kube-Proxy Errors, Kube-Proxy Errors by Nodes, Kubelet bootstrap identity calls, Kubelet Errors, Kubelet Errors by Nodes, Latest Status by Pods, Most Recent Scale Ups, Node authenticated requests, Pod Activity, Pod Creations, Pod Deletions, Pod Events, Pod Events by Namespace, Pod Events over Time, Pod Failure Events, Pod Failures over Time, Pods, Pods Created, Pods Deleted, RBAC Modifications, Recent Cluster Activity, Recent Scheduled Pods, Recent Scheduled Pods by Node, Scale Down Operations, Scale Operations, Scheduled Pods by Node Over Time, Scheduled Pods Over Time, Severe Message Count Last Hour, Severe Messages, Severe Messages per Node, Severity Breakdown, Severity Over Time, Top Nodes by Created, Top Nodes by Events, Top Nodes by Killing, Top Problematic Pods, Top Requests by Kind, Top Users and System Components by Pod Requests, Unauthenticated web requests
-
+| use_case | parser |
+|--- | --- |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Clusters | _sourceCategory={{Logsdatasource}}  <br>//\| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp<br>//\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>//\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>//\| json field=payload "message", "involvedObject.kind", "involvedObject.name", "source.host" as message, kind, pod, node |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Error Stream | _sourceCategory={{Logsdatasource}}  error<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| json field=_raw "message.data.jsonPayload.message", "message.data.resource.labels","message.data.timestamp"  as message, labels, timestamp<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Event Severity Trend | _sourceCategory={{Logsdatasource}}  logName resource severity "\"kind\":\"Event\""<br>\| json "message.data.severity" as severity |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Events and Errors Over Time | _sourceCategory={{Logsdatasource}}  logName resource severity "\"kind\":\"Event\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| json "message.data.resource.labels", "message.data.severity" as labels, severity<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Events by Cluster Over Time | _sourceCategory={{Logsdatasource}}  logName resource<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels" as labels<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Events by Node | _sourceCategory={{Logsdatasource}}  logName source reason <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload.reason", "message.data.jsonPayload.source.host" as labels, reason,node<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Events by Type Over Time | _sourceCategory={{Logsdatasource}}  logName resource type<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "reason" |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Kube-Proxy Errors | _sourceCategory={{Logsdatasource}}   error<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| json "message.data.resource.labels", "message.data.severity", "message.data.jsonPayload.message", "message.data.timestamp" as labels, severity, message, timestamp<br>\| json field=labels "project_id", "cluster_name", "node_name" as project, cluster, node |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Kube-Proxy Errors by Nodes | _sourceCategory={{Logsdatasource}}   error<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| json "message.data.resource.labels", "message.data.severity", "message.data.jsonPayload.message", "message.data.timestamp" as labels, severity, message, timestamp <br>\| json field=labels "project_id", "cluster_name", "node_name" as project, cluster, node |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Kubelet Errors | _sourceCategory={{Logsdatasource}}  error<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| json field=_raw "message.data.jsonPayload.MESSAGE", "message.data.jsonPayload.PRIORITY","message.data.resource.labels.cluster_name", "message.data.resource.labels.project_id"  , "message.data.timestamp","message.data.resource.labels.node_name" as message, priority, cluster, project, timestamp, node |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Kubelet Errors by Nodes | _sourceCategory={{Logsdatasource}}  error<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| json field=_raw "message.data.jsonPayload.MESSAGE", "message.data.jsonPayload.PRIORITY","message.data.resource.labels.cluster_name", "message.data.resource.labels.project_id"  , "message.data.timestamp","message.data.resource.labels.node_name" as message, priority, cluster, project, timestamp, node |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Most Recent Scale Ups | _sourceCategory={{Logsdatasource}}  logName resource Scaled<br>\| json field=_raw "message.data.jsonPayload.message", "message.data.severity"  as log, severity<br>\| where severity = "INFO"<br>\| parse field=log "Scaled * replica set * to *" as direction,replica_set,size |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Recent Cluster Activity | _sourceCategory={{Logsdatasource}}  logName resource type severity timestamp<br>\| json "message.data.resource.type", "message.data.timestamp" as type, timestamp<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, name |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Scale Down Operations | _sourceCategory={{Logsdatasource}}  logName resource Scaled<br>\| json field=_raw "message.data.jsonPayload.message", "message.data.severity"  as log, severity<br>\| where severity = "INFO"<br>\| parse field=log "Scaled * replica set * to *" as direction,replica_set,size |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Severe Message Count Last Hour | _sourceCategory={{Logsdatasource}} <br>\| json "message.data" as data<br>// match resource type and logname<br>\| json field= data "resource.type" as type  <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>// extract info and compare severity<br>\| json field=data "severity", "resource.labels.cluster_name", "resource.labels" as severity, cluster, labels<br>\| where severity = "ERROR" or severity = "WARNING" or severity = "CRITICAL" or severity = "EMERGENCY" or severity = "ALERT"<br>// extract from labels the field project<br>\| json field=labels "project_id" as project |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Severe Messages per Node | _sourceCategory={{Logsdatasource}} <br>\| json "message.data" as data<br>//check the type and logname to match <br>\| json field=data "resource.type" as type  <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>// extract data project name cluster name label and severity to be used <br>\| json field=data "resource.labels.project_id", "resource.labels.cluster_name", "resource.labels.", "severity", "jsonPayload.source.host" as project, cluster, labels, severity,node |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Severity Breakdown | _sourceCategory={{Logsdatasource}}  logName resource severity "\"kind\":\"Event\""<br>\| json "message.data.severity" as severity |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Cluster Logs/Top Nodes by Events | _sourceCategory={{Logsdatasource}}  <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload.source.host", "message.data.severity" as labels, node, severity<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Controller Manager/Pods Created | _sourceCategory={{Logsdatasource}}  "Created pod"<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json field=_raw "message.data.jsonPayload.message" as message<br>\| parse field=message "Created pod: *" as pod_name<br>\| json field=_raw "message.data.timestamp" as time |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Controller Manager/Pods Deleted | _sourceCategory={{Logsdatasource}}  "Deleted pod"<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json field=_raw "message.data.jsonPayload.message" as message<br>\| parse field=message "Deleted pod: *" as pod_name<br>\| json field=_raw "message.data.timestamp" as time |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Controller Manager/Scale Operations | _sourceCategory={{Logsdatasource}}  logName resource Scaled<br>\| json field=_raw "message.data.jsonPayload.message" as log<br>\| json field=_raw "message.data.severity" as severity<br>\| where severity = "INFO"<br>\| parse field=log "Scaled * replica set * to *" as direction,replica_set,scaled_to |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Controller Manager/Severe Messages | _sourceCategory={{Logsdatasource}}  error<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| json field=_raw "message.data.jsonPayload.message" as message<br>\| json "message.data.resource.labels" as labels<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=_raw "message.data.timestamp" as timestamp |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Controller Manager/Severity Breakdown | _sourceCategory={{Logsdatasource}}  "\"kind\":\"Event\""<br>\| json "message.data.resource.labels", "message.data.severity" as labels, severity<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Controller Manager/Severity Over Time | _sourceCategory={{Logsdatasource}}  "\"kind\":\"Event\""<br>\| json "message.data.resource.labels", "message.data.severity" as labels, severity<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - K8s Audit Logs/Certificate Signing Requests | _sourceCategory={{Logsdatasource}}  <br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| parse regex "\"resourceName\":\"(?<resourceName>[^\"]+)\""  |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - K8s Audit Logs/Clusters | _sourceCategory={{Logsdatasource}} <br>\| json field=_raw "message.data.resource.labels.cluster_name" as cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - K8s Audit Logs/Component Creations | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "message.data.resource.type", "message.data.protoPayload.authenticationInfo.principalEmail","message.data.protoPayload.request.metadata.name", "message.data.protoPayload.request.metadata.namespace", "message.data.resource.labels.cluster_name", "message.data.logName","message.data.protoPayload.methodName", "message.data.protoPayload.request.kind" as type, created_by, name, namespace, cluster, log_name, methodName,  component<br>\| json field=_raw "message.data.protoPayload.request.spec.replicas" as replicas nodrop |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - K8s Audit Logs/Component Updates and Deletions | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "message.data.resource.type", "message.data.protoPayload.response.metadata.name", "message.data.logName", "message.data.protoPayload.methodName" as type,name, log_name, methodName <br>\| json field=_raw "message.data.protoPayload.authenticationInfo.principalEmail", "message.data.protoPayload.response.metadata.namespace", "message.data.protoPayload.response.kind", "message.data.resource.labels.cluster_name"  as modified_by, namespace, component, cluster nodrop |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - K8s Audit Logs/Kubelet bootstrap identity calls | _sourceCategory={{Logsdatasource}}  <br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| parse regex "\"principalEmail\":\"(?<principalEmail>[^\"]+)\""  |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - K8s Audit Logs/Node authenticated requests | _sourceCategory={{Logsdatasource}}  <br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| parse regex "\"principalEmail\":\"(?<principalEmail>[^\"]+)\""  |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - K8s Audit Logs/RBAC Modifications | _sourceCategory={{Logsdatasource}}  <br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| parse regex "\"methodName\":\"(?<methodName>[^\"]+)\"" <br>\| parse regex "\"principalEmail\":\"(?<principalEmail>[^\"]+)\""  |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - K8s Audit Logs/Top Requests by Kind | _sourceCategory={{Logsdatasource}}  <br>\| json field=_raw "message.data.protoPayload.request.kind" as kind \| count by kind \| sort by _count asc |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - K8s Audit Logs/Top Users and System Components by Pod Requests | _sourceCategory={{Logsdatasource}}  "io.k8s.core.v1.pods"<br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| parse regex "\"methodName\":\"(?<methodName>[^\"]+)\"" <br>\| parse regex "\"principalEmail\":\"(?<user>[^\"]+)\""  |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - K8s Audit Logs/Unauthenticated web requests | _sourceCategory={{Logsdatasource}}  <br>\| json "message.data.resource.type" as type <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| parse regex "\"principalEmail\":\"(?<principalEmail>[^\"]+)\""  |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Created Resources by Node Over Time | _sourceCategory={{Logsdatasource}}  logName reason host "\"reason\":\"Created\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload.source.host" as labels, node<br>\| where node matches "{{node}}"<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Error Stream | _sourceCategory={{Logsdatasource}}   error<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| json field=_raw "message.data.resource.type", "message.data.jsonPayload.MESSAGE", "message.data.resource.labels.cluster_name", "message.data.resource.labels.node_name", "message.data.resource.labels.project_id", "message.data.timestamp" as type,message,cluster,node, project, timestamp  |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Errors by Node Over Time | _sourceCategory={{Logsdatasource}}   error<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| json field=_raw "message.data.resource.type", "message.data.jsonPayload.MESSAGE", "message.data.resource.labels.cluster_name", "message.data.resource.labels.node_name", "message.data.resource.labels.project_id", "message.data.timestamp" as type,message,cluster,node, project, timestamp  |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Errors by Nodes | _sourceCategory={{Logsdatasource}}   error<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| json field=_raw "message.data.resource.type", "message.data.jsonPayload.MESSAGE", "message.data.resource.labels.cluster_name", "message.data.resource.labels.node_name", "message.data.resource.labels.project_id", "message.data.timestamp" as type,message,cluster,node, project, timestamp  |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Events by Node | _sourceCategory={{Logsdatasource}}  jsonPayload logName source host <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "reason", "source.host" as reason, node |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Events by Node Over Time | _sourceCategory={{Logsdatasource}}  jsonPayload logName source host <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload.source.host" as labels, node<br>\| where node matches "{{node}}"<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Killing Resources by Node Over Time | _sourceCategory={{Logsdatasource}}  logName reason host "\"reason\":\"Killing\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload.source.host" as labels, node<br>\| where node matches "{{node}}"<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Recent Scheduled Pods by Node | _sourceCategory={{Logsdatasource}}  logName "\"reason\":\"Scheduled\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.timestamp", "message.data.jsonPayload.message" as labels, timestamp, message<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>//\| parse regex "\"message\":\"[^\"]* assigned (?<pod>[^\" ]+) to (?<node>[^\" ]+)"<br>\| parse regex field=message "[^\"]* assigned (?<pod>[^\" ]+) to (?<node>[^\" ]+)" |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Scheduled Pods by Node Over Time | _sourceCategory={{Logsdatasource}}  logName "\"reason\":\"Scheduled\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels" as labels<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| parse regex "\"message\":\"[^\"]* assigned (?<pod>[^\" ]+) to (?<node>[^\" ]+)" |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Top Nodes by Created | _sourceCategory={{Logsdatasource}}  logName reason host "\"reason\":\"Created\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload.source.host", "message.data.severity" as labels, node, severity<br>\| where node matches "{{node}}"<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Top Nodes by Events | _sourceCategory={{Logsdatasource}}  logName reason host <br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload", "message.data.severity" as labels, payload, severity<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "reason", "source.host" as reason, node |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Node Logs/Top Nodes by Killing | _sourceCategory={{Logsdatasource}}  logName reason host "\"reason\":\"Killing\""<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\""<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload.source.host", "message.data.severity" as labels, node, severity<br>\| where node matches "{{node}}"<br>\| json field=labels "project_id", "cluster_name" as project, cluster |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Container Events by Pods | _sourceCategory={{Logsdatasource}}  jsonPayload logName resource type<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where type = "k8s_pod" and log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "reason", "involvedObject.kind", "involvedObject.name" as message, reason, kind, pod |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Container Image Events | _sourceCategory={{Logsdatasource}}  jsonPayload logName resource severity timestamp type<br>\| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json field=_raw "message.data.jsonPayload.metadata.namespace" as namespace<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Events | _sourceCategory={{Logsdatasource}}   jsonPayload logName resource type<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "reason", "involvedObject.name" as message, reason, pod |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Latest Status by Pods | _sourceCategory={{Logsdatasource}}  jsonPayload logName resource severity timestamp type<br>\| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Pod Activity | _sourceCategory={{Logsdatasource}}  jsonPayload logName resource severity timestamp type<br>\| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Pod Creations | _sourceCategory={{Logsdatasource}}  logName resource severity "Created pod:"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "involvedObject.kind" as message, kind<br>\| json field=_raw "message.data.jsonPayload.message" as log<br>\| parse field=log "Created pod: *" as pod |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Pod Deletions | _sourceCategory={{Logsdatasource}}  logName resource severity  "Killing container" <br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod<br>\| json field=_raw "message.data.jsonPayload.involvedObject.name" |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Pod Events | _sourceCategory={{Logsdatasource}}  jsonPayload logName resource type<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "reason", "involvedObject.kind", "involvedObject.name" as reason, kind, pod |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Pod Events by Namespace | _sourceCategory={{Logsdatasource}}   jsonPayload logName resource severity timestamp type<br>\| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json field=_raw "message.data.jsonPayload.metadata.namespace" as namespace<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Pod Events over Time | _sourceCategory={{Logsdatasource}}   jsonPayload logName resource type<br>\| json "message.data.resource.type" as type<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "reason", "involvedObject.name" as message, reason, pod |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Pod Failure Events | _sourceCategory={{Logsdatasource}}  jsonPayload logName resource severity type<br>\| json "message.data.resource.type", "message.data.severity" as type, severity<br>\| where severity in ("WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY")<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "reason", "involvedObject.kind", "involvedObject.name" as reason, kind, pod |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Pod Failures over Time | _sourceCategory={{Logsdatasource}}   jsonPayload logName resource severity type<br>\| json "message.data.resource.type", "message.data.severity" as type, severity<br>\| where severity in ("WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY")<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "involvedObject.kind", "involvedObject.name", "message" as kind, pod, message |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Pods | _sourceCategory={{Logsdatasource}}  jsonPayload logName resource severity timestamp type<br>\| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>//\| where type = "gke_cluster" and log_name matches "projects/*/logs/events"<br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Recent Scheduled Pods | _sourceCategory={{Logsdatasource}}  jsonPayload logName resource severity timestamp type<br>\| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod<br>\| parse regex field=message "assigned \S+ to (?<node>\S+)"<br>\| where kind="Pod" or message matches "*pod*"<br>\| json field=payload "reason" as reason |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Scheduled Pods Over Time | _sourceCategory={{Logsdatasource}}   jsonPayload logName resource severity timestamp type<br>\| json "message.data.resource.type", "message.data.severity", "message.data.timestamp" as type, severity, timestamp<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "message", "involvedObject.kind", "involvedObject.name" as message, kind, pod<br>//\| parse regex field=message "assigned \S+ to (?<node>\S+)"<br>\| where kind="Pod" or message matches "*pod*"<br>\| json field=payload "reason" as reason |
+| Google Kubernetes Engine (GKE) - Control Plane/GKE - Pod Logs/Top Problematic Pods | _sourceCategory={{Logsdatasource}}   jsonPayload logName resource severity type<br>\| json "message.data.resource.type", "message.data.severity" as type, severity<br>\| where severity in ("WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY")<br>\| parse regex "\"logName\":\"(?<log_name>[^\"]+)\"" <br>\| where log_name matches "projects/*/logs/events"<br>\| json "message.data.resource.labels", "message.data.jsonPayload" as labels, payload<br>\| json field=labels "project_id", "cluster_name" as project, cluster<br>\| json field=payload "involvedObject.kind", "involvedObject.name", "message" as kind, pod, message |
 

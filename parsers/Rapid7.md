@@ -1,68 +1,19 @@
 # Parsers For Rapid7
 
-## Parser:
-```
-| extract field=asset_vulnerability_last_found "(?<date>.*)T(?<time>\d*:\d*:\d*)" 
- 
-```
-### Use Cases:
-Assets by Type, Assets from Risky Geo Locations, Geo Locations of Assets, New Vulnerability Findings, Recent Scanned Assets, Recent Vulnerabilities, Remediated Vulnerability Findings, Top 10 Assets by Vulnerability, Top 10 Operating Systems, Top 10 Vulnerable Assets, Total Assets, Vulnerabilities by Severity
-
-
-
-## Parser:
-```
-| json "id", "type", "os_system_name", "risk_score", "host_name", "ip","severe_vulnerabilities", "total_vulnerabilities", "last_assessed_for_vulnerabilities", "mac", "last_scan_end", "tags[*].name" as id, type, operating_system, risk_score, host_name, ip, severe_vulnerabilities, total_vulnerabilities, last_assessed_time, mac, last_scan_end, tag_name_list nodrop
-| extract field=tag_name_list "\"?(?<tag_name>[\w\s\-&.-z)(,]*?)\"?[,\n\]]" multi
- 
-```
-### Use Cases:
-Assets by Type, Assets from Risky Geo Locations, Geo Locations of Assets, Recent Scanned Assets, Top 10 Assets by Vulnerability, Top 10 Operating Systems, Total Assets
-
-
-
-## Parser:
-```
-| json "id", "type", "os_system_name", "risk_score", "host_name", "ip","severe_vulnerabilities", "total_vulnerabilities", "last_assessed_for_vulnerabilities", "mac", "last_scan_end", "tags[*].name" as id, type, operating_system, risk_score, host_name, ip, severe_vulnerabilities, total_vulnerabilities, last_assessed_time, mac, last_scan_end, tag_name_list nodrop
-| extract field=tag_name_list "\"?(?<tag_name>[\w\s\-&.-z)(,]*?)\"?[,\n\]]" multi
-| extract field=last_assessed_time "(?<date>.*)T(?<time>\d*:\d*:\d*)"
- 
-```
-### Use Cases:
-Assets by Type, Assets from Risky Geo Locations, Geo Locations of Assets, Recent Scanned Assets, Top 10 Assets by Vulnerability, Top 10 Operating Systems, Top 10 Vulnerable Assets, Total Assets
-
-
-
-## Parser:
-```
-| json "id", "type", "os_system_name", "risk_score", "host_name", "ip","severe_vulnerabilities", "total_vulnerabilities", "last_assessed_for_vulnerabilities", "mac", "last_scan_end", "tags[*].name" as id, type, operating_system, risk_score, host_name, ip, severe_vulnerabilities, total_vulnerabilities, last_assessed_time, mac, last_scan_end, tag_name_list nodrop
-| extract field=tag_name_list "\"?(?<tag_name>[\w\s\-&.-z)(,]*?)\"?[,\n\]]" multi
-| extract field=last_assessed_time "(?<date>.*)T(?<time>\d*:\d*:\d*)"
-| extract field=last_scan_end "(?<date>.*)T(?<time>\d*:\d*:\d*)"
- 
-```
-### Use Cases:
-Recent Scanned Assets, Total Assets
-
-
-
-## Parser:
-```
-| json "id","severity" as id, severity nodrop
-| json "vulnerability_id" as id nodrop
- 
-```
-### Use Cases:
-Assets by Type, Assets from Risky Geo Locations, Geo Locations of Assets, Recent Scanned Assets, Top 10 Assets by Vulnerability, Top 10 Operating Systems, Top 10 Vulnerable Assets, Total Assets, Vulnerabilities by Severity
-
-
-
-## Parser:
-```
-| json "vulnerability_id","finding_status","solution_id","solution_summary","solution_type" as vulnerability_id, finding_status, solution_id, solution_summary, solution_type nodrop
- 
-```
-### Use Cases:
-Assets by Type, Assets from Risky Geo Locations, Geo Locations of Assets, New Vulnerability Findings, Recent Scanned Assets, Recent Vulnerabilities, Remediated Vulnerability Findings, Top 10 Assets by Vulnerability, Top 10 Operating Systems, Top 10 Solutions, Top 10 Vulnerable Assets, Total Assets, Vulnerabilities by Severity, Vulnerabilities Over Time
-
+| use_case | parser |
+|--- | --- |
+| Rapid7/Assets Overview/Assets by Type | _sourceCategory={{Logsdatasource}}   assessed_for_policies // fetches assets<br>\| json "id", "type", "os_system_name", "risk_score", "host_name", "ip","severe_vulnerabilities", "total_vulnerabilities", "last_assessed_for_vulnerabilities", "mac", "last_scan_end", "tags[*].name" as id, type, operating_system, risk_score, host_name, ip, severe_vulnerabilities, total_vulnerabilities, last_assessed_time, mac, last_scan_end, tag_name_list nodrop<br>\| extract field=tag_name_list "\"?(?<tag_name>[\w\s\-&.-z)(,]*?)\"?[,\n\]]" multi |
+| Rapid7/Assets Overview/Assets from Risky Geo Locations | _sourceCategory={{Logsdatasource}}   assessed_for_policies // fetches assets<br>\| json "id", "type", "os_system_name", "risk_score", "host_name", "ip","severe_vulnerabilities", "total_vulnerabilities", "last_assessed_for_vulnerabilities", "mac", "last_scan_end", "tags[*].name" as id, type, operating_system, risk_score, host_name, ip, severe_vulnerabilities, total_vulnerabilities, last_assessed_time, mac, last_scan_end, tag_name_list nodrop<br>\| extract field=tag_name_list "\"?(?<tag_name>[\w\s\-&.-z)(,]*?)\"?[,\n\]]" multi<br>\| where tag_name matches "{{tag}}"<br>\| where operating_system matches "{{operating_system}}"<br>\| where isValidIPv4(ip) or isValidIPv6(ip)<br>\| where !isNull(ip)<br>\| if(isValidIPv4(ip), if(!isPrivateIP(ip),true,false),true) as is_public<br>\| where is_public<br>\| count_distinct(id) as frequency by ip<br>\| lookup latitude, longitude, country_code from geo://location on ip = ip<br>\| lookup country_code from https://sumologic-app-data.s3.amazonaws.com/riskycountries.csv on country_code=country_code |
+| Rapid7/Assets Overview/Geo Locations of Assets | _sourceCategory={{Logsdatasource}}   assessed_for_policies // fetches assets<br>\| json "id", "type", "os_system_name", "risk_score", "host_name", "ip","severe_vulnerabilities", "total_vulnerabilities", "last_assessed_for_vulnerabilities", "mac", "last_scan_end", "tags[*].name" as id, type, operating_system, risk_score, host_name, ip, severe_vulnerabilities, total_vulnerabilities, last_assessed_time, mac, last_scan_end, tag_name_list nodrop<br>\| extract field=tag_name_list "\"?(?<tag_name>[\w\s\-&.-z)(,]*?)\"?[,\n\]]" multi |
+| Rapid7/Assets Overview/Recent Scanned Assets | _sourceCategory={{Logsdatasource}}   assessed_for_policies // fetches assets<br>\| json "id", "type", "os_system_name", "risk_score", "host_name", "ip","severe_vulnerabilities", "total_vulnerabilities", "last_assessed_for_vulnerabilities", "mac", "last_scan_end", "tags[*].name" as id, type, operating_system, risk_score, host_name, ip, severe_vulnerabilities, total_vulnerabilities, last_assessed_time, mac, last_scan_end, tag_name_list nodrop<br>\| extract field=tag_name_list "\"?(?<tag_name>[\w\s\-&.-z)(,]*?)\"?[,\n\]]" multi<br>\| where tag_name matches "{{tag}}"<br>\| where operating_system matches "{{operating_system}}"<br>\| if(isNull(host_name),"-",host_name) as host_name<br>\| count_distinct(id) as frequency by id, ip, host_name, operating_system, last_assessed_time, total_vulnerabilities, severe_vulnerabilities, risk_score, last_scan_end<br>\| extract field=last_assessed_time "(?<date>.*)T(?<time>\d*:\d*:\d*)"<br>\| concat(date," ",time) as last_assessed_time<br>\| extract field=last_scan_end "(?<date>.*)T(?<time>\d*:\d*:\d*)" |
+| Rapid7/Assets Overview/Top 10 Assets by Vulnerability | _sourceCategory={{Logsdatasource}}   assessed_for_policies // fetches assets<br>\| json "id", "type", "os_system_name", "risk_score", "host_name", "ip","severe_vulnerabilities", "total_vulnerabilities", "last_assessed_for_vulnerabilities", "mac", "last_scan_end", "tags[*].name" as id, type, operating_system, risk_score, host_name, ip, severe_vulnerabilities, total_vulnerabilities, last_assessed_time, mac, last_scan_end, tag_name_list nodrop<br>\| extract field=tag_name_list "\"?(?<tag_name>[\w\s\-&.-z)(,]*?)\"?[,\n\]]" multi<br>\| where tag_name matches "{{tag}}"<br>\| where operating_system matches "{{operating_system}}"<br>\| if(isNull(host_name),"-",host_name) as host_name<br>\| if(isNull(mac),"-",mac) as mac<br>\| count_distinct(id) as frequency by id, ip, host_name, mac, last_assessed_time, severe_vulnerabilities, total_vulnerabilities<br>\| extract field=last_assessed_time "(?<date>.*)T(?<time>\d*:\d*:\d*)" |
+| Rapid7/Assets Overview/Top 10 Operating Systems | _sourceCategory={{Logsdatasource}}   assessed_for_policies // fetches assets<br>\| json "id", "type", "os_system_name", "risk_score", "host_name", "ip","severe_vulnerabilities", "total_vulnerabilities", "last_assessed_for_vulnerabilities", "mac", "last_scan_end", "tags[*].name" as id, type, operating_system, risk_score, host_name, ip, severe_vulnerabilities, total_vulnerabilities, last_assessed_time, mac, last_scan_end, tag_name_list nodrop<br>\| extract field=tag_name_list "\"?(?<tag_name>[\w\s\-&.-z)(,]*?)\"?[,\n\]]" multi |
+| Rapid7/Assets Overview/Top 10 Vulnerable Assets | _sourceCategory={{Logsdatasource}}   assessed_for_policies // fetches assets<br>\| json "id", "type", "os_system_name", "risk_score", "host_name", "ip","severe_vulnerabilities", "total_vulnerabilities", "last_assessed_for_vulnerabilities", "mac", "last_scan_end", "tags[*].name" as id, type, operating_system, risk_score, host_name, ip, severe_vulnerabilities, total_vulnerabilities, last_assessed_time, mac, last_scan_end, tag_name_list nodrop<br>\| extract field=tag_name_list "\"?(?<tag_name>[\w\s\-&.-z)(,]*?)\"?[,\n\]]" multi<br>\| where tag_name matches "{{tag}}"<br>\| where operating_system matches "{{operating_system}}"<br>\| where !isNull(risk_score) <br>\| if(isNull(host_name),"-",host_name) as host_name<br>\| count_distinct(id) as frequency by id, ip, host_name, mac, last_assessed_time, risk_score<br>\| extract field=last_assessed_time "(?<date>.*)T(?<time>\d*:\d*:\d*)" |
+| Rapid7/Assets Overview/Total Assets | _sourceCategory={{Logsdatasource}}   assessed_for_policies // fetches assets<br>\| json "id", "type", "os_system_name", "risk_score", "host_name", "ip","severe_vulnerabilities", "total_vulnerabilities", "last_assessed_for_vulnerabilities", "mac", "last_scan_end", "tags[*].name" as id, type, operating_system, risk_score, host_name, ip, severe_vulnerabilities, total_vulnerabilities, last_assessed_time, mac, last_scan_end, tag_name_list nodrop<br>\| extract field=tag_name_list "\"?(?<tag_name>[\w\s\-&.-z)(,]*?)\"?[,\n\]]" multi |
+| Rapid7/Vulnerabilities Overview/New Vulnerability Findings | _sourceCategory={{Logsdatasource}}   asset_id // vulnerabilities related to assets<br>\| json "vulnerability_id","finding_status","solution_id","solution_summary","solution_type" as vulnerability_id, finding_status, solution_id, solution_summary, solution_type nodrop |
+| Rapid7/Vulnerabilities Overview/Recent Vulnerabilities | _sourceCategory={{Logsdatasource}}   (cvss_v2_access_complexity or asset_id) <br>\| join<br>(json "id","severity","risk_score","title" as id, severity,risk_score, title) as vulnerability,<br>(json "vulnerability_id","asset_id","finding_status","last_found" as vulnerability_id, asset_id, finding_status, last_found) as asset_vulnerability<br>on vulnerability.id=asset_vulnerability.vulnerability_id // get information of asset related vulnerabilities from knowledge base<br>\| fields vulnerability_severity, vulnerability_id, vulnerability_risk_score, asset_vulnerability_asset_id, asset_vulnerability_finding_status, vulnerability_title, asset_vulnerability_last_found<br>\| first(asset_vulnerability_finding_status) as asset_vulnerability_finding_status group by vulnerability_id, asset_vulnerability_asset_id, vulnerability_severity, vulnerability_risk_score, vulnerability_title, asset_vulnerability_last_found<br>\| count_distinct(vulnerability_id) as frequency by vulnerability_id, vulnerability_severity, vulnerability_risk_score, vulnerability_title, asset_vulnerability_last_found, asset_vulnerability_finding_status, asset_vulnerability_asset_id<br>\| extract field=asset_vulnerability_last_found "(?<date>.*)T(?<time>\d*:\d*:\d*)"  |
+| Rapid7/Vulnerabilities Overview/Remediated Vulnerability Findings | _sourceCategory={{Logsdatasource}}   asset_id //vulnerabilities related to assets<br>\| json "vulnerability_id","finding_status","solution_id","solution_summary","solution_type" as vulnerability_id, finding_status, solution_id, solution_summary, solution_type nodrop |
+| Rapid7/Vulnerabilities Overview/Top 10 Solutions | _sourceCategory={{Logsdatasource}}   asset_id // vulnerabilities related to assets<br>\| json "vulnerability_id","finding_status","solution_id","solution_summary","solution_type" as vulnerability_id, finding_status, solution_id, solution_summary, solution_type nodrop |
+| Rapid7/Vulnerabilities Overview/Vulnerabilities by Severity | _sourceCategory={{Logsdatasource}}   cvss_v2_access_complexity <br>\| json "id","severity" as id, severity nodrop<br>\| where [subquery: _sourceCategory={{Logsdatasource}}   asset_id //vulnerabilities related to assets<br>  \| json "vulnerability_id" as id nodrop |
+| Rapid7/Vulnerabilities Overview/Vulnerabilities Over Time | _sourceCategory={{Logsdatasource}}   asset_id // vulnerabilities related to assets <br>\| json "vulnerability_id","finding_status","solution_id","solution_summary","solution_type" as vulnerability_id, finding_status, solution_id, solution_summary, solution_type nodrop |
 

@@ -1,61 +1,35 @@
 # Parsers For Opsgenie
 
-## Parser:
-```
-| json  "action" 
- 
-```
-### Use Cases:
-Alert Events, Alert Events Over Time, Alert Summary, Alerts by Action, Alerts by Priority - One Day Time Comparison, Alerts by Priority Over Time, Alerts by Recipient  - One Day Time Comparison, Alerts by Recipient - Over Time, Alerts by Source - One Day Time Comparison, Alerts by Source Over Time, Alerts by Tags Over Time, Alerts by Team - One Day Time Comparison, Alerts by Team Over Time, Alerts by Users, Alerts Created - Outlier Analysis, Alerts Escalated - Outlier Analysis, Escalated Alerts, Top 10 Alerts with the Slowest Time to Close
-
-
-
-## Parser:
-```
-| json  "action"  
- 
-```
-### Use Cases:
-Alert Events, Alert Events Over Time, Alert Summary, Alerts  Not Acknowledged, Alerts - One Day Time Comparison, Alerts Acknowledged, Alerts by Action, Alerts by Priority - One Day Time Comparison, Alerts by Priority Over Time, Alerts by Recipient  - One Day Time Comparison, Alerts by Recipient - Over Time, Alerts by Source - One Day Time Comparison, Alerts by Source Over Time, Alerts by Tags Over Time, Alerts by Team - One Day Time Comparison, Alerts by Team Over Time, Alerts by Users, Alerts Closed, Alerts Created, Alerts Created - Outlier Analysis, Alerts Escalated, Alerts Escalated - Outlier Analysis, Alerts Escalated to the Next in Escalation Policy, Escalated Alerts, Top 10 Alerts with the Slowest Time to Close
-
-
-
-## Parser:
-```
-| json "action",  "alert.message",  "escalationName", "escalationTime", "escalationNotify.name" as action, message, escalationName, escalationTime, notifyName
- 
-```
-### Use Cases:
-Alert Summary, Alerts by Action, Alerts by Priority - One Day Time Comparison, Alerts by Priority Over Time, Alerts by Recipient  - One Day Time Comparison, Alerts by Recipient - Over Time, Alerts by Source - One Day Time Comparison, Alerts by Source Over Time, Alerts by Tags Over Time, Alerts by Team - One Day Time Comparison, Alerts by Team Over Time, Alerts by Users, Alerts Created - Outlier Analysis, Escalated Alerts, Top 10 Alerts with the Slowest Time to Close
-
-
-
-## Parser:
-```
-| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop
- 
-```
-### Use Cases:
-Alert Events, Alert Events Over Time, Alert Summary, Alerts  Not Acknowledged, Alerts - One Day Time Comparison, Alerts Acknowledged, Alerts by Action, Alerts by Priority, Alerts by Priority - One Day Time Comparison, Alerts by Priority Over Time, Alerts by Recipient, Alerts by Recipient  - One Day Time Comparison, Alerts by Recipient - Over Time, Alerts by Source, Alerts by Source - One Day Time Comparison, Alerts by Source Over Time, Alerts by Tags, Alerts by Tags Over Time, Alerts by Team, Alerts by Team - One Day Time Comparison, Alerts by Team Over Time, Alerts by Users, Alerts Closed, Alerts Created, Alerts Created - Outlier Analysis, Alerts Escalated, Alerts Escalated - Outlier Analysis, Alerts Escalated to the Next in Escalation Policy, Escalated Alerts, Top 10 Alerts with the Slowest Time to Close
-
-
-
-## Parser:
-```
-| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]", "alert.username" as created_at, description, message, action, team, priority, source, tags, recipients, user_name nodrop
- 
-```
-### Use Cases:
-Alerts by Action, Alerts by Priority - One Day Time Comparison, Alerts by Priority Over Time, Alerts by Recipient  - One Day Time Comparison, Alerts by Recipient - Over Time, Alerts by Source - One Day Time Comparison, Alerts by Source Over Time, Alerts by Tags Over Time, Alerts by Team - One Day Time Comparison, Alerts by Team Over Time, Alerts by Users
-
-
-
-## Parser:
-```
-| json "alert.createdAt", "alert.updatedAt" , "alert.description", "alert.message", "action", "alert.username",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]", "alert.details" as created_at, updated_at, description, message, action, username, priority, source, tags, recipients, alert_details nodrop
- 
-```
-### Use Cases:
-Alerts by Action, Alerts by Priority - One Day Time Comparison, Alerts by Priority Over Time, Alerts by Recipient  - One Day Time Comparison, Alerts by Recipient - Over Time, Alerts by Source - One Day Time Comparison, Alerts by Source Over Time, Alerts by Tags Over Time, Alerts by Team - One Day Time Comparison, Alerts by Team Over Time, Alerts by Users, Top 10 Alerts with the Slowest Time to Close
-
+| use_case | parser |
+|--- | --- |
+| Opsgenie/Alert Breakdown/Alerts by Priority - One Day Time Comparison | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Breakdown/Alerts by Priority Over Time | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Breakdown/Alerts by Recipient  - One Day Time Comparison | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Breakdown/Alerts by Recipient - Over Time | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Breakdown/Alerts by Source - One Day Time Comparison | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Breakdown/Alerts by Source Over Time | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Breakdown/Alerts by Tags Over Time | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Breakdown/Alerts by Team - One Day Time Comparison | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Breakdown/Alerts by Team Over Time | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Breakdown/Alerts by Users | _sourceCategory = Labs/Opsgenie_alerts Acknowledge<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]", "alert.username" as created_at, description, message, action, team, priority, source, tags, recipients, user_name nodrop |
+| Opsgenie/Alert Breakdown/Top 10 Alerts with the Slowest Time to Close | _sourceCategory = Labs/Opsgenie_alerts Close<br>\| json "alert.createdAt", "alert.updatedAt" , "alert.description", "alert.message", "action", "alert.username",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]", "alert.details" as created_at, updated_at, description, message, action, username, priority, source, tags, recipients, alert_details nodrop |
+| Opsgenie/Alert Details/Alert Summary | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Details/Alerts Created - Outlier Analysis | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Details/Alerts Escalated - Outlier Analysis | _sourceCategory = Labs/Opsgenie_alerts Escalate<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Alert Details/Escalated Alerts | _sourceCategory = Labs/Opsgenie_alerts Escalate<br>\| json "action",  "alert.message",  "escalationName", "escalationTime", "escalationNotify.name" as action, message, escalationName, escalationTime, notifyName |
+| Opsgenie/Alerts by Action/Alerts by Action | _sourceCategory = Labs/Opsgenie_alerts <br>\| json  "action"  |
+| Opsgenie/Overview/Alert Events | _sourceCategory = Labs/Opsgenie_alerts <br>\| json  "action"  |
+| Opsgenie/Overview/Alert Events Over Time | _sourceCategory = Labs/Opsgenie_alerts <br>\| json  "action"  |
+| Opsgenie/Overview/Alerts  Not Acknowledged | _sourceCategory = Labs/Opsgenie_alerts UnAcknowledge<br>\| json  "action"   |
+| Opsgenie/Overview/Alerts - One Day Time Comparison | _sourceCategory = Labs/Opsgenie_alerts <br>\| json  "action"   |
+| Opsgenie/Overview/Alerts Acknowledged | _sourceCategory = Labs/Opsgenie_alerts Acknowledge<br>\| json  "action"   |
+| Opsgenie/Overview/Alerts by Priority | _sourceCategory = Labs/Opsgenie_alerts <br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Overview/Alerts by Recipient | _sourceCategory = Labs/Opsgenie_alerts<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Overview/Alerts by Source | _sourceCategory = Labs/Opsgenie_alerts <br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Overview/Alerts by Tags | _sourceCategory = Labs/Opsgenie_alerts<br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Overview/Alerts by Team | _sourceCategory = Labs/Opsgenie_alerts <br>\| json "alert.createdAt", "alert.description", "alert.message", "action", "alert.team",  "alert.priority", "alert.source" , "alert.tags[*]","alert.recipients[*]" as created_at, description, message, action, team, priority, source, tags, recipients nodrop |
+| Opsgenie/Overview/Alerts Closed | _sourceCategory = Labs/Opsgenie_alerts Close<br>\| json  "action"   |
+| Opsgenie/Overview/Alerts Created | _sourceCategory = Labs/Opsgenie_alerts Create<br>\| json  "action"   |
+| Opsgenie/Overview/Alerts Escalated | _sourceCategory = Labs/Opsgenie_alerts Escalate<br>\| json  "action"   |
+| Opsgenie/Overview/Alerts Escalated to the Next in Escalation Policy | _sourceCategory = Labs/Opsgenie_alerts EscalateToNext<br>\| json  "action"   |
 

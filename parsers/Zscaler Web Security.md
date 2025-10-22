@@ -1,52 +1,12 @@
 # Parsers For Zscaler Web Security
 
-## Parser:
-```
-| parse "|*|*|*|*|*" as Vendor,Product,Ver,Category,kvout
- 
-```
-### Use Cases:
-Basic Parser with KVAuto of LEEF
-
-
-
-## Parser:
-```
-| parse "cat=*\t" as category
-| parse "src=*\t" as src_ip, "usrName=*\t" as src_user
- 
-```
-### Use Cases:
-Basic Parser with KVAuto of LEEF, Denied Events, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier
-
-
-
-## Parser:
-```
-| parse "cat=*\t" as category | 
-```
-### Use Cases:
-Basic Parser with KVAuto of LEEF, Blocked Traffic, Denied Events, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Location of Allowed Activities, Location of Denied Activites
-
-
-
-## Parser:
-```
-| parse "src=*\t" as src_ip, "usrName=*\t" as src_user
- 
-```
-### Use Cases:
-Basic Parser with KVAuto of LEEF, Denied Events, Denied to Allowed Ratio, Denied to Allowed Ratio - Outlier, Location of Allowed Activities, Location of Denied Activites
-
-
-
-## Parser:
-```
-| parse "src=*\t" as src_ip, "usrName=*\t" as src_user
-| parse "|*|*|*|*|" as device_vendor,device_product,update,action
- 
-```
-### Use Cases:
-Basic Parser with KVAuto of LEEF, Denied Events
-
+| use_case | parser |
+|--- | --- |
+| Zscaler Web Security/Basic Parser with KVAuto of LEEF/Basic Parser with KVAuto of LEEF | _sourceCategory = Labs/Zscaler* "zscaler-nss: LEEF"<br>\| parse "\|*\|*\|*\|*\|*" as Vendor,Product,Ver,Category,kvout |
+| Zscaler Web Security/Zscaler - Overview - New/Blocked Traffic | _sourceCategory = Labs/Zscaler* !"cat=Allowed" \| parse "cat=*\t" as category \| count |
+| Zscaler Web Security/Zscaler - Overview - New/Denied Events | _sourceCategory = Labs/Zscaler* !"cat=Allowed"<br>\| parse "src=*\t" as src_ip, "usrName=*\t" as src_user<br>\| parse "\|*\|*\|*\|*\|" as device_vendor,device_product,update,action |
+| Zscaler Web Security/Zscaler - Overview - New/Denied to Allowed Ratio | _sourceCategory = Labs/Zscaler* <br>\| parse "cat=*\t" as category<br>\| parse "src=*\t" as src_ip, "usrName=*\t" as src_user |
+| Zscaler Web Security/Zscaler - Overview - New/Denied to Allowed Ratio - Outlier | _sourceCategory = Labs/Zscaler* <br>\| parse "cat=*\t" as category<br>\| parse "src=*\t" as src_ip, "usrName=*\t" as src_user |
+| Zscaler Web Security/Zscaler - Overview - New/Location of Allowed Activities | _sourceCategory = Labs/Zscaler* "cat=Allowed"<br>\| parse "src=*\t" as src_ip, "usrName=*\t" as src_user |
+| Zscaler Web Security/Zscaler - Overview - New/Location of Denied Activites | _sourceCategory = Labs/Zscaler* !"cat=Allowed"<br>\| parse "src=*\t" as src_ip, "usrName=*\t" as src_user |
 
