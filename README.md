@@ -5,6 +5,15 @@ Total unique metric searches: 3749
 
 A collection Sumo Logic search queries using exports of Sumo Logic apps from Demo orgs using a scripted export by Sumo Logic TAE team.
 
+## Sumo Logic Search Viewers
+
+Interactive web-based viewers for Sumo Logic search queries.
+
+## Available Viewers
+
+- **[Log Searches Viewer](./docs/logs-search-viewer.html)** - Browse and search log queries
+- **[Metric Searches Viewer](./docs/metrics-search-viewer.html)** - Browse and search metric queries
+
 ## Deduped-db
 This export includes two datasets:
 1. an export from a Sumo Logic legacy demo app covering about 10 years of 'legacy' sumo apps

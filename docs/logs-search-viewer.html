@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sumo Logic - Log Searches Viewer</title>
+    <link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button.secondary {
+            background: #2196F3;
+        }
+
+        button.secondary:hover {
+            background: #0b7dda;
+        }
+
+        .stats {
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        #searches-table {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .tabulator .tabulator-header {
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .tabulator .tabulator-header .tabulator-col {
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .tabulator-row {
+            min-height: 40px;
+        }
+
+        .tabulator-row.tabulator-row-even {
+            background: #f9f9f9;
+        }
+
+        .tabulator-row:hover {
+            background: #f0f8ff !important;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            color: #d32f2f;
+            padding: 20px;
+            background: #ffebee;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        pre {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 3px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        pre:hover {
+            background: #e8e8e8;
+        }
+
+        .copy-indicator {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 8px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 3px;
+            font-size: 11px;
+            animation: fadeOut 1s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sumo Logic - Log Searches</h1>
+        <div class="subtitle">Interactive viewer for Sumo Logic log search queries</div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search all fields...">
+            </div>
+            <div class="button-group">
+                <button onclick="clearFilters()">Clear Filters</button>
+                <button class="secondary" onclick="exportData()">Export CSV</button>
+            </div>
+        </div>
+
+        <div class="stats" id="stats">Loading...</div>
+
+        <div id="searches-table"></div>
+    </div>
+
+    <script>
+        let table;
+
+        // Custom formatter for search queries - shows full query with click to copy
+        function searchFormatter(cell) {
+            const value = cell.getValue();
+            if (!value) return '';
+
+            const escapedValue = escapeHtml(value);
+            const rowId = cell.getRow().getIndex();
+
+            return `<pre id="query-${rowId}" title="Click to copy">${escapedValue}</pre>`;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Custom formatter for use_case with better wrapping
+        function useCaseFormatter(cell) {
+            const value = cell.getValue();
+            if (!value) return '';
+            return `<div style="white-space: normal; line-height: 1.3;">${value}</div>`;
+        }
+
+        // Initialize table
+        async function initTable() {
+            try {
+                // Try to fetch the JSON data
+                // Note: For local viewing, run a simple HTTP server from the project root:
+                // python3 -m http.server 8000
+                // Then open: http://localhost:8000/docs/logs-search-viewer.html
+
+                let data;
+                try {
+                    const response = await fetch('../logs_searches_min.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    data = await response.json();
+                } catch (fetchError) {
+                    // If fetch fails (CORS or file not found), show helpful error
+                    throw new Error(
+                        `Cannot load JSON file. ` +
+                        `If viewing locally, start a web server from project root:\n\n` +
+                        `python3 -m http.server 8000\n\n` +
+                        `Then open: http://localhost:8000/docs/logs-search-viewer.html\n\n` +
+                        `Original error: ${fetchError.message}`
+                    );
+                }
+
+                // Update stats
+                document.getElementById('stats').textContent = `Total searches: ${data.length}`;
+
+                // Initialize Tabulator
+                table = new Tabulator("#searches-table", {
+                    data: data,
+                    layout: "fitDataStretch",
+                    pagination: true,
+                    paginationSize: 25,
+                    paginationSizeSelector: [10, 25, 50, 100, 200],
+                    movableColumns: true,
+                    resizableColumns: true,
+                    persistenceID: "sumo-searches",
+                    persistence: {
+                        sort: true,
+                        filter: true,
+                        columns: true,
+                    },
+                    initialSort: [
+                        {column: "use_case", dir: "asc"}
+                    ],
+                    columns: [
+                        {
+                            title: "Use Case / Category",
+                            field: "use_case",
+                            headerFilter: "input",
+                            headerFilterPlaceholder: "Filter use case...",
+                            width: 350,
+                            formatter: useCaseFormatter,
+                            sorter: "string"
+                        },
+                        {
+                            title: "Search Query",
+                            field: "search",
+                            headerFilter: "input",
+                            headerFilterPlaceholder: "Filter query...",
+                            minWidth: 400,
+                            formatter: searchFormatter,
+                            sorter: "string",
+                            clipboard: true
+                        }
+                    ],
+                    rowClick: function(e, row) {
+                        // Copy search query to clipboard when clicking on the query
+                        if (e.target.tagName === 'PRE' || e.target.closest('pre')) {
+                            const pre = e.target.tagName === 'PRE' ? e.target : e.target.closest('pre');
+                            const search = row.getData().search;
+
+                            navigator.clipboard.writeText(search).then(() => {
+                                // Visual feedback
+                                pre.style.background = '#d4edda';
+
+                                // Add "Copied!" indicator
+                                const indicator = document.createElement('span');
+                                indicator.className = 'copy-indicator';
+                                indicator.textContent = 'Copied!';
+                                pre.parentElement.appendChild(indicator);
+
+                                setTimeout(() => {
+                                    pre.style.background = '';
+                                    indicator.remove();
+                                }, 1000);
+                            }).catch(err => {
+                                console.error('Failed to copy:', err);
+                            });
+                        }
+                    }
+                });
+
+            } catch (error) {
+                document.getElementById('searches-table').innerHTML =
+                    `<div class="error">Error loading data: ${error.message}</div>`;
+                console.error('Error:', error);
+            }
+        }
+
+        // Search functionality
+        document.getElementById('search-input').addEventListener('keyup', function(e) {
+            table.setFilter([
+                [
+                    {field: "use_case", type: "like", value: e.target.value},
+                    {field: "search", type: "like", value: e.target.value}
+                ]
+            ]);
+        });
+
+        // Clear all filters
+        function clearFilters() {
+            table.clearFilter(true);
+            table.clearHeaderFilter();
+            document.getElementById('search-input').value = '';
+        }
+
+        // Export to CSV
+        function exportData() {
+            table.download("csv", "sumo-log-searches.csv");
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', initTable);
+    </script>
+</body>
+</html>
