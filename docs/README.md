@@ -1,6 +1,6 @@
 # Sumo Logic Search Viewers
 
-Interactive web-based viewers for Sumo Logic search queries.
+Interactive web-based viewers for Sumo Logic search queries using example seaarches exported from 100+ sumo logic apps.
 
 ## Available Viewers
 
