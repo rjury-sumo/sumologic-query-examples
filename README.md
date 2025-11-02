@@ -11,8 +11,8 @@ Interactive web-based viewers for Sumo Logic search queries.
 
 ## Available Viewers
 
-- **[Log Searches Viewer](./docs/logs-search-viewer.html)** - Browse and search log queries
-- **[Metric Searches Viewer](./docs/metrics-search-viewer.html)** - Browse and search metric queries
+- **[Log Searches Viewer](https://rjury-sumo.github.io/sumologic-query-examples/logs-search-viewer.html)** - Browse and search log queries
+- **[Metric Searches Viewer](https://rjury-sumo.github.io/sumologic-query-examples/metrics-search-viewer.html)** - Browse and search metric queries
 
 ## Deduped-db
 This export includes two datasets:
