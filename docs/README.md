@@ -3,11 +3,7 @@
 Interactive web-based viewers for Sumo Logic search queries using example seaarches exported from 100+ sumo logic apps.
 
 ## Available Viewers
-### Google pages Interactive Version
-- **[Log Searches Viewer](https://rjury-sumo.github.io/sumologic-query-examples/logs-search-viewer.html)** - Browse and search log queries
-- **[Metric Searches Viewer](https://rjury-sumo.github.io/sumologic-query-examples/metrics-search-viewer.html)** - Browse and search metric queries
 
-### code
 - **[Log Searches Viewer](logs-search-viewer.html)** - Browse and search log queries
 - **[Metric Searches Viewer](metrics-search-viewer.html)** - Browse and search metric queries
 
